@@ -2,7 +2,7 @@
 const { Pool } = require('pg');
 
 // Connection string for Render database
-const connectionString = 'postgresql://csg_data_user:U08IhiDLTiyTT1ypORqk6vj6tAkPgrFH@dpg-d3l9r8ruibrs73chae70-a/csg_data';
+const connectionString = 'postgresql://csg_data_user:U08IhiDLTiyTT1ypORqk6vj6tAkPgrFH@dpg-d3l9r8ruibrs73chae70-a.oregon-postgres.render.com/csg_data';
 
 const pool = new Pool({
   connectionString: connectionString,

@@ -1,7 +1,7 @@
 // Test database connection script
 const { Pool } = require('pg');
 
-const connectionString = 'postgresql://csg_data_user:U08IhiDLTiyTT1ypORqk6vj6tAkPgrFH@dpg-d3l9r8ruibrs73chae70-a/csg_data';
+const connectionString = 'postgresql://csg_data_user:U08IhiDLTiyTT1ypORqk6vj6tAkPgrFH@dpg-d3l9r8ruibrs73chae70-a.oregon-postgres.render.com/csg_data';
 
 console.log('🔍 Testing database connection...');
 console.log('Connection string:', connectionString.replace(/:[^:@]+@/, ':***@')); // Hide password in output
