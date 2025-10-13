@@ -9,7 +9,7 @@ const domain = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000';
 async function sendEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Cosmic Spiritual Guide <noreply@your-verified-domain.com>', // Must be a domain you verified with Resend
+      from: 'Cosmic Spiritual Guide <noreply@cosmicspiritguide.com>', // Must be a domain you verified with Resend
       to,
       subject,
       html,
