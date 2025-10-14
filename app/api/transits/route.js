@@ -4,13 +4,13 @@ import { Pool } from 'pg';
 import { calculateActiveTransits, getCurrentPlanetaryPositions, getAffectedArea, getAspectNature, getTransitColor, calculateTransitPeakDate } from '@/lib/transits';
 import { generateAllTransitInterpretations } from '@/lib/transit-interpretation';
 
-// Configure the database connection pool
+// **THIS IS THE UPDATED PART**
+// This configuration explicitly forces an SSL connection.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Add this SSL configuration
-  ssl: process.env.NODE_ENV === 'production' 
-    ? { rejectUnauthorized: false } // A common setting for many managed databases
-    : false,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 export async function GET(req) {
