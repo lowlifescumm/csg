@@ -130,6 +130,17 @@ export default function LoginPage() {
               className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
               required
             />
+            {isLogin && (
+              <div className="text-right mt-2">
+                <button
+                  type="button"
+                  onClick={() => router.push('/reset-password')}
+                  className="text-purple-600 hover:text-purple-800 text-sm font-medium smooth-transition"
+                >
+                  🔮 Forgot your cosmic password?
+                </button>
+              </div>
+            )}
           </div>
 
           {error && (
