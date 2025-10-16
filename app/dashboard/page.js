@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import DailyHoroscope from "@/components/DailyHoroscope";
 import MoonPhaseWidget from "@/components/MoonPhaseWidget";
 import CreditManagementWidget from "@/components/CreditManagementWidget";
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const [totalCredits, setTotalCredits] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [showTarotSelector, setShowTarotSelector] = useState(false);
+  const [tarotConfig, setTarotConfig] = useState({ spreadType: "three-card", readingType: "general" });
 
   useEffect(() => {
     checkAuth();
@@ -223,6 +225,9 @@ export default function DashboardPage() {
               Get Your Reading
             </button>
           </div>
+          <div className="mt-6">
+            <TarotReadingTypePicker onPick={(t)=> setTarotConfig({ spreadType: t.spreadType, readingType: t.key })} />
+          </div>
         </div>
 
         {(readings.tarot.length > 0 || readings.birthCharts.length > 0) && (
@@ -360,6 +365,8 @@ export default function DashboardPage() {
       {showTarotSelector && (
         <InteractiveTarotSelector 
           onClose={() => setShowTarotSelector(false)}
+          spreadType={tarotConfig.spreadType}
+          readingType={tarotConfig.readingType}
           onComplete={(reading) => {
             setShowTarotSelector(false);
             // Optionally refresh readings to show the new one in history

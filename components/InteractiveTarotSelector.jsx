@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { X, Sparkles } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";
 
-export default function InteractiveTarotSelector({ onClose, onComplete }) {
+export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general" }) {
   const [selectedCards, setSelectedCards] = useState([]);
   const [availableCards, setAvailableCards] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -12,12 +12,13 @@ export default function InteractiveTarotSelector({ onClose, onComplete }) {
   const [question, setQuestion] = useState("");
   const [showQuestionInput, setShowQuestionInput] = useState(false);
   
-  const positions = ["Past", "Present", "Future"];
+  const positions = spreadType === "one-card" ? ["Focus"] : ["Past", "Present", "Future"];
 
   useEffect(() => {
-    // Shuffle all cards and pick 3 random ones (but keep them hidden)
+    // Shuffle all cards and pick N random ones (but keep them hidden)
     const shuffled = [...ALL_CARDS].sort(() => Math.random() - 0.5);
-    setAvailableCards(shuffled.slice(0, 3));
+    const count = spreadType === "one-card" ? 1 : 3;
+    setAvailableCards(shuffled.slice(0, count));
   }, []);
 
   const handleCardClick = (index) => {
@@ -29,7 +30,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete }) {
     setSelectedCards(newSelectedCards);
     
     // If all cards are selected, show question input
-    if (newSelectedCards.length === 3 && !showQuestionInput) {
+    const count = spreadType === "one-card" ? 1 : 3;
+    if (newSelectedCards.length === count && !showQuestionInput) {
       setShowQuestionInput(true);
     }
   };
@@ -55,8 +57,10 @@ export default function InteractiveTarotSelector({ onClose, onComplete }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question,
-          spreadType: "three-card",
-          specificCards: selectedCardsData
+          spreadType,
+          readingType,
+          specificCards: selectedCardsData,
+          cardCount: positions.length
         }),
       });
 
@@ -87,7 +91,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete }) {
     
     // Shuffle and pick new cards
     const shuffled = [...ALL_CARDS].sort(() => Math.random() - 0.5);
-    setAvailableCards(shuffled.slice(0, 3));
+    const count = spreadType === "one-card" ? 1 : 3;
+    setAvailableCards(shuffled.slice(0, count));
   };
 
   if (showReading && reading) {
@@ -161,8 +166,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete }) {
         <div className="text-center mb-8">
           <p className="text-gray-600 mb-2">
             {selectedCards.length === 0 && "Click on each card to reveal your destiny"}
-            {selectedCards.length > 0 && selectedCards.length < 3 && `${selectedCards.length} of 3 cards selected`}
-            {selectedCards.length === 3 && !showQuestionInput && "All cards selected!"}
+            {selectedCards.length > 0 && selectedCards.length < positions.length && `${selectedCards.length} of ${positions.length} cards selected`}
+            {selectedCards.length === positions.length && !showQuestionInput && "All cards selected!"}
           </p>
           {showQuestionInput && (
             <div className="mt-4 max-w-md mx-auto">
@@ -178,7 +183,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete }) {
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-4 md:gap-8 mb-8">
+        <div className={`grid grid-cols-${positions.length === 1 ? '1' : '3'} gap-4 md:gap-8 mb-8`}>
           {[0, 1, 2].map((index) => {
             const isSelected = selectedCards.includes(index);
             const selectionOrder = selectedCards.indexOf(index);

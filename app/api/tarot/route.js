@@ -22,7 +22,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized. Please login." }, { status: 401 });
     }
 
-    const { question, spreadType = "three-card", specificCards } = await request.json();
+    const { question, spreadType = "three-card", specificCards, readingType = "general", cardCount } = await request.json();
     const uid = decoded.userId;
 
     // Tarot readings are free for all users - no credit check needed
@@ -34,11 +34,13 @@ export async function POST(request) {
       cards = specificCards;
     } else {
       // Otherwise draw random cards
-      const numCards = spreadType === "three-card" ? 3 : 10;
-      cards = drawCards(numCards);
+      const inferred = typeof cardCount === "number" && cardCount > 0
+        ? cardCount
+        : (spreadType === "three-card" ? 3 : spreadType === "one-card" ? 1 : spreadType === "past-present-future" ? 3 : 3);
+      cards = drawCards(inferred);
     }
 
-    const interpretation = await generateTarotReading(cards, question, spreadType);
+    const interpretation = await generateTarotReading(cards, question, spreadType, readingType);
 
     const reading = await saveReading({
       userId: uid,
@@ -47,6 +49,7 @@ export async function POST(request) {
       cards,
       interpretation,
       spreadType,
+      meta: { readingType },
     });
 
     return NextResponse.json({
