@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { X, Sparkles } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";
+import spreads from "@/lib/tarot-spreads.json";
 
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general" }) {
   const [selectedCards, setSelectedCards] = useState([]);
@@ -11,15 +12,38 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   const [reading, setReading] = useState(null);
   const [question, setQuestion] = useState("");
   const [showQuestionInput, setShowQuestionInput] = useState(false);
+  const [error, setError] = useState("");
+  const [flashMismatch, setFlashMismatch] = useState(false);
   
-  const positions = spreadType === "one-card" ? ["Focus"] : ["Past", "Present", "Future"];
+  const spread = (function resolveSpread() {
+    // Map old spreadType strings to config ids
+    const map = {
+      "three-card": "past_present_future",
+      "one-card": "one_card",
+      "daily": "daily_tarot",
+      "daily-love": "daily_love",
+      "career": "daily_career",
+      "yes-no": "yes_no",
+      "love-potential": "love_potential",
+      "breakup": "breakup",
+      "ppf": "past_present_future",
+      "flirt": "daily_flirt",
+      "yin-yang": "yin_yang",
+    };
+    const id = map[spreadType] || spreadType;
+    return spreads.find(s => s.id === id) || spreads.find(s => s.id === "past_present_future");
+  })();
+
+  const positions = spread.layout;
 
   useEffect(() => {
-    // Shuffle all cards and pick N random ones (but keep them hidden)
+    // On mount and when spread changes, clear selections and prepare exactly N cards
+    setSelectedCards([]);
+    setShowQuestionInput(false);
+    setError("");
     const shuffled = [...ALL_CARDS].sort(() => Math.random() - 0.5);
-    const count = spreadType === "one-card" ? 1 : 3;
-    setAvailableCards(shuffled.slice(0, count));
-  }, []);
+    setAvailableCards(shuffled.slice(0, spread.card_count));
+  }, [spreadType]);
 
   const handleCardClick = (index) => {
     // If card is already selected, don't do anything
@@ -30,15 +54,26 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setSelectedCards(newSelectedCards);
     
     // If all cards are selected, show question input
-    const count = spreadType === "one-card" ? 1 : 3;
-    if (newSelectedCards.length === count && !showQuestionInput) {
+    const count = spread.card_count;
+    if (newSelectedCards.length === count && !showQuestionInput && spread.ui?.require_question) {
       setShowQuestionInput(true);
     }
   };
 
   const handleGetReading = async () => {
-    if (!question.trim()) {
-      alert("Please enter a question for your reading");
+    const required = spread.ui?.required_selection_count ?? spread.card_count;
+    const selected = selectedCards.length;
+    if (selected !== required) {
+      setError(spread.ui?.selection_error_message || `Please select exactly ${required} card(s).`);
+      setFlashMismatch(true);
+      setTimeout(() => {
+        setFlashMismatch(false);
+        setSelectedCards([]);
+      }, 1500);
+      return;
+    }
+    if (spread.ui?.require_question && !question.trim()) {
+      setError("Please enter your question before submitting.");
       return;
     }
 
@@ -60,7 +95,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           spreadType,
           readingType,
           specificCards: selectedCardsData,
-          cardCount: positions.length
+          cardCount: positions.length,
+          spreadId: spread.id
         }),
       });
 
@@ -88,11 +124,11 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setReading(null);
     setQuestion("");
     setShowQuestionInput(false);
+    setError("");
     
     // Shuffle and pick new cards
     const shuffled = [...ALL_CARDS].sort(() => Math.random() - 0.5);
-    const count = spreadType === "one-card" ? 1 : 3;
-    setAvailableCards(shuffled.slice(0, count));
+    setAvailableCards(shuffled.slice(0, spread.card_count));
   };
 
   if (showReading && reading) {
@@ -169,6 +205,9 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
             {selectedCards.length > 0 && selectedCards.length < positions.length && `${selectedCards.length} of ${positions.length} cards selected`}
             {selectedCards.length === positions.length && !showQuestionInput && "All cards selected!"}
           </p>
+          {error && (
+            <p className="text-red-600 text-sm mb-2">{error}</p>
+          )}
           {showQuestionInput && (
             <div className="mt-4 max-w-md mx-auto">
               <input
@@ -183,8 +222,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           )}
         </div>
 
-        <div className={`grid grid-cols-${positions.length === 1 ? '1' : '3'} gap-4 md:gap-8 mb-8`}>
-          {[0, 1, 2].map((index) => {
+        <div className={`grid grid-cols-${positions.length === 1 ? '1' : (positions.length === 2 ? '2' : '3')} gap-4 md:gap-8 mb-8`}>
+          {Array.from({ length: spread.card_count }).map((_, index) => {
             const isSelected = selectedCards.includes(index);
             const selectionOrder = selectedCards.indexOf(index);
             
@@ -192,12 +231,13 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
               <div key={index} className="flex flex-col items-center">
                 <button
                   onClick={() => handleCardClick(index)}
-                  disabled={selectedCards.length === 3}
+                  disabled={selectedCards.length === spread.card_count}
                   className={`
                     relative w-full max-w-[200px] aspect-[2/3] rounded-xl overflow-hidden
                     smooth-transition transform
                     ${!isSelected ? 'hover:scale-105 cursor-pointer hover:shadow-2xl' : 'scale-105'}
                     ${isSelected ? 'ring-4 ring-purple-400 ring-opacity-60' : ''}
+                    ${flashMismatch ? 'ring-red-500 ring-4' : ''}
                     ${loading ? 'opacity-60 cursor-not-allowed' : ''}
                   `}
                   style={{
@@ -250,10 +290,10 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           })}
         </div>
 
-        {selectedCards.length === 3 && (
+        {selectedCards.length === spread.card_count && (
           <button
             onClick={handleGetReading}
-            disabled={loading || !question.trim()}
+            disabled={loading || (spread.ui?.require_question ? !question.trim() : false)}
             className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (

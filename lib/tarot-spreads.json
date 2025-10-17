@@ -1,0 +1,154 @@
+[
+  {
+    "id": "daily_tarot",
+    "display_name": "Daily Tarot",
+    "card_count": 1,
+    "allow_question": false,
+    "layout": ["Message of the Day"],
+    "ui": {
+      "required_selection_count": 1,
+      "selection_labels": ["Daily Card"],
+      "selection_error_message": "Please select exactly 1 card for the Daily Tarot.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw one tarot card to offer general spiritual guidance for the user's day. Cards: {{cards}}. Tone: {{tone}}. Provide a short 'message of the day' (2-4 sentences), one actionable takeaway, and a closing sentence that inspires presence.",
+    "example_prompt_use": "cards: The High Priestess; question: (none); tone: warm, mystical, concise"
+  },
+  {
+    "id": "daily_love",
+    "display_name": "Daily Love Tarot",
+    "card_count": 3,
+    "allow_question": true,
+    "layout": ["Current romantic energy", "Hidden influence / challenge", "Guidance / outcome"],
+    "ui": {
+      "required_selection_count": 3,
+      "selection_labels": ["Current", "Hidden Influence", "Guidance"],
+      "selection_error_message": "Please select exactly 3 cards for Daily Love Tarot.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw three tarot cards to explore today's romantic energy. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: compassionate, hopeful. Interpret each card in sequence (one paragraph each): state meaning, relation to the user's situation, and a short practical advice line. End with a 1-2 sentence summary.",
+    "example_prompt_use": "cards: Two of Cups, Five of Swords, The Empress; question: 'Is this person right for me?'; tone: compassionate, hopeful"
+  },
+  {
+    "id": "daily_career",
+    "display_name": "Daily Career Tarot",
+    "card_count": 3,
+    "allow_question": true,
+    "layout": ["Current work energy", "Challenges / blocks", "Advice / outcome"],
+    "ui": {
+      "required_selection_count": 3,
+      "selection_labels": ["Present", "Challenge", "Advice"],
+      "selection_error_message": "Please select exactly 3 cards for Daily Career Tarot.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw three tarot cards to provide insight into the user's career or work situation. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: empowering, practical. For each position provide the card interpretation and actionable next steps; finish with concise career-focused advice.",
+    "example_prompt_use": "cards: Eight of Pentacles, The Tower, Ace of Pentacles; question: 'Will I get the promotion?'; tone: empowering, practical"
+  },
+  {
+    "id": "yes_no",
+    "display_name": "Yes/No Tarot",
+    "card_count": 1,
+    "allow_question": true,
+    "layout": ["Answer (Yes / No / Uncertain)", "Short reasoning"],
+    "ui": {
+      "required_selection_count": 1,
+      "selection_labels": ["Decision Card"],
+      "selection_error_message": "Please select exactly 1 card and ask a clear yes/no question.",
+      "hide_unused_slots": true,
+      "require_question": true
+    },
+    "prompt_template": "Draw one tarot card to answer the user's yes/no question. Card: {{cards}}. Question: {{question}}. Tone: direct, clear. Output must contain: 'Likely Outcome: YES / NO / UNCERTAIN' (choose one), followed by 2-3 sentences explaining why and a short suggestion to manage the outcome.",
+    "example_prompt_use": "cards: The Sun; question: 'Should I accept the job offer?'; tone: direct, clear"
+  },
+  {
+    "id": "love_potential",
+    "display_name": "Love Potential Tarot",
+    "card_count": 3,
+    "allow_question": true,
+    "layout": ["Your energy", "Their energy", "Connection potential/outcome"],
+    "ui": {
+      "required_selection_count": 3,
+      "selection_labels": ["You", "Other", "Potential"],
+      "selection_error_message": "Please select exactly 3 cards for Love Potential Tarot.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw three tarot cards to assess romantic potential. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: thoughtful, honest. For each position describe the energy, compatibility points, and final card should give a realistic outcome or next step.",
+    "example_prompt_use": "cards: The Lovers, Six of Cups, Seven of Pentacles; question: 'Is there potential here?'; tone: thoughtful, honest"
+  },
+  {
+    "id": "breakup",
+    "display_name": "Breakup Tarot",
+    "card_count": 3,
+    "allow_question": true,
+    "layout": ["Why it ended", "Their current feelings/energy", "Healing path / lesson"],
+    "ui": {
+      "required_selection_count": 3,
+      "selection_labels": ["Why", "Their energy", "Healing"],
+      "selection_error_message": "Please select exactly 3 cards for Breakup Tarot.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw three tarot cards to provide gentle insight after a breakup. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: compassionate, healing. Interpret cards for cause, current emotional state, and practical healing advice. Conclude with a grounding sentence.",
+    "example_prompt_use": "cards: Ten of Swords, Two of Cups (reversed), Temperance; question: 'Will we get back together?'; tone: compassionate, healing"
+  },
+  {
+    "id": "one_card",
+    "display_name": "One Card Tarot",
+    "card_count": 1,
+    "allow_question": true,
+    "layout": ["Focused insight", "Key takeaway"],
+    "ui": {
+      "required_selection_count": 1,
+      "selection_labels": ["Focused Card"],
+      "selection_error_message": "Please select exactly 1 card for One Card Tarot.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw one tarot card to offer focused guidance for the user's question or reflection. Card: {{cards}}. Question: {{question}}. Tone: clear, wise. Provide a concise interpretation (3-5 sentences) and one practical takeaway.",
+    "example_prompt_use": "cards: Ace of Cups; question: 'What should I focus on today?'; tone: clear, wise"
+  },
+  {
+    "id": "past_present_future",
+    "display_name": "Past Present Future",
+    "card_count": 3,
+    "allow_question": true,
+    "layout": ["Past", "Present", "Future"],
+    "ui": {
+      "required_selection_count": 3,
+      "selection_labels": ["Past", "Present", "Future"],
+      "selection_error_message": "Please select exactly 3 cards for Past / Present / Future reading.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw three tarot cards to reveal the timeline around the user's situation. Positions: Past, Present, Future. Cards: {{cards}}. Question: {{question}}. Tone: narrative, insightful. Interpret each card sequentially and finish with a short synthesis of the trajectory and an action suggestion.",
+    "example_prompt_use": "cards: Six of Cups, Four of Pentacles, The Chariot; question: 'What's next for my career?'; tone: narrative, insightful"
+  },
+  {
+    "id": "yin_yang",
+    "display_name": "Yin Yang Tarot",
+    "card_count": 2,
+    "allow_question": true,
+    "layout": ["Light / Active / Conscious", "Dark / Passive / Subconscious"],
+    "ui": {
+      "required_selection_count": 2,
+      "selection_labels": ["Light", "Shadow"],
+      "selection_error_message": "Please select exactly 2 cards for Yin Yang Tarot.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw two tarot cards to show opposing energies (yin & yang) influencing the user. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: balanced, integrative. Provide interpretations for each side and a short synthesis explaining how to balance them.",
+    "example_prompt_use": "cards: The Emperor, The Moon; question: 'How do I balance career and intuition?'; tone: balanced, integrative"
+  },
+  {
+    "id": "daily_flirt",
+    "display_name": "Daily Flirt Tarot",
+    "card_count": 2,
+    "allow_question": true,
+    "layout": ["Your flirt energy", "Energy coming toward you"],
+    "ui": {
+      "required_selection_count": 2,
+      "selection_labels": ["You", "Incoming"],
+      "selection_error_message": "Please select exactly 2 cards for Daily Flirt Tarot.",
+      "hide_unused_slots": true
+    },
+    "prompt_template": "Draw two tarot cards to reveal playful romantic energy for the day. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: playful, light-hearted. Interpret each card briefly and add a 1-sentence cheeky suggestion for flirting or social energy.",
+    "example_prompt_use": "cards: Page of Cups, Knight of Wands; question: (optional); tone: playful, light-hearted"
+  }
+]
+
