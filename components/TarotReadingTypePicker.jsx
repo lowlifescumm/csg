@@ -2,16 +2,16 @@
 import { useState } from "react";
 
 const TYPES = [
-  { key: "daily", title: "Daily Tarot", desc: "Start your day with guidance.", spreadType: "three-card" },
-  { key: "daily-love", title: "Daily Love Tarot", desc: "Romantic insights for the day.", spreadType: "three-card" },
-  { key: "career", title: "Daily Career Tarot", desc: "Work and opportunity guidance.", spreadType: "three-card" },
-  { key: "yes-no", title: "Yes/No Tarot", desc: "Clear yes/no with advice.", spreadType: "one-card" },
-  { key: "love-potential", title: "Love Potential Tarot", desc: "Is there potential here?", spreadType: "three-card" },
-  { key: "breakup", title: "Breakup Tarot", desc: "Why it ended and how to move on.", spreadType: "three-card" },
+  { key: "daily", title: "Daily Tarot", desc: "Start your day with guidance.", spreadType: "daily" },
+  { key: "daily-love", title: "Daily Love Tarot", desc: "Romantic insights for the day.", spreadType: "daily-love" },
+  { key: "career", title: "Daily Career Tarot", desc: "Work and opportunity guidance.", spreadType: "career" },
+  { key: "yes-no", title: "Yes/No Tarot", desc: "Clear yes/no with advice.", spreadType: "yes-no" },
+  { key: "love-potential", title: "Love Potential Tarot", desc: "Is there potential here?", spreadType: "love-potential" },
+  { key: "breakup", title: "Breakup Tarot", desc: "Why it ended and how to move on.", spreadType: "breakup" },
   { key: "one-card", title: "One Card Tarot", desc: "A single focused pull.", spreadType: "one-card" },
-  { key: "ppf", title: "Past Present Future", desc: "Three-card classic timeline.", spreadType: "three-card" },
-  { key: "flirt", title: "Daily Flirt Tarot", desc: "Fun, light-hearted vibes.", spreadType: "three-card" },
-  { key: "yin-yang", title: "Yin Yang Tarot", desc: "Balance opposing energies.", spreadType: "three-card" },
+  { key: "ppf", title: "Past Present Future", desc: "Three-card classic timeline.", spreadType: "ppf" },
+  { key: "flirt", title: "Daily Flirt Tarot", desc: "Fun, light-hearted vibes.", spreadType: "flirt" },
+  { key: "yin-yang", title: "Yin Yang Tarot", desc: "Balance opposing energies.", spreadType: "yin-yang" },
 ];
 
 export default function TarotReadingTypePicker({ onPick }) {
