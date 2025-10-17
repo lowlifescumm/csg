@@ -74,6 +74,9 @@ export async function POST(request) {
       cards,
       interpretation: fullText,
       spreadType: resolvedId,
+      summary,
+      rawText: fullText,
+      meta: { tone }
     });
 
     // Embed and upsert to Pinecone

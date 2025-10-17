@@ -42,11 +42,11 @@ export async function POST(request) {
     let pastSummaries = [];
     if (ids.length) {
       const { rows } = await pool.query(
-        `SELECT id, created_at, result->>'interpretation' as text, (result->>'interpretation') as raw
-         FROM readings WHERE id = ANY($1::uuid[]) AND user_id=$2`,
-        [ids, userId]
+        `SELECT id, created_at, summary
+         FROM readings WHERE id = ANY($1::int[]) AND user_id=$2 ORDER BY created_at DESC`,
+        [ids.map(id => parseInt(id, 10)).filter(n => !isNaN(n)), userId]
       );
-      pastSummaries = rows.map(r => `(${new Date(r.created_at).toISOString().slice(0,10)}) ${r.text?.slice(0, 240) || ""}`);
+      pastSummaries = rows.map(r => `(${new Date(r.created_at).toISOString().slice(0,10)}) ${r.summary || ""}`);
     }
 
     const coach = await generateCoachReply({ pastSummaries, newCard, question });
