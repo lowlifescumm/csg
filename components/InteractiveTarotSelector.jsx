@@ -87,7 +87,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         position: positions[selectedCards.indexOf(index)]
       }));
 
-      const res = await fetch("/api/tarot", {
+      const res = await fetch("/api/readings/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -95,14 +95,13 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           spreadType,
           readingType,
           specificCards: selectedCardsData,
-          cardCount: positions.length,
           spreadId: spread.id
         }),
       });
 
       const data = await res.json();
       
-      if (data.success) {
+      if (res.ok && data.success) {
         setReading(data.reading);
         setShowReading(true);
       } else {

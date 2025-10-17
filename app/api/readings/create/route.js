@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import spreads from "@/lib/tarot-spreads.json";
 import { verifyToken } from "@/lib/auth";
 import { drawCards } from "@/lib/tarot-data";
-import { saveReading, getReadingById, checkUserCredits } from "@/lib/db";
+import { saveReading, getReadingById, checkUserCredits, pool } from "@/lib/db";
 import { generateTarotReading, generateTarotSummary, createEmbedding } from "@/lib/openai";
 import { getPinecone } from "@/lib/pinecone";
 
@@ -79,8 +79,12 @@ export async function POST(request) {
       meta: { tone }
     });
 
+    // Respect user opt-in for personalization
+    const { rows: userRows } = await pool.query("SELECT ai_personalization_opt_in FROM users WHERE id=$1", [decoded.userId]);
+    const optedIn = userRows[0]?.ai_personalization_opt_in !== false;
+
     // Embed and upsert to Pinecone
-    if (summary && process.env.PINECONE_API_KEY) {
+    if (optedIn && summary && process.env.PINECONE_API_KEY) {
       const embedding = await createEmbedding(summary);
       const pine = getPinecone();
       const index = pine.index(process.env.PINECONE_INDEX || 'csg-tarot');

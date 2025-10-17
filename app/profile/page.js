@@ -14,6 +14,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [optIn, setOptIn] = useState(true);
 
   useEffect(() => {
     checkAuth();
@@ -40,6 +41,16 @@ export default function ProfilePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/user/ai-preferences');
+        const data = await res.json();
+        if (res.ok && data.success) setOptIn(!!data.ai_personalization_opt_in);
+      } catch {}
+    })();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -99,6 +110,25 @@ export default function ProfilePage() {
           <div className="mb-8">
             <h1 className="text-3xl font-semibold text-gray-900 mb-2">Profile Settings</h1>
             <p className="text-gray-600">Manage your account information</p>
+          </div>
+
+          <div className="mb-8 p-4 rounded-xl border border-gray-200 bg-white bg-opacity-70">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Personalized AI Coach</div>
+                <div className="text-sm text-gray-600">Allow past reading summaries to personalize future coaching.</div>
+              </div>
+              <label className="inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only" checked={optIn} onChange={async (e)=>{
+                  const val = e.target.checked;
+                  setOptIn(val);
+                  try {
+                    await fetch('/api/user/ai-preferences', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ai_personalization_opt_in: val }) });
+                  } catch {}
+                }} />
+                <span className={`w-11 h-6 bg-${optIn? 'purple-500':'gray-300'} rounded-full relative`}></span>
+              </label>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
