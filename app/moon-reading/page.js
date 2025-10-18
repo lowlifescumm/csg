@@ -308,50 +308,50 @@ export default function PersonalizedMoonReading() {
         />
       )}
       
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 backdrop-blur-sm">
-            <Moon className="w-10 h-10 text-white" />
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white bg-opacity-20 rounded-full mb-4 sm:mb-6 backdrop-blur-sm">
+            <Moon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4">
             Your Personalized Moon Reading
           </h1>
-          <p className="text-xl text-purple-200">
+          <p className="text-lg sm:text-xl text-purple-200 px-4">
             Discover how today's lunar energy specifically affects YOU
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20">
-            <div className="text-4xl mb-3">🎯</div>
-            <h3 className="text-white font-bold mb-2">Your Natal Moon</h3>
-            <p className="text-purple-200 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20">
+            <div className="text-3xl sm:text-4xl mb-3">🎯</div>
+            <h3 className="text-white font-bold mb-2 text-sm sm:text-base">Your Natal Moon</h3>
+            <p className="text-purple-200 text-xs sm:text-sm">
               We analyze your birth chart Moon sign and how it interacts with today's lunar energy
             </p>
           </div>
-          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20">
-            <div className="text-4xl mb-3">⏰</div>
-            <h3 className="text-white font-bold mb-2">Perfect Timing</h3>
-            <p className="text-purple-200 text-sm">
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20">
+            <div className="text-3xl sm:text-4xl mb-3">⏰</div>
+            <h3 className="text-white font-bold mb-2 text-sm sm:text-base">Perfect Timing</h3>
+            <p className="text-purple-200 text-xs sm:text-sm">
               Know the best days and times this week for important activities and decisions
             </p>
           </div>
-          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20">
-            <div className="text-4xl mb-3">✨</div>
-            <h3 className="text-white font-bold mb-2">Custom Ritual</h3>
-            <p className="text-purple-200 text-sm">
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20">
+            <div className="text-3xl sm:text-4xl mb-3">✨</div>
+            <h3 className="text-white font-bold mb-2 text-sm sm:text-base">Custom Ritual</h3>
+            <p className="text-purple-200 text-xs sm:text-sm">
               Receive a personalized moon ritual designed specifically for your astrological makeup
             </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">
             Get Your Reading
           </h2>
           
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Your Name
@@ -361,11 +361,11 @@ export default function PersonalizedMoonReading() {
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="Enter your name"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors text-base"
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Birth Date
@@ -374,7 +374,7 @@ export default function PersonalizedMoonReading() {
                   type="date"
                   value={formData.birthDate}
                   onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors text-base"
                 />
               </div>
               <div>
@@ -385,7 +385,7 @@ export default function PersonalizedMoonReading() {
                   type="time"
                   value={formData.birthTime}
                   onChange={(e) => setFormData({...formData, birthTime: e.target.value})}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors text-base"
                 />
               </div>
             </div>
@@ -397,7 +397,7 @@ export default function PersonalizedMoonReading() {
               <select
                 value={formData.currentFocus}
                 onChange={(e) => setFormData({...formData, currentFocus: e.target.value})}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors text-base"
               >
                 <option value="">Select one...</option>
                 <option value="love">Love & Relationships 💕</option>
@@ -409,185 +409,185 @@ export default function PersonalizedMoonReading() {
               </select>
             </div>
 
-            <div className="bg-purple-50 rounded-xl p-6 my-6">
-              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-600" />
+            <div className="bg-purple-50 rounded-xl p-4 sm:p-6 my-4 sm:my-6">
+              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm sm:text-base">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                 Your Reading Includes:
               </h3>
-              <ul className="space-y-2 text-sm text-gray-700">
+              <ul className="space-y-2 text-xs sm:text-sm text-gray-700">
                 <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                   <span>How today's moon phase affects YOUR specific moon sign</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                   <span>Personalized guidance for emotions, career, relationships and wellness</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                   <span>Best timing for important decisions this week</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                   <span>Custom moon ritual designed for your astrological makeup</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                   <span>Upcoming lunar events that will impact you personally</span>
                 </li>
               </ul>
             </div>
 
             {hasAccess ? (
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-8 text-white text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 rounded-full mb-4">
-                  <Sparkles className="w-8 h-8" />
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 sm:p-8 text-white text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-20 rounded-full mb-4">
+                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8" />
                 </div>
-                <h3 className="text-2xl font-bold mb-2">Premium Access Activated</h3>
-                <p className="text-purple-100 mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold mb-2">Premium Access Activated</h3>
+                <p className="text-purple-100 mb-4 sm:mb-6 text-sm sm:text-base">
                   You have premium access to personalized moon readings
                 </p>
                 <button
                   onClick={handleDirectGenerate}
                   disabled={!formData.name || !formData.birthDate || !formData.currentFocus || isLoading}
-                  className="w-full bg-white text-purple-600 font-bold py-4 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-white text-purple-600 font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {isLoading ? (
                     <>
-                      <div className="animate-spin w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full" />
+                      <div className="animate-spin w-4 h-4 sm:w-5 sm:h-5 border-2 border-purple-600 border-t-transparent rounded-full" />
                       Generating Your Reading...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-5 h-5" />
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                       Generate Your Reading
                     </>
                   )}
                 </button>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white rounded-xl p-6 border-2 border-gray-200">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-gray-200">
                   <div className="text-center mb-4">
-                    <div className="text-sm font-semibold text-gray-600 mb-2">One-Time Reading</div>
-                    <div className="text-4xl font-bold text-gray-800">$9.99</div>
+                    <div className="text-xs sm:text-sm font-semibold text-gray-600 mb-2">One-Time Reading</div>
+                    <div className="text-3xl sm:text-4xl font-bold text-gray-800">$9.99</div>
                   </div>
-                  <ul className="space-y-3 mb-6 text-sm text-gray-700">
+                  <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6 text-xs sm:text-sm text-gray-700">
                     <li className="flex items-start gap-2">
-                      <span className="text-green-600 mt-1">✓</span>
+                      <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                       <span>One personalized moon reading</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-600 mt-1">✓</span>
+                      <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                       <span>Current phase guidance</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-600 mt-1">✓</span>
+                      <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                       <span>Custom moon ritual</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-600 mt-1">✓</span>
+                      <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
                       <span>Timing recommendations</span>
                     </li>
                   </ul>
                   <button
                     onClick={() => handlePaymentSelection('one-time')}
                     disabled={!formData.name || !formData.birthDate || !formData.currentFocus}
-                    className="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     Get One Reading
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
 
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white relative overflow-hidden">
-                  <div className="absolute top-3 right-3 bg-yellow-400 text-purple-900 text-xs font-bold px-3 py-1 rounded-full">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-4 sm:p-6 text-white relative overflow-hidden">
+                  <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-yellow-400 text-purple-900 text-xs font-bold px-2 py-1 sm:px-3 sm:py-1 rounded-full">
                     BEST VALUE
                   </div>
                   <div className="text-center mb-4">
-                    <div className="text-sm font-semibold opacity-90 mb-2">Premium Subscription</div>
-                    <div className="text-4xl font-bold">$9.99<span className="text-xl opacity-75">/mo</span></div>
+                    <div className="text-xs sm:text-sm font-semibold opacity-90 mb-2">Premium Subscription</div>
+                    <div className="text-3xl sm:text-4xl font-bold">$9.99<span className="text-lg sm:text-xl opacity-75">/mo</span></div>
                   </div>
-                  <ul className="space-y-3 mb-6 text-sm">
+                  <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6 text-xs sm:text-sm">
                     <li className="flex items-start gap-2">
-                      <span className="text-green-300">✓</span>
+                      <span className="text-green-300 text-xs sm:text-sm">✓</span>
                       <span>4 moon reading credits/month</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-300">✓</span>
+                      <span className="text-green-300 text-xs sm:text-sm">✓</span>
                       <span>2 compatibility report credits/month</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-300">✓</span>
+                      <span className="text-green-300 text-xs sm:text-sm">✓</span>
                       <span>2 birth chart credits/month</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-300">✓</span>
+                      <span className="text-green-300 text-xs sm:text-sm">✓</span>
                       <span>Unlimited tarot & transits</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-300">✓</span>
+                      <span className="text-green-300 text-xs sm:text-sm">✓</span>
                       <span>Cancel anytime</span>
                     </li>
                   </ul>
                   <button
                     onClick={() => handlePaymentSelection('subscription')}
                     disabled={!formData.name || !formData.birthDate || !formData.currentFocus}
-                    className="w-full bg-white text-purple-600 font-bold py-3 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white text-purple-600 font-bold py-3 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     Start Premium
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
               </div>
             )}
 
-            <div className="text-center text-sm text-gray-500 space-y-1">
+            <div className="text-center text-xs sm:text-sm text-gray-500 space-y-1">
               <p>🔒 Secure payment via Stripe</p>
               <p>💯 100% satisfaction guarantee</p>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
-          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20">
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-purple-400 rounded-full" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-400 rounded-full" />
               <div>
-                <div className="text-white font-semibold">Sarah M.</div>
+                <div className="text-white font-semibold text-sm sm:text-base">Sarah M.</div>
                 <div className="text-purple-200 text-xs">Pisces Moon</div>
               </div>
             </div>
-            <div className="text-yellow-400 mb-2">★★★★★</div>
-            <p className="text-purple-100 text-sm">
+            <div className="text-yellow-400 mb-2 text-sm sm:text-base">★★★★★</div>
+            <p className="text-purple-100 text-xs sm:text-sm">
               "This was so much more accurate than generic moon phase advice. Finally understand why I feel certain ways!"
             </p>
           </div>
 
-          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20">
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-pink-400 rounded-full" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-400 rounded-full" />
               <div>
-                <div className="text-white font-semibold">Michael T.</div>
+                <div className="text-white font-semibold text-sm sm:text-base">Michael T.</div>
                 <div className="text-purple-200 text-xs">Scorpio Moon</div>
               </div>
             </div>
-            <div className="text-yellow-400 mb-2">★★★★★</div>
-            <p className="text-purple-100 text-sm">
+            <div className="text-yellow-400 mb-2 text-sm sm:text-base">★★★★★</div>
+            <p className="text-purple-100 text-xs sm:text-sm">
               "The timing advice was spot-on. Made a major career decision during my recommended window and it worked out perfectly."
             </p>
           </div>
 
-          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20">
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-blue-400 rounded-full" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-400 rounded-full" />
               <div>
-                <div className="text-white font-semibold">Jessica L.</div>
+                <div className="text-white font-semibold text-sm sm:text-base">Jessica L.</div>
                 <div className="text-purple-200 text-xs">Cancer Moon</div>
               </div>
             </div>
-            <div className="text-yellow-400 mb-2">★★★★★</div>
-            <p className="text-purple-100 text-sm">
+            <div className="text-yellow-400 mb-2 text-sm sm:text-base">★★★★★</div>
+            <p className="text-purple-100 text-xs sm:text-sm">
               "Love the personalized ritual! Actually did it and felt so much more grounded. Worth every penny."
             </p>
           </div>
@@ -608,37 +608,37 @@ function MoonReadingResult({ reading, name }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-8 sm:py-12 px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto">
         
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">{reading.phaseEmoji}</div>
-          <h1 className="text-4xl font-bold text-white mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">{reading.phaseEmoji}</div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
             {name ? `${name}'s` : 'Your'} Moon Reading
           </h1>
-          <div className="text-purple-200 text-lg">
+          <div className="text-purple-200 text-base sm:text-lg">
             {reading.currentPhase} • Your Moon in {reading.yourMoonSign}
           </div>
         </div>
 
-        <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20 mb-8">
-          <div className="grid md:grid-cols-3 gap-6 text-center">
+        <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-center">
             <div>
-              <div className="text-purple-200 text-sm mb-1">Current Phase</div>
-              <div className="text-white text-xl font-bold">{reading.currentPhase}</div>
+              <div className="text-purple-200 text-xs sm:text-sm mb-1">Current Phase</div>
+              <div className="text-white text-lg sm:text-xl font-bold">{reading.currentPhase}</div>
             </div>
             <div>
-              <div className="text-purple-200 text-sm mb-1">Moon Currently In</div>
-              <div className="text-white text-xl font-bold">{reading.moonInSign}</div>
+              <div className="text-purple-200 text-xs sm:text-sm mb-1">Moon Currently In</div>
+              <div className="text-white text-lg sm:text-xl font-bold">{reading.moonInSign}</div>
             </div>
             <div>
-              <div className="text-purple-200 text-sm mb-1">Illumination</div>
-              <div className="text-white text-xl font-bold">{reading.illumination}%</div>
+              <div className="text-purple-200 text-xs sm:text-sm mb-1">Illumination</div>
+              <div className="text-white text-lg sm:text-xl font-bold">{reading.illumination}%</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-2xl overflow-hidden mb-8">
+        <div className="bg-white rounded-xl shadow-2xl overflow-hidden mb-6 sm:mb-8">
           <div className="flex border-b overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -646,93 +646,93 @@ function MoonReadingResult({ reading, name }) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 py-4 px-6 font-semibold transition-colors flex items-center justify-center gap-2 whitespace-nowrap ${
+                  className={`flex-1 py-3 sm:py-4 px-4 sm:px-6 font-semibold transition-colors flex items-center justify-center gap-2 whitespace-nowrap text-sm sm:text-base ${
                     activeTab === tab.id
                       ? 'bg-purple-50 text-purple-600 border-b-2 border-purple-600'
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="hidden sm:inline">{tab.label}</span>
                 </button>
               );
             })}
           </div>
 
-          <div className="p-8">
-            <p className="text-gray-700 leading-relaxed text-lg">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <p className="text-gray-700 leading-relaxed text-sm sm:text-base lg:text-lg">
               {reading.personalizedGuidance[activeTab]}
             </p>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-8 text-white mb-8">
-          <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Calendar className="w-6 h-6" />
+        <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-4 sm:p-6 lg:p-8 text-white mb-6 sm:mb-8">
+          <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
             Perfect Timing This Week
           </h3>
-          <p className="text-purple-100 leading-relaxed">
+          <p className="text-purple-100 leading-relaxed text-sm sm:text-base">
             {reading.timing}
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-xl p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-            <Star className="w-6 h-6 text-yellow-500" />
+        <div className="bg-white rounded-xl shadow-xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+            <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
             {reading.moonRitual.title}
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
             This ritual is designed specifically for your {reading.yourMoonSign} Moon during the {reading.currentPhase}.
           </p>
-          <ol className="space-y-3">
+          <ol className="space-y-2 sm:space-y-3">
             {reading.moonRitual.items.map((item, i) => (
               <li key={i} className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
                   {i + 1}
                 </div>
-                <span className="text-gray-700">{item}</span>
+                <span className="text-gray-700 text-sm sm:text-base">{item}</span>
               </li>
             ))}
           </ol>
         </div>
 
-        <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20 mb-8">
-          <h3 className="text-xl font-bold text-white mb-4">Upcoming Lunar Events for You</h3>
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="text-4xl">🌕</div>
+        <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20 mb-6 sm:mb-8">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Upcoming Lunar Events for You</h3>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="text-3xl sm:text-4xl">🌕</div>
               <div>
-                <div className="text-white font-semibold">Full Moon - {reading.nextPhases.fullMoon.date}</div>
-                <div className="text-purple-200 text-sm">{reading.nextPhases.fullMoon.impact}</div>
+                <div className="text-white font-semibold text-sm sm:text-base">Full Moon - {reading.nextPhases.fullMoon.date}</div>
+                <div className="text-purple-200 text-xs sm:text-sm">{reading.nextPhases.fullMoon.impact}</div>
               </div>
             </div>
-            <div className="flex items-start gap-4">
-              <div className="text-4xl">🌑</div>
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="text-3xl sm:text-4xl">🌑</div>
               <div>
-                <div className="text-white font-semibold">New Moon - {reading.nextPhases.newMoon.date}</div>
-                <div className="text-purple-200 text-sm">{reading.nextPhases.newMoon.impact}</div>
+                <div className="text-white font-semibold text-sm sm:text-base">New Moon - {reading.nextPhases.newMoon.date}</div>
+                <div className="text-purple-200 text-xs sm:text-sm">{reading.nextPhases.newMoon.impact}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-8 text-center">
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">
+        <div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 text-center mb-6 sm:mb-8">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-3">
             Want to stay aligned with lunar energy?
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
             Get a new personalized reading with each moon phase change
           </p>
-          <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-8 rounded-lg hover:shadow-lg transition-all transform hover:scale-105">
+          <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg hover:shadow-lg transition-all transform hover:scale-105 text-sm sm:text-base">
             Subscribe to Moon Readings - $9.99/month
           </button>
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="text-xs sm:text-sm text-gray-500 mt-3 sm:mt-4">
             Cancel anytime • Get reading every 2 weeks • Priority support
           </p>
         </div>
 
-        <div className="text-center mt-8">
-          <button className="text-purple-200 hover:text-white transition-colors">
+        <div className="text-center mt-6 sm:mt-8">
+          <button className="text-purple-200 hover:text-white transition-colors text-sm sm:text-base">
             Share your reading →
           </button>
         </div>
