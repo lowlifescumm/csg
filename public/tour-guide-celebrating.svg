@@ -1,68 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
-  <!-- Tour Guide Character - Celebrating State -->
+<svg width="120" height="160" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+  <!-- Modern AI Tour Guide - Celebrating State -->
   
   <!-- Shadow -->
-  <ellipse cx="60" cy="135" rx="25" ry="8" fill="#000" opacity="0.2"/>
+  <ellipse cx="60" cy="155" rx="20" ry="5" fill="#000" opacity="0.15"/>
   
-  <!-- Body -->
-  <ellipse cx="60" cy="85" rx="28" ry="35" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Body - more streamlined -->
+  <rect x="40" y="80" width="40" height="50" rx="20" fill="#6366F1" stroke="#4F46E5" stroke-width="1.5"/>
   
-  <!-- Head -->
-  <circle cx="60" cy="45" r="25" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Head - more proportional -->
+  <circle cx="60" cy="50" r="22" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5"/>
   
-  <!-- Hair -->
-  <path d="M35 25 Q60 10 85 25 Q85 15 60 5 Q35 15 35 25" fill="#4C1D95"/>
+  <!-- Hair - modern style -->
+  <path d="M38 30 Q60 15 82 30 Q82 20 60 8 Q38 20 38 30" fill="#1E293B"/>
   
-  <!-- Eyes - excited -->
-  <circle cx="52" cy="40" r="3" fill="#1F2937"/>
-  <circle cx="68" cy="40" r="3" fill="#1F2937"/>
+  <!-- Eyes - excited and happy -->
+  <circle cx="52" cy="45" r="4" fill="#1E293B"/>
+  <circle cx="68" cy="45" r="4" fill="#1E293B"/>
   
   <!-- Eye highlights -->
-  <circle cx="53" cy="39" r="1" fill="#FFFFFF"/>
-  <circle cx="69" cy="39" r="1" fill="#FFFFFF"/>
+  <circle cx="53" cy="44" r="1.5" fill="#FFFFFF"/>
+  <circle cx="69" cy="44" r="1.5" fill="#FFFFFF"/>
+  
+  <!-- Eyebrows - raised in excitement -->
+  <path d="M48 38 Q52 35 56 38" stroke="#1E293B" stroke-width="2" fill="none"/>
+  <path d="M64 38 Q68 35 72 38" stroke="#1E293B" stroke-width="2" fill="none"/>
   
   <!-- Big excited smile -->
-  <path d="M45 50 Q60 65 75 50" stroke="#1F2937" stroke-width="2" fill="none"/>
+  <path d="M45 55 Q60 68 75 55" stroke="#1E293B" stroke-width="2.5" fill="none"/>
   
   <!-- Arms raised in celebration -->
-  <ellipse cx="35" cy="60" rx="8" ry="20" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2" transform="rotate(-45 35 60)"/>
-  <ellipse cx="85" cy="60" rx="8" ry="20" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2" transform="rotate(45 85 60)"/>
+  <ellipse cx="35" cy="70" rx="6" ry="18" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5" transform="rotate(-60 35 70)"/>
+  <ellipse cx="85" cy="70" rx="6" ry="18" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5" transform="rotate(60 85 70)"/>
   
   <!-- Hands -->
-  <circle cx="25" cy="45" r="6" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
-  <circle cx="95" cy="45" r="6" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
+  <circle cx="25" cy="55" r="5" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5"/>
+  <circle cx="95" cy="55" r="5" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5"/>
   
   <!-- Thumbs up gestures -->
-  <path d="M25 45 L20 40 L25 35 L30 40 Z" fill="#F3E8FF" stroke="#7C3AED" stroke-width="1"/>
-  <path d="M95 45 L90 40 L95 35 L100 40 Z" fill="#F3E8FF" stroke="#7C3AED" stroke-width="1"/>
+  <path d="M25 55 L20 50 L25 45 L30 50 Z" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5"/>
+  <path d="M95 55 L90 50 L95 45 L100 50 Z" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5"/>
   
-  <!-- Legs -->
-  <ellipse cx="50" cy="110" rx="8" ry="20" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
-  <ellipse cx="70" cy="110" rx="8" ry="20" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Legs - better proportions -->
+  <rect x="45" y="130" width="8" height="20" rx="4" fill="#6366F1" stroke="#4F46E5" stroke-width="1.5"/>
+  <rect x="67" y="130" width="8" height="20" rx="4" fill="#6366F1" stroke="#4F46E5" stroke-width="1.5"/>
   
   <!-- Feet -->
-  <ellipse cx="50" cy="125" rx="10" ry="6" fill="#4C1D95"/>
-  <ellipse cx="70" cy="125" rx="10" ry="6" fill="#4C1D95"/>
+  <ellipse cx="49" cy="150" rx="6" ry="4" fill="#1E293B"/>
+  <ellipse cx="71" cy="150" rx="6" ry="4" fill="#1E293B"/>
   
-  <!-- Cosmic accessories -->
-  <!-- Star on head -->
-  <path d="M60 20 L62 26 L68 26 L63 30 L65 36 L60 32 L55 36 L57 30 L52 26 L58 26 Z" fill="#FCD34D"/>
+  <!-- Modern accessories -->
+  <!-- Tech headband -->
+  <rect x="35" y="35" width="50" height="3" rx="1.5" fill="#8B5CF6"/>
+  <circle cx="40" cy="36.5" r="1" fill="#FCD34D"/>
+  <circle cx="60" cy="36.5" r="1" fill="#FCD34D"/>
+  <circle cx="80" cy="36.5" r="1" fill="#FCD34D"/>
+  
+  <!-- Subtle glow effect -->
+  <circle cx="60" cy="50" r="25" fill="none" stroke="#8B5CF6" stroke-width="1" opacity="0.3"/>
   
   <!-- Celebration sparkles -->
   <g opacity="0.9">
-    <path d="M20 20 L22 24 L26 24 L23 27 L25 31 L20 28 L15 31 L17 27 L14 24 L18 24 Z" fill="#FCD34D"/>
-    <path d="M100 15 L101 18 L104 18 L102 20 L103 23 L100 21 L97 23 L98 20 L96 18 L99 18 Z" fill="#FCD34D"/>
-    <path d="M10 60 L11 63 L14 63 L12 65 L13 68 L10 66 L7 68 L8 65 L6 63 L9 63 Z" fill="#FCD34D"/>
-    <path d="M110 55 L111 58 L114 58 L112 60 L113 63 L110 61 L107 63 L108 60 L106 58 L109 58 Z" fill="#FCD34D"/>
-    <path d="M15 100 L16 103 L19 103 L17 105 L18 108 L15 106 L12 108 L13 105 L11 103 L14 103 Z" fill="#FCD34D"/>
-    <path d="M105 95 L106 98 L109 98 L107 100 L108 103 L105 101 L102 103 L103 100 L101 98 L104 98 Z" fill="#FCD34D"/>
+    <circle cx="20" cy="20" r="2" fill="#8B5CF6"/>
+    <circle cx="100" cy="15" r="1.5" fill="#FCD34D"/>
+    <circle cx="10" cy="60" r="1" fill="#8B5CF6"/>
+    <circle cx="110" cy="55" r="2" fill="#FCD34D"/>
+    <circle cx="15" cy="100" r="1" fill="#8B5CF6"/>
+    <circle cx="105" cy="95" r="2" fill="#FCD34D"/>
+    <circle cx="25" cy="120" r="1.5" fill="#8B5CF6"/>
+    <circle cx="95" cy="115" r="1" fill="#FCD34D"/>
   </g>
   
   <!-- Speech bubble with celebration -->
   <g id="speech-bubble">
-    <ellipse cx="90" cy="25" rx="35" ry="20" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
-    <path d="M75 40 L65 50 L70 45 Z" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
-    <text x="90" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1F2937">Great job!</text>
+    <rect x="70" y="15" width="40" height="25" rx="12" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5"/>
+    <path d="M85 40 L80 50 L90 45 Z" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5"/>
+    <text x="90" y="32" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1E293B">Great job!</text>
   </g>
 </svg>

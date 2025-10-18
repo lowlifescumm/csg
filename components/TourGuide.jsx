@@ -57,7 +57,7 @@ const TourGuide = ({
         <img 
           src={getSpriteSrc()} 
           alt="Tour Guide" 
-          className="w-24 h-28 drop-shadow-lg"
+          className="w-24 h-32 drop-shadow-lg"
           style={{
             filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
           }}

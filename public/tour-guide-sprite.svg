@@ -1,65 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
-  <!-- Tour Guide Character -->
+<svg width="120" height="160" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+  <!-- Modern AI Tour Guide Character -->
   
   <!-- Shadow -->
-  <ellipse cx="60" cy="135" rx="25" ry="8" fill="#000" opacity="0.2"/>
+  <ellipse cx="60" cy="155" rx="20" ry="5" fill="#000" opacity="0.15"/>
   
-  <!-- Body -->
-  <ellipse cx="60" cy="85" rx="28" ry="35" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Body - more streamlined -->
+  <rect x="40" y="80" width="40" height="50" rx="20" fill="#6366F1" stroke="#4F46E5" stroke-width="1.5"/>
   
-  <!-- Head -->
-  <circle cx="60" cy="45" r="25" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Head - more proportional -->
+  <circle cx="60" cy="50" r="22" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5"/>
   
-  <!-- Hair -->
-  <path d="M35 25 Q60 10 85 25 Q85 15 60 5 Q35 15 35 25" fill="#4C1D95"/>
+  <!-- Hair - modern style -->
+  <path d="M38 30 Q60 15 82 30 Q82 20 60 8 Q38 20 38 30" fill="#1E293B"/>
   
-  <!-- Eyes -->
-  <circle cx="52" cy="40" r="3" fill="#1F2937"/>
-  <circle cx="68" cy="40" r="3" fill="#1F2937"/>
+  <!-- Eyes - larger and more expressive -->
+  <circle cx="52" cy="45" r="4" fill="#1E293B"/>
+  <circle cx="68" cy="45" r="4" fill="#1E293B"/>
   
   <!-- Eye highlights -->
-  <circle cx="53" cy="39" r="1" fill="#FFFFFF"/>
-  <circle cx="69" cy="39" r="1" fill="#FFFFFF"/>
+  <circle cx="53" cy="44" r="1.5" fill="#FFFFFF"/>
+  <circle cx="69" cy="44" r="1.5" fill="#FFFFFF"/>
   
-  <!-- Smile -->
-  <path d="M50 50 Q60 58 70 50" stroke="#1F2937" stroke-width="2" fill="none"/>
+  <!-- Eyebrows -->
+  <path d="M48 40 Q52 38 56 40" stroke="#1E293B" stroke-width="2" fill="none"/>
+  <path d="M64 40 Q68 38 72 40" stroke="#1E293B" stroke-width="2" fill="none"/>
   
-  <!-- Arms -->
-  <ellipse cx="35" cy="70" rx="8" ry="20" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2" transform="rotate(-20 35 70)"/>
-  <ellipse cx="85" cy="70" rx="8" ry="20" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2" transform="rotate(20 85 70)"/>
+  <!-- Smile - more natural -->
+  <path d="M50 55 Q60 62 70 55" stroke="#1E293B" stroke-width="2.5" fill="none"/>
   
-  <!-- Hands -->
-  <circle cx="30" cy="85" r="6" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
-  <circle cx="90" cy="85" r="6" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Arms - better proportions -->
+  <ellipse cx="35" cy="85" rx="6" ry="18" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5" transform="rotate(-15 35 85)"/>
+  <ellipse cx="85" cy="85" rx="6" ry="18" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5" transform="rotate(15 85 85)"/>
   
-  <!-- Pointing finger (right hand) -->
-  <path d="M90 85 L95 80 L100 85 L95 90 Z" fill="#F3E8FF" stroke="#7C3AED" stroke-width="1"/>
+  <!-- Hands - more detailed -->
+  <circle cx="30" cy="100" r="5" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5"/>
+  <circle cx="90" cy="100" r="5" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5"/>
   
-  <!-- Legs -->
-  <ellipse cx="50" cy="110" rx="8" ry="20" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
-  <ellipse cx="70" cy="110" rx="8" ry="20" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Legs - better proportions -->
+  <rect x="45" y="130" width="8" height="20" rx="4" fill="#6366F1" stroke="#4F46E5" stroke-width="1.5"/>
+  <rect x="67" y="130" width="8" height="20" rx="4" fill="#6366F1" stroke="#4F46E5" stroke-width="1.5"/>
   
   <!-- Feet -->
-  <ellipse cx="50" cy="125" rx="10" ry="6" fill="#4C1D95"/>
-  <ellipse cx="70" cy="125" rx="10" ry="6" fill="#4C1D95"/>
+  <ellipse cx="49" cy="150" rx="6" ry="4" fill="#1E293B"/>
+  <ellipse cx="71" cy="150" rx="6" ry="4" fill="#1E293B"/>
   
-  <!-- Cosmic accessories -->
-  <!-- Star on head -->
-  <path d="M60 20 L62 26 L68 26 L63 30 L65 36 L60 32 L55 36 L57 30 L52 26 L58 26 Z" fill="#FCD34D"/>
+  <!-- Modern accessories -->
+  <!-- Tech headband -->
+  <rect x="35" y="35" width="50" height="3" rx="1.5" fill="#8B5CF6"/>
+  <circle cx="40" cy="36.5" r="1" fill="#FCD34D"/>
+  <circle cx="60" cy="36.5" r="1" fill="#FCD34D"/>
+  <circle cx="80" cy="36.5" r="1" fill="#FCD34D"/>
   
-  <!-- Sparkles around character -->
-  <g opacity="0.7">
-    <path d="M20 30 L22 34 L26 34 L23 37 L25 41 L20 38 L15 41 L17 37 L14 34 L18 34 Z" fill="#FCD34D"/>
-    <path d="M100 20 L101 23 L104 23 L102 25 L103 28 L100 26 L97 28 L98 25 L96 23 L99 23 Z" fill="#FCD34D"/>
-    <path d="M15 80 L16 83 L19 83 L17 85 L18 88 L15 86 L12 88 L13 85 L11 83 L14 83 Z" fill="#FCD34D"/>
-    <path d="M105 75 L106 78 L109 78 L107 80 L108 83 L105 81 L102 83 L103 80 L101 78 L104 78 Z" fill="#FCD34D"/>
+  <!-- Subtle glow effect -->
+  <circle cx="60" cy="50" r="25" fill="none" stroke="#8B5CF6" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Modern sparkles -->
+  <g opacity="0.6">
+    <circle cx="20" cy="30" r="2" fill="#8B5CF6"/>
+    <circle cx="100" cy="25" r="1.5" fill="#FCD34D"/>
+    <circle cx="15" cy="80" r="1" fill="#8B5CF6"/>
+    <circle cx="105" cy="75" r="2" fill="#FCD34D"/>
   </g>
   
   <!-- Speech bubble (optional - can be toggled) -->
   <g id="speech-bubble" opacity="0">
-    <ellipse cx="90" cy="25" rx="35" ry="20" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
-    <path d="M75 40 L65 50 L70 45 Z" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
-    <text x="90" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1F2937">Hello!</text>
+    <rect x="70" y="15" width="40" height="25" rx="12" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5"/>
+    <path d="M85 40 L80 50 L90 45 Z" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5"/>
+    <text x="90" y="32" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1E293B">Hello!</text>
   </g>
 </svg>
