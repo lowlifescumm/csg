@@ -111,6 +111,26 @@ export async function POST(request) {
         }
         break;
 
+      case 'payment_intent.succeeded':
+        // Handle credit pack purchases
+        const paymentIntent = event.data.object;
+        
+        if (paymentIntent.metadata?.type === 'credit_pack') {
+          const userId = paymentIntent.metadata.userId;
+          const packSize = parseInt(paymentIntent.metadata.packSize);
+          
+          if (userId && packSize) {
+            // Add credits to user
+            await pool.query(
+              'INSERT INTO credits (user_id, credits) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET credits = credits.credits + $2',
+              [userId, packSize]
+            );
+            
+            console.log(`Added ${packSize} credits to user ${userId}`);
+          }
+        }
+        break;
+
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
