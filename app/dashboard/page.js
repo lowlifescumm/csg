@@ -357,6 +357,18 @@ export default function DashboardPage() {
             >
               👑 Go Premium
             </Link>
+            <Link
+              href="/credits"
+              className="inline-block bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              💳 Buy Credits
+            </Link>
+            <Link
+              href="/coach"
+              className="inline-block bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              🤖 AI Coach
+            </Link>
           </div>
         </div>
       </div>
