@@ -80,7 +80,7 @@ export default function TransitDashboard() {
 
           <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
             <div className="text-center mb-6">
-              <div className="text-6xl font-bold text-white mb-2">$29.99</div>
+              <div className="text-6xl font-bold text-white mb-2">$9.99</div>
               <div className="text-purple-200">per month</div>
             </div>
 

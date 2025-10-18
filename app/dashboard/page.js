@@ -252,12 +252,15 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div>
             <DailyHoroscope />
           </div>
           <div className="flex items-center justify-center">
             <MoonPhaseWidget />
+          </div>
+          <div>
+            <CreditManagementWidget />
           </div>
         </div>
 
@@ -300,33 +303,44 @@ export default function DashboardPage() {
             {readings.tarot.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Tarot Readings</h3>
-                <div className="space-y-4">
-                  {readings.tarot.map((reading) => (
+                <div className="space-y-3">
+                  {readings.tarot.slice(0, 5).map((reading) => (
                     <div 
                       key={reading.id}
-                      className="bg-white bg-opacity-40 rounded-2xl p-5 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60"
+                      className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-500">{formatDate(reading.created_at)}</p>
-                          <p className="font-medium text-gray-900 mt-1">{reading.question}</p>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-500">{formatDate(reading.created_at)}</span>
+                          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                            {reading.result.spreadType || 'Three Card'}
+                          </span>
                         </div>
-                        <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
-                          {reading.result.spreadType || 'Three Card'}
-                        </span>
                       </div>
+                      <p className="text-sm font-medium text-gray-900 mb-2 line-clamp-1">{reading.question}</p>
                       {reading.result.cards && (
-                        <div className="flex gap-2 mb-3">
-                          {reading.result.cards.map((card, idx) => (
-                            <div key={idx} className="text-xs text-gray-600 bg-white bg-opacity-50 px-3 py-1 rounded-lg">
+                        <div className="flex gap-1 mb-2">
+                          {reading.result.cards.slice(0, 3).map((card, idx) => (
+                            <div key={idx} className="text-xs text-gray-600 bg-white bg-opacity-50 px-2 py-1 rounded">
                               {card.name}
                             </div>
                           ))}
+                          {reading.result.cards.length > 3 && (
+                            <div className="text-xs text-gray-500 px-2 py-1">
+                              +{reading.result.cards.length - 3} more
+                            </div>
+                          )}
                         </div>
                       )}
-                      <p className="text-sm text-gray-700 line-clamp-3">{reading.result.interpretation}</p>
                     </div>
                   ))}
+                  {readings.tarot.length > 5 && (
+                    <div className="text-center">
+                      <button className="text-sm text-purple-600 hover:text-purple-800 font-medium">
+                        View {readings.tarot.length - 5} more readings
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -334,44 +348,37 @@ export default function DashboardPage() {
             {readings.birthCharts.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Birth Charts</h3>
-                <div className="space-y-4">
-                  {readings.birthCharts.map((chart) => (
+                <div className="space-y-3">
+                  {readings.birthCharts.slice(0, 3).map((chart) => (
                     <div 
                       key={chart.id}
-                      className="bg-white bg-opacity-40 rounded-2xl p-5 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60"
+                      className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-500">{formatDate(chart.created_at)}</p>
-                          <p className="font-medium text-gray-900 mt-1">{chart.location}</p>
-                          <p className="text-sm text-gray-600">Born: {new Date(chart.birth_date).toLocaleDateString()} at {chart.birth_time}</p>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-500">{formatDate(chart.created_at)}</span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                            Birth Chart
+                          </span>
                         </div>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                          Birth Chart
-                        </span>
                       </div>
-                      {chart.chart_data?.planets && (
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {Object.entries(chart.chart_data.planets).slice(0, 3).map(([planet, data]) => (
-                            <div key={planet} className="text-xs text-gray-600 bg-white bg-opacity-50 px-3 py-1 rounded-lg">
-                              {planet.charAt(0).toUpperCase() + planet.slice(1)} in {data.sign}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <p className="text-sm text-gray-700 line-clamp-3">{chart.interpretation}</p>
+                      <p className="text-sm font-medium text-gray-900 mb-2">{chart.location}</p>
+                      <p className="text-xs text-gray-600">Born: {new Date(chart.birth_date).toLocaleDateString()} at {chart.birth_time}</p>
                     </div>
                   ))}
+                  {readings.birthCharts.length > 3 && (
+                    <div className="text-center">
+                      <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        View {readings.birthCharts.length - 3} more charts
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* Credit Management Widget */}
-        <div className="mb-8">
-          <CreditManagementWidget />
-        </div>
 
       </div>
 

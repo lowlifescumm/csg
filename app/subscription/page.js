@@ -97,7 +97,7 @@ export default function SubscriptionPage() {
           <>
             <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white border-opacity-20 mb-8">
               <div className="text-center mb-8">
-                <div className="text-7xl font-bold text-white mb-2">$29.99</div>
+                <div className="text-7xl font-bold text-white mb-2">$9.99</div>
                 <div className="text-xl text-purple-200">per month</div>
               </div>
 

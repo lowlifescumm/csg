@@ -246,7 +246,7 @@ export default function PersonalizedMoonReading() {
               Complete Your Purchase
             </h1>
             <p className="text-purple-200">
-              {paymentType === 'one-time' ? 'One-time moon reading - $9.99' : 'Premium subscription - $29.99/month'}
+              {paymentType === 'one-time' ? 'One-time moon reading - $9.99' : 'Premium subscription - $9.99/month'}
             </p>
           </div>
 
@@ -506,7 +506,7 @@ export default function PersonalizedMoonReading() {
                   </div>
                   <div className="text-center mb-4">
                     <div className="text-sm font-semibold opacity-90 mb-2">Premium Subscription</div>
-                    <div className="text-4xl font-bold">$29.99<span className="text-xl opacity-75">/mo</span></div>
+                    <div className="text-4xl font-bold">$9.99<span className="text-xl opacity-75">/mo</span></div>
                   </div>
                   <ul className="space-y-3 mb-6 text-sm">
                     <li className="flex items-start gap-2">
@@ -724,7 +724,7 @@ function MoonReadingResult({ reading, name }) {
             Get a new personalized reading with each moon phase change
           </p>
           <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-8 rounded-lg hover:shadow-lg transition-all transform hover:scale-105">
-            Subscribe to Moon Readings - $19.99/month
+            Subscribe to Moon Readings - $9.99/month
           </button>
           <p className="text-sm text-gray-500 mt-4">
             Cancel anytime • Get reading every 2 weeks • Priority support
