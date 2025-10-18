@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tour Guide Character - Pointing State -->
+  
+  <!-- Shadow -->
+  <ellipse cx="60" cy="135" rx="25" ry="8" fill="#000" opacity="0.2"/>
+  
+  <!-- Body -->
+  <ellipse cx="60" cy="85" rx="28" ry="35" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
+  
+  <!-- Head -->
+  <circle cx="60" cy="45" r="25" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
+  
+  <!-- Hair -->
+  <path d="M35 25 Q60 10 85 25 Q85 15 60 5 Q35 15 35 25" fill="#4C1D95"/>
+  
+  <!-- Eyes - looking in direction of pointing -->
+  <circle cx="50" cy="40" r="3" fill="#1F2937"/>
+  <circle cx="65" cy="40" r="3" fill="#1F2937"/>
+  
+  <!-- Eye highlights -->
+  <circle cx="51" cy="39" r="1" fill="#FFFFFF"/>
+  <circle cx="66" cy="39" r="1" fill="#FFFFFF"/>
+  
+  <!-- Excited smile -->
+  <path d="M48 50 Q60 60 72 50" stroke="#1F2937" stroke-width="2" fill="none"/>
+  
+  <!-- Arms -->
+  <ellipse cx="35" cy="70" rx="8" ry="20" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2" transform="rotate(-20 35 70)"/>
+  <ellipse cx="85" cy="70" rx="8" ry="20" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2" transform="rotate(45 85 70)"/>
+  
+  <!-- Hands -->
+  <circle cx="30" cy="85" r="6" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
+  <circle cx="95" cy="75" r="6" fill="#F3E8FF" stroke="#7C3AED" stroke-width="2"/>
+  
+  <!-- Pointing finger (extended) -->
+  <path d="M95 75 L105 65 L110 70 L105 80 Z" fill="#F3E8FF" stroke="#7C3AED" stroke-width="1"/>
+  
+  <!-- Legs -->
+  <ellipse cx="50" cy="110" rx="8" ry="20" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
+  <ellipse cx="70" cy="110" rx="8" ry="20" fill="#8B5CF6" stroke="#7C3AED" stroke-width="2"/>
+  
+  <!-- Feet -->
+  <ellipse cx="50" cy="125" rx="10" ry="6" fill="#4C1D95"/>
+  <ellipse cx="70" cy="125" rx="10" ry="6" fill="#4C1D95"/>
+  
+  <!-- Cosmic accessories -->
+  <!-- Star on head -->
+  <path d="M60 20 L62 26 L68 26 L63 30 L65 36 L60 32 L55 36 L57 30 L52 26 L58 26 Z" fill="#FCD34D"/>
+  
+  <!-- Sparkles around character -->
+  <g opacity="0.8">
+    <path d="M20 30 L22 34 L26 34 L23 37 L25 41 L20 38 L15 41 L17 37 L14 34 L18 34 Z" fill="#FCD34D"/>
+    <path d="M100 20 L101 23 L104 23 L102 25 L103 28 L100 26 L97 28 L98 25 L96 23 L99 23 Z" fill="#FCD34D"/>
+    <path d="M15 80 L16 83 L19 83 L17 85 L18 88 L15 86 L12 88 L13 85 L11 83 L14 83 Z" fill="#FCD34D"/>
+    <path d="M105 75 L106 78 L109 78 L107 80 L108 83 L105 81 L102 83 L103 80 L101 78 L104 78 Z" fill="#FCD34D"/>
+  </g>
+  
+  <!-- Speech bubble with pointing -->
+  <g id="speech-bubble">
+    <ellipse cx="100" cy="25" rx="40" ry="20" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
+    <path d="M80 40 L70 50 L75 45 Z" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
+    <text x="100" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1F2937">Look here!</text>
+  </g>
+</svg>
