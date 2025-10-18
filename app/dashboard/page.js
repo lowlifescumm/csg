@@ -145,6 +145,69 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Explore Your Cosmic Journey Section */}
+        <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-semibold gradient-text mb-2">Explore Your Cosmic Journey</h2>
+            <p className="text-gray-600">Discover guidance through tarot, astrology, and planetary wisdom</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link
+              href="/"
+              className="inline-block bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              🔮 Tarot Reading
+            </Link>
+            <Link
+              href="/birth-chart"
+              className="inline-block bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              ⭐ Birth Chart
+            </Link>
+            <Link
+              href="/moon-reading"
+              className="inline-block bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              🌙 Moon Reading
+            </Link>
+            <Link
+              href="/compatibility"
+              className="inline-block bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              💕 Compatibility
+            </Link>
+            <Link
+              href="/transits"
+              className="inline-block bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center relative"
+            >
+              ⚡ Transit Dashboard
+              {stats.status === 'Premium' && (
+                <span className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
+                  Premium
+                </span>
+              )}
+            </Link>
+            <Link
+              href="/subscription"
+              className="inline-block bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              👑 Go Premium
+            </Link>
+            <Link
+              href="/credits"
+              className="inline-block bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              💳 Buy Credits
+            </Link>
+            <Link
+              href="/coach"
+              className="inline-block bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+            >
+              🤖 AI Coach
+            </Link>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
             <div className="flex items-center gap-4">
@@ -310,67 +373,6 @@ export default function DashboardPage() {
           <CreditManagementWidget />
         </div>
 
-        <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-semibold gradient-text mb-2">Explore Your Cosmic Journey</h2>
-            <p className="text-gray-600">Discover guidance through tarot, astrology, and planetary wisdom</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link
-              href="/"
-              className="inline-block bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
-            >
-              🔮 Tarot Reading
-            </Link>
-            <Link
-              href="/birth-chart"
-              className="inline-block bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
-            >
-              ⭐ Birth Chart
-            </Link>
-            <Link
-              href="/moon-reading"
-              className="inline-block bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
-            >
-              🌙 Moon Reading
-            </Link>
-            <Link
-              href="/compatibility"
-              className="inline-block bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
-            >
-              💕 Compatibility
-            </Link>
-            <Link
-              href="/transits"
-              className="inline-block bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center relative"
-            >
-              ⚡ Transit Dashboard
-              {stats.status === 'Premium' && (
-                <span className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
-                  Premium
-                </span>
-              )}
-            </Link>
-            <Link
-              href="/subscription"
-              className="inline-block bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
-            >
-              👑 Go Premium
-            </Link>
-            <Link
-              href="/credits"
-              className="inline-block bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
-            >
-              💳 Buy Credits
-            </Link>
-            <Link
-              href="/coach"
-              className="inline-block bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
-            >
-              🤖 AI Coach
-            </Link>
-          </div>
-        </div>
       </div>
 
       {/* Tarot Selector Modal */}
