@@ -420,15 +420,43 @@ export default function DashboardPage() {
               <Link
                 href="/coach"
                 className="group relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
-                aria-label="Get AI coaching guidance"
+                aria-label="Get AI coaching guidance - Premium Feature"
               >
                 <div className="flex flex-col items-center space-y-1">
                   <span className="text-2xl">🤖</span>
                   <span>AI Coach</span>
+                  {stats.status === 'Premium' && (
+                    <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
+                      Premium
+                    </span>
+                  )}
                 </div>
               </Link>
             </div>
           </div>
+
+          {/* Premium Services Promotion Banner */}
+          {stats.status !== 'Premium' && (
+            <div className="glassmorphic rounded-2xl p-6 mb-8 border border-yellow-400/30 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 apple-shadow-lg animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center">
+                    <span className="text-2xl">👑</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Unlock Premium Features</h3>
+                    <p className="text-sm text-gray-600">Access AI Coach and Transit Dashboard with unlimited readings</p>
+                  </div>
+                </div>
+                <Link
+                  href="/subscription"
+                  className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition apple-shadow"
+                >
+                  Upgrade Now
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Enhanced Stats Section - Mobile Optimized */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8" data-tour="stats">

@@ -55,6 +55,29 @@ export default function TransitDashboard() {
     }
   };
 
+  // Filter transits based on timeframe
+  const getFilteredTransits = () => {
+    if (!data?.transits) return [];
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    return data.transits.filter(transit => {
+      const daysUntilPeak = transit.daysUntilPeak || 0;
+      
+      switch (timeframe) {
+        case 'today':
+          return daysUntilPeak === 0 || daysUntilPeak <= 1;
+        case 'week':
+          return daysUntilPeak <= 7;
+        case 'month':
+          return daysUntilPeak <= 30;
+        default:
+          return true;
+      }
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 flex items-center justify-center">
@@ -326,7 +349,7 @@ export default function TransitDashboard() {
             Critical Transits
           </h3>
           <div className="space-y-4">
-            {transits.filter(t => t.type === 'major').map((transit) => (
+            {getFilteredTransits().filter(t => t.type === 'major').map((transit) => (
               <TransitCard 
                 key={`${transit.transitPlanet}-${transit.natalPlanet}`}
                 transit={transit} 
@@ -336,14 +359,14 @@ export default function TransitDashboard() {
           </div>
         </div>
 
-        {transits.filter(t => t.type === 'moderate').length > 0 && (
+        {getFilteredTransits().filter(t => t.type === 'moderate').length > 0 && (
           <div className="mb-8">
             <h3 className="text-sm font-semibold text-purple-300 mb-4 uppercase tracking-wider flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
               Moderate Transits
             </h3>
             <div className="space-y-4">
-              {transits.filter(t => t.type === 'moderate').map((transit) => (
+              {getFilteredTransits().filter(t => t.type === 'moderate').map((transit) => (
                 <TransitCard 
                   key={`${transit.transitPlanet}-${transit.natalPlanet}`}
                   transit={transit} 
