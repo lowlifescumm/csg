@@ -1,11 +1,6 @@
-"use client";
-import { usePathname } from "next/navigation";
-import "./globals.css";
+import "./globals-simple.css";
 
 export default function RootLayout({ children }) {
-  const pathname = usePathname();
-  const isHomePage = pathname === "/";
-  const isAdminPage = pathname?.startsWith("/admin");
 
   return (
     <html lang="en" className="scroll-smooth">
@@ -20,7 +15,6 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-        <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
         {/* Skip Link for Accessibility */}
@@ -28,7 +22,7 @@ export default function RootLayout({ children }) {
           Skip to main content
         </a>
         
-        {!isHomePage && !isAdminPage && (
+        {(
           <header className="glassmorphic border-b border-white border-opacity-20 apple-shadow-lg sticky top-0 z-50">
             <div className="max-w-7xl mx-auto mobile-padding py-4">
               <div className="flex items-center justify-between">
@@ -65,13 +59,13 @@ export default function RootLayout({ children }) {
           </header>
         )}
         
-        <main id="main-content" className={isHomePage || isAdminPage ? "" : "flex-1"}>
-          <div className={isHomePage || isAdminPage ? "w-full" : "w-full"}>
+        <main id="main-content" className="flex-1">
+          <div className="w-full">
             {children}
           </div>
         </main>
         
-        {!isHomePage && !isAdminPage && (
+        {(
           <footer className="glassmorphic border-t border-white border-opacity-20 py-6 mt-8">
             <div className="max-w-7xl mx-auto mobile-padding">
               <div className="text-center">

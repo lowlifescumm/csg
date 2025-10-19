@@ -3,13 +3,24 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: process.env.NODE_ENV === 'production' 
-        ? [process.env.NEXT_PUBLIC_BASE_URL || 'https://your-app.onrender.com']
+        ? [process.env.NEXT_PUBLIC_BASE_URL || 'https://cosmicspiritguide.com']
         : ['*']
     }
   },
-  devIndicators: {
-    appIsrStatus: false
+  // Fix chunk loading issues
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
   },
+  // Optimize chunks
+  output: 'standalone',
   async headers() {
     return [
       {
@@ -35,12 +46,27 @@ const nextConfig = {
           },
         ],
       },
+      // Fix chunk loading for static assets
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ];
   },
   // Optimize for production
-  swcMinify: true,
   compress: true,
   poweredByHeader: false,
+  // Fix chunk loading issues
+  generateEtags: false,
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
 }
 
 module.exports = nextConfig
