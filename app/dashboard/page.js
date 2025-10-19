@@ -10,6 +10,8 @@ import CreditManagementWidget from "@/components/CreditManagementWidget";
 import LowCreditsUpsellBanner from "@/components/LowCreditsUpsellBanner";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import LazyComponent from "@/components/LazyComponent";
+import HelpSystem from "@/components/HelpSystem";
+import QuickTour from "@/components/QuickTour";
 
 // Dynamically import to avoid SSR issues with Next.js Image component
 const InteractiveTarotSelector = dynamic(
@@ -296,41 +298,41 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Show upsell banner for premium users with low credits or free users */}
-        {(isPremium && totalCredits !== null && totalCredits < 3) && (
-          <LowCreditsUpsellBanner 
-            currentCredits={totalCredits} 
-            creditsNeeded={3}
-          />
-        )}
-        {(!isPremium && totalCredits === 0) && (
-          <LowCreditsUpsellBanner 
-            currentCredits={0} 
-            creditsNeeded={1}
-            forceShow={true}
-          />
-        )}
-        
+      {/* Show upsell banner for premium users with low credits or free users */}
+      {(isPremium && totalCredits !== null && totalCredits < 3) && (
+        <LowCreditsUpsellBanner 
+          currentCredits={totalCredits} 
+          creditsNeeded={3}
+        />
+      )}
+      {(!isPremium && totalCredits === 0) && (
+        <LowCreditsUpsellBanner 
+          currentCredits={0} 
+          creditsNeeded={1}
+          forceShow={true}
+        />
+      )}
+      
         <div className="max-w-7xl mx-auto">
           {/* Welcome Section - Mobile Optimized */}
-          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-6">
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-6" data-tour="welcome">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex-1">
                 <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
                   Welcome back, {user?.firstName || user?.email}!
-                </h1>
+              </h1>
                 <p className="text-gray-600 mt-2">Your spiritual journey continues</p>
-              </div>
+            </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link
-                  href="/profile"
+              <Link
+                href="/profile"
                   className="px-6 py-3 bg-white bg-opacity-60 text-gray-900 rounded-xl font-medium smooth-transition hover:bg-opacity-80 apple-shadow text-center"
-                >
-                  Profile
-                </Link>
-              </div>
+              >
+                Profile
+              </Link>
             </div>
           </div>
+        </div>
 
         {/* Explore Your Cosmic Journey Section - Enhanced Mobile Design */}
         <div className="glassmorphic rounded-3xl p-6 sm:p-10 apple-shadow-lg border border-white border-opacity-40 mb-8">
@@ -338,7 +340,7 @@ export default function DashboardPage() {
             <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Explore Your Cosmic Journey</h2>
             <p className="text-gray-600 text-sm sm:text-base">Discover guidance through tarot, astrology, and planetary wisdom</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-tour="action-buttons">
             <Link
               href="/"
               className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center overflow-hidden"
@@ -388,11 +390,11 @@ export default function DashboardPage() {
               <div className="flex flex-col items-center space-y-1">
                 <span className="text-2xl">⚡</span>
                 <span>Transit Dashboard</span>
-                {stats.status === 'Premium' && (
+              {stats.status === 'Premium' && (
                   <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
-                    Premium
-                  </span>
-                )}
+                  Premium
+                </span>
+              )}
               </div>
             </Link>
             <Link
@@ -429,7 +431,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Enhanced Stats Section - Mobile Optimized */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8" data-tour="stats">
           {isRefreshing ? (
             <LoadingSkeleton type="card" count={3} />
           ) : (
@@ -438,55 +440,55 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs sm:text-sm text-gray-600 font-medium">Credits</p>
                     <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.credits}</p>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
 
               <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow animate-fade-in">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                  </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs sm:text-sm text-gray-600 font-medium">Readings</p>
                     <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.readingCount + stats.chartCount}</p>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
 
               <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow sm:col-span-2 lg:col-span-1 animate-fade-in">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs sm:text-sm text-gray-600 font-medium">Status</p>
                     <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.status}</p>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
             </>
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" data-tour="widgets">
           <LazyComponent fallback={<LoadingSkeleton type="card" />}>
             <DailyHoroscope />
           </LazyComponent>
           <LazyComponent fallback={<LoadingSkeleton type="card" />}>
-            <div className="flex items-center justify-center">
-              <MoonPhaseWidget />
-            </div>
+          <div className="flex items-center justify-center">
+            <MoonPhaseWidget />
+          </div>
           </LazyComponent>
           <LazyComponent fallback={<LoadingSkeleton type="card" />}>
             <CreditManagementWidget />
@@ -494,7 +496,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Daily Tarot Reading Section */}
-        <div className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
+        <div className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40 mb-8" data-tour="tarot-section">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
@@ -526,7 +528,7 @@ export default function DashboardPage() {
         </div>
 
         {(readings.tarot.length > 0 || readings.birthCharts.length > 0) && (
-          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8" data-tour="history">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <h2 className="text-2xl font-semibold gradient-text">Your Reading History</h2>
               <div className="flex flex-wrap gap-2">
@@ -591,17 +593,17 @@ export default function DashboardPage() {
             </div>
 
             {/* Reading List */}
-            <div className="space-y-3">
+                <div className="space-y-3">
               {getFilteredReadings().length > 0 ? (
                 getFilteredReadings().slice(0, 10).map((reading, index) => (
-                  <div 
-                    key={reading.id}
+                    <div 
+                      key={reading.id}
                     className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60 hover:shadow-lg animate-fade-in"
                     style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-500">{formatDate(reading.created_at)}</span>
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-500">{formatDate(reading.created_at)}</span>
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                           reading.type === 'tarot' 
                             ? 'bg-purple-100 text-purple-700' 
@@ -611,8 +613,8 @@ export default function DashboardPage() {
                             ? (reading.result.spreadType || 'Three Card')
                             : 'Birth Chart'
                           }
-                        </span>
-                      </div>
+                          </span>
+                        </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-400 capitalize">{reading.type.replace('_', ' ')}</span>
                       </div>
@@ -620,26 +622,26 @@ export default function DashboardPage() {
                     <p className="text-sm font-medium text-gray-900 mb-2 line-clamp-1">
                       {reading.question || 'No question provided'}
                     </p>
-                    {reading.result.cards && (
-                      <div className="flex gap-1 mb-2">
-                        {reading.result.cards.slice(0, 3).map((card, idx) => (
-                          <div key={idx} className="text-xs text-gray-600 bg-white bg-opacity-50 px-2 py-1 rounded">
-                            {card.name}
-                          </div>
-                        ))}
-                        {reading.result.cards.length > 3 && (
-                          <div className="text-xs text-gray-500 px-2 py-1">
-                            +{reading.result.cards.length - 3} more
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      {reading.result.cards && (
+                        <div className="flex gap-1 mb-2">
+                          {reading.result.cards.slice(0, 3).map((card, idx) => (
+                            <div key={idx} className="text-xs text-gray-600 bg-white bg-opacity-50 px-2 py-1 rounded">
+                              {card.name}
+                            </div>
+                          ))}
+                          {reading.result.cards.length > 3 && (
+                            <div className="text-xs text-gray-500 px-2 py-1">
+                              +{reading.result.cards.length - 3} more
+                            </div>
+                          )}
+                        </div>
+                      )}
                     {reading.result.interpretation && (
                       <p className="text-xs text-gray-600 line-clamp-2">
                         {reading.result.interpretation}
                       </p>
-                    )}
-                  </div>
+                      )}
+                    </div>
                 ))
               ) : (
                 <div className="text-center py-8">
@@ -647,7 +649,7 @@ export default function DashboardPage() {
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0118 12a8 8 0 10-8 8 7.962 7.962 0 01-2.291-.5M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                  </div>
+                    </div>
                   <p className="text-gray-500 mb-2">No readings found</p>
                   <p className="text-sm text-gray-400">
                     {searchQuery || filterType !== "all" 
@@ -657,14 +659,14 @@ export default function DashboardPage() {
                   </p>
                 </div>
               )}
-            </div>
+              </div>
 
             {/* Show More Button */}
             {getFilteredReadings().length > 10 && (
               <div className="text-center mt-6">
                 <button className="btn-secondary">
                   View All {getFilteredReadings().length} Readings
-                </button>
+                      </button>
               </div>
             )}
           </div>
@@ -672,6 +674,12 @@ export default function DashboardPage() {
 
 
       </div>
+
+      {/* Help System */}
+      <HelpSystem />
+
+      {/* Quick Tour */}
+      <QuickTour />
 
       {/* Tarot Selector Modal */}
       {showTarotSelector && (
