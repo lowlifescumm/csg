@@ -483,13 +483,17 @@ export default function HomePage() {
             <p className="text-gray-600 mb-8">Get personalized daily insight delivered to your inbox every morning</p>
             
             <form onSubmit={handleEmailSignup} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <label htmlFor="dailyEmail" className="sr-only">Email address for daily insights</label>
               <input
+                id="dailyEmail"
+                name="dailyEmail"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email address"
                 className="flex-1 px-6 py-3 rounded-xl border border-gray-300 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition"
                 required
+                autoComplete="email"
               />
               <button 
                 type="submit"

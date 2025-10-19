@@ -159,36 +159,44 @@ export default function BirthChartForm() {
           
           <div className="glassmorphic rounded-3xl p-8 space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Birth Date</label>
+              <label htmlFor="birthDate" className="block text-sm font-medium mb-2 text-gray-700">Birth Date</label>
               <input
+                id="birthDate"
+                name="birthDate"
                 type="date"
                 value={formData.birthDate}
                 onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required
+                placeholder="Select your birth date"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">
+              <label htmlFor="birthTime" className="block text-sm font-medium mb-2 text-gray-700">
                 Birth Time
               </label>
               <input
+                id="birthTime"
+                name="birthTime"
                 type="time"
                 value={formData.birthTime}
                 onChange={(e) => setFormData({...formData, birthTime: e.target.value})}
                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required
+                placeholder="Select your birth time"
               />
               <p className="text-sm text-gray-500 mt-1">
-                Your rising sign depends on exact birth time
+Your rising sign depends on exact birth time
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Birth Location</label>
+              <label htmlFor="birthLocation" className="block text-sm font-medium mb-2 text-gray-700">Birth Location</label>
               <div className="flex gap-2">
                 <input
+                  id="birthLocation"
+                  name="birthLocation"
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({...formData, location: e.target.value})}

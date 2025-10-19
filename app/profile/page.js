@@ -134,40 +134,50 @@ export default function ProfilePage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="profileFirstName" className="block text-sm font-medium text-gray-700 mb-2">
                   First Name
                 </label>
                 <input
+                  id="profileFirstName"
+                  name="profileFirstName"
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   className="w-full p-4 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
+                  placeholder="Enter your first name"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="profileLastName" className="block text-sm font-medium text-gray-700 mb-2">
                   Last Name
                 </label>
                 <input
+                  id="profileLastName"
+                  name="profileLastName"
                   type="text"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   className="w-full p-4 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
+                  placeholder="Enter your last name"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="profileEmail" className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <input
+                id="profileEmail"
+                name="profileEmail"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full p-4 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
                 required
+                placeholder="Enter your email address"
+                autoComplete="email"
               />
             </div>
 

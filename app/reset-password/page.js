@@ -117,16 +117,19 @@ function ResetPasswordContent() {
         {step === 'request' ? (
           <form onSubmit={handleRequestReset} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <input
+                id="resetEmail"
+                name="resetEmail"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
                 placeholder="Enter your cosmic email"
                 required
+                autoComplete="email"
               />
             </div>
 
