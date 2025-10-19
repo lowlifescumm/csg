@@ -88,7 +88,7 @@ export async function POST(request) {
       const embedding = await createEmbedding(summary);
       const pine = getPinecone();
       const index = pine.index(process.env.PINECONE_INDEX || 'csg-tarot');
-      await index.upsert([{ id: saved.id, values: embedding, metadata: { user_id: decoded.userId, reading_type: resolvedId, created_at: saved.created_at } }]);
+      await index.upsert([{ id: String(saved.id), values: embedding, metadata: { user_id: decoded.userId, reading_type: resolvedId, created_at: saved.created_at } }]);
     }
 
     return NextResponse.json({ success: true, reading: { id: saved.id, cards, interpretation: fullText, summary, createdAt: saved.created_at } });

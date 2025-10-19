@@ -37,7 +37,7 @@ export default function QuickTour({ onComplete }) {
       position: "top"
     },
     {
-      target: "[data-tour='history']",
+      target: "[data-tour='history'], .reading-history-placeholder",
       title: "Your Reading History",
       content: "All your past readings are saved here. You can search, filter, and revisit your spiritual journey anytime.",
       position: "top"

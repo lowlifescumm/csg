@@ -527,9 +527,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Reading History Section - Always show for tour */}
-          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8" data-tour="history">
-            {(readings.tarot.length > 0 || readings.birthCharts.length > 0) ? (
+          {(readings.tarot.length > 0 || readings.birthCharts.length > 0) && (
+            <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8" data-tour="history">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <h2 className="text-2xl font-semibold gradient-text">Your Reading History</h2>
                 <div className="flex flex-wrap gap-2">
@@ -669,21 +668,11 @@ export default function DashboardPage() {
                     View All {getFilteredReadings().length} Readings
                   </button>
                 </div>
-               )}
-             </div>
-           ) : (
-             <div className="text-center py-12">
-               <div className="w-20 h-20 mx-auto mb-6 text-gray-300">
-                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0118 12a8 8 0 10-8 8 7.962 7.962 0 01-2.291-.5M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                 </svg>
-               </div>
-               <h3 className="text-xl font-semibold text-gray-900 mb-2">Your Reading History</h3>
-               <p className="text-gray-600 mb-4">Start your spiritual journey by getting your first reading!</p>
-               <p className="text-sm text-gray-500">All your past readings will appear here for easy access and reflection.</p>
-             </div>
-           )}
-         </div>
+              )}
+            </div>
+          )}
+
+        </div>
 
         {/* Help System */}
         <HelpSystem />
