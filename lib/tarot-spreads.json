@@ -70,7 +70,8 @@
       "required_selection_count": 3,
       "selection_labels": ["You", "Other", "Potential"],
       "selection_error_message": "Please select exactly 3 cards for Love Potential Tarot.",
-      "hide_unused_slots": true
+      "hide_unused_slots": true,
+      "require_question": true
     },
     "prompt_template": "Draw three tarot cards to assess romantic potential. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: thoughtful, honest. For each position describe the energy, compatibility points, and final card should give a realistic outcome or next step.",
     "example_prompt_use": "cards: The Lovers, Six of Cups, Seven of Pentacles; question: 'Is there potential here?'; tone: thoughtful, honest"
@@ -85,7 +86,8 @@
       "required_selection_count": 3,
       "selection_labels": ["Why", "Their energy", "Healing"],
       "selection_error_message": "Please select exactly 3 cards for Breakup Tarot.",
-      "hide_unused_slots": true
+      "hide_unused_slots": true,
+      "require_question": true
     },
     "prompt_template": "Draw three tarot cards to provide gentle insight after a breakup. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: compassionate, healing. Interpret cards for cause, current emotional state, and practical healing advice. Conclude with a grounding sentence.",
     "example_prompt_use": "cards: Ten of Swords, Two of Cups (reversed), Temperance; question: 'Will we get back together?'; tone: compassionate, healing"
@@ -100,7 +102,8 @@
       "required_selection_count": 1,
       "selection_labels": ["Focused Card"],
       "selection_error_message": "Please select exactly 1 card for One Card Tarot.",
-      "hide_unused_slots": true
+      "hide_unused_slots": true,
+      "require_question": true
     },
     "prompt_template": "Draw one tarot card to offer focused guidance for the user's question or reflection. Card: {{cards}}. Question: {{question}}. Tone: clear, wise. Provide a concise interpretation (3-5 sentences) and one practical takeaway.",
     "example_prompt_use": "cards: Ace of Cups; question: 'What should I focus on today?'; tone: clear, wise"
@@ -115,7 +118,8 @@
       "required_selection_count": 3,
       "selection_labels": ["Past", "Present", "Future"],
       "selection_error_message": "Please select exactly 3 cards for Past / Present / Future reading.",
-      "hide_unused_slots": true
+      "hide_unused_slots": true,
+      "require_question": true
     },
     "prompt_template": "Draw three tarot cards to reveal the timeline around the user's situation. Positions: Past, Present, Future. Cards: {{cards}}. Question: {{question}}. Tone: narrative, insightful. Interpret each card sequentially and finish with a short synthesis of the trajectory and an action suggestion.",
     "example_prompt_use": "cards: Six of Cups, Four of Pentacles, The Chariot; question: 'What's next for my career?'; tone: narrative, insightful"

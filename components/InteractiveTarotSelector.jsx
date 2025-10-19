@@ -53,9 +53,9 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     const newSelectedCards = [...selectedCards, index];
     setSelectedCards(newSelectedCards);
     
-    // If all cards are selected, show question input
+    // If all cards are selected, show question input for spreads that allow or require questions
     const count = spread.card_count;
-    if (newSelectedCards.length === count && !showQuestionInput && spread.ui?.require_question) {
+    if (newSelectedCards.length === count && !showQuestionInput && (spread.ui?.require_question || spread.allow_question)) {
       setShowQuestionInput(true);
     }
   };
@@ -209,14 +209,20 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           )}
           {showQuestionInput && (
             <div className="mt-4 max-w-md mx-auto">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {spread.ui?.require_question ? 'Your Question (Required)' : 'Your Question (Optional)'}
+              </label>
               <input
                 type="text"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="What guidance do you seek?"
+                placeholder={spread.ui?.require_question ? "What guidance do you seek?" : "What guidance do you seek? (Optional)"}
                 className="w-full p-4 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none bg-white bg-opacity-70"
                 disabled={loading}
               />
+              {spread.ui?.require_question && (
+                <p className="text-xs text-gray-500 mt-1">Please enter your question to proceed</p>
+              )}
             </div>
           )}
         </div>
