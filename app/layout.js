@@ -53,6 +53,9 @@ export default function RootLayout({ children }) {
                   <a href="/compatibility" className="btn-ghost mobile-text">
                     Compatibility
                   </a>
+                  <a href="/blog" className="btn-ghost mobile-text">
+                    Blog
+                  </a>
                   <a href="/profile" className="btn-ghost mobile-text">
                     Profile
                   </a>

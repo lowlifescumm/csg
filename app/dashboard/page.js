@@ -432,6 +432,16 @@ export default function DashboardPage() {
                   )}
                 </div>
               </Link>
+              <Link
+                href="/blog"
+                className="group relative bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+                aria-label="Read spiritual blog articles"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <span className="text-2xl">📝</span>
+                  <span>Blog</span>
+                </div>
+              </Link>
             </div>
           </div>
 
