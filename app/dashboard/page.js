@@ -103,150 +103,227 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
-      {/* Show upsell banner for premium users with low credits or free users */}
-      {(isPremium && totalCredits !== null && totalCredits < 3) && (
-        <LowCreditsUpsellBanner 
-          currentCredits={totalCredits} 
-          creditsNeeded={3}
-        />
-      )}
-      {(!isPremium && totalCredits === 0) && (
-        <LowCreditsUpsellBanner 
-          currentCredits={0} 
-          creditsNeeded={1}
-          forceShow={true}
-        />
-      )}
-      
-      <div className="max-w-6xl mx-auto">
-        <div className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-semibold text-gray-900">
-                Welcome, {user?.firstName || user?.email}!
-              </h1>
-              <p className="text-gray-600 mt-2">Your spiritual journey awaits</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+      {/* Enhanced Navigation Header */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo and Brand */}
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">🔮</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Cosmic Spiritual Guide</h1>
+                <p className="text-xs text-gray-500 hidden sm:block">Discover clarity through ancient wisdom</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/profile"
-                className="px-6 py-3 bg-white bg-opacity-60 text-gray-900 rounded-xl font-medium smooth-transition hover:bg-opacity-80 apple-shadow"
-              >
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-1">
+              <Link href="/dashboard" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/birth-chart" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
+                Birth Chart
+              </Link>
+              <Link href="/compatibility" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
+                Compatibility
+              </Link>
+              <Link href="/profile" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
                 Profile
               </Link>
+            </div>
+            
+            {/* User Actions */}
+            <div className="flex items-center space-x-3">
+              <div className="hidden sm:block text-sm text-gray-600">
+                Welcome, {user?.firstName || user?.email}!
+              </div>
               <button
                 onClick={handleLogout}
-                className="px-6 py-3 bg-gray-900 bg-opacity-80 text-white rounded-xl font-medium smooth-transition hover:bg-opacity-100 apple-shadow"
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
               >
                 Logout
               </button>
             </div>
           </div>
         </div>
+      </nav>
 
-        {/* Explore Your Cosmic Journey Section */}
-        <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 mb-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-semibold gradient-text mb-2">Explore Your Cosmic Journey</h2>
-            <p className="text-gray-600">Discover guidance through tarot, astrology, and planetary wisdom</p>
+      {/* Main Content */}
+      <div className="p-4 sm:p-6">
+        {/* Show upsell banner for premium users with low credits or free users */}
+        {(isPremium && totalCredits !== null && totalCredits < 3) && (
+          <LowCreditsUpsellBanner 
+            currentCredits={totalCredits} 
+            creditsNeeded={3}
+          />
+        )}
+        {(!isPremium && totalCredits === 0) && (
+          <LowCreditsUpsellBanner 
+            currentCredits={0} 
+            creditsNeeded={1}
+            forceShow={true}
+          />
+        )}
+        
+        <div className="max-w-7xl mx-auto">
+          {/* Welcome Section - Mobile Optimized */}
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+                  Welcome back, {user?.firstName || user?.email}!
+                </h1>
+                <p className="text-gray-600 mt-2">Your spiritual journey continues</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/profile"
+                  className="px-6 py-3 bg-white bg-opacity-60 text-gray-900 rounded-xl font-medium smooth-transition hover:bg-opacity-80 apple-shadow text-center"
+                >
+                  Profile
+                </Link>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        {/* Explore Your Cosmic Journey Section - Enhanced Mobile Design */}
+        <div className="glassmorphic rounded-3xl p-6 sm:p-10 apple-shadow-lg border border-white border-opacity-40 mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Explore Your Cosmic Journey</h2>
+            <p className="text-gray-600 text-sm sm:text-base">Discover guidance through tarot, astrology, and planetary wisdom</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             <Link
               href="/"
-              className="inline-block bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+              className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              aria-label="Get a tarot reading"
             >
-              🔮 Tarot Reading
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-2xl">🔮</span>
+                <span>Tarot Reading</span>
+              </div>
             </Link>
             <Link
               href="/birth-chart"
-              className="inline-block bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+              className="group relative bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              aria-label="Create your birth chart"
             >
-              ⭐ Birth Chart
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-2xl">⭐</span>
+                <span>Birth Chart</span>
+              </div>
             </Link>
             <Link
               href="/moon-reading"
-              className="inline-block bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+              className="group relative bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              aria-label="Get a personalized moon reading"
             >
-              🌙 Moon Reading
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-2xl">🌙</span>
+                <span>Moon Reading</span>
+              </div>
             </Link>
             <Link
               href="/compatibility"
-              className="inline-block bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+              className="group relative bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              aria-label="Check relationship compatibility"
             >
-              💕 Compatibility
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-2xl">💕</span>
+                <span>Compatibility</span>
+              </div>
             </Link>
             <Link
               href="/transits"
-              className="inline-block bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center relative"
+              className="group relative bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              aria-label="View planetary transits"
             >
-              ⚡ Transit Dashboard
-              {stats.status === 'Premium' && (
-                <span className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
-                  Premium
-                </span>
-              )}
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-2xl">⚡</span>
+                <span>Transit Dashboard</span>
+                {stats.status === 'Premium' && (
+                  <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
+                    Premium
+                  </span>
+                )}
+              </div>
             </Link>
             <Link
               href="/subscription"
-              className="inline-block bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+              className="group relative bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              aria-label="Upgrade to premium subscription"
             >
-              👑 Go Premium
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-2xl">👑</span>
+                <span>Go Premium</span>
+              </div>
             </Link>
             <Link
               href="/credits"
-              className="inline-block bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+              className="group relative bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              aria-label="Purchase credits"
             >
-              💳 Buy Credits
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-2xl">💳</span>
+                <span>Buy Credits</span>
+              </div>
             </Link>
             <Link
               href="/coach"
-              className="inline-block bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-8 py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-lg text-center"
+              className="group relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              aria-label="Get AI coaching guidance"
             >
-              🤖 AI Coach
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-2xl">🤖</span>
+                <span>AI Coach</span>
+              </div>
             </Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Enhanced Stats Section - Mobile Optimized */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+          <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Credits</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.credits}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium">Credits</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.credits}</p>
               </div>
             </div>
           </div>
 
-          <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Readings</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.readingCount + stats.chartCount}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium">Readings</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.readingCount + stats.chartCount}</p>
               </div>
             </div>
           </div>
 
-          <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Status</p>
-                <p className="text-lg font-semibold text-gray-900">{stats.status}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium">Status</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.status}</p>
               </div>
             </div>
           </div>
