@@ -18,6 +18,14 @@ services:
         generateValue: true
       - key: OPENAI_API_KEY
         sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PINECONE_INDEX
+        value: csg-tarot
+      - key: PINECONE_DIM
+        value: 1536
+      - key: PINECONE_METRIC
+        value: cosine
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
