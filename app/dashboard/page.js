@@ -8,6 +8,7 @@ import DailyHoroscope from "@/components/DailyHoroscope";
 import MoonPhaseWidget from "@/components/MoonPhaseWidget";
 import CreditManagementWidget from "@/components/CreditManagementWidget";
 import LowCreditsUpsellBanner from "@/components/LowCreditsUpsellBanner";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 // Dynamically import to avoid SSR issues with Next.js Image component
 const InteractiveTarotSelector = dynamic(
@@ -25,6 +26,9 @@ export default function DashboardPage() {
   const [isPremium, setIsPremium] = useState(false);
   const [showTarotSelector, setShowTarotSelector] = useState(false);
   const [tarotConfig, setTarotConfig] = useState({ spreadType: "three-card", readingType: "general" });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     checkAuth();
@@ -48,14 +52,21 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchReadings = async () => {
+  const fetchReadings = async (showRefreshIndicator = false) => {
     try {
+      if (showRefreshIndicator) {
+        setIsRefreshing(true);
+      }
+      setError(null);
+      
       // Fetch readings
       const res = await fetch("/api/readings");
       const data = await res.json();
       if (data.success) {
         setStats(data.stats);
         setReadings(data.readings);
+      } else {
+        setError("Failed to load readings. Please try again.");
       }
       
       // Fetch credit data
@@ -68,9 +79,16 @@ export default function DashboardPage() {
         } else {
           setTotalCredits(0);
         }
+      } else {
+        setError("Failed to load credit information.");
       }
     } catch (error) {
       console.error("Error fetching readings:", error);
+      setError("Unable to connect to the server. Please check your internet connection.");
+    } finally {
+      if (showRefreshIndicator) {
+        setIsRefreshing(false);
+      }
     }
   };
 
@@ -94,10 +112,18 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center">
-        <svg className="animate-spin h-12 w-12 text-purple-500" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-        </svg>
+        <div className="text-center animate-fade-in">
+          <div className="relative mb-6">
+            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-400 rounded-full animate-spin mx-auto" style={{ animationDelay: '0.5s', animationDuration: '1.5s' }}></div>
+          </div>
+          <p className="text-gray-600 animate-pulse mb-4">Loading your cosmic journey...</p>
+          <div className="flex justify-center space-x-1">
+            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -153,6 +179,81 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <div className="p-4 sm:p-6">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 animate-slide-up">
+            <div className="glassmorphic rounded-2xl p-4 border border-red-200 bg-red-50/50">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 text-red-500">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-800">{error}</p>
+                </div>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-red-500 hover:text-red-700 smooth-transition"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-6 animate-slide-up">
+            <div className="glassmorphic rounded-2xl p-4 border border-green-200 bg-green-50/50">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 text-green-500">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-green-800">{successMessage}</p>
+                </div>
+                <button
+                  onClick={() => setSuccessMessage(null)}
+                  className="text-green-500 hover:text-green-700 smooth-transition"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Refresh Button */}
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => fetchReadings(true)}
+            disabled={isRefreshing}
+            className="btn-secondary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isRefreshing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                <span>Refreshing...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Refresh</span>
+              </>
+            )}
+          </button>
+        </div>
+
         {/* Show upsell banner for premium users with low credits or free users */}
         {(isPremium && totalCredits !== null && totalCredits < 3) && (
           <LowCreditsUpsellBanner 
@@ -198,12 +299,13 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             <Link
               href="/"
-              className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+              className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center overflow-hidden"
               aria-label="Get a tarot reading"
             >
-              <div className="flex flex-col items-center space-y-1">
-                <span className="text-2xl">🔮</span>
-                <span>Tarot Reading</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 smooth-transition"></div>
+              <div className="relative flex flex-col items-center space-y-1 z-10">
+                <span className="text-2xl group-hover:animate-bounce-gentle">🔮</span>
+                <span className="group-hover:translate-y-[-2px] smooth-transition">Tarot Reading</span>
               </div>
             </Link>
             <Link
@@ -286,47 +388,53 @@ export default function DashboardPage() {
 
         {/* Enhanced Stats Section - Mobile Optimized */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-          <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          {isRefreshing ? (
+            <LoadingSkeleton type="card" count={3} />
+          ) : (
+            <>
+              <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow animate-fade-in">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-gray-600 font-medium">Credits</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.credits}</p>
+                  </div>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600 font-medium">Credits</p>
-                <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.credits}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                </svg>
+              <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow animate-fade-in">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-gray-600 font-medium">Readings</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.readingCount + stats.chartCount}</p>
+                  </div>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600 font-medium">Readings</p>
-                <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.readingCount + stats.chartCount}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow sm:col-span-2 lg:col-span-1 animate-fade-in">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-gray-600 font-medium">Status</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.status}</p>
+                  </div>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600 font-medium">Status</p>
-                <p className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">{stats.status}</p>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
