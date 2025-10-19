@@ -9,6 +9,7 @@ import MoonPhaseWidget from "@/components/MoonPhaseWidget";
 import CreditManagementWidget from "@/components/CreditManagementWidget";
 import LowCreditsUpsellBanner from "@/components/LowCreditsUpsellBanner";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
+import LazyComponent from "@/components/LazyComponent";
 
 // Dynamically import to avoid SSR issues with Next.js Image component
 const InteractiveTarotSelector = dynamic(
@@ -29,6 +30,9 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
     checkAuth();
@@ -107,6 +111,44 @@ export default function DashboardPage() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Filter and sort readings
+  const getFilteredReadings = () => {
+    let filtered = [...readings.tarot, ...readings.birthCharts];
+    
+    // Filter by type
+    if (filterType !== "all") {
+      filtered = filtered.filter(reading => 
+        filterType === "tarot" ? reading.type === "tarot" : reading.type === "birth_chart"
+      );
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(reading => 
+        reading.question?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        reading.result?.interpretation?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Sort readings
+    filtered.sort((a, b) => {
+      if (sortBy === "newest") {
+        return new Date(b.created_at) - new Date(a.created_at);
+      } else if (sortBy === "oldest") {
+        return new Date(a.created_at) - new Date(b.created_at);
+      }
+      return 0;
+    });
+    
+    return filtered;
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setFilterType("all");
+    setSortBy("newest");
   };
 
   if (loading) {
@@ -438,15 +480,17 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div>
+          <LazyComponent fallback={<LoadingSkeleton type="card" />}>
             <DailyHoroscope />
-          </div>
-          <div className="flex items-center justify-center">
-            <MoonPhaseWidget />
-          </div>
-          <div>
+          </LazyComponent>
+          <LazyComponent fallback={<LoadingSkeleton type="card" />}>
+            <div className="flex items-center justify-center">
+              <MoonPhaseWidget />
+            </div>
+          </LazyComponent>
+          <LazyComponent fallback={<LoadingSkeleton type="card" />}>
             <CreditManagementWidget />
-          </div>
+          </LazyComponent>
         </div>
 
         {/* Daily Tarot Reading Section */}
@@ -482,83 +526,145 @@ export default function DashboardPage() {
         </div>
 
         {(readings.tarot.length > 0 || readings.birthCharts.length > 0) && (
-          <div className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
-            <h2 className="text-2xl font-semibold gradient-text mb-6">Your Reading History</h2>
-            
-            {readings.tarot.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Tarot Readings</h3>
-                <div className="space-y-3">
-                  {readings.tarot.slice(0, 5).map((reading) => (
-                    <div 
-                      key={reading.id}
-                      className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-gray-500">{formatDate(reading.created_at)}</span>
-                          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
-                            {reading.result.spreadType || 'Three Card'}
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 mb-2 line-clamp-1">{reading.question}</p>
-                      {reading.result.cards && (
-                        <div className="flex gap-1 mb-2">
-                          {reading.result.cards.slice(0, 3).map((card, idx) => (
-                            <div key={idx} className="text-xs text-gray-600 bg-white bg-opacity-50 px-2 py-1 rounded">
-                              {card.name}
-                            </div>
-                          ))}
-                          {reading.result.cards.length > 3 && (
-                            <div className="text-xs text-gray-500 px-2 py-1">
-                              +{reading.result.cards.length - 3} more
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {readings.tarot.length > 5 && (
-                    <div className="text-center">
-                      <button className="text-sm text-purple-600 hover:text-purple-800 font-medium">
-                        View {readings.tarot.length - 5} more readings
-                      </button>
-                    </div>
-                  )}
-                </div>
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <h2 className="text-2xl font-semibold gradient-text">Your Reading History</h2>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-sm text-gray-600">
+                  {getFilteredReadings().length} reading{getFilteredReadings().length !== 1 ? 's' : ''}
+                </span>
               </div>
-            )}
+            </div>
 
-            {readings.birthCharts.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Birth Charts</h3>
-                <div className="space-y-3">
-                  {readings.birthCharts.slice(0, 3).map((chart) => (
-                    <div 
-                      key={chart.id}
-                      className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-gray-500">{formatDate(chart.created_at)}</span>
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                            Birth Chart
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 mb-2">{chart.location}</p>
-                      <p className="text-xs text-gray-600">Born: {new Date(chart.birth_date).toLocaleDateString()} at {chart.birth_time}</p>
+            {/* Search and Filter Controls */}
+            <div className="mb-6 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Search Input */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
                     </div>
-                  ))}
-                  {readings.birthCharts.length > 3 && (
-                    <div className="text-center">
-                      <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                        View {readings.birthCharts.length - 3} more charts
-                      </button>
-                    </div>
-                  )}
+                    <input
+                      type="text"
+                      placeholder="Search readings..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent smooth-transition"
+                    />
+                  </div>
                 </div>
+
+                {/* Filter Dropdown */}
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent smooth-transition"
+                >
+                  <option value="all">All Readings</option>
+                  <option value="tarot">Tarot Only</option>
+                  <option value="birth_chart">Birth Charts Only</option>
+                </select>
+
+                {/* Sort Dropdown */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent smooth-transition"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                </select>
+
+                {/* Clear Filters */}
+                {(searchQuery || filterType !== "all" || sortBy !== "newest") && (
+                  <button
+                    onClick={clearFilters}
+                    className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 smooth-transition"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Reading List */}
+            <div className="space-y-3">
+              {getFilteredReadings().length > 0 ? (
+                getFilteredReadings().slice(0, 10).map((reading, index) => (
+                  <div 
+                    key={reading.id}
+                    className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60 hover:shadow-lg animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-500">{formatDate(reading.created_at)}</span>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          reading.type === 'tarot' 
+                            ? 'bg-purple-100 text-purple-700' 
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {reading.type === 'tarot' 
+                            ? (reading.result.spreadType || 'Three Card')
+                            : 'Birth Chart'
+                          }
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400 capitalize">{reading.type.replace('_', ' ')}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm font-medium text-gray-900 mb-2 line-clamp-1">
+                      {reading.question || 'No question provided'}
+                    </p>
+                    {reading.result.cards && (
+                      <div className="flex gap-1 mb-2">
+                        {reading.result.cards.slice(0, 3).map((card, idx) => (
+                          <div key={idx} className="text-xs text-gray-600 bg-white bg-opacity-50 px-2 py-1 rounded">
+                            {card.name}
+                          </div>
+                        ))}
+                        {reading.result.cards.length > 3 && (
+                          <div className="text-xs text-gray-500 px-2 py-1">
+                            +{reading.result.cards.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {reading.result.interpretation && (
+                      <p className="text-xs text-gray-600 line-clamp-2">
+                        {reading.result.interpretation}
+                      </p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0118 12a8 8 0 10-8 8 7.962 7.962 0 01-2.291-.5M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 mb-2">No readings found</p>
+                  <p className="text-sm text-gray-400">
+                    {searchQuery || filterType !== "all" 
+                      ? "Try adjusting your search or filters" 
+                      : "Start by getting your first reading!"
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Show More Button */}
+            {getFilteredReadings().length > 10 && (
+              <div className="text-center mt-6">
+                <button className="btn-secondary">
+                  View All {getFilteredReadings().length} Readings
+                </button>
               </div>
             )}
           </div>
