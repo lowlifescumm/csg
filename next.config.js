@@ -10,7 +10,6 @@ const nextConfig = {
         : ['*']
     },
     // Build optimizations
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@heroicons/react'],
   },
   // Fix chunk loading issues
