@@ -51,6 +51,28 @@ export default function BlogPostPage() {
     });
   };
 
+  const formatContent = (content) => {
+    if (!content) return '';
+    
+    // Convert plain text to HTML with proper formatting
+    return content
+      // Convert line breaks to <br> tags
+      .replace(/\n/g, '<br>')
+      // Convert double line breaks to paragraphs
+      .replace(/\n\n/g, '</p><p>')
+      // Wrap in paragraph tags if not already wrapped
+      .replace(/^(?!<p>)/, '<p>')
+      .replace(/(?!<\/p>)$/, '</p>')
+      // Clean up empty paragraphs
+      .replace(/<p><\/p>/g, '')
+      // Convert **bold** to <strong>
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Convert *italic* to <em>
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Convert URLs to links
+      .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-700 underline">$1</a>');
+  };
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -182,7 +204,7 @@ export default function BlogPostPage() {
         <article className="glassmorphic rounded-2xl p-8 apple-shadow-lg mb-8">
           <div 
             className="prose prose-lg prose-gray max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
           />
         </article>
 

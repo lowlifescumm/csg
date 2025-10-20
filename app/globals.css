@@ -298,3 +298,28 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* Blog Content Styling */
+.prose {
+  @apply text-gray-700 leading-relaxed;
+}
+
+.prose p {
+  @apply mb-4 leading-7;
+}
+
+.prose br {
+  @apply block mb-2;
+}
+
+.prose strong {
+  @apply font-semibold text-gray-900;
+}
+
+.prose em {
+  @apply italic text-gray-600;
+}
+
+.prose a {
+  @apply text-purple-600 hover:text-purple-700 underline transition-colors duration-200;
+}
