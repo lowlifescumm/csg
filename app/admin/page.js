@@ -12,7 +12,9 @@ import {
   Heart,
   Sparkles,
   Calendar,
-  LogOut
+  LogOut,
+  FileText,
+  Settings
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -140,6 +142,48 @@ export default function AdminDashboard() {
             subtext={`${stats?.readings?.tarotToday || 0} today`}
             color="pink"
           />
+        </div>
+
+        {/* Admin Management Tools */}
+        <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40 mb-8">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-purple-500" />
+            Admin Management Tools
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <button
+              onClick={() => router.push('/admin/blog')}
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 smooth-transition hover:scale-[1.02] apple-shadow"
+            >
+              <FileText className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">Blog Management</p>
+                <p className="text-sm opacity-90">Create and manage blog posts</p>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => router.push('/admin/users')}
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:from-green-600 hover:to-teal-600 smooth-transition hover:scale-[1.02] apple-shadow"
+            >
+              <Users className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">User Management</p>
+                <p className="text-sm opacity-90">Manage user accounts</p>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => router.push('/admin/settings')}
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl hover:from-orange-600 hover:to-red-600 smooth-transition hover:scale-[1.02] apple-shadow"
+            >
+              <Settings className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">Site Settings</p>
+                <p className="text-sm opacity-90">Configure site options</p>
+              </div>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
