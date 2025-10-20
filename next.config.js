@@ -1,11 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable SWC compiler for faster builds
+  swcMinify: true,
+  
   experimental: {
     serverActions: {
       allowedOrigins: process.env.NODE_ENV === 'production' 
         ? [process.env.NEXT_PUBLIC_BASE_URL || 'https://cosmicspiritguide.com']
         : ['*']
-    }
+    },
+    // Build optimizations
+    optimizeCss: true,
+    optimizePackageImports: ['lucide-react', '@heroicons/react'],
   },
   // Fix chunk loading issues
   webpack: (config, { isServer }) => {
