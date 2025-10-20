@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable SWC compiler for faster builds
-  swcMinify: true,
+  // SWC minification is enabled by default in Next.js 15
   
   experimental: {
     serverActions: {
