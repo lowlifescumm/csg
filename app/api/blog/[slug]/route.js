@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -8,22 +10,46 @@ const pool = new Pool({
   },
 });
 
-// GET /api/blog/[slug] - Get single blog post
+// GET /api/blog/[slug] - Get single blog post (by slug or ID)
 export async function GET(request, { params }) {
   try {
     const { slug } = params;
+    const url = new URL(request.url);
+    const isAdmin = url.searchParams.get('admin') === 'true';
 
-    const postQuery = `
-      SELECT 
-        bp.*,
-        u.first_name as author_name,
-        u.last_name as author_last_name
-      FROM blog_posts bp
-      LEFT JOIN users u ON bp.author_id = u.id
-      WHERE bp.slug = $1 AND bp.status = 'published'
-    `;
+    // Check if slug is actually a numeric ID
+    const isNumericId = /^\d+$/.test(slug);
+    
+    let postQuery;
+    let queryParams;
+    
+    if (isNumericId && isAdmin) {
+      // Admin access by ID - no status filter
+      postQuery = `
+        SELECT 
+          bp.*,
+          u.first_name as author_name,
+          u.last_name as author_last_name
+        FROM blog_posts bp
+        LEFT JOIN users u ON bp.author_id = u.id
+        WHERE bp.id = $1
+      `;
+      queryParams = [slug];
+    } else {
+      // Public access by slug - only published posts
+      postQuery = `
+        SELECT 
+          bp.*,
+          u.first_name as author_name,
+          u.last_name as author_last_name
+        FROM blog_posts bp
+        LEFT JOIN users u ON bp.author_id = u.id
+        WHERE bp.slug = $1 AND bp.status = 'published'
+      `;
+      queryParams = [slug];
+    }
 
-    const postResult = await pool.query(postQuery, [slug]);
+    const postResult = await pool.query(postQuery, queryParams);
 
     if (postResult.rows.length === 0) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
@@ -31,7 +57,12 @@ export async function GET(request, { params }) {
 
     const post = postResult.rows[0];
 
-    // Get related posts
+    // For admin requests, just return the post without related posts or view tracking
+    if (isAdmin) {
+      return NextResponse.json({ post });
+    }
+
+    // Get related posts (only for public access)
     const relatedQuery = `
       SELECT id, title, slug, excerpt, featured_image, published_at
       FROM blog_posts 
@@ -67,5 +98,55 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error('Blog post API error:', error);
     return NextResponse.json({ error: 'Failed to fetch blog post' }, { status: 500 });
+  }
+}
+
+// DELETE /api/blog/[slug] - Delete blog post (admin only)
+export async function DELETE(request, { params }) {
+  try {
+    const { slug } = params;
+    
+    // Check authentication for admin access
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user is admin
+    const { rows: userRows } = await pool.query(
+      "SELECT role FROM users WHERE id=$1",
+      [decoded.userId]
+    );
+    
+    if (!userRows[0] || userRows[0].role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Check if slug is actually a numeric ID
+    const isNumericId = /^\d+$/.test(slug);
+    
+    if (!isNumericId) {
+      return NextResponse.json({ error: 'Invalid post ID' }, { status: 400 });
+    }
+
+    // Delete blog post
+    const { rows } = await pool.query('DELETE FROM blog_posts WHERE id = $1 RETURNING id', [slug]);
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error('Delete blog post error:', error);
+    return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });
   }
 }

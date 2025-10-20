@@ -54,7 +54,7 @@ export default function EditBlogPostPage() {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/blog/${postId}`);
+      const response = await fetch(`/api/blog/${postId}?admin=true`);
       const data = await response.json();
       
       if (response.ok && data.post) {
