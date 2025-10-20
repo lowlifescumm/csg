@@ -152,6 +152,25 @@ export async function POST(request) {
       )
     `);
 
+    // Check if slug already exists and generate a unique one if needed
+    let finalSlug = slug;
+    let counter = 1;
+    
+    while (true) {
+      const { rows: existingSlug } = await pool.query(
+        'SELECT id FROM blog_posts WHERE slug = $1',
+        [finalSlug]
+      );
+      
+      if (existingSlug.length === 0) {
+        break; // Slug is unique
+      }
+      
+      // Generate new slug with counter
+      finalSlug = `${slug}-${counter}`;
+      counter++;
+    }
+
     // Insert new blog post
     const { rows } = await pool.query(`
       INSERT INTO blog_posts (
@@ -161,7 +180,7 @@ export async function POST(request) {
       RETURNING id, title, slug, status, created_at
     `, [
       title,
-      slug,
+      finalSlug,
       excerpt,
       content,
       featured_image,
