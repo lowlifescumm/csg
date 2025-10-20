@@ -21,25 +21,34 @@ export async function GET(request) {
 
     const offset = (page - 1) * limit;
 
-    let whereClause = 'WHERE status = $1';
-    let queryParams = [status];
-    let paramCount = 1;
+    let whereClause = '';
+    let queryParams = [];
+    let paramCount = 0;
+
+    // Handle status filter
+    if (status === 'all') {
+      whereClause = ''; // No status filter - show all posts
+    } else {
+      whereClause = 'WHERE status = $1';
+      queryParams = [status];
+      paramCount = 1;
+    }
 
     if (category) {
       paramCount++;
-      whereClause += ` AND category = $${paramCount}`;
+      whereClause += whereClause ? ` AND category = $${paramCount}` : `WHERE category = $${paramCount}`;
       queryParams.push(category);
     }
 
     if (tag) {
       paramCount++;
-      whereClause += ` AND $${paramCount} = ANY(tags)`;
+      whereClause += whereClause ? ` AND $${paramCount} = ANY(tags)` : `WHERE $${paramCount} = ANY(tags)`;
       queryParams.push(tag);
     }
 
     if (search) {
       paramCount++;
-      whereClause += ` AND (title ILIKE $${paramCount} OR content ILIKE $${paramCount} OR excerpt ILIKE $${paramCount})`;
+      whereClause += whereClause ? ` AND (title ILIKE $${paramCount} OR content ILIKE $${paramCount} OR excerpt ILIKE $${paramCount})` : `WHERE (title ILIKE $${paramCount} OR content ILIKE $${paramCount} OR excerpt ILIKE $${paramCount})`;
       queryParams.push(`%${search}%`);
     }
 
