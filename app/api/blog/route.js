@@ -33,13 +33,13 @@ export async function GET(request) {
 
     if (tag) {
       paramCount++;
-      whereClause += ` AND $${paramCount + 1} = ANY(tags)`;
+      whereClause += ` AND $${paramCount} = ANY(tags)`;
       queryParams.push(tag);
     }
 
     if (search) {
       paramCount++;
-      whereClause += ` AND (title ILIKE $${paramCount + 1} OR content ILIKE $${paramCount + 1} OR excerpt ILIKE $${paramCount + 1})`;
+      whereClause += ` AND (title ILIKE $${paramCount} OR content ILIKE $${paramCount} OR excerpt ILIKE $${paramCount})`;
       queryParams.push(`%${search}%`);
     }
 

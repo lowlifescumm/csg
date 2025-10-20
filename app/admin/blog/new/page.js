@@ -61,9 +61,27 @@ export default function NewBlogPostPage() {
     }));
   };
 
-  const handleSave = async (status = 'draft') => {
+  const handleSave = async (status = 'draft', event) => {
+    if (event) {
+      event.preventDefault();
+    }
+    
     try {
       setSaving(true);
+      
+      // Validate required fields
+      if (!post.title.trim()) {
+        alert('Please enter a title');
+        setSaving(false);
+        return;
+      }
+      
+      if (!post.content.trim()) {
+        alert('Please enter content');
+        setSaving(false);
+        return;
+      }
+
       const response = await fetch('/api/blog', {
         method: 'POST',
         headers: {
@@ -78,6 +96,7 @@ export default function NewBlogPostPage() {
 
       const data = await response.json();
       if (response.ok) {
+        alert('Blog post saved successfully!');
         router.push('/admin/blog');
       } else {
         console.error('Failed to save post:', data.error);
@@ -120,7 +139,7 @@ export default function NewBlogPostPage() {
             
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => handleSave('draft')}
+                onClick={(e) => handleSave('draft', e)}
                 disabled={saving}
                 className="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 smooth-transition disabled:opacity-50"
               >
@@ -128,7 +147,7 @@ export default function NewBlogPostPage() {
                 <span>{saving ? 'Saving...' : 'Save Draft'}</span>
               </button>
               <button
-                onClick={() => handleSave('published')}
+                onClick={(e) => handleSave('published', e)}
                 disabled={saving}
                 className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 smooth-transition disabled:opacity-50"
               >
