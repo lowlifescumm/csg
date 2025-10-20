@@ -18,15 +18,16 @@ export default function BlogAdminPage() {
     try {
       const response = await fetch('/api/auth/user');
       const data = await response.json();
-      if (response.ok) {
-        setUser(data);
-        if (data.role !== 'admin') {
+      if (response.ok && data.user) {
+        setUser(data.user);
+        if (data.user.role !== 'admin') {
           window.location.href = '/dashboard';
         }
       } else {
         window.location.href = '/login';
       }
     } catch (error) {
+      console.error('Auth error:', error);
       window.location.href = '/login';
     }
   };
