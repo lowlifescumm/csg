@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
 
 // use shared pool from lib/db which handles SSL for local/prod
 
@@ -91,9 +93,6 @@ export async function GET(request) {
 // POST /api/blog - Create new blog post
 export async function POST(request) {
   try {
-    const { cookies } = await import('next/headers');
-    const { verifyToken } = await import('@/lib/auth');
-    
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
     
@@ -211,9 +210,6 @@ export async function POST(request) {
 // PUT /api/blog - Update blog post
 export async function PUT(request) {
   try {
-    const { cookies } = await import('next/headers');
-    const { verifyToken } = await import('@/lib/auth');
-    
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
     
@@ -271,9 +267,6 @@ export async function PUT(request) {
 // DELETE /api/blog - Delete blog post
 export async function DELETE(request) {
   try {
-    const { cookies } = await import('next/headers');
-    const { verifyToken } = await import('@/lib/auth');
-    
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
     
