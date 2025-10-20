@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+// use shared pool from lib/db which handles SSL for local/prod
 
 // GET /api/blog/[slug] - Get single blog post (by slug or ID)
 export async function GET(request, { params }) {
