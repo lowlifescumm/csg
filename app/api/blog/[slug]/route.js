@@ -107,7 +107,7 @@ export async function DELETE(request, { params }) {
     const { slug } = params;
     
     // Check authentication for admin access
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const token = cookieStore.get('auth_token')?.value;
     
     if (!token) {
