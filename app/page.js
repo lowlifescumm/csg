@@ -146,7 +146,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="text-gray-700 text-sm">
-                  "The tarot reading was incredibly accurate. It helped me see the situation with my career change from a new perspective. I made the decision with confidence and haven't looked back since."
+                  &quot;The tarot reading was incredibly accurate. It helped me see the situation with my career change from a new perspective. I made the decision with confidence and haven&apos;t looked back since.&quot;
                 </p>
               </div>
               
@@ -167,7 +167,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="text-gray-700 text-sm">
-                  "My relationship was at a crossroads. The compatibility report showed us our strengths and where we needed work. We're stronger than ever now. This service truly saved our relationship."
+                  &quot;My relationship was at a crossroads. The compatibility report showed us our strengths and where we needed work. We&apos;re stronger than ever now. This service truly saved our relationship.&quot;
                 </p>
               </div>
               
@@ -188,7 +188,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="text-gray-700 text-sm">
-                  "The premium features are worth every penny. Daily personalized guidance has helped me navigate difficult family dynamics with grace. I finally found the clarity I was seeking for years."
+                  &quot;The premium features are worth every penny. Daily personalized guidance has helped me navigate difficult family dynamics with grace. I finally found the clarity I was seeking for years.&quot;
                 </p>
               </div>
             </div>
@@ -359,7 +359,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-gray-700 mb-4 italic">
-                "It felt personal and spot-on. I made a tough decision with confidence."
+                &quot;It felt personal and spot-on. I made a tough decision with confidence.&quot;
               </p>
               <p className="text-sm text-gray-500">— Sarah, CA</p>
             </div>
@@ -371,7 +371,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-gray-700 mb-4 italic">
-                "My birth chart report explained patterns I've felt for years."
+                &quot;My birth chart report explained patterns I&apos;ve felt for years.&quot;
               </p>
               <p className="text-sm text-gray-500">— Lucas, UK</p>
             </div>
@@ -383,7 +383,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-gray-700 mb-4 italic">
-                "The compatibility reading helped us understand each other better."
+                &quot;The compatibility reading helped us understand each other better.&quot;
               </p>
               <p className="text-sm text-gray-500">— Maya, NYC</p>
             </div>

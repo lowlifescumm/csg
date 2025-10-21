@@ -318,7 +318,7 @@ export default function PersonalizedMoonReading() {
             Your Personalized Moon Reading
           </h1>
           <p className="text-lg sm:text-xl text-purple-200 px-4">
-            Discover how today's lunar energy specifically affects YOU
+            Discover how today&apos;s lunar energy specifically affects YOU
           </p>
         </div>
 
@@ -327,7 +327,7 @@ export default function PersonalizedMoonReading() {
             <div className="text-3xl sm:text-4xl mb-3">🎯</div>
             <h3 className="text-white font-bold mb-2 text-sm sm:text-base">Your Natal Moon</h3>
             <p className="text-purple-200 text-xs sm:text-sm">
-              We analyze your birth chart Moon sign and how it interacts with today's lunar energy
+              We analyze your birth chart Moon sign and how it interacts with today&apos;s lunar energy
             </p>
           </div>
           <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white border-opacity-20">
@@ -417,7 +417,7 @@ export default function PersonalizedMoonReading() {
               <ul className="space-y-2 text-xs sm:text-sm text-gray-700">
                 <li className="flex items-start gap-2">
                   <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
-                  <span>How today's moon phase affects YOUR specific moon sign</span>
+                  <span>How today&apos;s moon phase affects YOUR specific moon sign</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-600 mt-1 text-xs sm:text-sm">✓</span>
@@ -560,7 +560,7 @@ export default function PersonalizedMoonReading() {
             </div>
             <div className="text-yellow-400 mb-2 text-sm sm:text-base">★★★★★</div>
             <p className="text-purple-100 text-xs sm:text-sm">
-              "This was so much more accurate than generic moon phase advice. Finally understand why I feel certain ways!"
+              &quot;This was so much more accurate than generic moon phase advice. Finally understand why I feel certain ways!&quot;
             </p>
           </div>
 
@@ -574,7 +574,7 @@ export default function PersonalizedMoonReading() {
             </div>
             <div className="text-yellow-400 mb-2 text-sm sm:text-base">★★★★★</div>
             <p className="text-purple-100 text-xs sm:text-sm">
-              "The timing advice was spot-on. Made a major career decision during my recommended window and it worked out perfectly."
+              &quot;The timing advice was spot-on. Made a major career decision during my recommended window and it worked out perfectly.&quot;
             </p>
           </div>
 
@@ -588,7 +588,7 @@ export default function PersonalizedMoonReading() {
             </div>
             <div className="text-yellow-400 mb-2 text-sm sm:text-base">★★★★★</div>
             <p className="text-purple-100 text-xs sm:text-sm">
-              "Love the personalized ritual! Actually did it and felt so much more grounded. Worth every penny."
+              &quot;Love the personalized ritual! Actually did it and felt so much more grounded. Worth every penny.&quot;
             </p>
           </div>
         </div>

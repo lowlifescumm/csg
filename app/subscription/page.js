@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Zap, Star, Heart, TrendingUp, Check } from 'lucide-react';
@@ -11,11 +11,7 @@ export default function SubscriptionPage() {
   const [user, setUser] = useState(null);
   const [processing, setProcessing] = useState(false);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/user');
       const data = await res.json();
@@ -30,7 +26,11 @@ export default function SubscriptionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const handleSubscribe = async () => {
     setProcessing(true);
@@ -85,7 +85,7 @@ export default function SubscriptionPage() {
               <Check className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-white mb-4">Active Subscription</h2>
-            <p className="text-purple-200 mb-8">You're enjoying all premium features!</p>
+            <p className="text-purple-200 mb-8">You&apos;re enjoying all premium features!</p>
             <Link
               href="/dashboard"
               className="inline-block bg-white bg-opacity-20 text-white font-bold py-4 px-8 rounded-lg hover:bg-opacity-30 transition-all"

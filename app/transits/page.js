@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Zap, TrendingUp, AlertTriangle, Sparkles, Calendar, 
   Bell, ChevronRight, Clock, Star, Heart, Briefcase, 
@@ -17,11 +17,7 @@ export default function TransitDashboard() {
   const [requiresPremium, setRequiresPremium] = useState(false);
   const [needsBirthChart, setNeedsBirthChart] = useState(false);
 
-  useEffect(() => {
-    fetchTransits();
-  }, []);
-
-  const fetchTransits = async () => {
+  const fetchTransits = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/transits');
@@ -53,7 +49,11 @@ export default function TransitDashboard() {
       setError(err.message);
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchTransits();
+  }, [fetchTransits]);
 
   // Filter transits based on timeframe
   const getFilteredTransits = () => {
@@ -296,7 +296,7 @@ export default function TransitDashboard() {
             </div>
             
             <div className="relative h-3 bg-white/10 rounded-full overflow-hidden mb-8">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 rounded-full transition-all duration-1000 relative"
                 style={{ width: `${currentIntensity * 10}%` }}
               >
@@ -454,7 +454,7 @@ function TransitDetailView({ transit, onBack }) {
     if (!transit.interpretation || !transit.interpretation.fullGuidance) {
       fetchInterpretation();
     }
-  }, []);
+  }, [fetchInterpretation, transit.interpretation]);
 
   const fetchInterpretation = async () => {
     try {
