@@ -1,17 +1,20 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { Pool } from 'pg';
-import { calculateActiveTransits, getCurrentPlanetaryPositions, getAffectedArea, getAspectNature, getTransitColor, calculateTransitPeakDate } from '@/lib/transits';
+import { pool } from '@/lib/db.js';
+import { 
+  calculateActiveTransits, 
+  getCurrentPlanetaryPositions, 
+  getAffectedArea, 
+  getAspectNature, 
+  getTransitColor, 
+  calculateTransitPeakDate 
+} from '@/lib/transits';
 import { generateAllTransitInterpretations } from '@/lib/transit-interpretation';
-
-// **THIS IS THE UPDATED PART**
-// This configuration explicitly forces an SSL connection.
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+import { 
+  getUserTransits, 
+  calculateAndStoreTransits, 
+  updateTransitStatuses 
+} from '@/lib/transit-engine.js';
 
 export async function GET(req) {
   try {
@@ -23,6 +26,11 @@ export async function GET(req) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
+
+    // Get query params
+    const { searchParams } = new URL(req.url);
+    const mode = searchParams.get('mode') || 'live'; // 'live' or 'database'
+    const windowDays = parseInt(searchParams.get('windowDays') || '30');
 
     const userResult = await pool.query(
       'SELECT role, stripe_subscription_id FROM users WHERE id = $1',
@@ -44,27 +52,92 @@ export async function GET(req) {
       }, { status: 402 });
     }
 
-    const chartResult = await pool.query(
-      'SELECT * FROM birth_charts WHERE user_id = $1',
+    // Check for natal chart in new table first, fallback to old birth_charts table
+    let chartResult = await pool.query(
+      'SELECT * FROM natal_charts WHERE user_id = $1 AND is_primary = true',
       [userId]
     );
 
+    // Fallback to old birth_charts table
     if (chartResult.rows.length === 0) {
-      return NextResponse.json({ 
-        error: 'Birth chart required',
-        needsBirthChart: true
-      }, { status: 400 });
+      chartResult = await pool.query(
+        'SELECT * FROM birth_charts WHERE user_id = $1',
+        [userId]
+      );
+
+      if (chartResult.rows.length === 0) {
+        return NextResponse.json({ 
+          error: 'Birth chart required',
+          needsBirthChart: true
+        }, { status: 400 });
+      }
+
+      // Use old format
+      const chart = chartResult.rows[0];
+      const chartData = typeof chart.chart_data === 'string' 
+        ? JSON.parse(chart.chart_data) 
+        : chart.chart_data;
+      
+      const userBirthChart = {
+        planets: chartData.planets,
+        houses: chartData.houses,
+        ascendant: chartData.ascendant
+      };
+
+      // Use old calculation method
+      const activeTransits = calculateActiveTransits(userBirthChart);
+      
+      // Continue with old response format
+      const enrichedTransits = await enrichTransitsOldFormat(activeTransits, userBirthChart);
+      const currentPositions = getCurrentPlanetaryPositions();
+      
+      return NextResponse.json({
+        transits: enrichedTransits,
+        currentPositions,
+        stats: calculateStats(enrichedTransits),
+        userChart: {
+          sunSign: chartData.planets.sun.sign,
+          moonSign: chartData.planets.moon.sign,
+          risingSign: chartData.ascendant
+        },
+        mode: 'legacy'
+      });
     }
 
-    const chart = chartResult.rows[0];
-    const chartData = typeof chart.chart_data === 'string' 
-      ? JSON.parse(chart.chart_data) 
-      : chart.chart_data;
-    
+    // Use new natal_charts table format
+    const natalChart = chartResult.rows[0];
+    const natalChartId = natalChart.id;
+
+    if (mode === 'database') {
+      // Update transit statuses first
+      await updateTransitStatuses();
+
+      // Get transits from database
+      const dbTransits = await getUserTransits(userId, windowDays);
+
+      // Convert database format to UI format
+      const enrichedTransits = await enrichTransitsFromDatabase(dbTransits, natalChart);
+      const currentPositions = getCurrentPlanetaryPositions();
+
+      return NextResponse.json({
+        transits: enrichedTransits,
+        currentPositions,
+        stats: calculateStats(enrichedTransits),
+        userChart: {
+          sunSign: natalChart.natal_positions.sun.sign,
+          moonSign: natalChart.natal_positions.moon.sign,
+          risingSign: natalChart.ascendant.sign || natalChart.ascendant
+        },
+        mode: 'database',
+        transitCount: dbTransits.length
+      });
+    }
+
+    // Live mode - calculate on the fly
     const userBirthChart = {
-      planets: chartData.planets,
-      houses: chartData.houses,
-      ascendant: chartData.ascendant
+      planets: natalChart.natal_positions,
+      houses: natalChart.houses,
+      ascendant: natalChart.ascendant
     };
 
     const activeTransits = calculateActiveTransits(userBirthChart);
@@ -127,4 +200,112 @@ export async function GET(req) {
       details: error.message
     }, { status: 500 });
   }
+}
+
+// Helper functions
+async function enrichTransitsOldFormat(transits, userBirthChart) {
+  const enriched = transits.map(transit => {
+    const aspectNature = getAspectNature(transit.aspect);
+    const affectedArea = getAffectedArea(transit.natalPlanet, transit.affectedHouse);
+    const color = getTransitColor(transit.intensity, aspectNature);
+    const peakInfo = calculateTransitPeakDate(transit.transitPlanet, userBirthChart.planets[transit.natalPlanet].longitude);
+    
+    return {
+      ...transit,
+      affectedArea,
+      aspectNature,
+      color,
+      peakDate: peakInfo.date,
+      daysUntilPeak: peakInfo.daysUntil,
+      type: transit.intensity >= 7 ? 'major' : 'moderate'
+    };
+  });
+
+  const majorTransits = enriched.filter(t => t.type === 'major').slice(0, 3);
+  const interpretedTransits = await generateAllTransitInterpretations(majorTransits, userBirthChart);
+
+  return enriched.map(transit => {
+    const interpreted = interpretedTransits.find(
+      it => it.transitPlanet === transit.transitPlanet && it.natalPlanet === transit.natalPlanet
+    );
+    return interpreted || transit;
+  });
+}
+
+async function enrichTransitsFromDatabase(dbTransits, natalChart) {
+  return dbTransits.map(transit => {
+    const now = new Date();
+    const exactTime = new Date(transit.exact_time);
+    const daysUntilPeak = Math.ceil((exactTime - now) / (1000 * 60 * 60 * 24));
+
+    return {
+      transitPlanet: transit.transiting_body.toLowerCase(),
+      transitPlanetName: transit.transiting_body,
+      transitSign: getSignForBody(transit.transiting_body),
+      natalPlanet: transit.natal_point.toLowerCase(),
+      natalPlanetName: transit.natal_point,
+      natalSign: natalChart.natal_positions[transit.natal_point.toLowerCase()]?.sign || 'Unknown',
+      aspect: transit.aspect,
+      orb: parseFloat(transit.orb),
+      intensity: Math.round(transit.strength_score / 10),
+      strengthScore: transit.strength_score,
+      isExact: transit.orb < 1,
+      affectedHouse: transit.affected_house || 1,
+      affectedArea: getHouseMeaning(transit.affected_house || 1),
+      aspectNature: getAspectNature(transit.aspect),
+      color: getTransitColorFromStrength(transit.strength_score, getAspectNature(transit.aspect)),
+      peakDate: exactTime,
+      daysUntilPeak: daysUntilPeak,
+      type: transit.strength_score >= 70 ? 'major' : 'moderate',
+      status: transit.status,
+      interpretation: transit.interpretation || null
+    };
+  });
+}
+
+function getSignForBody(body) {
+  // This should query current ephemeris, but for now use a placeholder
+  const positions = getCurrentPlanetaryPositions();
+  return positions[body.toLowerCase()]?.sign || 'Unknown';
+}
+
+function getHouseMeaning(houseNumber) {
+  const meanings = {
+    1: 'Self & Identity',
+    2: 'Money & Values',
+    3: 'Communication',
+    4: 'Home & Family',
+    5: 'Creativity & Romance',
+    6: 'Work & Health',
+    7: 'Partnerships',
+    8: 'Transformation',
+    9: 'Philosophy & Travel',
+    10: 'Career & Status',
+    11: 'Friends & Community',
+    12: 'Spirituality & Unconscious'
+  };
+  return meanings[houseNumber] || 'Unknown';
+}
+
+function getTransitColorFromStrength(strength, aspectNature) {
+  if (aspectNature === 'challenging' && strength >= 70) return 'red';
+  if (aspectNature === 'challenging' && strength >= 50) return 'orange';
+  if (aspectNature === 'beneficial') return 'green';
+  return 'purple';
+}
+
+function calculateStats(transits) {
+  const majorCount = transits.filter(t => t.type === 'major').length;
+  const moderateCount = transits.filter(t => t.type === 'moderate').length;
+  const totalActive = transits.length;
+  const avgIntensity = totalActive > 0 
+    ? Math.round(transits.reduce((sum, t) => sum + (t.intensity || t.strengthScore / 10 || 0), 0) / totalActive)
+    : 0;
+
+  return {
+    majorCount,
+    moderateCount,
+    totalActive,
+    averageIntensity: avgIntensity
+  };
 }

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p $PORT",
     "lint": "eslint .",
-    "pinecone:init": "node scripts/pinecone-init.js"
+    "pinecone:init": "node scripts/pinecone-init.js",
+    "transit:setup": "node scripts/setup-transit-tracker.js"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.2",
