@@ -656,7 +656,10 @@ export default function DashboardPage() {
                   {getFilteredReadings().length > 0 ? (
                     getFilteredReadings().slice(0, 10).map((reading, index) => {
                       // Safety check - skip if reading is invalid
-                      if (!reading || !reading.id) return null;
+                      if (!reading || !reading.id || typeof reading !== 'object') return null;
+                      
+                      // Ensure type is defined and is a string
+                      const readingType = (reading.type && typeof reading.type === 'string') ? reading.type : 'unknown';
                       
                       return (
                       <div 
@@ -668,11 +671,11 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-3">
                             <span className="text-sm text-gray-500">{reading.created_at ? formatDate(reading.created_at) : 'Unknown date'}</span>
                             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                              reading.type === 'tarot' 
+                              readingType === 'tarot' 
                                 ? 'bg-purple-100 text-purple-700' 
                                 : 'bg-blue-100 text-blue-700'
                             }`}>
-                              {reading.type === 'tarot' 
+                              {readingType === 'tarot' 
                                 ? (reading.result?.spreadType || 'Three Card')
                                 : 'Birth Chart'
                               }
@@ -680,7 +683,7 @@ export default function DashboardPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-400 capitalize">
-                              {reading.type ? reading.type.replace('_', ' ') : 'Reading'}
+                              {readingType.replace('_', ' ')}
                             </span>
                           </div>
                         </div>
