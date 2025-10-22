@@ -35,7 +35,7 @@ const planetSymbols = {
 
 export default function BirthChartWheel({ chartData, birthInfo }) {
   const svgRef = useRef(null);
-  const centerX = 400;
+  const centerX = 500;
   const centerY = 400;
   const outerRadius = 350;
   const zodiacRadius = 320;
@@ -47,8 +47,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     
     const svgData = new XMLSerializer().serializeToString(svgRef.current);
     const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 800;
+    canvas.width = 1400;
+    canvas.height = 1000;
     const ctx = canvas.getContext('2d');
     
     const img = new Image();
@@ -57,7 +57,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     
     img.onload = () => {
       ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, 800, 800);
+      ctx.fillRect(0, 0, 1400, 1000);
       ctx.drawImage(img, 0, 0);
       URL.revokeObjectURL(url);
       
@@ -150,6 +150,24 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
       const symbol = planetSymbols[planet.toLowerCase()] || planet[0].toUpperCase();
       const isRetrograde = data.retrograde === true;
       const isSpecialPoint = ['northnode', 'southnode', 'chiron'].includes(planet.toLowerCase());
+      const dignity = chartData?.dignities?.[planet];
+      
+      // Dignity indicator
+      let dignitySymbol = '';
+      let dignityColor = '#6366f1';
+      if (dignity === 'domicile') {
+        dignitySymbol = '👑'; // At home
+        dignityColor = '#f59e0b';
+      } else if (dignity === 'exaltation') {
+        dignitySymbol = '↑'; // Empowered
+        dignityColor = '#10b981';
+      } else if (dignity === 'detriment') {
+        dignitySymbol = '↓'; // Challenged
+        dignityColor = '#f97316';
+      } else if (dignity === 'fall') {
+        dignitySymbol = '×'; // Weakened
+        dignityColor = '#ef4444';
+      }
       
       return (
         <g key={planet}>
@@ -158,7 +176,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             cy={point.y}
             r="20"
             fill="white"
-            stroke={isSpecialPoint ? "#ec4899" : "#6366f1"}
+            stroke={dignity ? dignityColor : (isSpecialPoint ? "#ec4899" : "#6366f1")}
             strokeWidth="2"
           />
           <text
@@ -182,6 +200,18 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               fontWeight="bold"
             >
               ℞
+            </text>
+          )}
+          {dignitySymbol && (
+            <text
+              x={point.x - 18}
+              y={point.y - 12}
+              textAnchor="middle"
+              fontSize="12"
+              fill={dignityColor}
+              fontWeight="bold"
+            >
+              {dignitySymbol}
             </text>
           )}
           <text
@@ -283,11 +313,17 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     if (!chartData?.aspects || !chartData?.planets) return null;
     
     const aspectColors = {
+      // Major aspects
       'conjunction': '#ef4444',
       'opposition': '#f59e0b',
       'trine': '#10b981',
       'square': '#dc2626',
-      'sextile': '#3b82f6'
+      'sextile': '#3b82f6',
+      // Minor aspects
+      'quincunx': '#a855f7',
+      'semisextile': '#06b6d4',
+      'semisquare': '#f97316',
+      'sesquisquare': '#fb923c'
     };
     
     return chartData.aspects.map((aspect, index) => {
@@ -305,6 +341,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         return null;
       }
       
+      const isMajor = aspect.major !== false;
+      
       return (
         <line
           key={index}
@@ -313,9 +351,9 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           x2={point2.x}
           y2={point2.y}
           stroke={aspectColors[aspect.type] || '#9ca3af'}
-          strokeWidth="1"
-          opacity="0.3"
-          strokeDasharray="4,4"
+          strokeWidth={isMajor ? "1.5" : "0.8"}
+          opacity={isMajor ? "0.4" : "0.2"}
+          strokeDasharray={isMajor ? "4,4" : "2,2"}
         />
       );
     });
@@ -325,9 +363,9 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     <div className="flex flex-col items-center gap-4">
       <svg
         ref={svgRef}
-        width="800"
-        height="800"
-        viewBox="0 0 800 800"
+        width="1400"
+        height="1000"
+        viewBox="0 0 1400 1000"
         className="max-w-full h-auto border-2 border-purple-200 rounded-2xl bg-white"
       >
         <circle
@@ -500,6 +538,134 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {/* Retrograde Indicator */}
         <text x="40" y="760" fontSize="10" fill="#ef4444">
           ℞ = Retrograde
+        </text>
+        
+        {/* Moon Phase (Top Center) */}
+        {chartData?.moonPhase && (
+          <g>
+            <rect x="620" y="300" width="120" height="80" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="680" y="320" textAnchor="middle" fontSize="11" fill="#6366f1" fontWeight="600">
+              Moon Phase
+            </text>
+            <text x="680" y="350" textAnchor="middle" fontSize="28">
+              {chartData.moonPhase.emoji}
+            </text>
+            <text x="680" y="372" textAnchor="middle" fontSize="9" fill="#6b7280">
+              {chartData.moonPhase.name}
+            </text>
+          </g>
+        )}
+        
+        {/* Chart Patterns (Right side) */}
+        {chartData?.chartPatterns && chartData.chartPatterns.length > 0 && (
+          <g>
+            <rect x="920" y="20" width="260" height="200" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="1050" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+              Chart Patterns
+            </text>
+            {chartData.chartPatterns.slice(0, 5).map((pattern, idx) => {
+              const emoji = pattern.type === 'Grand Trine' ? '△' : 
+                            pattern.type === 'T-Square' ? '⊤' : 
+                            pattern.type === 'Yod' ? '☝' :
+                            pattern.type === 'Stellium' ? '★' : '◆';
+              return (
+                <g key={idx}>
+                  <text x="930" y={62 + idx * 32} fontSize="14">{emoji}</text>
+                  <text x="950" y={62 + idx * 32} fontSize="10" fill="#374151" fontWeight="600">
+                    {pattern.type}
+                  </text>
+                  <text x="950" y={76 + idx * 32} fontSize="8" fill="#6b7280">
+                    {pattern.planets.slice(0, 3).join(', ')}
+                    {pattern.planets.length > 3 && ` +${pattern.planets.length - 3}`}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        )}
+        
+        {/* Planet-in-House List (Left side bottom) */}
+        {chartData?.planetHouses && (
+          <g>
+            <rect x="20" y="300" width="160" height="300" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="100" y="320" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+              Planets in Houses
+            </text>
+            {Object.entries(chartData.planetHouses)
+              .filter(([p]) => !['northnode', 'southnode', 'chiron'].includes(p.toLowerCase()))
+              .slice(0, 10)
+              .map(([planet, house], idx) => (
+                <g key={planet}>
+                  <text x="30" y={340 + idx * 24} fontSize="9" fill="#6b7280">
+                    {planetSymbols[planet.toLowerCase()] || planet[0].toUpperCase()} {planet}
+                  </text>
+                  <text x="150" y={340 + idx * 24} fontSize="9" fill="#9333ea" fontWeight="600" textAnchor="end">
+                    House {house}
+                  </text>
+                </g>
+              ))}
+          </g>
+        )}
+        
+        {/* Aspect Grid (Bottom) */}
+        {chartData?.aspects && (
+          <g>
+            <rect x="200" y="820" width="980" height="160" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="690" y="840" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+              Aspect Grid
+            </text>
+            {/* Column headers */}
+            {['☉', '☽', '☿', '♀', '♂', '♃', '♄', '♅', '♆', '♇'].map((symbol, idx) => (
+              <text key={idx} x={235 + idx * 95} y="862" fontSize="10" fill="#6b7280" fontWeight="600" textAnchor="middle">
+                {symbol}
+              </text>
+            ))}
+            {/* Row headers and grid */}
+            {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet1, row) => (
+              <g key={planet1}>
+                <text x="220" y={882 + row * 9} fontSize="9" fill="#6b7280">
+                  {planetSymbols[planet1]}
+                </text>
+                {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet2, col) => {
+                  if (col <= row) return null;
+                  const aspect = chartData.aspects.find(a => 
+                    (a.planet1 === planet1 && a.planet2 === planet2) ||
+                    (a.planet2 === planet1 && a.planet1 === planet2)
+                  );
+                  if (!aspect) return null;
+                  const colors = {
+                    conjunction: '#ef4444', opposition: '#f59e0b', trine: '#10b981',
+                    square: '#dc2626', sextile: '#3b82f6', quincunx: '#a855f7',
+                    semisextile: '#06b6d4', semisquare: '#f97316', sesquisquare: '#fb923c'
+                  };
+                  const symbols = {
+                    conjunction: '☌', opposition: '☍', trine: '△', square: '□', sextile: '⚹',
+                    quincunx: '⚻', semisextile: '⚺', semisquare: '∠', sesquisquare: '⚼'
+                  };
+                  return (
+                    <text 
+                      key={`${planet1}-${planet2}`}
+                      x={235 + col * 95}
+                      y={882 + row * 9}
+                      fontSize="8"
+                      fill={colors[aspect.type] || '#9ca3af'}
+                      textAnchor="middle"
+                      fontWeight="bold"
+                    >
+                      {symbols[aspect.type] || '•'}
+                    </text>
+                  );
+                })}
+              </g>
+            ))}
+            {/* Legend for minor aspects */}
+            <text x="210" y="965" fontSize="8" fill="#6b7280">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
+          </g>
+        )}
+        
+        {/* Dignities Legend */}
+        <text x="40" y="780" fontSize="10" fill="#6b7280">
+          👑=Domicile ↑=Exalted ↓=Detriment ×=Fall
         </text>
       </svg>
       
