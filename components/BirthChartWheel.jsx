@@ -2,53 +2,52 @@
 import { useRef } from 'react';
 
 const zodiacSymbols = {
-  'Aries': '♈',
-  'Taurus': '♉',
-  'Gemini': '♊',
-  'Cancer': '♋',
-  'Leo': '♌',
-  'Virgo': '♍',
-  'Libra': '♎',
-  'Scorpio': '♏',
-  'Sagittarius': '♐',
-  'Capricorn': '♑',
-  'Aquarius': '♒',
-  'Pisces': '♓'
+  'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
+  'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
+  'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
 const planetSymbols = {
-  'sun': '☉',
-  'moon': '☽',
-  'mercury': '☿',
-  'venus': '♀',
-  'mars': '♂',
-  'jupiter': '♃',
-  'saturn': '♄',
-  'uranus': '♅',
-  'neptune': '♆',
-  'pluto': '♇',
-  'northnode': '☊',
-  'southnode': '☋',
-  'chiron': '⚷',
-  'partoffortune': '⊕'
+  'sun': '☉', 'moon': '☽', 'mercury': '☿', 'venus': '♀', 'mars': '♂',
+  'jupiter': '♃', 'saturn': '♄', 'uranus': '♅', 'neptune': '♆', 'pluto': '♇',
+  'northnode': '☊', 'southnode': '☋', 'chiron': '⚷', 'partoffortune': '⊕'
 };
 
 export default function BirthChartWheel({ chartData, birthInfo }) {
   const svgRef = useRef(null);
-  const centerX = 500;
-  const centerY = 400;
-  const outerRadius = 350;
-  const zodiacRadius = 320;
-  const planetRadius = 280;
-  const innerRadius = 240;
+  const centerX = 600;
+  const centerY = 450;
+  const outerRadius = 360;
+  const zodiacRadius = 330;
+  const planetRadius = 290;
+  const innerRadius = 250;
+
+  // Format date nicely
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
+  // Format time nicely
+  const formatTime = (timeStr) => {
+    if (!timeStr) return '';
+    const [hours, minutes] = timeStr.split(':');
+    const h = parseInt(hours);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const displayHour = h % 12 || 12;
+    return `${displayHour}:${minutes} ${period}`;
+  };
 
   const downloadChart = () => {
     if (!svgRef.current) return;
-    
     const svgData = new XMLSerializer().serializeToString(svgRef.current);
     const canvas = document.createElement('canvas');
-    canvas.width = 1400;
-    canvas.height = 1000;
+    canvas.width = 1600;
+    canvas.height = 1200;
     const ctx = canvas.getContext('2d');
     
     const img = new Image();
@@ -57,13 +56,13 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     
     img.onload = () => {
       ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, 1400, 1000);
+      ctx.fillRect(0, 0, 1600, 1200);
       ctx.drawImage(img, 0, 0);
       URL.revokeObjectURL(url);
       
       canvas.toBlob((blob) => {
         const link = document.createElement('a');
-        link.download = `birth-chart-${birthInfo.date}.png`;
+        link.download = `natal-chart-${birthInfo.date}.png`;
         link.href = URL.createObjectURL(blob);
         link.click();
       });
@@ -72,22 +71,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     img.src = url;
   };
 
-  const downloadSVG = () => {
-    if (!svgRef.current) return;
-    const svgData = new XMLSerializer().serializeToString(svgRef.current);
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-    const link = document.createElement('a');
-    link.download = `birth-chart-${birthInfo.date}.svg`;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   const getPointOnCircle = (radius, angle) => {
-    if (typeof angle !== 'number' || isNaN(angle)) {
-      return { x: NaN, y: NaN };
-    }
+    if (typeof angle !== 'number' || isNaN(angle)) return { x: NaN, y: NaN };
     const rad = (angle - 90) * Math.PI / 180;
     return {
       x: centerX + radius * Math.cos(rad),
@@ -99,31 +84,32 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     const zodiacSigns = Object.keys(zodiacSymbols);
     return zodiacSigns.map((sign, index) => {
       const startAngle = index * 30;
+      const endAngle = (index + 1) * 30;
       const midAngle = startAngle + 15;
-      const point = getPointOnCircle(zodiacRadius, midAngle);
       
-      const startPoint = getPointOnCircle(outerRadius, startAngle);
-      const endPoint = getPointOnCircle(innerRadius, startAngle);
+      const start = getPointOnCircle(outerRadius, startAngle);
+      const end = getPointOnCircle(outerRadius, endAngle);
+      const innerStart = getPointOnCircle(zodiacRadius, startAngle);
+      const innerEnd = getPointOnCircle(zodiacRadius, endAngle);
+      
+      const symbolPos = getPointOnCircle(zodiacRadius + 20, midAngle);
       
       return (
         <g key={sign}>
-          <line
-            x1={startPoint.x}
-            y1={startPoint.y}
-            x2={endPoint.x}
-            y2={endPoint.y}
-            stroke="#9333ea"
+          <path
+            d={`M ${innerStart.x} ${innerStart.y} L ${start.x} ${start.y} A ${outerRadius} ${outerRadius} 0 0 1 ${end.x} ${end.y} L ${innerEnd.x} ${innerEnd.y} A ${zodiacRadius} ${zodiacRadius} 0 0 0 ${innerStart.x} ${innerStart.y}`}
+            fill="none"
+            stroke="#d1d5db"
             strokeWidth="1"
-            opacity="0.3"
           />
           <text
-            x={point.x}
-            y={point.y}
+            x={symbolPos.x}
+            y={symbolPos.y}
             textAnchor="middle"
             dominantBaseline="middle"
-            fontSize="24"
-            fill="#9333ea"
-            fontWeight="bold"
+            fontSize="20"
+            fill="#6b7280"
+            fontWeight="600"
           >
             {zodiacSymbols[sign]}
           </text>
@@ -136,174 +122,39 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     if (!chartData?.planets) return null;
     
     return Object.entries(chartData.planets).map(([planet, data]) => {
-      if (!data || typeof data.longitude !== 'number' || isNaN(data.longitude)) {
-        return null;
-      }
+      if (!data || typeof data.longitude !== 'number') return null;
       
-      const angle = data.longitude;
-      const point = getPointOnCircle(planetRadius, angle);
-      
-      if (isNaN(point.x) || isNaN(point.y)) {
-        return null;
-      }
-      
-      const symbol = planetSymbols[planet.toLowerCase()] || planet[0].toUpperCase();
-      const isRetrograde = data.retrograde === true;
-      const isSpecialPoint = ['northnode', 'southnode', 'chiron'].includes(planet.toLowerCase());
-      const dignity = chartData?.dignities?.[planet];
-      
-      // Dignity indicator
-      let dignitySymbol = '';
-      let dignityColor = '#6366f1';
-      if (dignity === 'domicile') {
-        dignitySymbol = '👑'; // At home
-        dignityColor = '#f59e0b';
-      } else if (dignity === 'exaltation') {
-        dignitySymbol = '↑'; // Empowered
-        dignityColor = '#10b981';
-      } else if (dignity === 'detriment') {
-        dignitySymbol = '↓'; // Challenged
-        dignityColor = '#f97316';
-      } else if (dignity === 'fall') {
-        dignitySymbol = '×'; // Weakened
-        dignityColor = '#ef4444';
-      }
+      const pos = getPointOnCircle(planetRadius, data.longitude);
+      if (isNaN(pos.x) || isNaN(pos.y)) return null;
+
+      const dignity = chartData.dignities?.[planet];
+      const isRetrograde = data.isRetrograde;
       
       return (
         <g key={planet}>
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r="20"
-            fill="white"
-            stroke={dignity ? dignityColor : (isSpecialPoint ? "#ec4899" : "#6366f1")}
-            strokeWidth="2"
-          />
+          <circle cx={pos.x} cy={pos.y} r="18" fill="white" stroke="#6366f1" strokeWidth="2" />
           <text
-            x={point.x}
-            y={point.y}
+            x={pos.x}
+            y={pos.y}
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize="18"
-            fill={isSpecialPoint ? "#ec4899" : "#6366f1"}
+            fill="#6366f1"
             fontWeight="bold"
           >
-            {symbol}
+            {planetSymbols[planet.toLowerCase()] || planet}
           </text>
           {isRetrograde && (
-            <text
-              x={point.x + 18}
-              y={point.y - 12}
-              textAnchor="middle"
-              fontSize="12"
-              fill="#ef4444"
-              fontWeight="bold"
-            >
-              ℞
+            <text x={pos.x + 14} y={pos.y - 12} fontSize="10" fill="#dc2626" fontWeight="bold">℞</text>
+          )}
+          {dignity && dignity !== 'peregrine' && (
+            <text x={pos.x - 14} y={pos.y - 12} fontSize="11">
+              {dignity === 'rulership' && '👑'}
+              {dignity === 'exaltation' && '↑'}
+              {dignity === 'detriment' && '↓'}
+              {dignity === 'fall' && '×'}
             </text>
           )}
-          {dignitySymbol && (
-            <text
-              x={point.x - 18}
-              y={point.y - 12}
-              textAnchor="middle"
-              fontSize="12"
-              fill={dignityColor}
-              fontWeight="bold"
-            >
-              {dignitySymbol}
-            </text>
-          )}
-          <text
-            x={point.x}
-            y={point.y + 35}
-            textAnchor="middle"
-            fontSize="10"
-            fill="#6b7280"
-          >
-            {Math.floor(data.degree)}°
-          </text>
-        </g>
-      );
-    });
-  };
-
-  const renderPartOfFortune = () => {
-    if (!chartData?.partOfFortune || typeof chartData.partOfFortune.longitude !== 'number') {
-      return null;
-    }
-    
-    const point = getPointOnCircle(planetRadius - 40, chartData.partOfFortune.longitude);
-    
-    if (isNaN(point.x) || isNaN(point.y)) return null;
-    
-    return (
-      <g>
-        <circle
-          cx={point.x}
-          cy={point.y}
-          r="16"
-          fill="white"
-          stroke="#f59e0b"
-          strokeWidth="2"
-          strokeDasharray="3,2"
-        />
-        <text
-          x={point.x}
-          y={point.y}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fontSize="16"
-          fill="#f59e0b"
-          fontWeight="bold"
-        >
-          ⊕
-        </text>
-      </g>
-    );
-  };
-
-  const renderHouses = () => {
-    if (!chartData?.houses) return null;
-    
-    return Object.entries(chartData.houses).map(([house, data]) => {
-      if (!data || typeof data.longitude !== 'number' || isNaN(data.longitude)) {
-        return null;
-      }
-      
-      const houseNum = parseInt(house);
-      const angle = data.longitude;
-      const startPoint = getPointOnCircle(outerRadius, angle);
-      const endPoint = getPointOnCircle(innerRadius - 20, angle);
-      
-      if (isNaN(startPoint.x) || isNaN(startPoint.y) || isNaN(endPoint.x) || isNaN(endPoint.y)) {
-        return null;
-      }
-      
-      const labelPoint = getPointOnCircle(innerRadius - 50, angle + 15);
-      
-      return (
-        <g key={house}>
-          <line
-            x1={startPoint.x}
-            y1={startPoint.y}
-            x2={endPoint.x}
-            y2={endPoint.y}
-            stroke="#ec4899"
-            strokeWidth="2"
-            opacity="0.6"
-          />
-          <text
-            x={labelPoint.x}
-            y={labelPoint.y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize="14"
-            fill="#ec4899"
-            fontWeight="600"
-          >
-            {houseNum}
-          </text>
         </g>
       );
     });
@@ -311,377 +162,336 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
 
   const renderAspectLines = () => {
     if (!chartData?.aspects || !chartData?.planets) return null;
-    
-    const aspectColors = {
-      // Major aspects
-      'conjunction': '#ef4444',
-      'opposition': '#f59e0b',
-      'trine': '#10b981',
-      'square': '#dc2626',
-      'sextile': '#3b82f6',
-      // Minor aspects
-      'quincunx': '#a855f7',
-      'semisextile': '#06b6d4',
-      'semisquare': '#f97316',
-      'sesquisquare': '#fb923c'
-    };
-    
-    return chartData.aspects.map((aspect, index) => {
-      const planet1 = chartData.planets[aspect.planet1.toLowerCase()];
-      const planet2 = chartData.planets[aspect.planet2.toLowerCase()];
+
+    return chartData.aspects.map((aspect, idx) => {
+      const planet1Data = chartData.planets[aspect.planet1];
+      const planet2Data = chartData.planets[aspect.planet2];
       
-      if (!planet1 || !planet2) return null;
-      if (typeof planet1.longitude !== 'number' || typeof planet2.longitude !== 'number') return null;
-      if (isNaN(planet1.longitude) || isNaN(planet2.longitude)) return null;
-      
-      const point1 = getPointOnCircle(planetRadius - 30, planet1.longitude);
-      const point2 = getPointOnCircle(planetRadius - 30, planet2.longitude);
-      
-      if (isNaN(point1.x) || isNaN(point1.y) || isNaN(point2.x) || isNaN(point2.y)) {
-        return null;
-      }
-      
-      const isMajor = aspect.major !== false;
-      
+      if (!planet1Data || !planet2Data) return null;
+
+      const pos1 = getPointOnCircle(planetRadius, planet1Data.longitude);
+      const pos2 = getPointOnCircle(planetRadius, planet2Data.longitude);
+
+      if (isNaN(pos1.x) || isNaN(pos2.x)) return null;
+
+      const aspectColors = {
+        conjunction: '#ef4444',
+        opposition: '#f59e0b',
+        trine: '#10b981',
+        square: '#dc2626',
+        sextile: '#3b82f6',
+        quincunx: '#a855f7',
+        semisextile: '#06b6d4',
+        semisquare: '#f97316',
+        sesquisquare: '#fb923c'
+      };
+
+      const isMajor = ['conjunction', 'opposition', 'trine', 'square', 'sextile'].includes(aspect.type);
+
       return (
         <line
-          key={index}
-          x1={point1.x}
-          y1={point1.y}
-          x2={point2.x}
-          y2={point2.y}
+          key={idx}
+          x1={pos1.x}
+          y1={pos1.y}
+          x2={pos2.x}
+          y2={pos2.y}
           stroke={aspectColors[aspect.type] || '#9ca3af'}
-          strokeWidth={isMajor ? "1.5" : "0.8"}
-          opacity={isMajor ? "0.4" : "0.2"}
-          strokeDasharray={isMajor ? "4,4" : "2,2"}
+          strokeWidth={isMajor ? '2' : '1'}
+          opacity={isMajor ? '0.7' : '0.4'}
+          strokeDasharray={isMajor ? '0' : '4,4'}
         />
       );
     });
   };
 
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <svg
-        ref={svgRef}
-        width="1400"
-        height="1000"
-        viewBox="0 0 1400 1000"
-        className="max-w-full h-auto border-2 border-purple-200 rounded-2xl bg-white"
-      >
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={outerRadius}
-          fill="none"
+  const renderHouseLines = () => {
+    const lines = [];
+    for (let i = 0; i < 12; i++) {
+      const angle = i * 30;
+      const outer = getPointOnCircle(outerRadius, angle);
+      const inner = getPointOnCircle(innerRadius, angle);
+      
+      lines.push(
+        <line
+          key={i}
+          x1={inner.x}
+          y1={inner.y}
+          x2={outer.x}
+          y2={outer.y}
           stroke="#e5e7eb"
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
-        
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={zodiacRadius}
-          fill="none"
-          stroke="#d1d5db"
-          strokeWidth="1"
-        />
-        
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={planetRadius}
-          fill="none"
-          stroke="#d1d5db"
-          strokeWidth="1"
-        />
-        
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={innerRadius}
-          fill="#faf5ff"
-          stroke="#9333ea"
-          strokeWidth="2"
-        />
-        
-        {renderAspectLines()}
-        {renderZodiacWheel()}
-        {renderHouses()}
-        {renderPlanets()}
-        {renderPartOfFortune()}
-        
-        {/* Center Info */}
+      );
+
+      const labelPos = getPointOnCircle(innerRadius - 30, angle + 15);
+      lines.push(
         <text
-          x={centerX}
-          y={centerY - 60}
+          key={`house-${i}`}
+          x={labelPos.x}
+          y={labelPos.y}
           textAnchor="middle"
-          fontSize="22"
-          fill="#6366f1"
-          fontWeight="bold"
-        >
-          {birthInfo?.location || 'Birth Chart'}
-        </text>
-        <text
-          x={centerX}
-          y={centerY - 35}
-          textAnchor="middle"
+          dominantBaseline="middle"
           fontSize="14"
-          fill="#6b7280"
-        >
-          {birthInfo?.date} at {birthInfo?.time}
-        </text>
-        <text
-          x={centerX}
-          y={centerY - 10}
-          textAnchor="middle"
-          fontSize="12"
           fill="#9ca3af"
-        >
-          ASC: {chartData?.ascendant || 'N/A'} • MC: {chartData?.midheaven || 'N/A'}
-        </text>
-        <text
-          x={centerX}
-          y={centerY + 10}
-          textAnchor="middle"
-          fontSize="12"
-          fill="#9333ea"
           fontWeight="600"
         >
-          👑 Chart Ruler: {chartData?.chartRuler || 'Unknown'}
+          {i + 1}
         </text>
-        
-        {/* Element Distribution (Top Right) */}
-        {chartData?.distribution && (
-          <g>
-            <rect x="620" y="20" width="160" height="140" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="700" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
-              Elements
-            </text>
-            {['fire', 'earth', 'air', 'water'].map((elem, idx) => {
-              const count = chartData.distribution.elements[elem] || 0;
-              const colors = { fire: '#ef4444', earth: '#84cc16', air: '#06b6d4', water: '#3b82f6' };
-              const symbols = { fire: '🔥', earth: '🌍', air: '💨', water: '💧' };
-              return (
-                <g key={elem}>
-                  <text x="635" y={60 + idx * 20} fontSize="10" fill="#6b7280">
-                    {symbols[elem]} {elem.charAt(0).toUpperCase() + elem.slice(1)}
-                  </text>
-                  <rect x="700" y={50 + idx * 20} width={count * 12} height="10" fill={colors[elem]} rx="2" />
-                  <text x="770" y={59 + idx * 20} fontSize="10" fill="#6b7280" fontWeight="600">
-                    {count}
-                  </text>
-                </g>
-              );
-            })}
-          </g>
-        )}
-        
-        {/* Modality Distribution (Bottom Right) */}
-        {chartData?.distribution && (
-          <g>
-            <rect x="620" y="170" width="160" height="110" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="700" y="190" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
-              Modalities
-            </text>
-            {['cardinal', 'fixed', 'mutable'].map((mod, idx) => {
-              const count = chartData.distribution.modalities[mod] || 0;
-              const colors = { cardinal: '#ec4899', fixed: '#8b5cf6', mutable: '#06b6d4' };
-              return (
-                <g key={mod}>
-                  <text x="635" y={210 + idx * 22} fontSize="10" fill="#6b7280">
-                    {mod.charAt(0).toUpperCase() + mod.slice(1)}
-                  </text>
-                  <rect x="700" y={200 + idx * 22} width={count * 12} height="10" fill={colors[mod]} rx="2" />
-                  <text x="770" y={209 + idx * 22} fontSize="10" fill="#6b7280" fontWeight="600">
-                    {count}
-                  </text>
-                </g>
-              );
-            })}
-          </g>
-        )}
-        
-        {/* Aspect Legend (Bottom Left) */}
-        <g>
-          <rect x="20" y="640" width="160" height="150" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-          <text x="100" y="660" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
-            Aspects
+      );
+    }
+    return lines;
+  };
+
+  if (!chartData) {
+    return <div className="text-center py-8">No chart data available</div>;
+  }
+
+  return (
+    <div className="w-full">
+      {/* Header with birth info */}
+      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8 rounded-t-2xl">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold mb-4 text-center">Natal Chart</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-sm opacity-80 mb-1">Birth Date</div>
+              <div className="text-xl font-semibold">{formatDate(birthInfo.date)}</div>
+            </div>
+            <div>
+              <div className="text-sm opacity-80 mb-1">Birth Time</div>
+              <div className="text-xl font-semibold">{formatTime(birthInfo.time)}</div>
+            </div>
+            <div>
+              <div className="text-sm opacity-80 mb-1">Location</div>
+              <div className="text-xl font-semibold capitalize">{birthInfo.location}</div>
+            </div>
+          </div>
+          <div className="mt-4 text-center text-sm opacity-80">
+            {birthInfo.latitude?.toFixed(2)}°, {birthInfo.longitude?.toFixed(2)}° | 
+            Ascendant: {chartData.ascendant} | MC: {chartData.midheaven} | 
+            Chart Ruler: {chartData.chartRuler || 'Unknown'}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Chart */}
+      <div className="bg-white p-8">
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={downloadChart}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold shadow-lg"
+          >
+            📥 Download Chart (PNG)
+          </button>
+        </div>
+
+        <svg ref={svgRef} width="1600" height="1200" viewBox="0 0 1600 1200" className="mx-auto" style={{ maxWidth: '100%', height: 'auto' }}>
+          {/* Background */}
+          <rect width="1600" height="1200" fill="white" />
+          
+          {/* Title */}
+          <text x="800" y="40" textAnchor="middle" fontSize="28" fill="#4c1d95" fontWeight="bold">
+            Natal Chart - {formatDate(birthInfo.date)}
           </text>
-          {[
-            { type: 'Conjunction', color: '#ef4444', symbol: '☌' },
-            { type: 'Opposition', color: '#f59e0b', symbol: '☍' },
-            { type: 'Trine', color: '#10b981', symbol: '△' },
-            { type: 'Square', color: '#dc2626', symbol: '□' },
-            { type: 'Sextile', color: '#3b82f6', symbol: '⚹' }
-          ].map((aspect, idx) => (
-            <g key={aspect.type}>
-              <line x1="35" y1={678 + idx * 24} x2="60" y2={678 + idx * 24} stroke={aspect.color} strokeWidth="2.5" />
-              <text x="70" y={683 + idx * 24} fontSize="10" fill="#6b7280">
-                {aspect.symbol} {aspect.type}
+          <text x="800" y="70" textAnchor="middle" fontSize="16" fill="#6b7280">
+            {formatTime(birthInfo.time)} • {birthInfo.location}
+          </text>
+
+          {/* Main Chart Group */}
+          <g transform="translate(0, 60)">
+            {/* Zodiac wheel */}
+            {renderZodiacWheel()}
+            
+            {/* House lines */}
+            {renderHouseLines()}
+            
+            {/* Aspect lines (behind planets) */}
+            {renderAspectLines()}
+            
+            {/* Planets */}
+            {renderPlanets()}
+            
+            {/* Center info */}
+            <g>
+              <circle cx={centerX} cy={centerY} r={innerRadius - 10} fill="rgba(249, 250, 251, 0.95)" stroke="#e5e7eb" strokeWidth="2" />
+              <text x={centerX} y={centerY - 40} textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                ASC: {chartData.ascendant}
               </text>
+              <text x={centerX} y={centerY - 15} textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                MC: {chartData.midheaven}
+              </text>
+              <text x={centerX} y={centerY + 10} textAnchor="middle" fontSize="14" fill="#6b7280">
+                Chart Ruler: {chartData.chartRuler || 'Unknown'}
+              </text>
+              {chartData.moonPhase && (
+                <>
+                  <text x={centerX} y={centerY + 35} textAnchor="middle" fontSize="14" fill="#6b7280">
+                    Moon Phase: {chartData.moonPhase.phaseName}
+                  </text>
+                  <text x={centerX} y={centerY + 55} textAnchor="middle" fontSize="24">
+                    {chartData.moonPhase.emoji}
+                  </text>
+                </>
+              )}
             </g>
-          ))}
-        </g>
-        
-        {/* Special Points Legend (Top Left) */}
-        <g>
-          <rect x="20" y="20" width="160" height="100" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-          <text x="100" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
-            Special Points
-          </text>
-          <text x="30" y="60" fontSize="10" fill="#ec4899">☊ North Node</text>
-          <text x="30" y="78" fontSize="10" fill="#ec4899">☋ South Node</text>
-          <text x="30" y="96" fontSize="10" fill="#ec4899">⚷ Chiron</text>
-          <text x="30" y="114" fontSize="10" fill="#f59e0b">⊕ Part of Fortune</text>
-        </g>
-        
-        {/* Retrograde Indicator */}
-        <text x="40" y="760" fontSize="10" fill="#ef4444">
-          ℞ = Retrograde
-        </text>
-        
-        {/* Moon Phase (Top Center) */}
-        {chartData?.moonPhase && (
-          <g>
-            <rect x="620" y="300" width="120" height="80" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="680" y="320" textAnchor="middle" fontSize="11" fill="#6366f1" fontWeight="600">
-              Moon Phase
-            </text>
-            <text x="680" y="350" textAnchor="middle" fontSize="28">
-              {chartData.moonPhase.emoji}
-            </text>
-            <text x="680" y="372" textAnchor="middle" fontSize="9" fill="#6b7280">
-              {chartData.moonPhase.name}
-            </text>
-          </g>
-        )}
-        
-        {/* Chart Patterns (Right side) */}
-        {chartData?.chartPatterns && chartData.chartPatterns.length > 0 && (
-          <g>
-            <rect x="920" y="20" width="260" height="200" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="1050" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
-              Chart Patterns
-            </text>
-            {chartData.chartPatterns.slice(0, 5).map((pattern, idx) => {
-              const emoji = pattern.type === 'Grand Trine' ? '△' : 
-                            pattern.type === 'T-Square' ? '⊤' : 
-                            pattern.type === 'Yod' ? '☝' :
-                            pattern.type === 'Stellium' ? '★' : '◆';
-              return (
-                <g key={idx}>
-                  <text x="930" y={62 + idx * 32} fontSize="14">{emoji}</text>
-                  <text x="950" y={62 + idx * 32} fontSize="10" fill="#374151" fontWeight="600">
-                    {pattern.type}
-                  </text>
-                  <text x="950" y={76 + idx * 32} fontSize="8" fill="#6b7280">
-                    {pattern.planets.slice(0, 3).join(', ')}
-                    {pattern.planets.length > 3 && ` +${pattern.planets.length - 3}`}
-                  </text>
-                </g>
-              );
-            })}
-          </g>
-        )}
-        
-        {/* Planet-in-House List (Left side bottom) */}
-        {chartData?.planetHouses && (
-          <g>
-            <rect x="20" y="300" width="160" height="300" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="100" y="320" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
-              Planets in Houses
-            </text>
-            {Object.entries(chartData.planetHouses)
-              .filter(([p]) => !['northnode', 'southnode', 'chiron'].includes(p.toLowerCase()))
-              .slice(0, 10)
-              .map(([planet, house], idx) => (
-                <g key={planet}>
-                  <text x="30" y={340 + idx * 24} fontSize="9" fill="#6b7280">
-                    {planetSymbols[planet.toLowerCase()] || planet[0].toUpperCase()} {planet}
-                  </text>
-                  <text x="150" y={340 + idx * 24} fontSize="9" fill="#9333ea" fontWeight="600" textAnchor="end">
-                    House {house}
+
+            {/* Element Distribution (Left side) */}
+            {chartData.distribution && (
+              <g>
+                <rect x="20" y="50" width="200" height="200" fill="white" stroke="#e5e7eb" strokeWidth="2" rx="12" />
+                <text x="120" y="75" textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                  Elements
+                </text>
+                {Object.entries(chartData.distribution.elements).map(([(el, count)], idx) => (
+                  <g key={el}>
+                    <rect x="40" y={95 + idx * 30} width={count * 20} height="20" fill={
+                      el === 'Fire' ? '#ef4444' : el === 'Earth' ? '#10b981' : el === 'Air' ? '#3b82f6' : '#6366f1'
+                    } rx="4" />
+                    <text x="190" y={110 + idx * 30} textAnchor="end" fontSize="14" fill="#374151">
+                      {el}: {count}
+                    </text>
+                  </g>
+                ))}
+              </g>
+            )}
+
+            {/* Modalities (Left side below elements) */}
+            {chartData.distribution && (
+              <g>
+                <rect x="20" y="270" width="200" height="180" fill="white" stroke="#e5e7eb" strokeWidth="2" rx="12" />
+                <text x="120" y="295" textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                  Modalities
+                </text>
+                {Object.entries(chartData.distribution.modalities).map(([mod, count], idx) => (
+                  <g key={mod}>
+                    <rect x="40" y={315 + idx * 30} width={count * 20} height="20" fill={
+                      mod === 'Cardinal' ? '#ef4444' : mod === 'Fixed' ? '#8b5cf6' : '#06b6d4'
+                    } rx="4" />
+                    <text x="190" y={330 + idx * 30} textAnchor="end" fontSize="14" fill="#374151">
+                      {mod}: {count}
+                    </text>
+                  </g>
+                ))}
+              </g>
+            )}
+
+            {/* Chart Patterns (Right side) */}
+            {chartData.chartPatterns && chartData.chartPatterns.length > 0 && (
+              <g>
+                <rect x="1180" y="50" width="400" height="400" fill="white" stroke="#e5e7eb" strokeWidth="2" rx="12" />
+                <text x="1380" y="75" textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                  Chart Patterns
+                </text>
+                {chartData.chartPatterns.slice(0, 8).map((pattern, idx) => (
+                  <g key={idx}>
+                    <text x="1200" y={105 + idx * 45} fontSize="14" fill="#6b7280" fontWeight="600">
+                      {pattern.type}
+                    </text>
+                    <text x="1200" y={125 + idx * 45} fontSize="11" fill="#9ca3af">
+                      {pattern.planets?.join(', ')}
+                    </text>
+                  </g>
+                ))}
+              </g>
+            )}
+
+            {/* Aspect Legend (Bottom left) */}
+            <g>
+              <rect x="20" y="700" width="250" height="180" fill="white" stroke="#e5e7eb" strokeWidth="2" rx="12" />
+              <text x="145" y="725" textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                Major Aspects
+              </text>
+              {[
+                { type: 'Conjunction', color: '#ef4444', symbol: '☌' },
+                { type: 'Opposition', color: '#f59e0b', symbol: '☍' },
+                { type: 'Trine', color: '#10b981', symbol: '△' },
+                { type: 'Square', color: '#dc2626', symbol: '□' },
+                { type: 'Sextile', color: '#3b82f6', symbol: '⚹' }
+              ].map((aspect, idx) => (
+                <g key={aspect.type}>
+                  <line x1="40" y1={748 + idx * 28} x2="80" y2={748 + idx * 28} stroke={aspect.color} strokeWidth="3" />
+                  <text x="95" y={753 + idx * 28} fontSize="13" fill="#374151">
+                    {aspect.symbol} {aspect.type}
                   </text>
                 </g>
               ))}
-          </g>
-        )}
-        
-        {/* Aspect Grid (Bottom) - Larger and easier to read */}
-        {chartData?.aspects && (
-          <g>
-            <rect x="200" y="820" width="1000" height="160" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="700" y="840" textAnchor="middle" fontSize="13" fill="#6366f1" fontWeight="600">
-              Aspect Grid
-            </text>
-            {/* Column headers */}
-            {['☉', '☽', '☿', '♀', '♂', '♃', '♄', '♅', '♆', '♇'].map((symbol, idx) => (
-              <text key={idx} x={270 + idx * 90} y="862" fontSize="12" fill="#6b7280" fontWeight="600" textAnchor="middle">
-                {symbol}
+            </g>
+
+            {/* Dignities Legend (Bottom left) */}
+            <g>
+              <rect x="290" y="700" width="250" height="180" fill="white" stroke="#e5e7eb" strokeWidth="2" rx="12" />
+              <text x="415" y="725" textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                Dignities
               </text>
-            ))}
-            {/* Row headers and grid */}
-            {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet1, row) => (
-              <g key={planet1}>
-                <text x="240" y={886 + row * 10} fontSize="11" fill="#6b7280" fontWeight="600">
-                  {planetSymbols[planet1]}
+              {[
+                { label: '👑 Rulership', desc: 'Planet in own sign' },
+                { label: '↑ Exaltation', desc: 'Planet exalted' },
+                { label: '↓ Detriment', desc: 'Opposite rulership' },
+                { label: '× Fall', desc: 'Opposite exaltation' },
+                { label: '℞ Retrograde', desc: 'Apparent backward' }
+              ].map((item, idx) => (
+                <g key={idx}>
+                  <text x="310" y={753 + idx * 28} fontSize="13" fill="#374151" fontWeight="600">
+                    {item.label}
+                  </text>
+                  <text x="470" y={753 + idx * 28} fontSize="11" fill="#6b7280">
+                    {item.desc}
+                  </text>
+                </g>
+              ))}
+            </g>
+
+            {/* Aspect Grid (Bottom center - simplified) */}
+            {chartData.aspects && (
+              <g>
+                <rect x="560" y="700" width="480" height="180" fill="white" stroke="#e5e7eb" strokeWidth="2" rx="12" />
+                <text x="800" y="725" textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                  Aspect Grid (Major Aspects)
                 </text>
-                {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet2, col) => {
-                  if (col <= row) return null;
-                  const aspect = chartData.aspects.find(a => 
-                    (a.planet1 === planet1 && a.planet2 === planet2) ||
-                    (a.planet2 === planet1 && a.planet1 === planet2)
-                  );
-                  if (!aspect) return null;
-                  const colors = {
-                    conjunction: '#ef4444', opposition: '#f59e0b', trine: '#10b981',
-                    square: '#dc2626', sextile: '#3b82f6', quincunx: '#a855f7',
-                    semisextile: '#06b6d4', semisquare: '#f97316', sesquisquare: '#fb923c'
-                  };
-                  const symbols = {
-                    conjunction: '☌', opposition: '☍', trine: '△', square: '□', sextile: '⚹',
-                    quincunx: '⚻', semisextile: '⚺', semisquare: '∠', sesquisquare: '⚼'
-                  };
+                
+                {/* Simple aspect count */}
+                <text x="800" y="755" textAnchor="middle" fontSize="14" fill="#374151">
+                  Total Aspects: {chartData.aspects.length}
+                </text>
+                {[
+                  { type: 'conjunction', label: 'Conjunctions' },
+                  { type: 'opposition', label: 'Oppositions' },
+                  { type: 'trine', label: 'Trines' },
+                  { type: 'square', label: 'Squares' },
+                  { type: 'sextile', label: 'Sextiles' }
+                ].map((aspect, idx) => {
+                  const count = chartData.aspects.filter(a => a.type === aspect.type).length;
                   return (
-                    <text 
-                      key={`${planet1}-${planet2}`}
-                      x={270 + col * 90}
-                      y={886 + row * 10}
-                      fontSize="11"
-                      fill={colors[aspect.type] || '#9ca3af'}
-                      textAnchor="middle"
-                      fontWeight="bold"
-                    >
-                      {symbols[aspect.type] || '•'}
+                    <text key={aspect.type} x="600" y={785 + idx * 22} fontSize="13" fill="#374151">
+                      {aspect.label}: <tspan fontWeight="600">{count}</tspan>
                     </text>
                   );
                 })}
               </g>
-            ))}
-            {/* Legend for minor aspects */}
-            <text x="210" y="968" fontSize="9" fill="#6b7280">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
+            )}
+
+            {/* Planet positions (Right bottom) */}
+            {chartData.planets && (
+              <g>
+                <rect x="1060" y="700" width="520" height="180" fill="white" stroke="#e5e7eb" strokeWidth="2" rx="12" />
+                <text x="1320" y="725" textAnchor="middle" fontSize="16" fill="#6366f1" fontWeight="600">
+                  Planetary Positions
+                </text>
+                {Object.entries(chartData.planets).slice(0, 10).map(([planet, data], idx) => {
+                  const col = idx < 5 ? 0 : 1;
+                  const row = idx % 5;
+                  return (
+                    <g key={planet}>
+                      <text x={1080 + col * 250} y={753 + row * 28} fontSize="13" fill="#374151">
+                        {planetSymbols[planet.toLowerCase()]} {planet}: {data.sign} {Math.floor(data.longitude % 30)}°
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            )}
           </g>
-        )}
-        
-        {/* Dignities Legend */}
-        <text x="40" y="780" fontSize="10" fill="#6b7280">
-          👑=Domicile ↑=Exalted ↓=Detriment ×=Fall
-        </text>
-      </svg>
-      
-      <div className="flex gap-3">
-        <button
-          onClick={downloadChart}
-          className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-        >
-          Download PNG
-        </button>
-        <button
-          onClick={downloadSVG}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-        >
-          Download SVG
-        </button>
+        </svg>
       </div>
     </div>
   );
