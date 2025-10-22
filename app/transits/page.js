@@ -350,7 +350,7 @@ export default function TransitDashboard() {
             Critical Transits
           </h3>
           <div className="space-y-4">
-            {getFilteredTransits().filter(t => t.type === 'major').map((transit) => (
+            {transits.filter(t => t.type === 'major').map((transit) => (
               <TransitCard 
                 key={`${transit.transitPlanet}-${transit.natalPlanet}`}
                 transit={transit} 
@@ -360,14 +360,14 @@ export default function TransitDashboard() {
           </div>
         </div>
 
-        {getFilteredTransits().filter(t => t.type === 'moderate').length > 0 && (
+        {transits.filter(t => t.type === 'moderate').length > 0 && (
           <div className="mb-8">
             <h3 className="text-sm font-semibold text-purple-300 mb-4 uppercase tracking-wider flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
               Moderate Transits
             </h3>
             <div className="space-y-4">
-              {getFilteredTransits().filter(t => t.type === 'moderate').map((transit) => (
+              {transits.filter(t => t.type === 'moderate').map((transit) => (
                 <TransitCard 
                   key={`${transit.transitPlanet}-${transit.natalPlanet}`}
                   transit={transit} 
