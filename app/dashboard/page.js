@@ -708,7 +708,7 @@ export default function DashboardPage() {
                         )}
                       </div>
                       );
-                    }))
+                    })
                   ) : (
                     <div className="text-center py-8">
                       <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
