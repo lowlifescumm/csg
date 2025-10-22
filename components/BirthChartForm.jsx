@@ -8,7 +8,9 @@ export default function BirthChartForm() {
   const [formData, setFormData] = useState({
     birthDate: '',
     birthTime: '',
-    location: ''
+    location: '',
+    manualLat: '',
+    manualLon: ''
   });
   const [coordinates, setCoordinates] = useState(null);
   const [chart, setChart] = useState(null);
@@ -38,23 +40,56 @@ export default function BirthChartForm() {
     }
   };
 
+  const [locationError, setLocationError] = useState('');
+  const [showManualEntry, setShowManualEntry] = useState(false);
+
   const handleLocationSearch = async () => {
+    setLocationError('');
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.location)}&format=json&limit=1`
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.location)}&format=json&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'CosmicSpiritualGuide/1.0'
+          }
+        }
       );
+      
+      if (!response.ok) {
+        throw new Error('Search service unavailable');
+      }
+      
       const data = await response.json();
-      if (data[0]) {
+      if (data && data.length > 0) {
         setCoordinates({
           latitude: parseFloat(data[0].lat),
           longitude: parseFloat(data[0].lon)
         });
+        setLocationError('');
       } else {
-        alert('Location not found. Please try a different search.');
+        setLocationError(`Could not find "${formData.location}". Try a major city name (e.g., "New York, USA" or "London, UK") or enter coordinates manually.`);
+        setShowManualEntry(true);
       }
     } catch (error) {
-      alert('Could not find location');
+      console.error('Location search error:', error);
+      setLocationError('Location service temporarily unavailable. Please enter coordinates manually.');
+      setShowManualEntry(true);
     }
+  };
+
+  const handleManualCoordinates = (lat, lon) => {
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lon);
+    
+    if (isNaN(latitude) || isNaN(longitude) || 
+        latitude < -90 || latitude > 90 || 
+        longitude < -180 || longitude > 180) {
+      setLocationError('Invalid coordinates. Latitude must be -90 to 90, longitude must be -180 to 180.');
+      return;
+    }
+    
+    setCoordinates({ latitude, longitude });
+    setLocationError('');
   };
 
   const handleSubmit = async (e) => {
@@ -200,23 +235,105 @@ Your rising sign depends on exact birth time
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  placeholder="City, Country"
+                  placeholder="e.g., New York, USA"
                   className="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
+                  required={!showManualEntry}
                 />
                 <button
                   type="button"
                   onClick={handleLocationSearch}
-                  className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl hover:from-gray-200 hover:to-gray-300 smooth-transition font-medium"
+                  disabled={!formData.location}
+                  className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl hover:from-gray-200 hover:to-gray-300 smooth-transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Search
                 </button>
               </div>
-              {coordinates && (
+              
+              {locationError && (
+                <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">{locationError}</p>
+                </div>
+              )}
+              
+              {coordinates && !showManualEntry && (
                 <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
                   <span>✓</span>
-                  Location found: {coordinates.latitude.toFixed(2)}, {coordinates.longitude.toFixed(2)}
+                  Location found: {coordinates.latitude.toFixed(4)}°, {coordinates.longitude.toFixed(4)}°
                 </p>
+              )}
+              
+              {showManualEntry && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-sm font-medium text-gray-700">Manual Coordinate Entry</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowManualEntry(false);
+                        setLocationError('');
+                        setCoordinates(null);
+                      }}
+                      className="text-xs text-gray-500 hover:text-gray-700"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-gray-600 block mb-1">Latitude (-90 to 90)</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        min="-90"
+                        max="90"
+                        placeholder="40.7128"
+                        onChange={(e) => {
+                          if (e.target.value && formData.manualLon) {
+                            handleManualCoordinates(e.target.value, formData.manualLon);
+                          }
+                          setFormData({...formData, manualLat: e.target.value});
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600 block mb-1">Longitude (-180 to 180)</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        min="-180"
+                        max="180"
+                        placeholder="-74.0060"
+                        onChange={(e) => {
+                          if (formData.manualLat && e.target.value) {
+                            handleManualCoordinates(formData.manualLat, e.target.value);
+                          }
+                          setFormData({...formData, manualLon: e.target.value});
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
+                  </div>
+                  {coordinates && showManualEntry && (
+                    <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                      <span>✓</span>
+                      Coordinates set: {coordinates.latitude.toFixed(4)}°, {coordinates.longitude.toFixed(4)}°
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 Tip: Find coordinates at <a href="https://www.latlong.net/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">latlong.net</a>
+                  </p>
+                </div>
+              )}
+              
+              {!showManualEntry && (
+                <button
+                  type="button"
+                  onClick={() => setShowManualEntry(true)}
+                  className="text-xs text-gray-500 hover:text-gray-700 mt-2"
+                >
+                  Can't find location? Enter coordinates manually
+                </button>
               )}
             </div>
 
