@@ -43,8 +43,11 @@ export default function RootLayout({ children }) {
                   <a href="/dashboard" className="btn-ghost mobile-text">
                     Dashboard
                   </a>
+                  <a href="/my-chart" className="btn-ghost mobile-text">
+                    My Chart
+                  </a>
                   <a href="/birth-chart" className="btn-ghost mobile-text">
-                    Birth Chart
+                    Create Chart
                   </a>
                   <a href="/compatibility" className="btn-ghost mobile-text">
                     Compatibility
