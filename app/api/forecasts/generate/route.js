@@ -72,12 +72,29 @@ export async function POST(req) {
     // Save to database
     const forecastId = await saveForecast(forecast);
 
+    // Retrieve the saved forecast from database (with correct snake_case keys)
+    const savedForecast = await pool.query(
+      'SELECT * FROM forecasts WHERE id = $1',
+      [forecastId]
+    );
+
+    // Parse JSON fields
+    const forecastData = savedForecast.rows[0];
+    forecastData.transit_summary = typeof forecastData.transit_summary === 'string'
+      ? JSON.parse(forecastData.transit_summary)
+      : forecastData.transit_summary;
+    forecastData.suggested_actions = typeof forecastData.suggested_actions === 'string'
+      ? JSON.parse(forecastData.suggested_actions)
+      : forecastData.suggested_actions;
+    if (forecastData.rituals) {
+      forecastData.rituals = typeof forecastData.rituals === 'string'
+        ? JSON.parse(forecastData.rituals)
+        : forecastData.rituals;
+    }
+
     return NextResponse.json({
       success: true,
-      forecast: {
-        id: forecastId,
-        ...forecast,
-      },
+      forecast: forecastData,
     });
   } catch (error) {
     console.error('Forecast generation error:', error);
