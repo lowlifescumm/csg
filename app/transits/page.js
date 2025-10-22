@@ -10,7 +10,7 @@ import Link from 'next/link';
 
 export default function TransitDashboard() {
   const [selectedTransit, setSelectedTransit] = useState(null);
-  const [timeframe, setTimeframe] = useState('week');
+  const [timeframe, setTimeframe] = useState('month');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
