@@ -64,14 +64,15 @@ export default function TransitDashboard() {
     
     return data.transits.filter(transit => {
       const daysUntilPeak = transit.daysUntilPeak || 0;
+      const absDays = Math.abs(daysUntilPeak); // Handle past peaks (negative values)
       
       switch (timeframe) {
         case 'today':
-          return daysUntilPeak === 0 || daysUntilPeak <= 1;
+          return absDays <= 1;
         case 'week':
-          return daysUntilPeak <= 7;
+          return absDays <= 7;
         case 'month':
-          return daysUntilPeak <= 30;
+          return absDays <= 30;
         default:
           return true;
       }
