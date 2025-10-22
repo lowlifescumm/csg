@@ -117,7 +117,11 @@ export default function DashboardPage() {
 
   // Filter and sort readings
   const getFilteredReadings = () => {
-    let filtered = [...readings.tarot, ...readings.birthCharts];
+    // Safely merge arrays and filter out any undefined/null values
+    let filtered = [
+      ...(readings.tarot || []), 
+      ...(readings.birthCharts || [])
+    ].filter(reading => reading != null);
     
     // Filter by type
     if (filterType !== "all") {

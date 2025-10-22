@@ -41,10 +41,11 @@ export default function HomePage() {
     );
   }
 
-  if (user) {
-    router.push("/dashboard");
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      router.push("/dashboard");
+    }
+  }, [user, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
