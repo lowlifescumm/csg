@@ -45,6 +45,40 @@ export default function BirthChartForm() {
 
   const handleLocationSearch = async () => {
     setLocationError('');
+    
+    // Try Google Maps Geocoding API first (most reliable)
+    try {
+      const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      
+      if (googleApiKey) {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(formData.location)}&key=${googleApiKey}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            const location = data.results[0].geometry.location;
+            setCoordinates({
+              latitude: location.lat,
+              longitude: location.lng
+            });
+            setLocationError('');
+            return; // Success! Exit early
+          } else if (data.status === 'ZERO_RESULTS') {
+            // Continue to fallback
+            console.log('Google Maps: No results, trying fallback...');
+          } else if (data.status === 'REQUEST_DENIED') {
+            console.error('Google Maps API key issue:', data.error_message);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Google Maps API error:', error);
+      // Continue to fallback
+    }
+    
+    // Fallback to OpenStreetMap (free)
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.location)}&format=json&limit=1`,
@@ -55,26 +89,24 @@ export default function BirthChartForm() {
         }
       );
       
-      if (!response.ok) {
-        throw new Error('Search service unavailable');
-      }
-      
-      const data = await response.json();
-      if (data && data.length > 0) {
-        setCoordinates({
-          latitude: parseFloat(data[0].lat),
-          longitude: parseFloat(data[0].lon)
-        });
-        setLocationError('');
-      } else {
-        setLocationError(`Could not find "${formData.location}". Try a major city name (e.g., "New York, USA" or "London, UK") or enter coordinates manually.`);
-        setShowManualEntry(true);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.length > 0) {
+          setCoordinates({
+            latitude: parseFloat(data[0].lat),
+            longitude: parseFloat(data[0].lon)
+          });
+          setLocationError('');
+          return; // Success!
+        }
       }
     } catch (error) {
-      console.error('Location search error:', error);
-      setLocationError('Location service temporarily unavailable. Please enter coordinates manually.');
-      setShowManualEntry(true);
+      console.error('OpenStreetMap error:', error);
     }
+    
+    // All services failed - show manual entry
+    setLocationError(`Could not find "${formData.location}". Please try:\n• A major city name (e.g., "New York, USA" or "London, UK")\n• Enter coordinates manually below`);
+    setShowManualEntry(true);
   };
 
   const handleManualCoordinates = (lat, lon) => {
