@@ -656,7 +656,7 @@ export default function DashboardPage() {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400 capitalize">{reading.type.replace('_', ' ')}</span>
+                            <span className="text-xs text-gray-400 capitalize">{reading.type?.replace('_', ' ') || 'Reading'}</span>
                           </div>
                         </div>
                         <p className="text-sm font-medium text-gray-900 mb-2 line-clamp-1">
