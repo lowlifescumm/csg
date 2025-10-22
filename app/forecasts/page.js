@@ -54,7 +54,10 @@ export default function ForecastsPage() {
       }
 
       const data = await response.json();
-      setForecasts([data.forecast, ...forecasts]);
+      
+      // Remove existing forecast with same ID to prevent duplicates
+      const updatedForecasts = forecasts.filter(f => f.id !== data.forecast.id);
+      setForecasts([data.forecast, ...updatedForecasts]);
       setSelectedForecast(data.forecast);
       setGenerating(false);
     } catch (err) {
