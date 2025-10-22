@@ -403,3 +403,4 @@ psql $DATABASE_URL -c "UPDATE users SET role = 'admin' WHERE email = 'you@exampl
 
 For detailed instructions, see **[QUICK_START.md](./QUICK_START.md)**
 
+

@@ -357,3 +357,4 @@ COMMENT ON TABLE transit_computation_log IS 'Audit trail of transit calculation 
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user;
 -- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_user;
 
+
