@@ -654,7 +654,11 @@ export default function DashboardPage() {
                 {/* Reading List */}
                 <div className="space-y-3">
                   {getFilteredReadings().length > 0 ? (
-                    getFilteredReadings().slice(0, 10).map((reading, index) => (
+                    getFilteredReadings().slice(0, 10).map((reading, index) => {
+                      // Safety check - skip if reading is invalid
+                      if (!reading || !reading.id) return null;
+                      
+                      return (
                       <div 
                         key={reading.id}
                         className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60 hover:shadow-lg animate-fade-in"
@@ -662,30 +666,32 @@ export default function DashboardPage() {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-3">
-                            <span className="text-sm text-gray-500">{formatDate(reading.created_at)}</span>
+                            <span className="text-sm text-gray-500">{reading.created_at ? formatDate(reading.created_at) : 'Unknown date'}</span>
                             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                               reading.type === 'tarot' 
                                 ? 'bg-purple-100 text-purple-700' 
                                 : 'bg-blue-100 text-blue-700'
                             }`}>
                               {reading.type === 'tarot' 
-                                ? (reading.result.spreadType || 'Three Card')
+                                ? (reading.result?.spreadType || 'Three Card')
                                 : 'Birth Chart'
                               }
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400 capitalize">{reading.type?.replace('_', ' ') || 'Reading'}</span>
+                            <span className="text-xs text-gray-400 capitalize">
+                              {reading.type ? reading.type.replace('_', ' ') : 'Reading'}
+                            </span>
                           </div>
                         </div>
                         <p className="text-sm font-medium text-gray-900 mb-2 line-clamp-1">
                           {reading.question || 'No question provided'}
                         </p>
-                        {reading.result.cards && (
+                        {reading.result?.cards && Array.isArray(reading.result.cards) && (
                           <div className="flex gap-1 mb-2">
                             {reading.result.cards.slice(0, 3).map((card, idx) => (
                               <div key={idx} className="text-xs text-gray-600 bg-white bg-opacity-50 px-2 py-1 rounded">
-                                {card.name}
+                                {card?.name || 'Card'}
                               </div>
                             ))}
                             {reading.result.cards.length > 3 && (
@@ -695,13 +701,14 @@ export default function DashboardPage() {
                             )}
                           </div>
                         )}
-                        {reading.result.interpretation && (
+                        {reading.result?.interpretation && (
                           <p className="text-xs text-gray-600 line-clamp-2">
                             {reading.result.interpretation}
                           </p>
                         )}
                       </div>
-                    ))
+                      );
+                    }))
                   ) : (
                     <div className="text-center py-8">
                       <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
