@@ -29,8 +29,7 @@ export async function POST(req) {
     }
 
     // Calculate birth chart
-    const datetime = new Date(`${date}T${time}`);
-    const chartData = calculateBirthChart(datetime, latitude, longitude);
+    const chartData = calculateBirthChart(date, time, latitude, longitude);
 
     // Generate AI interpretation
     let interpretation = '';
