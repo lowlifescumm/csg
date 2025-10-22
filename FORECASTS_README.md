@@ -372,3 +372,5 @@ For issues or questions:
 - Database queries: Check `forecasts` and `forecast_preferences` tables
 - API debugging: Enable verbose logging in API routes
 
+
+

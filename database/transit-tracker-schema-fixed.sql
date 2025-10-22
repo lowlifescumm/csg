@@ -293,3 +293,5 @@ COMMENT ON TABLE transit_notifications IS 'Audit log of all notifications sent t
 COMMENT ON TABLE ephemeris_cache IS 'Cached planetary positions for performance optimization';
 COMMENT ON TABLE transit_computation_log IS 'Audit trail of transit calculation operations';
 
+
+

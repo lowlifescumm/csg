@@ -26,7 +26,11 @@ const planetSymbols = {
   'saturn': '♄',
   'uranus': '♅',
   'neptune': '♆',
-  'pluto': '♇'
+  'pluto': '♇',
+  'northnode': '☊',
+  'southnode': '☋',
+  'chiron': '⚷',
+  'partoffortune': '⊕'
 };
 
 export default function BirthChartWheel({ chartData, birthInfo }) {
@@ -144,6 +148,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
       }
       
       const symbol = planetSymbols[planet.toLowerCase()] || planet[0].toUpperCase();
+      const isRetrograde = data.retrograde === true;
+      const isSpecialPoint = ['northnode', 'southnode', 'chiron'].includes(planet.toLowerCase());
       
       return (
         <g key={planet}>
@@ -152,7 +158,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             cy={point.y}
             r="20"
             fill="white"
-            stroke="#6366f1"
+            stroke={isSpecialPoint ? "#ec4899" : "#6366f1"}
             strokeWidth="2"
           />
           <text
@@ -161,11 +167,23 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize="18"
-            fill="#6366f1"
+            fill={isSpecialPoint ? "#ec4899" : "#6366f1"}
             fontWeight="bold"
           >
             {symbol}
           </text>
+          {isRetrograde && (
+            <text
+              x={point.x + 18}
+              y={point.y - 12}
+              textAnchor="middle"
+              fontSize="12"
+              fill="#ef4444"
+              fontWeight="bold"
+            >
+              ℞
+            </text>
+          )}
           <text
             x={point.x}
             y={point.y + 35}
@@ -178,6 +196,41 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         </g>
       );
     });
+  };
+
+  const renderPartOfFortune = () => {
+    if (!chartData?.partOfFortune || typeof chartData.partOfFortune.longitude !== 'number') {
+      return null;
+    }
+    
+    const point = getPointOnCircle(planetRadius - 40, chartData.partOfFortune.longitude);
+    
+    if (isNaN(point.x) || isNaN(point.y)) return null;
+    
+    return (
+      <g>
+        <circle
+          cx={point.x}
+          cy={point.y}
+          r="16"
+          fill="white"
+          stroke="#f59e0b"
+          strokeWidth="2"
+          strokeDasharray="3,2"
+        />
+        <text
+          x={point.x}
+          y={point.y}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize="16"
+          fill="#f59e0b"
+          fontWeight="bold"
+        >
+          ⊕
+        </text>
+      </g>
+    );
   };
 
   const renderHouses = () => {
@@ -317,12 +370,14 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {renderZodiacWheel()}
         {renderHouses()}
         {renderPlanets()}
+        {renderPartOfFortune()}
         
+        {/* Center Info */}
         <text
           x={centerX}
-          y={centerY - 40}
+          y={centerY - 60}
           textAnchor="middle"
-          fontSize="20"
+          fontSize="22"
           fill="#6366f1"
           fontWeight="bold"
         >
@@ -330,7 +385,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         </text>
         <text
           x={centerX}
-          y={centerY - 10}
+          y={centerY - 35}
           textAnchor="middle"
           fontSize="14"
           fill="#6b7280"
@@ -339,21 +394,112 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         </text>
         <text
           x={centerX}
-          y={centerY + 15}
+          y={centerY - 10}
           textAnchor="middle"
           fontSize="12"
           fill="#9ca3af"
         >
-          ASC: {chartData?.ascendant || 'N/A'}
+          ASC: {chartData?.ascendant || 'N/A'} • MC: {chartData?.midheaven || 'N/A'}
         </text>
         <text
           x={centerX}
-          y={centerY + 35}
+          y={centerY + 10}
           textAnchor="middle"
           fontSize="12"
-          fill="#9ca3af"
+          fill="#9333ea"
+          fontWeight="600"
         >
-          MC: {chartData?.midheaven || 'N/A'}
+          👑 Chart Ruler: {chartData?.chartRuler || 'Unknown'}
+        </text>
+        
+        {/* Element Distribution (Top Right) */}
+        {chartData?.distribution && (
+          <g>
+            <rect x="620" y="20" width="160" height="140" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="700" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+              Elements
+            </text>
+            {['fire', 'earth', 'air', 'water'].map((elem, idx) => {
+              const count = chartData.distribution.elements[elem] || 0;
+              const colors = { fire: '#ef4444', earth: '#84cc16', air: '#06b6d4', water: '#3b82f6' };
+              const symbols = { fire: '🔥', earth: '🌍', air: '💨', water: '💧' };
+              return (
+                <g key={elem}>
+                  <text x="635" y={60 + idx * 20} fontSize="10" fill="#6b7280">
+                    {symbols[elem]} {elem.charAt(0).toUpperCase() + elem.slice(1)}
+                  </text>
+                  <rect x="700" y={50 + idx * 20} width={count * 12} height="10" fill={colors[elem]} rx="2" />
+                  <text x="770" y={59 + idx * 20} fontSize="10" fill="#6b7280" fontWeight="600">
+                    {count}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        )}
+        
+        {/* Modality Distribution (Bottom Right) */}
+        {chartData?.distribution && (
+          <g>
+            <rect x="620" y="170" width="160" height="110" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="700" y="190" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+              Modalities
+            </text>
+            {['cardinal', 'fixed', 'mutable'].map((mod, idx) => {
+              const count = chartData.distribution.modalities[mod] || 0;
+              const colors = { cardinal: '#ec4899', fixed: '#8b5cf6', mutable: '#06b6d4' };
+              return (
+                <g key={mod}>
+                  <text x="635" y={210 + idx * 22} fontSize="10" fill="#6b7280">
+                    {mod.charAt(0).toUpperCase() + mod.slice(1)}
+                  </text>
+                  <rect x="700" y={200 + idx * 22} width={count * 12} height="10" fill={colors[mod]} rx="2" />
+                  <text x="770" y={209 + idx * 22} fontSize="10" fill="#6b7280" fontWeight="600">
+                    {count}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        )}
+        
+        {/* Aspect Legend (Bottom Left) */}
+        <g>
+          <rect x="20" y="640" width="160" height="140" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+          <text x="100" y="660" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            Aspects
+          </text>
+          {[
+            { type: 'Conjunction', color: '#ef4444', symbol: '☌' },
+            { type: 'Opposition', color: '#f59e0b', symbol: '☍' },
+            { type: 'Trine', color: '#10b981', symbol: '△' },
+            { type: 'Square', color: '#dc2626', symbol: '□' },
+            { type: 'Sextile', color: '#3b82f6', symbol: '⚹' }
+          ].map((aspect, idx) => (
+            <g key={aspect.type}>
+              <line x1="35" y1={675 + idx * 20} x2="60" y2={675 + idx * 20} stroke={aspect.color} strokeWidth="2" />
+              <text x="70" y={680 + idx * 20} fontSize="10" fill="#6b7280">
+                {aspect.symbol} {aspect.type}
+              </text>
+            </g>
+          ))}
+        </g>
+        
+        {/* Special Points Legend (Top Left) */}
+        <g>
+          <rect x="20" y="20" width="160" height="100" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+          <text x="100" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            Special Points
+          </text>
+          <text x="30" y="60" fontSize="10" fill="#ec4899">☊ North Node</text>
+          <text x="30" y="78" fontSize="10" fill="#ec4899">☋ South Node</text>
+          <text x="30" y="96" fontSize="10" fill="#ec4899">⚷ Chiron</text>
+          <text x="30" y="114" fontSize="10" fill="#f59e0b">⊕ Part of Fortune</text>
+        </g>
+        
+        {/* Retrograde Indicator */}
+        <text x="40" y="760" fontSize="10" fill="#ef4444">
+          ℞ = Retrograde
         </text>
       </svg>
       

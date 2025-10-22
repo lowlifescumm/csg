@@ -358,3 +358,4 @@ COMMENT ON TABLE transit_computation_log IS 'Audit trail of transit calculation 
 -- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_user;
 
 
+

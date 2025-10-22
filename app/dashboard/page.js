@@ -198,8 +198,11 @@ export default function DashboardPage() {
               <Link href="/dashboard" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
                 Dashboard
               </Link>
+              <Link href="/my-chart" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
+                My Chart
+              </Link>
               <Link href="/birth-chart" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                Birth Chart
+                Create Chart
               </Link>
               <Link href="/compatibility" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
                 Compatibility

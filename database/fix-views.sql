@@ -28,3 +28,5 @@ WHERE t.status = 'upcoming'
   AND t.exact_time < NOW() + INTERVAL '30 days'
 ORDER BY t.exact_time ASC;
 
+
+
