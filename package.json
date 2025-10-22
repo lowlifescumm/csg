@@ -8,7 +8,8 @@
     "start": "next start -H 0.0.0.0 -p $PORT",
     "lint": "eslint .",
     "pinecone:init": "node scripts/pinecone-init.js",
-    "transit:setup": "node scripts/setup-transit-tracker.js"
+    "transit:setup": "node scripts/setup-transit-tracker.js",
+    "forecasts:generate": "node scripts/generate-daily-forecasts.js"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.2",

@@ -398,6 +398,21 @@ export default function DashboardPage() {
                 </div>
               </Link>
               <Link
+                href="/forecasts"
+                className="group relative bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
+                aria-label="View personalized forecasts"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <span className="text-2xl">✨</span>
+                  <span>Daily Forecasts</span>
+                  {stats.status === 'Premium' && (
+                    <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
+                      Premium
+                    </span>
+                  )}
+                </div>
+              </Link>
+              <Link
                 href="/subscription"
                 className="group relative bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
                 aria-label="Upgrade to premium subscription"
