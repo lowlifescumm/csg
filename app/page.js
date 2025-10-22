@@ -13,6 +13,13 @@ export default function HomePage() {
     checkAuth();
   }, []);
 
+  // Redirect to dashboard if user is logged in
+  useEffect(() => {
+    if (user) {
+      router.push("/dashboard");
+    }
+  }, [user, router]);
+
   const checkAuth = async () => {
     try {
       const res = await fetch("/api/auth/user");
@@ -40,12 +47,6 @@ export default function HomePage() {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (user) {
-      router.push("/dashboard");
-    }
-  }, [user, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
