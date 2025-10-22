@@ -143,8 +143,11 @@ export default function BirthChartForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          ...coordinates
+          date: formData.birthDate,
+          time: formData.birthTime,
+          location: formData.location,
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude
         })
       });
 
