@@ -503,7 +503,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         
         {/* Aspect Legend (Bottom Left) */}
         <g>
-          <rect x="20" y="640" width="160" height="140" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+          <rect x="20" y="640" width="160" height="150" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
           <text x="100" y="660" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
             Aspects
           </text>
@@ -515,8 +515,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             { type: 'Sextile', color: '#3b82f6', symbol: '⚹' }
           ].map((aspect, idx) => (
             <g key={aspect.type}>
-              <line x1="35" y1={675 + idx * 20} x2="60" y2={675 + idx * 20} stroke={aspect.color} strokeWidth="2" />
-              <text x="70" y={680 + idx * 20} fontSize="10" fill="#6b7280">
+              <line x1="35" y1={678 + idx * 24} x2="60" y2={678 + idx * 24} stroke={aspect.color} strokeWidth="2.5" />
+              <text x="70" y={683 + idx * 24} fontSize="10" fill="#6b7280">
                 {aspect.symbol} {aspect.type}
               </text>
             </g>
@@ -607,23 +607,23 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           </g>
         )}
         
-        {/* Aspect Grid (Bottom) */}
+        {/* Aspect Grid (Bottom) - Larger and easier to read */}
         {chartData?.aspects && (
           <g>
-            <rect x="200" y="820" width="980" height="160" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="690" y="840" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            <rect x="200" y="820" width="1000" height="160" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="700" y="840" textAnchor="middle" fontSize="13" fill="#6366f1" fontWeight="600">
               Aspect Grid
             </text>
             {/* Column headers */}
             {['☉', '☽', '☿', '♀', '♂', '♃', '♄', '♅', '♆', '♇'].map((symbol, idx) => (
-              <text key={idx} x={235 + idx * 95} y="862" fontSize="10" fill="#6b7280" fontWeight="600" textAnchor="middle">
+              <text key={idx} x={270 + idx * 90} y="862" fontSize="12" fill="#6b7280" fontWeight="600" textAnchor="middle">
                 {symbol}
               </text>
             ))}
             {/* Row headers and grid */}
             {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet1, row) => (
               <g key={planet1}>
-                <text x="220" y={882 + row * 9} fontSize="9" fill="#6b7280">
+                <text x="240" y={886 + row * 10} fontSize="11" fill="#6b7280" fontWeight="600">
                   {planetSymbols[planet1]}
                 </text>
                 {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet2, col) => {
@@ -645,9 +645,9 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
                   return (
                     <text 
                       key={`${planet1}-${planet2}`}
-                      x={235 + col * 95}
-                      y={882 + row * 9}
-                      fontSize="8"
+                      x={270 + col * 90}
+                      y={886 + row * 10}
+                      fontSize="11"
                       fill={colors[aspect.type] || '#9ca3af'}
                       textAnchor="middle"
                       fontWeight="bold"
@@ -659,7 +659,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               </g>
             ))}
             {/* Legend for minor aspects */}
-            <text x="210" y="965" fontSize="8" fill="#6b7280">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
+            <text x="210" y="968" fontSize="9" fill="#6b7280">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
           </g>
         )}
         
