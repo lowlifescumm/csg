@@ -38,8 +38,9 @@ export async function POST(request) {
 
     let customerId = user.stripe_customer_id;
 
-    // Create Stripe customer if doesn't exist
-    if (!customerId) {
+    // Create or verify Stripe customer
+    if (!customerId || customerId === 'cus_admin_lifetime' || !customerId.startsWith('cus_')) {
+      // Create new customer if none exists or if it's a placeholder value
       const customer = await stripe.customers.create({
         email: user.email,
         name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
@@ -54,6 +55,31 @@ export async function POST(request) {
         "UPDATE users SET stripe_customer_id = $1 WHERE id = $2",
         [customerId, decoded.userId]
       );
+    } else {
+      // Verify customer exists in Stripe
+      try {
+        await stripe.customers.retrieve(customerId);
+      } catch (err) {
+        if (err.code === 'resource_missing') {
+          // Customer doesn't exist in Stripe, create a new one
+          const customer = await stripe.customers.create({
+            email: user.email,
+            name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+            metadata: {
+              userId: decoded.userId.toString(),
+            },
+          });
+          customerId = customer.id;
+          
+          // Update database with new customer ID
+          await pool.query(
+            "UPDATE users SET stripe_customer_id = $1 WHERE id = $2",
+            [customerId, decoded.userId]
+          );
+        } else {
+          throw err; // Re-throw other errors
+        }
+      }
     }
 
     // Create payment intent
