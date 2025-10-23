@@ -349,17 +349,22 @@ export default function DashboardPage() {
               <p className="text-gray-600 text-sm sm:text-base">Discover guidance through tarot, astrology, and planetary wisdom</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-tour="action-buttons">
-              <Link
-                href="/"
+              <button
+                onClick={() => {
+                  const tarotSection = document.getElementById('tarot-section');
+                  if (tarotSection) {
+                    tarotSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
                 className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center overflow-hidden"
-                aria-label="Get a tarot reading"
+                aria-label="Scroll to tarot reading section"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 smooth-transition"></div>
                 <div className="relative flex flex-col items-center space-y-1 z-10">
                   <span className="text-2xl group-hover:animate-bounce-gentle">🔮</span>
                   <span className="group-hover:translate-y-[-2px] smooth-transition">Tarot Reading</span>
                 </div>
-              </Link>
+              </button>
               <Link
                 href="/birth-chart"
                 className="group relative bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-base sm:text-lg text-center min-h-[60px] flex items-center justify-center"
@@ -557,7 +562,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Daily Tarot Reading Section */}
-          <div className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40 mb-8" data-tour="tarot-section">
+          <div id="tarot-section" className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40 mb-8" data-tour="tarot-section">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
