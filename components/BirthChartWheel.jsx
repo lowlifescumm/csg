@@ -562,17 +562,17 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           ℞ = Retrograde
         </text>
         
-        {/* Moon Phase (Top Center) */}
+        {/* Moon Phase (Right side, below Modalities) */}
         {chartData?.moonPhase && (
           <g>
-            <rect x="620" y="300" width="120" height="80" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="680" y="320" textAnchor="middle" fontSize="11" fill="#6366f1" fontWeight="600">
+            <rect x="920" y="500" width="260" height="80" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="1050" y="520" textAnchor="middle" fontSize="11" fill="#6366f1" fontWeight="600">
               Moon Phase
             </text>
-            <text x="680" y="350" textAnchor="middle" fontSize="28">
+            <text x="1050" y="550" textAnchor="middle" fontSize="28">
               {chartData.moonPhase.emoji}
             </text>
-            <text x="680" y="372" textAnchor="middle" fontSize="9" fill="#6b7280">
+            <text x="1050" y="572" textAnchor="middle" fontSize="9" fill="#6b7280">
               {chartData.moonPhase.name}
             </text>
           </g>
@@ -606,11 +606,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           </g>
         )}
         
-        {/* Planet-in-House List (Left side bottom) */}
+        {/* Planet-in-House List (Far right, next to Chart Patterns) */}
         {chartData?.planetHouses && (
           <g>
-            <rect x="20" y="300" width="160" height="300" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="100" y="320" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            <rect x="1190" y="20" width="190" height="300" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="1285" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
               Planets in Houses
             </text>
             {Object.entries(chartData.planetHouses)
@@ -618,10 +618,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               .slice(0, 10)
               .map(([planet, house], idx) => (
                 <g key={planet}>
-                  <text x="30" y={340 + idx * 24} fontSize="9" fill="#6b7280">
+                  <text x="1200" y={60 + idx * 24} fontSize="9" fill="#6b7280">
                     {planetSymbols[planet.toLowerCase()] || planet[0].toUpperCase()} {planet}
                   </text>
-                  <text x="150" y={340 + idx * 24} fontSize="9" fill="#9333ea" fontWeight="600" textAnchor="end">
+                  <text x="1360" y={60 + idx * 24} fontSize="9" fill="#9333ea" fontWeight="600" textAnchor="end">
                     House {house}
                   </text>
                 </g>
