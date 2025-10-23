@@ -515,11 +515,11 @@ export default function PersonalizedMoonReading() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-300 text-xs sm:text-sm">✓</span>
-                      <span>2 compatibility report credits/month</span>
+                      <span>Unlimited compatibility reports</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-300 text-xs sm:text-sm">✓</span>
-                      <span>2 birth chart credits/month</span>
+                      <span>Unlimited birth charts</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-300 text-xs sm:text-sm">✓</span>

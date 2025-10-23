@@ -202,29 +202,6 @@ export default function BirthChartForm() {
           <div className="text-center mb-8">
             <h2 className="text-4xl font-bold gradient-text mb-3">Generate Your Birth Chart</h2>
             <p className="text-gray-600">Discover the cosmic blueprint of your soul</p>
-            
-            {/* Credit status display */}
-            {creditsRemaining !== null && (
-              <div className="mt-4">
-                {isPremium ? (
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-                    creditsRemaining === 0 ? 'bg-red-100 text-red-700' :
-                    creditsRemaining === 1 ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-green-100 text-green-700'
-                  }`}>
-                    <span className="text-sm font-semibold">
-                      {creditsRemaining === 0 && "No credits remaining! Upgrade to continue"}
-                      {creditsRemaining === 1 && "Last credit available! Use it wisely"}
-                      {creditsRemaining > 1 && `${creditsRemaining} birth chart credits available`}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full">
-                    <span className="text-sm font-semibold">This premium feature requires a subscription</span>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
           
           <div className="glassmorphic rounded-3xl p-8 space-y-6">

@@ -265,17 +265,6 @@ export default function CompatibilityCalculator() {
           )}
         </div>
 
-        {/* Show warning if no credits */}
-        {isPremium && creditsRemaining === 0 && (
-          <div className="bg-yellow-500 bg-opacity-20 border border-yellow-500 text-yellow-100 px-4 py-3 rounded-lg mb-6 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="font-semibold">No credits remaining</p>
-              <p className="text-sm">Your compatibility credits will reset at the beginning of next month.</p>
-            </div>
-          </div>
-        )}
-
         <div className="flex items-center justify-center mb-8">
           <div className={`flex items-center ${step >= 1 ? 'text-white' : 'text-purple-400'}`}>
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-pink-500' : 'bg-purple-900'}`}>

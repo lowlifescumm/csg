@@ -118,11 +118,11 @@ export default function TransitDashboard() {
               </div>
               <div className="flex items-start gap-3">
                 <div className="text-green-400 mt-1">✓</div>
-                <div className="text-white">2 compatibility report credits/month</div>
+                <div className="text-white">Unlimited compatibility reports</div>
               </div>
               <div className="flex items-start gap-3">
                 <div className="text-green-400 mt-1">✓</div>
-                <div className="text-white">2 birth chart credits/month</div>
+                <div className="text-white">Unlimited birth charts</div>
               </div>
               <div className="flex items-start gap-3">
                 <div className="text-green-400 mt-1">✓</div>

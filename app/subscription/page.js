@@ -144,7 +144,7 @@ export default function SubscriptionPage() {
                   </div>
                   <div>
                     <h3 className="text-white font-semibold text-lg mb-1">
-                      ⭐ 2 Birth Chart Credits/Month
+                      ⭐ Unlimited Birth Charts
                     </h3>
                     <p className="text-purple-200">Create detailed natal charts with downloadable visualizations</p>
                   </div>
