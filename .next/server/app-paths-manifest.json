@@ -1,3 +1,4 @@
 {
-  "/credits/page": "app/credits/page.js"
+  "/dashboard/page": "app/dashboard/page.js",
+  "/my-chart/page": "app/my-chart/page.js"
 }

@@ -472,11 +472,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           👑 Chart Ruler: {chartData?.chartRuler || 'Unknown'}
         </text>
         
-        {/* Element Distribution (Top Right) */}
+        {/* Element Distribution (Right side, below Chart Patterns) */}
         {chartData?.distribution && (
           <g>
-            <rect x="620" y="20" width="160" height="140" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="700" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            <rect x="920" y="230" width="260" height="140" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="1050" y="250" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
               Elements
             </text>
             {['fire', 'earth', 'air', 'water'].map((elem, idx) => {
@@ -485,11 +485,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               const symbols = { fire: '🔥', earth: '🌍', air: '💨', water: '💧' };
               return (
                 <g key={elem}>
-                  <text x="635" y={60 + idx * 20} fontSize="10" fill="#6b7280">
+                  <text x="935" y={270 + idx * 20} fontSize="10" fill="#6b7280">
                     {symbols[elem]} {elem.charAt(0).toUpperCase() + elem.slice(1)}
                   </text>
-                  <rect x="700" y={50 + idx * 20} width={count * 12} height="10" fill={colors[elem]} rx="2" />
-                  <text x="770" y={59 + idx * 20} fontSize="10" fill="#6b7280" fontWeight="600">
+                  <rect x="1020" y={260 + idx * 20} width={count * 12} height="10" fill={colors[elem]} rx="2" />
+                  <text x="1150" y={269 + idx * 20} fontSize="10" fill="#6b7280" fontWeight="600">
                     {count}
                   </text>
                 </g>
@@ -498,11 +498,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           </g>
         )}
         
-        {/* Modality Distribution (Bottom Right) */}
+        {/* Modality Distribution (Right side, below Elements) */}
         {chartData?.distribution && (
           <g>
-            <rect x="620" y="170" width="160" height="110" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="700" y="190" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            <rect x="920" y="380" width="260" height="110" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
+            <text x="1050" y="400" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
               Modalities
             </text>
             {['cardinal', 'fixed', 'mutable'].map((mod, idx) => {
@@ -510,11 +510,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               const colors = { cardinal: '#ec4899', fixed: '#8b5cf6', mutable: '#06b6d4' };
               return (
                 <g key={mod}>
-                  <text x="635" y={210 + idx * 22} fontSize="10" fill="#6b7280">
+                  <text x="935" y={420 + idx * 22} fontSize="10" fill="#6b7280">
                     {mod.charAt(0).toUpperCase() + mod.slice(1)}
                   </text>
-                  <rect x="700" y={200 + idx * 22} width={count * 12} height="10" fill={colors[mod]} rx="2" />
-                  <text x="770" y={209 + idx * 22} fontSize="10" fill="#6b7280" fontWeight="600">
+                  <rect x="1020" y={410 + idx * 22} width={count * 12} height="10" fill={colors[mod]} rx="2" />
+                  <text x="1150" y={419 + idx * 22} fontSize="10" fill="#6b7280" fontWeight="600">
                     {count}
                   </text>
                 </g>
@@ -557,8 +557,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           <text x="30" y="114" fontSize="10" fill="#f59e0b">⊕ Part of Fortune</text>
         </g>
         
-        {/* Retrograde Indicator */}
-        <text x="40" y="760" fontSize="10" fill="#ef4444">
+        {/* Retrograde Indicator (Below Aspects Legend) */}
+        <text x="40" y="800" fontSize="10" fill="#ef4444">
           ℞ = Retrograde
         </text>
         
@@ -680,13 +680,13 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
                 })}
               </g>
             ))}
-            {/* Legend for minor aspects */}
-            <text x="210" y="968" fontSize="9" fill="#6b7280">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
+            {/* Legend for minor aspects (Below Aspect Grid) */}
+            <text x="210" y="995" fontSize="9" fill="#6b7280">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
           </g>
         )}
         
-        {/* Dignities Legend */}
-        <text x="40" y="780" fontSize="10" fill="#6b7280">
+        {/* Dignities Legend (Below Retrograde Indicator) */}
+        <text x="40" y="820" fontSize="10" fill="#6b7280">
           👑=Domicile ↑=Exalted ↓=Detriment ×=Fall
         </text>
       </svg>
