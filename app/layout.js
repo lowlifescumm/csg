@@ -1,5 +1,6 @@
 import "./globals.css";
 import Script from "next/script";
+import NextAuthProvider from "@/components/SessionProvider";
 
 export default function RootLayout({ children }) {
 
@@ -20,23 +21,24 @@ export default function RootLayout({ children }) {
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-        {/* Google Analytics */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-T0J78R09VN"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-T0J78R09VN');
-          `}
-        </Script>
-        {/* Skip Link for Accessibility */}
-        <a href="#main-content" className="skip-link focus:top-4">
-          Skip to main content
-        </a>
+        <NextAuthProvider>
+          {/* Google Analytics */}
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=G-T0J78R09VN"
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-T0J78R09VN');
+            `}
+          </Script>
+          {/* Skip Link for Accessibility */}
+          <a href="#main-content" className="skip-link focus:top-4">
+            Skip to main content
+          </a>
         
         {(
           <header className="glassmorphic border-b border-white border-opacity-20 apple-shadow-lg sticky top-0 z-50">
@@ -106,6 +108,7 @@ export default function RootLayout({ children }) {
             </div>
           </footer>
         )}
+        </NextAuthProvider>
       </body>
     </html>
   )
