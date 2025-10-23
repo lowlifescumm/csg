@@ -78,6 +78,15 @@ export async function POST(request) {
     });
   } catch (err) {
     console.error("Credit purchase error:", err);
-    return NextResponse.json({ error: "Failed to create payment" }, { status: 500 });
+    console.error("Error details:", {
+      message: err.message,
+      stack: err.stack,
+      type: err.type,
+      statusCode: err.statusCode
+    });
+    return NextResponse.json({ 
+      error: "Failed to create payment",
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    }, { status: 500 });
   }
 }
