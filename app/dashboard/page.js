@@ -35,6 +35,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [expandedReading, setExpandedReading] = useState(null);
 
   useEffect(() => {
     checkAuth();
@@ -667,7 +668,8 @@ export default function DashboardPage() {
                       return (
                       <div 
                         key={reading.id}
-                        className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60 hover:shadow-lg animate-fade-in"
+                        onClick={() => setExpandedReading(reading)}
+                        className="bg-white bg-opacity-40 rounded-xl p-4 apple-shadow border border-white border-opacity-60 smooth-transition hover:bg-opacity-60 hover:shadow-lg animate-fade-in cursor-pointer"
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -757,6 +759,70 @@ export default function DashboardPage() {
           </div>
 
         </div>
+
+        {/* Expanded Reading Modal */}
+        {expandedReading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setExpandedReading(null)}>
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold gradient-text mb-1">{expandedReading.question || 'Your Reading'}</h2>
+                    <p className="text-sm text-gray-500">{expandedReading.created_at ? formatDate(expandedReading.created_at) : ''}</p>
+                  </div>
+                  <button 
+                    onClick={() => setExpandedReading(null)}
+                    className="text-gray-400 hover:text-gray-600 transition"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Tarot Cards */}
+                {expandedReading.result?.cards && expandedReading.result.cards.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-900">Your Cards</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {expandedReading.result.cards.map((card, idx) => (
+                        <div key={idx} className="bg-gray-50 rounded-xl p-4">
+                          <div className="relative overflow-hidden rounded-lg bg-white mb-3">
+                            <img 
+                              src={card.image} 
+                              alt={card.name}
+                              className={`w-full h-auto ${card.reversed ? 'rotate-180' : ''}`}
+                            />
+                            {card.reversed && (
+                              <div className="absolute top-2 right-2 bg-purple-500 text-white text-xs px-2 py-1 rounded-full">
+                                Reversed
+                              </div>
+                            )}
+                          </div>
+                          <h4 className="font-semibold text-gray-900 text-center mb-1">{card.name}</h4>
+                          {card.position && (
+                            <p className="text-xs text-purple-600 text-center font-medium uppercase">{card.position}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Interpretation */}
+                {expandedReading.result?.interpretation && (
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-gray-900">Interpretation</h3>
+                    <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                      {expandedReading.result.interpretation}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Help System */}
         <HelpSystem />
