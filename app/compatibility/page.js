@@ -253,16 +253,6 @@ export default function CompatibilityCalculator() {
           </div>
           <h1 className="text-5xl font-bold text-white mb-4">Compatibility Calculator</h1>
           <p className="text-xl text-purple-200">Discover your astrological compatibility</p>
-          
-          {/* Credits Display */}
-          {isPremium && (
-            <div className="mt-4 inline-flex items-center gap-2 bg-white bg-opacity-10 px-4 py-2 rounded-full">
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span className="text-white font-medium">
-                {creditsRemaining} {creditsRemaining === 1 ? 'credit' : 'credits'} remaining
-              </span>
-            </div>
-          )}
         </div>
 
         <div className="flex items-center justify-center mb-8">
@@ -481,16 +471,6 @@ function CompatibilityReport({ result, person1, person2, creditsRemaining, onBac
           </div>
           <h1 className="text-5xl font-bold text-white mb-2">Compatibility Report</h1>
           <p className="text-2xl text-purple-200">{person1} & {person2}</p>
-          
-          {/* Credits Display */}
-          {creditsRemaining !== null && creditsRemaining !== undefined && (
-            <div className="mt-4 inline-flex items-center gap-2 bg-white bg-opacity-10 px-4 py-2 rounded-full">
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span className="text-white font-medium">
-                {creditsRemaining} {creditsRemaining === 1 ? 'credit' : 'credits'} remaining
-              </span>
-            </div>
-          )}
         </div>
 
         <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20 mb-6">

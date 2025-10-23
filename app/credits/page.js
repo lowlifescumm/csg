@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -19,28 +19,30 @@ function CheckoutForm({ pack, onSuccess, onError }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
+    if (!stripe || !elements) {
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Create payment intent
-      const res = await fetch("/api/credits/purchase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packSize: pack.size, packPrice: pack.price })
+      // Confirm payment using PaymentElement
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/credits?success=true`,
+        },
+        redirect: 'if_required',
       });
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error);
-
-      // Confirm payment
-      const { error } = await stripe.confirmCardPayment(data.clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        }
-      });
-
-      if (error) throw error;
-      onSuccess();
+      if (error) {
+        throw new Error(error.message);
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        onSuccess();
+      } else {
+        throw new Error('Payment requires additional verification');
+      }
     } catch (err) {
       onError(err.message);
     } finally {
@@ -49,16 +51,88 @@ function CheckoutForm({ pack, onSuccess, onError }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <CardElement className="p-3 border rounded" />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <PaymentElement 
+          options={{
+            layout: 'tabs',
+            business: { name: 'Cosmic Spiritual Guide' },
+            fields: {
+              billingDetails: {
+                address: 'auto',
+              }
+            }
+          }}
+        />
+      </div>
       <button
         type="submit"
         disabled={!stripe || loading}
-        className="w-full bg-purple-600 text-white py-2 px-4 rounded disabled:opacity-50"
+        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold disabled:opacity-50 hover:from-purple-700 hover:to-pink-700 transition"
       >
-        {loading ? "Processing..." : `Buy ${pack.name} - $${(pack.price / 100).toFixed(2)}`}
+        {loading ? "Processing..." : `Pay $${(pack.price / 100).toFixed(2)} for ${pack.name}`}
       </button>
     </form>
+  );
+}
+
+function CheckoutWrapper({ pack, onSuccess, onError }) {
+  const [clientSecret, setClientSecret] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Create payment intent when pack is selected
+    const createPaymentIntent = async () => {
+      try {
+        const res = await fetch("/api/credits/purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ packSize: pack.size, packPrice: pack.price })
+        });
+
+        const data = await res.json();
+        if (data.success && data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        } else {
+          onError(data.error || "Failed to initialize payment");
+        }
+      } catch (error) {
+        onError("Failed to initialize payment");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    createPaymentIntent();
+  }, [pack]);
+
+  if (loading) {
+    return <div className="text-center py-4">Initializing payment...</div>;
+  }
+
+  if (!clientSecret) {
+    return <div className="text-center py-4 text-red-600">Failed to initialize payment</div>;
+  }
+
+  return (
+    <Elements 
+      stripe={stripePromise}
+      options={{
+        clientSecret,
+        appearance: {
+          theme: 'stripe',
+          variables: {
+            colorPrimary: '#9333ea',
+          },
+        },
+      }}
+    >
+      <CheckoutForm 
+        pack={pack} 
+        onSuccess={onSuccess}
+        onError={onError}
+      />
+    </Elements>
   );
 }
 
@@ -126,13 +200,11 @@ export default function CreditsPage() {
       {selectedPack && (
         <div className="mt-8 p-6 border rounded-lg bg-gray-50">
           <h3 className="text-xl font-semibold mb-4">Complete Purchase</h3>
-          <Elements stripe={stripePromise}>
-            <CheckoutForm 
-              pack={selectedPack} 
-              onSuccess={handleSuccess}
-              onError={handleError}
-            />
-          </Elements>
+          <CheckoutWrapper
+            pack={selectedPack} 
+            onSuccess={handleSuccess}
+            onError={handleError}
+          />
           <button
             onClick={() => setSelectedPack(null)}
             className="mt-4 text-gray-600 hover:text-gray-800"
