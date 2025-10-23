@@ -1,4 +1,4 @@
 {
-  "/moon-reading/page": "app/moon-reading/page.js",
-  "/compatibility/page": "app/compatibility/page.js"
+  "/subscription/page": "app/subscription/page.js",
+  "/credits/page": "app/credits/page.js"
 }

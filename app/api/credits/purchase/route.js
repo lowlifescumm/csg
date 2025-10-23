@@ -28,18 +28,44 @@ export async function POST(request) {
     const pack = validPacks.find(p => p.size === packSize && p.price === packPrice);
     if (!pack) return NextResponse.json({ error: "Invalid pack" }, { status: 400 });
 
-    // Get user's Stripe customer ID
-    const { rows } = await pool.query("SELECT stripe_customer_id FROM users WHERE id=$1", [decoded.userId]);
-    const customerId = rows[0]?.stripe_customer_id;
-    if (!customerId) return NextResponse.json({ error: "No Stripe customer" }, { status: 400 });
+    // Get user's info and Stripe customer ID
+    const { rows } = await pool.query("SELECT id, email, first_name, last_name, stripe_customer_id FROM users WHERE id=$1", [decoded.userId]);
+    const user = rows[0];
+    
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    let customerId = user.stripe_customer_id;
+
+    // Create Stripe customer if doesn't exist
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+        metadata: {
+          userId: decoded.userId.toString(),
+        },
+      });
+      customerId = customer.id;
+      
+      // Save customer ID to database
+      await pool.query(
+        "UPDATE users SET stripe_customer_id = $1 WHERE id = $2",
+        [customerId, decoded.userId]
+      );
+    }
 
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: packPrice,
       currency: 'usd',
       customer: customerId,
+      automatic_payment_methods: {
+        enabled: true,
+      },
       metadata: {
-        userId: decoded.userId,
+        userId: decoded.userId.toString(),
         packSize: packSize.toString(),
         type: 'credit_pack'
       }
