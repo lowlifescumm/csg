@@ -1,9 +1,29 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken, getUserById } from '@/lib/auth';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function GET() {
   try {
+    // First, check for NextAuth session (for Google OAuth users)
+    const session = await getServerSession(authOptions);
+    
+    if (session?.user) {
+      // User is authenticated via NextAuth (Google OAuth)
+      return NextResponse.json({
+        user: {
+          id: session.user.id,
+          email: session.user.email,
+          firstName: session.user.firstName,
+          lastName: session.user.lastName,
+          role: session.user.role,
+          stripe_subscription_id: session.user.subscriptionStatus === 'active' ? 'active' : null,
+        },
+      });
+    }
+
+    // Fall back to JWT cookie authentication (for email/password users)
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 

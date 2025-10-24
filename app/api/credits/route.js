@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
-import { verifyToken } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -162,14 +164,14 @@ async function resetUserCredits(userId, creditType) {
 // GET endpoint to check user's credits
 export async function GET(request) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
-    const decoded = verifyToken(token);
+    const cookieStore = await cookies();
+    const auth = await getAuthenticatedUser(cookieStore, authOptions);
     
-    if (!decoded) {
+    if (!auth) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const userId = decoded.userId;
+    const userId = auth.userId;
     
     // Check if user is premium
     const userResult = await pool.query(

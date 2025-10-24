@@ -1,25 +1,21 @@
 import { NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserReadings, getUserBirthCharts, getUserStats } from "@/lib/db";
 import { cookies } from "next/headers";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(request) {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    const auth = await getAuthenticatedUser(cookieStore, authOptions);
 
-    if (!token) {
+    if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const stats = await getUserStats(decoded.userId);
-    const tarotReadings = await getUserReadings(decoded.userId);
-    const birthCharts = await getUserBirthCharts(decoded.userId);
+    const stats = await getUserStats(auth.userId);
+    const tarotReadings = await getUserReadings(auth.userId);
+    const birthCharts = await getUserBirthCharts(auth.userId);
 
     return NextResponse.json({
       success: true,
