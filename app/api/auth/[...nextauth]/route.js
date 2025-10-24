@@ -33,7 +33,7 @@ export const authOptions = {
           const lastName = profile.family_name || user.name?.split(' ').slice(1).join(' ') || '';
           
           await pool.query(
-            `INSERT INTO users (email, first_name, last_name, password, email_verified, google_id, avatar_url, created_at) 
+            `INSERT INTO users (email, first_name, last_name, password_hash, email_verified, google_id, avatar_url, created_at) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
             [
               user.email,
@@ -129,5 +129,7 @@ export const authOptions = {
   debug: process.env.NODE_ENV === 'development',
 };
 
-export default NextAuth(authOptions);
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
 
