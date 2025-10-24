@@ -21,6 +21,8 @@ export const authOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
+        console.log('[NextAuth] signIn callback triggered for:', user.email);
+        
         // Check if user exists in database
         const { rows: existingUsers } = await pool.query(
           "SELECT * FROM users WHERE email = $1",
@@ -58,9 +60,10 @@ export const authOptions = {
           );
         }
 
+        console.log('[NextAuth] signIn callback successful for:', user.email);
         return true;
       } catch (error) {
-        console.error("Error in signIn callback:", error);
+        console.error("[NextAuth] Error in signIn callback:", error);
         return false;
       }
     },
@@ -68,6 +71,8 @@ export const authOptions = {
     async jwt({ token, user, account }) {
       // Initial sign in
       if (account && user) {
+        console.log('[NextAuth] jwt callback - initial sign in for:', user.email);
+        
         // Get user from database
         const { rows } = await pool.query(
           "SELECT id, email, first_name, last_name, role, stripe_subscription_id FROM users WHERE email = $1",
@@ -82,6 +87,9 @@ export const authOptions = {
           token.lastName = dbUser.last_name;
           token.role = dbUser.role;
           token.subscriptionStatus = dbUser.stripe_subscription_id ? 'active' : 'free';
+          console.log('[NextAuth] jwt callback - set token.userId:', token.userId);
+        } else {
+          console.error('[NextAuth] jwt callback - user not found in database!');
         }
       }
       
