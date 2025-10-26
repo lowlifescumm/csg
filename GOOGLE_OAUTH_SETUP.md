@@ -158,3 +158,4 @@ ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 - Use different Google OAuth credentials for dev and production
 - Keep your Google Client Secret secure
 
+

@@ -56,3 +56,4 @@ COMMENT ON COLUMN users.avatar_url IS 'User profile picture URL from OAuth provi
 COMMENT ON COLUMN users.email_verified IS 'Whether the user email has been verified';
 COMMENT ON COLUMN users.updated_at IS 'Timestamp of last user record update';
 
+

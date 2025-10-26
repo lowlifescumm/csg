@@ -35,13 +35,12 @@ export const authOptions = {
           const lastName = profile.family_name || user.name?.split(' ').slice(1).join(' ') || '';
           
           await pool.query(
-            `INSERT INTO users (email, first_name, last_name, password_hash, email_verified, google_id, avatar_url, created_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+            `INSERT INTO users (email, first_name, last_name, email_verified, google_id, avatar_url, created_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
             [
               user.email,
               firstName,
               lastName,
-              null, // No password needed for OAuth
               true, // Email verified by Google
               profile.sub, // Google user ID
               user.image || profile.picture
