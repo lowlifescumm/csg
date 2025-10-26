@@ -59,8 +59,24 @@ export const authOptions = {
             );
             console.log('[NextAuth] Upsert completed successfully for:', user.email);
           } catch (insertError) {
-            console.log('[NextAuth] INSERT failed, trying UPDATE for:', user.email);
-            // If INSERT fails, try UPDATE instead
+            console.log('[NextAuth] INSERT failed, error:', insertError.message);
+            console.log('[NextAuth] Re-checking if user exists for:', user.email);
+            
+            // Re-check if user exists (might have been created by another process)
+            const { rows: recheckUsers } = await pool.query(
+              "SELECT * FROM users WHERE email = $1",
+              [user.email]
+            );
+            
+            console.log('[NextAuth] Re-check found users:', recheckUsers.length);
+            
+            if (recheckUsers.length === 0) {
+              // User still doesn't exist, this is a real problem
+              console.error('[NextAuth] User does not exist and INSERT failed!');
+              throw new Error('Failed to create user in database');
+            }
+            
+            // User exists now, update them
             await pool.query(
               `UPDATE users 
                SET google_id = COALESCE($1, users.google_id),
