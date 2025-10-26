@@ -38,56 +38,26 @@ export const authOptions = {
           
           console.log('[NextAuth] Upserting user for:', user.email);
           
-          try {
-            // Try INSERT with ON CONFLICT
-            await pool.query(
-              `INSERT INTO users (email, first_name, last_name, email_verified, google_id, avatar_url, created_at) 
-               VALUES ($1, $2, $3, $4, $5, $6, NOW())
-               ON CONFLICT (email) DO UPDATE SET
-                 google_id = COALESCE(EXCLUDED.google_id, users.google_id),
-                 avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
-                 email_verified = true,
-                 updated_at = NOW()`,
-              [
-                user.email,
-                firstName,
-                lastName,
-                true, // Email verified by Google
-                profile.sub, // Google user ID
-                user.image || profile.picture
-              ]
-            );
-            console.log('[NextAuth] Upsert completed successfully for:', user.email);
-          } catch (insertError) {
-            console.log('[NextAuth] INSERT failed, error:', insertError.message);
-            console.log('[NextAuth] Re-checking if user exists for:', user.email);
-            
-            // Re-check if user exists (might have been created by another process)
-            const { rows: recheckUsers } = await pool.query(
-              "SELECT * FROM users WHERE email = $1",
-              [user.email]
-            );
-            
-            console.log('[NextAuth] Re-check found users:', recheckUsers.length);
-            
-            if (recheckUsers.length === 0) {
-              // User still doesn't exist, this is a real problem
-              console.error('[NextAuth] User does not exist and INSERT failed!');
-              throw new Error('Failed to create user in database');
-            }
-            
-            // User exists now, update them
-            await pool.query(
-              `UPDATE users 
-               SET google_id = COALESCE($1, users.google_id),
-                   avatar_url = COALESCE($2, users.avatar_url),
-                   email_verified = true,
-                   updated_at = NOW()
-               WHERE email = $3`,
-              [profile.sub, user.image || profile.picture, user.email]
-            );
-            console.log('[NextAuth] UPDATE completed for:', user.email);
-          }
+          // Use INSERT with ON CONFLICT to handle both new and existing users
+          const result = await pool.query(
+            `INSERT INTO users (email, first_name, last_name, email_verified, google_id, avatar_url, created_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, NOW())
+             ON CONFLICT (email) DO UPDATE SET
+               google_id = COALESCE(EXCLUDED.google_id, users.google_id),
+               avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
+               email_verified = true,
+               updated_at = NOW()
+             RETURNING id, email`,
+            [
+              user.email,
+              firstName,
+              lastName,
+              true, // Email verified by Google
+              profile.sub, // Google user ID
+              user.image || profile.picture
+            ]
+          );
+          console.log('[NextAuth] Upsert completed successfully for:', user.email, 'ID:', result.rows[0].id);
         } else {
           // Update existing user with Google info if not already set
           console.log('[NextAuth] Updating existing user for:', user.email);
