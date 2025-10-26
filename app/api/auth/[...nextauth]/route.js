@@ -29,14 +29,23 @@ export const authOptions = {
           [user.email]
         );
 
+        console.log('[NextAuth] Found existing users:', existingUsers.length);
+
         if (existingUsers.length === 0) {
-          // Create new user
+          // Create new user with ON CONFLICT handling
           const firstName = profile.given_name || user.name?.split(' ')[0] || '';
           const lastName = profile.family_name || user.name?.split(' ').slice(1).join(' ') || '';
           
+          console.log('[NextAuth] Creating new user for:', user.email);
+          
           await pool.query(
             `INSERT INTO users (email, first_name, last_name, email_verified, google_id, avatar_url, created_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+             VALUES ($1, $2, $3, $4, $5, $6, NOW())
+             ON CONFLICT (email) DO UPDATE SET
+               google_id = COALESCE(EXCLUDED.google_id, users.google_id),
+               avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
+               email_verified = true,
+               updated_at = NOW()`,
             [
               user.email,
               firstName,
@@ -48,6 +57,8 @@ export const authOptions = {
           );
         } else {
           // Update existing user with Google info if not already set
+          console.log('[NextAuth] Updating existing user for:', user.email);
+          
           await pool.query(
             `UPDATE users 
              SET google_id = COALESCE(google_id, $1),
