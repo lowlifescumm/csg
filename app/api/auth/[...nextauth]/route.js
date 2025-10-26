@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { pool } from "@/lib/db";
 import jwt from "jsonwebtoken";
+import { initializeUserCreditsOnSignup, refreshDailyCredits } from "@/lib/credits";
 
 export const authOptions = {
   providers: [
@@ -57,7 +58,15 @@ export const authOptions = {
               user.image || profile.picture
             ]
           );
-          console.log('[NextAuth] Upsert completed successfully for:', user.email, 'ID:', result.rows[0].id);
+          const userId = result.rows[0].id;
+          console.log('[NextAuth] Upsert completed successfully for:', user.email, 'ID:', userId);
+          
+          // Initialize credits for new user signup
+          const wasNewUser = result.rows[0].email === user.email;
+          if (wasNewUser) {
+            await initializeUserCreditsOnSignup(userId);
+            console.log('[NextAuth] Initialized credits for new user:', user.email);
+          }
         } else {
           // Update existing user with Google info if not already set
           console.log('[NextAuth] Updating existing user for:', user.email);
@@ -101,9 +110,15 @@ export const authOptions = {
           token.role = dbUser.role;
           token.subscriptionStatus = dbUser.stripe_subscription_id ? 'active' : 'free';
           console.log('[NextAuth] jwt callback - set token.userId:', token.userId);
+          
+          // Refresh daily credits if needed
+          await refreshDailyCredits(dbUser.id);
         } else {
           console.error('[NextAuth] jwt callback - user not found in database!');
         }
+      } else if (token.userId) {
+        // Refresh daily credits on token refresh for existing sessions
+        await refreshDailyCredits(token.userId);
       }
       
       return token;
