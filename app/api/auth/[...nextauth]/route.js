@@ -32,29 +32,46 @@ export const authOptions = {
         console.log('[NextAuth] Found existing users:', existingUsers.length);
 
         if (existingUsers.length === 0) {
-          // Create new user with ON CONFLICT handling
+          // Create new user or update if exists (upsert pattern)
           const firstName = profile.given_name || user.name?.split(' ')[0] || '';
           const lastName = profile.family_name || user.name?.split(' ').slice(1).join(' ') || '';
           
-          console.log('[NextAuth] Creating new user for:', user.email);
+          console.log('[NextAuth] Upserting user for:', user.email);
           
-          await pool.query(
-            `INSERT INTO users (email, first_name, last_name, email_verified, google_id, avatar_url, created_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, NOW())
-             ON CONFLICT (email) DO UPDATE SET
-               google_id = COALESCE(EXCLUDED.google_id, users.google_id),
-               avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
-               email_verified = true,
-               updated_at = NOW()`,
-            [
-              user.email,
-              firstName,
-              lastName,
-              true, // Email verified by Google
-              profile.sub, // Google user ID
-              user.image || profile.picture
-            ]
-          );
+          try {
+            // Try INSERT with ON CONFLICT
+            await pool.query(
+              `INSERT INTO users (email, first_name, last_name, email_verified, google_id, avatar_url, created_at) 
+               VALUES ($1, $2, $3, $4, $5, $6, NOW())
+               ON CONFLICT (email) DO UPDATE SET
+                 google_id = COALESCE(EXCLUDED.google_id, users.google_id),
+                 avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
+                 email_verified = true,
+                 updated_at = NOW()`,
+              [
+                user.email,
+                firstName,
+                lastName,
+                true, // Email verified by Google
+                profile.sub, // Google user ID
+                user.image || profile.picture
+              ]
+            );
+            console.log('[NextAuth] Upsert completed successfully for:', user.email);
+          } catch (insertError) {
+            console.log('[NextAuth] INSERT failed, trying UPDATE for:', user.email);
+            // If INSERT fails, try UPDATE instead
+            await pool.query(
+              `UPDATE users 
+               SET google_id = COALESCE($1, users.google_id),
+                   avatar_url = COALESCE($2, users.avatar_url),
+                   email_verified = true,
+                   updated_at = NOW()
+               WHERE email = $3`,
+              [profile.sub, user.image || profile.picture, user.email]
+            );
+            console.log('[NextAuth] UPDATE completed for:', user.email);
+          }
         } else {
           // Update existing user with Google info if not already set
           console.log('[NextAuth] Updating existing user for:', user.email);
