@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { generateCompatibilityReport } from '@/lib/compatibility';
 import { calculateBirthChart } from '@/lib/astrology';
-import { Pool } from 'pg';
-import { verifyToken } from '@/lib/auth';
-import { checkUserCredits, deductUserCredit, initializeUserCredits } from '../credits/route';
+import { pool } from '@/lib/db';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes("localhost")
-    ? false
-    : { rejectUnauthorized: false },
-});
 
 export async function POST(request) {
   try {
@@ -35,45 +31,30 @@ export async function POST(request) {
       );
     }
 
-    const token = request.cookies.get('auth_token')?.value;
-    const decoded = verifyToken(token);
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(request.cookies, authOptions);
     
-    if (!decoded) {
+    if (!authResult) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+    
+    const { userId } = authResult;
 
-    const userId = decoded.userId;
-
-    // Check if user is admin or has premium subscription
-    const { rows: user } = await pool.query(
-      'SELECT role, stripe_subscription_id FROM users WHERE id = $1',
-      [userId]
-    );
-
-    const isAdmin = user[0]?.role === 'admin';
-    const isPremium = user[0]?.stripe_subscription_id && user[0]?.stripe_subscription_id.length > 0;
-
-    if (!isAdmin && !isPremium) {
-      return NextResponse.json({ 
-        error: 'Premium subscription required',
-        requiresPayment: true,
-        isPremium: false 
-      }, { status: 402 });
-    }
-
-    // For premium users (non-admin), check and deduct credits
-    if (!isAdmin && isPremium) {
-      const { hasCredits, creditsRemaining, resetDate } = await checkUserCredits(userId, 'compatibility');
-      
-      if (!hasCredits) {
-        return NextResponse.json({ 
-          error: 'No compatibility credits available',
-          requiresPayment: false,
-          isPremium: true,
-          creditsRemaining: 0,
-          resetDate: resetDate
+    // Check access permissions for Compatibility Report
+    const accessCheck = await canAccessReading(userId, 'COMPATIBILITY_REPORT');
+    
+    if (!accessCheck.allowed) {
+      if (accessCheck.reason === 'insufficient_credits') {
+        return NextResponse.json({
+          error: 'Insufficient credits',
+          details: `Compatibility Report requires ${accessCheck.required} credits`,
+          cost: accessCheck.required
         }, { status: 402 });
       }
+      return NextResponse.json({
+        error: 'Access denied',
+        details: accessCheck.reason
+      }, { status: 403 });
     }
 
     const date1 = new Date(person1BirthDate);
@@ -89,6 +70,17 @@ export async function POST(request) {
       person1Name || 'Person 1',
       person2Name || 'Person 2'
     );
+
+    // Consume credits for the reading
+    const creditResult = await consumeCreditsForReading(userId, 'COMPATIBILITY_REPORT');
+    
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: 'Credit processing failed',
+        details: creditResult.message,
+        cost: creditResult.cost
+      }, { status: 402 });
+    }
 
     const insertResult = await pool.query(
       `INSERT INTO compatibility_reports 
@@ -108,34 +100,11 @@ export async function POST(request) {
 
     const reportId = insertResult.rows[0].id;
 
-    // Deduct credit for non-admin premium users
-    let creditsRemaining = null;
-    if (!isAdmin && isPremium) {
-      const deductResult = await deductUserCredit(
-        userId, 
-        'compatibility', 
-        reportId,
-        `Compatibility report for ${person1Name || 'Person 1'} & ${person2Name || 'Person 2'}`
-      );
-      
-      if (!deductResult.success) {
-        // Rollback the report if credit deduction fails
-        await pool.query('DELETE FROM compatibility_reports WHERE id = $1', [reportId]);
-        return NextResponse.json({ 
-          error: 'Failed to deduct credit',
-          requiresPayment: false
-        }, { status: 500 });
-      }
-      
-      creditsRemaining = deductResult.creditsRemaining;
-    }
-
     return NextResponse.json({
       success: true,
       scores: result.scores,
       report: result.report,
-      insights: result.insights,
-      creditsRemaining: creditsRemaining
+      insights: result.insights
     });
 
   } catch (error) {
@@ -150,14 +119,15 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const token = request.cookies.get('auth_token')?.value;
-    const decoded = verifyToken(token);
     
-    if (!decoded) {
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(request.cookies, authOptions);
+    
+    if (!authResult) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-
-    const userId = decoded.userId;
+    
+    const { userId } = authResult;
 
     const result = await pool.query(
       'SELECT * FROM compatibility_reports WHERE user_id = $1 ORDER BY created_at DESC',

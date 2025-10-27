@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import * as Astronomy from 'astronomy-engine';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 
 const phaseNames = {
   0: { name: 'New Moon', emoji: '🌑' },
@@ -87,6 +91,48 @@ function getZodiacSign(longitude) {
 
 export async function GET(request) {
   try {
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(request.cookies, authOptions);
+    
+    if (!authResult) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const { userId } = authResult;
+
+    // Check query params to determine reading type
+    const { searchParams } = new URL(request.url);
+    const personalized = searchParams.get('personalized') === 'true';
+    const readingType = personalized ? 'MOON_PHASE_PERSONALIZED' : 'MOON_PHASE_BASIC';
+
+    // Check access permissions
+    const accessCheck = await canAccessReading(userId, readingType);
+    
+    if (!accessCheck.allowed) {
+      if (accessCheck.reason === 'insufficient_credits') {
+        return NextResponse.json({
+          error: 'Insufficient credits',
+          details: `${personalized ? 'Personalized' : 'Basic'} Moon Phase reading requires ${accessCheck.required} credits`,
+          cost: accessCheck.required
+        }, { status: 402 });
+      }
+      return NextResponse.json({
+        error: 'Access denied',
+        details: accessCheck.reason
+      }, { status: 403 });
+    }
+
+    // Consume credits for the reading
+    const creditResult = await consumeCreditsForReading(userId, readingType);
+    
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: 'Credit processing failed',
+        details: creditResult.message,
+        cost: creditResult.cost
+      }, { status: 402 });
+    }
+
     const now = new Date();
     
     const illumination = Astronomy.Illumination('Moon', now);

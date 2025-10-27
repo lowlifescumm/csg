@@ -1,21 +1,26 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import spreads from "@/lib/tarot-spreads.json";
-import { verifyToken } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { drawCards } from "@/lib/tarot-data";
-import { saveReading, getReadingById, checkUserCredits, pool } from "@/lib/db";
+import { saveReading, getReadingById, pool } from "@/lib/db";
 import { generateTarotReading, generateTarotSummary, createEmbedding } from "@/lib/openai";
 import { getPinecone } from "@/lib/pinecone";
+import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const decoded = verifyToken(token);
-    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(request.cookies, authOptions);
+    
+    if (!authResult) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    const { userId } = authResult;
 
     const { spreadId, spreadType, question = "", specificCards, tone = "warm, mystical, concise" } = await request.json();
 
@@ -37,10 +42,36 @@ export async function POST(request) {
     const spread = spreads.find(s => s.id === resolvedId);
     if (!spread) return NextResponse.json({ error: "Invalid spread" }, { status: 400 });
 
-    // Credit/subscription check (deducts a credit if available; returns true if ok)
-    const okToProceed = await checkUserCredits(decoded.userId);
-    if (!okToProceed) {
-      return NextResponse.json({ error: "Insufficient credits or inactive subscription" }, { status: 402 });
+    // Determine if this is a basic or premium tarot reading
+    const isPremiumTarot = spreadType === "love-potential" || spreadType === "breakup" || spreadType === "yin-yang";
+    const readingTypeKey = isPremiumTarot ? 'TAROT_PREMIUM' : 'TAROT_BASIC';
+
+    // Check access permissions
+    const accessCheck = await canAccessReading(userId, readingTypeKey);
+    
+    if (!accessCheck.allowed) {
+      if (accessCheck.reason === 'insufficient_credits') {
+        return NextResponse.json({
+          error: 'Insufficient credits',
+          details: `${isPremiumTarot ? 'Premium' : 'Basic'} Tarot reading requires ${accessCheck.required} credits`,
+          cost: accessCheck.required
+        }, { status: 402 });
+      }
+      return NextResponse.json({
+        error: 'Access denied',
+        details: accessCheck.reason
+      }, { status: 403 });
+    }
+
+    // Consume credits for the reading
+    const creditResult = await consumeCreditsForReading(userId, readingTypeKey);
+    
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: 'Credit processing failed',
+        details: creditResult.message,
+        cost: creditResult.cost
+      }, { status: 402 });
     }
 
     // Validate question requirement
@@ -68,7 +99,7 @@ export async function POST(request) {
 
     // Persist main DB (store summary in result.meta)
     const saved = await saveReading({
-      userId: decoded.userId,
+      userId: userId,
       type: "tarot",
       question,
       cards,
@@ -80,7 +111,7 @@ export async function POST(request) {
     });
 
     // Respect user opt-in for personalization
-    const { rows: userRows } = await pool.query("SELECT ai_personalization_opt_in FROM users WHERE id=$1", [decoded.userId]);
+    const { rows: userRows } = await pool.query("SELECT ai_personalization_opt_in FROM users WHERE id=$1", [userId]);
     const optedIn = userRows[0]?.ai_personalization_opt_in !== false;
 
     // Embed and upsert to Pinecone
@@ -88,7 +119,7 @@ export async function POST(request) {
       const embedding = await createEmbedding(summary);
       const pine = getPinecone();
       const index = pine.index(process.env.PINECONE_INDEX || 'csg-tarot');
-      await index.upsert([{ id: String(saved.id), values: embedding, metadata: { user_id: decoded.userId, reading_type: resolvedId, created_at: saved.created_at } }]);
+      await index.upsert([{ id: String(saved.id), values: embedding, metadata: { user_id: userId, reading_type: resolvedId, created_at: saved.created_at } }]);
     }
 
     return NextResponse.json({ success: true, reading: { id: saved.id, cards, interpretation: fullText, summary, createdAt: saved.created_at } });

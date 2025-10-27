@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/lib/db.js';
 import { 
   calculateActiveTransits, 
@@ -15,40 +16,50 @@ import {
   calculateAndStoreTransits, 
   updateTransitStatuses 
 } from '@/lib/transit-engine.js';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 
 export async function GET(req) {
   try {
-    const token = req.cookies.get('auth_token')?.value;
-
-    if (!token) {
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(req.cookies, authOptions);
+    
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    
+    const { userId } = authResult;
 
     // Get query params
     const { searchParams } = new URL(req.url);
     const mode = searchParams.get('mode') || 'live'; // 'live' or 'database'
     const windowDays = parseInt(searchParams.get('windowDays') || '30');
 
-    const userResult = await pool.query(
-      'SELECT role, stripe_subscription_id FROM users WHERE id = $1',
-      [userId]
-    );
-
-    if (userResult.rows.length === 0) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // Check access permissions for Transit Tracking
+    const accessCheck = await canAccessReading(userId, 'TRANSIT_TRACKING');
+    
+    if (!accessCheck.allowed) {
+      if (accessCheck.reason === 'insufficient_credits') {
+        return NextResponse.json({
+          error: 'Insufficient credits',
+          details: `Transit Tracking requires ${accessCheck.required} credits`,
+          cost: accessCheck.required
+        }, { status: 402 });
+      }
+      return NextResponse.json({
+        error: 'Access denied',
+        details: accessCheck.reason
+      }, { status: 403 });
     }
 
-    const user = userResult.rows[0];
-    const isAdmin = user.role === 'admin';
-    const isPremium = user.stripe_subscription_id !== null && user.stripe_subscription_id !== '';
-
-    if (!isAdmin && !isPremium) {
-      return NextResponse.json({ 
-        error: 'Premium subscription required',
-        requiresPremium: true
+    // Consume credits for the reading (if not subscription-included)
+    const creditResult = await consumeCreditsForReading(userId, 'TRANSIT_TRACKING');
+    
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: 'Credit processing failed',
+        details: creditResult.message,
+        cost: creditResult.cost
       }, { status: 402 });
     }
 

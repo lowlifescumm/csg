@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { getUserForecasts } from '@/lib/forecast-engine.js';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 
 /**
  * GET /api/forecasts
@@ -12,14 +15,14 @@ import { getUserForecasts } from '@/lib/forecast-engine.js';
  */
 export async function GET(req) {
   try {
-    const token = req.cookies.get('auth_token')?.value;
-
-    if (!token) {
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(req.cookies, authOptions);
+    
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    
+    const { userId } = authResult;
 
     // Get query params
     const { searchParams } = new URL(req.url);
@@ -33,6 +36,37 @@ export async function GET(req) {
       '90d': 90,
     };
     const daysBack = daysMap[range] || 7;
+
+    // Determine reading type based on request
+    const readingType = typeFilter === 'weekly' ? 'WEEKLY_FORECAST' : 'DAILY_FORECAST';
+
+    // Check access permissions
+    const accessCheck = await canAccessReading(userId, readingType);
+    
+    if (!accessCheck.allowed) {
+      if (accessCheck.reason === 'insufficient_credits') {
+        return NextResponse.json({
+          error: 'Insufficient credits',
+          details: `${typeFilter === 'weekly' ? 'Weekly' : 'Daily'} Forecast requires ${accessCheck.required} credits`,
+          cost: accessCheck.required
+        }, { status: 402 });
+      }
+      return NextResponse.json({
+        error: 'Access denied',
+        details: accessCheck.reason
+      }, { status: 403 });
+    }
+
+    // Consume credits for the reading (if not subscription-included)
+    const creditResult = await consumeCreditsForReading(userId, readingType);
+    
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: 'Credit processing failed',
+        details: creditResult.message,
+        cost: creditResult.cost
+      }, { status: 402 });
+    }
 
     // Get forecasts
     let forecasts = await getUserForecasts(userId, daysBack);

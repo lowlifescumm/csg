@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/lib/db.js';
 import { calculateBirthChart, interpretBirthChart } from '@/lib/astrology.js';
+import { canAccessReading, consumeCreditsForReading, claimFreeNatalChart } from '@/lib/access-control.js';
+import { getAuthenticatedUser } from '@/lib/auth.js';
 
 /**
  * POST /api/birth-chart
@@ -9,14 +12,14 @@ import { calculateBirthChart, interpretBirthChart } from '@/lib/astrology.js';
  */
 export async function POST(req) {
   try {
-    const token = req.cookies.get('auth_token')?.value;
-
-    if (!token) {
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(req.cookies, authOptions);
+    
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    
+    const { userId } = authResult;
 
     const body = await req.json();
     const { date, time, location, latitude, longitude } = body;
@@ -26,6 +29,23 @@ export async function POST(req) {
         error: 'Missing required fields',
         details: 'Date, time, location, latitude, and longitude are all required'
       }, { status: 400 });
+    }
+
+    // Check access permissions for Natal Chart
+    const accessCheck = await canAccessReading(userId, 'NATAL_CHART');
+    
+    if (!accessCheck.allowed) {
+      if (accessCheck.reason === 'insufficient_credits') {
+        return NextResponse.json({
+          error: 'Insufficient credits',
+          details: `Natal Chart requires ${accessCheck.required} credits`,
+          cost: accessCheck.required
+        }, { status: 402 }); // Payment Required
+      }
+      return NextResponse.json({
+        error: 'Access denied',
+        details: accessCheck.reason
+      }, { status: 403 });
     }
 
     // Calculate birth chart
@@ -39,6 +59,25 @@ export async function POST(req) {
       } catch (error) {
         console.error('Failed to generate interpretation:', error);
         interpretation = 'Interpretation generation failed. Your chart data is still saved.';
+      }
+    }
+
+    // Consume credits for the reading (if not subscription-included)
+    const creditResult = await consumeCreditsForReading(userId, 'NATAL_CHART');
+    
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: 'Credit processing failed',
+        details: creditResult.message,
+        cost: creditResult.cost
+      }, { status: 402 });
+    }
+
+    // Handle free natal chart for new subscribers
+    if (accessCheck.reason === 'subscription_included') {
+      const freeChartResult = await claimFreeNatalChart(userId);
+      if (freeChartResult.success) {
+        console.log(`[Birth Chart] Free natal chart claimed for user ${userId}`);
       }
     }
 
@@ -126,14 +165,14 @@ export async function POST(req) {
  */
 export async function GET(req) {
   try {
-    const token = req.cookies.get('auth_token')?.value;
-
-    if (!token) {
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(req.cookies, authOptions);
+    
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    
+    const { userId } = authResult;
 
     // Try new natal_charts table first
     let result = await pool.query(

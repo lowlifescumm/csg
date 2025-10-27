@@ -1,33 +1,49 @@
 // /app/api/tarot/route.js
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { drawCards } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
 import { generateTarotReading } from "@/lib/openai";
-import { saveReading, checkUserCredits } from "@/lib/db";
-import { verifyToken } from "@/lib/auth";
+import { saveReading } from "@/lib/db";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 
 export const runtime = "nodejs"; // ensure Node runtime on Vercel/Replit Edge-like envs
 
 export async function POST(request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-
-    if (!token) {
+    // Get authenticated user (supports both NextAuth and JWT)
+    const authResult = await getAuthenticatedUser(request.cookies, authOptions);
+    
+    if (!authResult) {
       return NextResponse.json({ error: "Unauthorized. Please login." }, { status: 401 });
     }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized. Please login." }, { status: 401 });
-    }
+    
+    const { userId } = authResult;
 
     const { question, spreadType = "three-card", specificCards, readingType = "general", cardCount, spreadId } = await request.json();
-    const uid = decoded.userId;
 
-    // Tarot readings are free for all users - no credit check needed
-    // Skip the credit check for tarot readings as they're free
+    // Determine if this is a basic or premium tarot reading
+    const isPremiumTarot = spreadType === "love-potential" || spreadType === "breakup" || spreadType === "yin-yang";
+    const readingTypeKey = isPremiumTarot ? 'TAROT_PREMIUM' : 'TAROT_BASIC';
+
+    // Check access permissions
+    const accessCheck = await canAccessReading(userId, readingTypeKey);
+    
+    if (!accessCheck.allowed) {
+      if (accessCheck.reason === 'insufficient_credits') {
+        return NextResponse.json({
+          error: 'Insufficient credits',
+          details: `${isPremiumTarot ? 'Premium' : 'Basic'} Tarot reading requires ${accessCheck.required} credits`,
+          cost: accessCheck.required
+        }, { status: 402 });
+      }
+      return NextResponse.json({
+        error: 'Access denied',
+        details: accessCheck.reason
+      }, { status: 403 });
+    }
     
     // resolve spread config
     const map = {
@@ -64,8 +80,19 @@ export async function POST(request) {
 
     const interpretation = await generateTarotReading(cards, question, resolvedId, readingType);
 
+    // Consume credits for the reading
+    const creditResult = await consumeCreditsForReading(userId, readingTypeKey);
+    
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: 'Credit processing failed',
+        details: creditResult.message,
+        cost: creditResult.cost
+      }, { status: 402 });
+    }
+
     const reading = await saveReading({
-      userId: uid,
+      userId: userId,
       type: "tarot",
       question,
       cards,
