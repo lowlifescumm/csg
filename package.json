@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 5000",
     "build": "next build",
-    "start": "next start -H 0.0.0.0 -p $PORT",
+    "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "pinecone:init": "node scripts/pinecone-init.js",
     "transit:setup": "node scripts/setup-transit-tracker.js",
