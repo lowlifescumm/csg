@@ -11,6 +11,10 @@ const nextConfig = {
     // Build optimizations
     optimizePackageImports: ['lucide-react', '@heroicons/react'],
   },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  outputFileTracingRoot: __dirname,
   // Fix chunk loading issues
   webpack: (config, { isServer }) => {
     if (!isServer) {
