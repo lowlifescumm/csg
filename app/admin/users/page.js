@@ -10,6 +10,10 @@ export default function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [user, setUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [credits, setCredits] = useState(0);
+  const [newCredits, setNewCredits] = useState('');
 
   useEffect(() => {
     fetchUser();
@@ -31,6 +35,52 @@ export default function UserManagementPage() {
     } catch (error) {
       console.error('Auth error:', error);
       window.location.href = '/login';
+    }
+  };
+
+  const openModal = async (user) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+    try {
+      const response = await fetch(`/api/credits?userId=${user.id}`);
+      const data = await response.json();
+      if (response.ok) {
+        setCredits(data.credits);
+      } else {
+        console.error('Failed to fetch credits:', data.error);
+      }
+    } catch (error) {
+      console.error('Failed to fetch credits:', error);
+    }
+  };
+
+  const closeModal = () => {
+    setSelectedUser(null);
+    setIsModalOpen(false);
+    setCredits(0);
+    setNewCredits('');
+  };
+
+  const handleCreditChange = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/admin/credits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: selectedUser.id, amount: parseInt(newCredits, 10) }),
+      });
+
+      if (response.ok) {
+        closeModal();
+        fetchUsers(); // Refresh user list
+      } else {
+        const data = await response.json();
+        console.error('Failed to update credits:', data.error);
+      }
+    } catch (error) {
+      console.error('Failed to update credits:', error);
     }
   };
 
@@ -280,6 +330,12 @@ export default function UserManagementPage() {
                           <button className="text-purple-600 hover:text-purple-700 smooth-transition">
                             Edit
                           </button>
+                          <button
+                            onClick={() => openModal(user)}
+                            className="text-green-600 hover:text-green-700 smooth-transition"
+                          >
+                            Adjust Credits
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -296,6 +352,39 @@ export default function UserManagementPage() {
           )}
         </div>
       </div>
+
+      {isModalOpen && selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-8">
+            <h2 className="text-2xl font-bold mb-4">Adjust Credits for {selectedUser.email}</h2>
+            <p className="mb-4">Current Credits: {credits}</p>
+            <form onSubmit={handleCreditChange}>
+              <input
+                type="number"
+                value={newCredits}
+                onChange={(e) => setNewCredits(e.target.value)}
+                placeholder="Enter new credit amount"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+              <div className="mt-4 flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
