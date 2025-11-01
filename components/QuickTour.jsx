@@ -91,8 +91,29 @@ export default function QuickTour({ onComplete }) {
     return null;
   }
 
+  // Safety check - ensure element is in DOM and visible
+  if (!targetElement.isConnected || targetElement.offsetParent === null) {
+    // Element might be hidden or not in DOM yet, skip to next step
+    if (currentStep < tourSteps.length - 1) {
+      setTimeout(() => setCurrentStep(currentStep + 1), 100);
+    } else {
+      completeTour();
+    }
+    return null;
+  }
+
   const rect = targetElement.getBoundingClientRect();
   const isBottom = currentTourStep.position === 'bottom';
+  
+  // Additional safety check for valid rect
+  if (!rect || rect.width === 0 || rect.height === 0) {
+    if (currentStep < tourSteps.length - 1) {
+      setTimeout(() => setCurrentStep(currentStep + 1), 100);
+    } else {
+      completeTour();
+    }
+    return null;
+  }
   
   return (
     <>
