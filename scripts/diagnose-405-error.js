@@ -134,3 +134,6 @@ console.log('   2. For production: NEXTAUTH_URL=https://cosmicspiritguide.com');
 console.log('   3. For development: NEXTAUTH_URL=http://localhost:5000');
 console.log('   4. Use correct start command based on output config');
 console.log('   5. Verify all environment variables are set in Render');
+
+
+

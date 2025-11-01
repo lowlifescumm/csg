@@ -127,3 +127,6 @@ All backend changes are complete and ready for:
 3. Add credit pack purchase interface
 4. Update reading cost displays
 5. Add subscription upgrade prompts
+
+
+

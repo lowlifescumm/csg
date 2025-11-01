@@ -4,6 +4,22 @@ import { pool } from "@/lib/db";
 import jwt from "jsonwebtoken";
 import { initializeUserCreditsOnSignup, refreshDailyCredits } from "@/lib/credits";
 
+// Validate required environment variables
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  console.error('[NextAuth] WARNING: Google OAuth credentials are not set!');
+  console.error('[NextAuth] Google sign-in will not work without GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET');
+}
+
+if (!process.env.NEXTAUTH_SECRET) {
+  console.error('[NextAuth] ERROR: NEXTAUTH_SECRET is not set!');
+  console.error('[NextAuth] Authentication will fail!');
+}
+
+if (!process.env.JWT_SECRET) {
+  console.error('[NextAuth] WARNING: JWT_SECRET is not set!');
+  console.error('[NextAuth] JWT token generation will fail!');
+}
+
 export const authOptions = {
   providers: [
     GoogleProvider({
@@ -40,32 +56,38 @@ export const authOptions = {
           console.log('[NextAuth] Upserting user for:', user.email);
 
           // Use INSERT with ON CONFLICT to handle both new and existing users
+          // Handle both password_hash nullable and non-nullable schemas
           const result = await pool.query(
-            `INSERT INTO users (email, first_name, last_name, email_verified, google_id, avatar_url, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, NOW())
+            `INSERT INTO users (email, first_name, last_name, google_id, avatar_url, created_at)
+             VALUES ($1, $2, $3, $4, $5, NOW())
              ON CONFLICT (email) DO UPDATE SET
                google_id = COALESCE(EXCLUDED.google_id, users.google_id),
                avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
-               email_verified = true,
                updated_at = NOW()
-             RETURNING id, email`,
+             RETURNING id, email, created_at`,
             [
               user.email,
               firstName,
               lastName,
-              true, // Email verified by Google
               profile.sub, // Google user ID
               user.image || profile.picture
             ]
           );
           const userId = result.rows[0].id;
+          const userCreatedAt = result.rows[0].created_at;
+          const isNewUser = new Date(userCreatedAt).getTime() > Date.now() - 5000; // Created within last 5 seconds
+          
           console.log('[NextAuth] Upsert completed successfully for:', user.email, 'ID:', userId);
 
           // Initialize credits for new user signup
-          const wasNewUser = result.rows[0].email === user.email;
-          if (wasNewUser) {
-            await initializeUserCreditsOnSignup(userId);
-            console.log('[NextAuth] Initialized credits for new user:', user.email);
+          if (isNewUser) {
+            try {
+              await initializeUserCreditsOnSignup(userId);
+              console.log('[NextAuth] Initialized credits for new user:', user.email);
+            } catch (creditsError) {
+              console.error('[NextAuth] Failed to initialize credits:', creditsError);
+              // Don't fail sign-in if credits initialization fails
+            }
           }
         } else {
           // Update existing user with Google info if not already set
@@ -75,7 +97,6 @@ export const authOptions = {
             `UPDATE users
              SET google_id = COALESCE(google_id, $1),
                  avatar_url = COALESCE(avatar_url, $2),
-                 email_verified = true,
                  updated_at = NOW()
              WHERE email = $3`,
             [profile.sub, user.image || profile.picture, user.email]
@@ -86,67 +107,98 @@ export const authOptions = {
         return true;
       } catch (error) {
         console.error("[NextAuth] Error in signIn callback:", error);
+        console.error("[NextAuth] Error details:", {
+          message: error.message,
+          code: error.code,
+          detail: error.detail,
+          hint: error.hint
+        });
         return false;
       }
     },
 
     async jwt({ token, user, account }) {
-      // Initial sign in
-      if (account && user) {
-        console.log('[NextAuth] jwt callback - initial sign in for:', user.email);
+      try {
+        // Initial sign in
+        if (account && user) {
+          console.log('[NextAuth] jwt callback - initial sign in for:', user.email);
 
-        // Get user from database
-        const { rows } = await pool.query(
-          "SELECT id, email, first_name, last_name, role, stripe_subscription_id FROM users WHERE email = $1",
-          [user.email]
-        );
+          // Get user from database
+          const { rows } = await pool.query(
+            "SELECT id, email, first_name, last_name, role, stripe_subscription_id FROM users WHERE email = $1",
+            [user.email]
+          );
 
-        if (rows.length > 0) {
-          const dbUser = rows[0];
-          token.userId = dbUser.id;
-          token.email = dbUser.email;
-          token.firstName = dbUser.first_name;
-          token.lastName = dbUser.last_name;
-          token.role = dbUser.role;
-          token.subscriptionStatus = dbUser.stripe_subscription_id ? 'active' : 'free';
-          console.log('[NextAuth] jwt callback - set token.userId:', token.userId);
+          if (rows.length > 0) {
+            const dbUser = rows[0];
+            token.userId = dbUser.id;
+            token.email = dbUser.email;
+            token.firstName = dbUser.first_name;
+            token.lastName = dbUser.last_name;
+            token.role = dbUser.role;
+            token.subscriptionStatus = dbUser.stripe_subscription_id ? 'active' : 'free';
+            console.log('[NextAuth] jwt callback - set token.userId:', token.userId);
 
-          // Refresh daily credits if needed
-          await refreshDailyCredits(dbUser.id);
-        } else {
-          console.error('[NextAuth] jwt callback - user not found in database!');
+            // Refresh daily credits if needed
+            try {
+              await refreshDailyCredits(dbUser.id);
+            } catch (creditsError) {
+              console.error('[NextAuth] Failed to refresh credits:', creditsError);
+              // Don't fail auth if credits refresh fails
+            }
+          } else {
+            console.error('[NextAuth] jwt callback - user not found in database!');
+          }
+        } else if (token.userId) {
+          // Refresh daily credits on token refresh for existing sessions
+          try {
+            await refreshDailyCredits(token.userId);
+          } catch (creditsError) {
+            console.error('[NextAuth] Failed to refresh credits on token refresh:', creditsError);
+          }
         }
-      } else if (token.userId) {
-        // Refresh daily credits on token refresh for existing sessions
-        await refreshDailyCredits(token.userId);
-      }
 
-      return token;
+        return token;
+      } catch (error) {
+        console.error('[NextAuth] jwt callback error:', error);
+        return token; // Return token even on error to not break session
+      }
     },
 
     async session({ session, token }) {
-      // Add custom properties to session
-      if (token) {
-        session.user.id = token.userId;
-        session.user.email = token.email;
-        session.user.firstName = token.firstName;
-        session.user.lastName = token.lastName;
-        session.user.role = token.role;
-        session.user.subscriptionStatus = token.subscriptionStatus;
+      try {
+        // Add custom properties to session
+        if (token && token.userId) {
+          session.user.id = token.userId;
+          session.user.email = token.email;
+          session.user.firstName = token.firstName;
+          session.user.lastName = token.lastName;
+          session.user.role = token.role;
+          session.user.subscriptionStatus = token.subscriptionStatus;
 
-        // Create JWT token for existing API compatibility
-        session.authToken = jwt.sign(
-          {
-            userId: token.userId,
-            email: token.email,
-            role: token.role
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-        );
+          // Create JWT token for existing API compatibility
+          if (process.env.JWT_SECRET) {
+            session.authToken = jwt.sign(
+              {
+                userId: token.userId,
+                email: token.email,
+                role: token.role
+              },
+              process.env.JWT_SECRET,
+              { expiresIn: '7d' }
+            );
+          } else {
+            console.error('[NextAuth] JWT_SECRET is not set!');
+          }
+        } else {
+          console.warn('[NextAuth] session callback - no token or userId');
+        }
+
+        return session;
+      } catch (error) {
+        console.error('[NextAuth] session callback error:', error);
+        return session; // Return session even on error
       }
-
-      return session;
     },
   },
 

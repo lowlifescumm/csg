@@ -14,6 +14,9 @@ export default function UserManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [credits, setCredits] = useState(0);
   const [newCredits, setNewCredits] = useState('');
+  const [creditError, setCreditError] = useState('');
+  const [creditSuccess, setCreditSuccess] = useState('');
+  const [isUpdatingCredits, setIsUpdatingCredits] = useState(false);
 
   useEffect(() => {
     fetchUser();
@@ -59,28 +62,51 @@ export default function UserManagementPage() {
     setIsModalOpen(false);
     setCredits(0);
     setNewCredits('');
+    setCreditError('');
+    setCreditSuccess('');
   };
 
   const handleCreditChange = async (e) => {
     e.preventDefault();
+    setCreditError('');
+    setCreditSuccess('');
+    setIsUpdatingCredits(true);
+    
     try {
+      const amount = parseInt(newCredits, 10);
+      
+      if (isNaN(amount)) {
+        setCreditError('Please enter a valid number');
+        setIsUpdatingCredits(false);
+        return;
+      }
+
       const response = await fetch('/api/admin/credits', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: selectedUser.id, amount: parseInt(newCredits, 10) }),
+        body: JSON.stringify({ userId: selectedUser.id, amount }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        closeModal();
-        fetchUsers(); // Refresh user list
+        setCreditSuccess(`${amount > 0 ? 'Added' : 'Adjusted'} ${Math.abs(amount)} credit${Math.abs(amount) !== 1 ? 's' : ''}. New balance: ${data.newBalance}`);
+        setCredits(data.newBalance);
+        setNewCredits('');
+        setTimeout(() => {
+          closeModal();
+          fetchUsers(); // Refresh user list
+        }, 2000);
       } else {
-        const data = await response.json();
-        console.error('Failed to update credits:', data.error);
+        setCreditError(data.error || 'Failed to update credits');
       }
     } catch (error) {
       console.error('Failed to update credits:', error);
+      setCreditError('Failed to connect to server');
+    } finally {
+      setIsUpdatingCredits(false);
     }
   };
 
@@ -355,30 +381,77 @@ export default function UserManagementPage() {
 
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-8">
-            <h2 className="text-2xl font-bold mb-4">Adjust Credits for {selectedUser.email}</h2>
-            <p className="mb-4">Current Credits: {credits}</p>
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 apple-shadow-lg">
+            <h2 className="text-2xl font-bold mb-2 gradient-text">Adjust Credits</h2>
+            <p className="text-sm text-gray-600 mb-6">{selectedUser.email}</p>
+            
+            <div className="mb-6">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl mb-4">
+                <span className="text-gray-700 font-medium">Current Balance:</span>
+                <span className="text-2xl font-bold text-purple-600">{credits}</span>
+              </div>
+            </div>
+
             <form onSubmit={handleCreditChange}>
-              <input
-                type="number"
-                value={newCredits}
-                onChange={(e) => setNewCredits(e.target.value)}
-                placeholder="Enter new credit amount"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-              <div className="mt-4 flex justify-end space-x-2">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Credit Adjustment Amount
+                </label>
+                <input
+                  type="number"
+                  value={newCredits}
+                  onChange={(e) => {
+                    setNewCredits(e.target.value);
+                    setCreditError('');
+                    setCreditSuccess('');
+                  }}
+                  placeholder="Enter amount (e.g., +50 or -20)"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent smooth-transition text-gray-900"
+                  required
+                  disabled={isUpdatingCredits}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Use positive numbers to add credits, negative to subtract
+                </p>
+              </div>
+
+              {creditError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                  {creditError}
+                </div>
+              )}
+
+              {creditSuccess && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm">
+                  {creditSuccess}
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={isUpdatingCredits}
+                  className="px-6 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 smooth-transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={isUpdatingCredits || !newCredits}
+                  className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl text-sm font-medium hover:from-purple-600 hover:to-blue-600 smooth-transition apple-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save
+                  {isUpdatingCredits ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    'Apply Adjustment'
+                  )}
                 </button>
               </div>
             </form>

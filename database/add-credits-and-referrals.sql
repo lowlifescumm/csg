@@ -42,3 +42,6 @@ COMMENT ON COLUMN users.last_free_credit_refresh IS 'Last time free credits were
 COMMENT ON COLUMN credits.credit_type IS 'Type of credit: free or paid';
 COMMENT ON COLUMN credits.expires_at IS 'When the credit expires (NULL for paid credits)';
 COMMENT ON COLUMN credits.source IS 'Where the credit came from: daily, purchase, referral, signup';
+
+
+

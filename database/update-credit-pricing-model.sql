@@ -25,3 +25,6 @@ COMMENT ON COLUMN users.free_natal_chart_used IS 'Tracks if user has used their 
 COMMENT ON COLUMN credits.expires_at IS 'Expiration time for credits (free credits expire after 24 hours)';
 COMMENT ON COLUMN credits.source IS 'Origin of credits: signup, daily, purchase, referral';
 COMMENT ON COLUMN credits.credit_type IS 'Type of credit: free (24hr expiry) or paid (no expiry)';
+
+
+

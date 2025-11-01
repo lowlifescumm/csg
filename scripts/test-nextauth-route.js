@@ -74,3 +74,6 @@ console.log('   1. Wrong start command (fixed: now using node .next/standalone/s
 console.log('   2. Render deployment configuration');
 console.log('   3. Network/proxy issues');
 console.log('   4. Build issues');
+
+
+

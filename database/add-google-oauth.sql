@@ -57,3 +57,6 @@ COMMENT ON COLUMN users.email_verified IS 'Whether the user email has been verif
 COMMENT ON COLUMN users.updated_at IS 'Timestamp of last user record update';
 
 
+
+
+

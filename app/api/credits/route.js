@@ -171,7 +171,23 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const userId = auth.userId;
+    // Check if admin is requesting another user's credits
+    const searchParams = request.nextUrl?.searchParams;
+    const requestedUserId = searchParams?.get('userId');
+    
+    // Verify admin if requesting different user's credits
+    if (requestedUserId && requestedUserId !== auth.userId?.toString()) {
+      const { rows: userRows } = await pool.query(
+        "SELECT role FROM users WHERE id=$1",
+        [auth.userId]
+      );
+      
+      if (!userRows[0] || userRows[0].role !== 'admin') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
+    const userId = requestedUserId ? parseInt(requestedUserId, 10) : auth.userId;
     
     // Check if user is premium
     const userResult = await pool.query(
@@ -186,7 +202,21 @@ export async function GET(request) {
     const isPremium = userResult.rows[0].stripe_subscription_id && 
                      userResult.rows[0].stripe_subscription_id.length > 0;
 
+    // If not premium and admin is requesting, return simple credits table balance
     if (!isPremium) {
+      // Check if this is an admin request for simple credits
+      if (requestedUserId && requestedUserId !== auth.userId?.toString()) {
+        const { rows: simpleCredits } = await pool.query(
+          'SELECT credits FROM credits WHERE user_id = $1',
+          [userId]
+        );
+        
+        return NextResponse.json({ 
+          credits: simpleCredits[0]?.credits || 0,
+          isPremium: false
+        });
+      }
+      
       return NextResponse.json({ 
         isPremium: false,
         credits: {},

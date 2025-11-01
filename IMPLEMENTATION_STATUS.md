@@ -79,3 +79,6 @@ The system will have:
 - Subscription includes free Natal Chart
 - No credit charges for subscribers on Transit features
 - Clean, consistent pricing model
+
+
+
