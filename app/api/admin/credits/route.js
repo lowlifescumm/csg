@@ -88,6 +88,11 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('Update credits error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return NextResponse.json({ error: 'Failed to update credits' }, { status: 500 });
   }
 }
