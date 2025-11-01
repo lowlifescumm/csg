@@ -1,24 +1,26 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyToken, getAuthenticatedUser } from '@/lib/auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { verifyToken } from '@/lib/auth';
 import { pool } from '@/lib/db';
 
 export async function POST(request) {
   try {
     const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
     
-    // Try NextAuth session first (for Google OAuth admins)
-    const auth = await getAuthenticatedUser(cookieStore, authOptions);
-    
-    if (!auth) {
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check if user is admin
     const { rows: userRows } = await pool.query(
       "SELECT role FROM users WHERE id=$1",
-      [auth.userId]
+      [decoded.userId]
     );
     
     if (!userRows[0] || userRows[0].role !== 'admin') {
@@ -76,7 +78,7 @@ export async function POST(request) {
       [userId]
     );
 
-    console.log(`[Admin Credits] Admin ${auth.userId} adjusted credits for user ${userId} (${targetUser.email}): ${creditsToAdd > 0 ? '+' : ''}${creditsToAdd}. Reason: ${reason || 'Manual adjustment'}`);
+    console.log(`[Admin Credits] Admin ${decoded.userId} adjusted credits for user ${userId} (${targetUser.email}): ${creditsToAdd > 0 ? '+' : ''}${creditsToAdd}. Reason: ${reason || 'Manual adjustment'}`);
 
     return NextResponse.json({ 
       success: true,
