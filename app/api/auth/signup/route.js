@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createUser, getUserByEmail, generateToken } from '@/lib/auth';
+import { initializeUserCreditsOnSignup } from '@/lib/credits';
 
 export async function POST(request) {
   try {
@@ -21,6 +22,16 @@ export async function POST(request) {
     }
 
     const user = await createUser({ email, password, firstName, lastName });
+    
+    // Initialize signup credits (3 free credits)
+    try {
+      await initializeUserCreditsOnSignup(user.id);
+      console.log(`[Signup] Initialized 3 signup credits for user ${user.id}`);
+    } catch (creditsError) {
+      console.error('[Signup] Failed to initialize credits:', creditsError);
+      // Don't fail signup if credits initialization fails
+    }
+    
     const token = generateToken(user.id);
 
     const response = NextResponse.json({
