@@ -167,6 +167,7 @@ export const authOptions = {
 
     async session({ session, token }) {
       try {
+        console.log('[NextAuth] session callback triggered, token.userId:', token?.userId);
         // Add custom properties to session
         if (token && token.userId) {
           session.user.id = token.userId;
@@ -190,6 +191,7 @@ export const authOptions = {
           } else {
             console.error('[NextAuth] JWT_SECRET is not set!');
           }
+          console.log('[NextAuth] session callback completed successfully for userId:', token.userId);
         } else {
           console.warn('[NextAuth] session callback - no token or userId');
         }
@@ -197,6 +199,10 @@ export const authOptions = {
         return session;
       } catch (error) {
         console.error('[NextAuth] session callback error:', error);
+        console.error('[NextAuth] session callback error details:', {
+          message: error.message,
+          stack: error.stack
+        });
         return session; // Return session even on error
       }
     },
