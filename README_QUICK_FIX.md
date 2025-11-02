@@ -5,24 +5,34 @@ Column `password_hash` is missing from your production database, so local login 
 
 ## The Solution (2 Minutes)
 
-### Option 1: Using Render Database Shell (FASTEST)
+### Step 1: Find Your Account Email
 
-1. Open https://dashboard.render.com
-2. Open your PostgreSQL database
-3. Open the Shell/Query tab
-4. Paste and run:
+Run this in Render database to see all users:
 
 ```sql
+SELECT id, email, first_name, last_name, role FROM users;
+```
+
+Copy **your** email address from the results.
+
+### Step 2: Add Column and Set Password
+
+```sql
+-- Add the column
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
+
+-- Set password for YOUR account (replace with your email)
 UPDATE users 
 SET password_hash = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     updated_at = NOW()
-WHERE email = 'admin@cosmicguide.com';
+WHERE email = 'ethan.fitzhenry@gmail.com';  -- CHANGE THIS to your email from Step 1
 ```
 
-5. Login at https://cosmicspiritguide.com/login
-   - Email: `admin@cosmicguide.com`
-   - Password: `admin123`
+### Step 3: Login
+
+Login at https://cosmicspiritguide.com/login
+- Email: **your email from Step 1**
+- Password: `admin123`
 
 ### Option 2: Full SQL Script
 
