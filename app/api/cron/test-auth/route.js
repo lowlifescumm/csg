@@ -11,8 +11,10 @@ export async function GET(req) {
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
-  const trimmedSecret = cronSecret?.trim() || '';
-  const trimmedHeader = authHeader?.trim() || '';
+  // CRITICAL: Render environment variables often have trailing newlines
+  // We must trim to remove any whitespace/newlines
+  const trimmedSecret = (cronSecret || '').trim().replace(/\r?\n$/, '');
+  const trimmedHeader = (authHeader || '').trim();
   const expectedAuth = `Bearer ${trimmedSecret}`;
 
   return NextResponse.json({

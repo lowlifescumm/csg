@@ -113,9 +113,10 @@ export async function GET(req) {
       }, { status: 500 });
     }
 
-    // Trim whitespace and normalize
-    const trimmedSecret = cronSecret.trim();
-    const trimmedHeader = authHeader?.trim();
+    // CRITICAL: Render environment variables often have trailing newlines
+    // We must aggressively trim to remove any whitespace/newlines
+    const trimmedSecret = (cronSecret || '').trim().replace(/\r?\n/g, '');
+    const trimmedHeader = (authHeader || '').trim();
     const expectedAuth = `Bearer ${trimmedSecret}`;
     
     console.log('[Cron Debug] Secret length:', trimmedSecret.length);
