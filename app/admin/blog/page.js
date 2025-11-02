@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2, Eye, Calendar, User, Tag, ArrowLeft, Archive } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Calendar, User, Tag, ArrowLeft, Archive, RefreshCw } from 'lucide-react';
 
 export default function BlogAdminPage() {
   const [posts, setPosts] = useState([]);
@@ -169,13 +169,25 @@ export default function BlogAdminPage() {
               </div>
             </div>
             
-            <Link
-              href="/admin/blog/new"
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 smooth-transition apple-shadow"
-            >
-              <Plus className="w-5 h-5" />
-              <span>New Post</span>
-            </Link>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={fetchPosts}
+                disabled={loading}
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
+                title="Refresh Posts List"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+              
+              <Link
+                href="/admin/blog/new"
+                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 smooth-transition apple-shadow"
+              >
+                <Plus className="w-5 h-5" />
+                <span>New Post</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
