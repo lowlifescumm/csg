@@ -103,6 +103,9 @@ export async function GET(req) {
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
+    console.log('[Cron Debug] Auth header received:', authHeader);
+    console.log('[Cron Debug] CRON_SECRET exists:', !!cronSecret);
+
     if (!cronSecret) {
       console.error('[Cron] CRON_SECRET not configured');
       return NextResponse.json({ 
@@ -112,6 +115,8 @@ export async function GET(req) {
 
     if (!authHeader || authHeader !== `Bearer ${cronSecret}`) {
       console.warn('[Cron] Unauthorized cron job attempt');
+      console.warn('[Cron Debug] Expected:', `Bearer ${cronSecret.substring(0, 10)}...`);
+      console.warn('[Cron Debug] Received:', authHeader);
       return NextResponse.json({ 
         error: 'Unauthorized' 
       }, { status: 401 });
