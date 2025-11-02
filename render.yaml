@@ -59,12 +59,12 @@ cronJobs:
     schedule: "0 * * * *"  # Every hour
     service: cosmic-spiritual-guide
     command: |
-      curl -X POST ${NEXT_PUBLIC_BASE_URL}/api/cron/transit-monitor \
+      curl ${NEXT_PUBLIC_BASE_URL}/api/cron/transit-monitor \
         -H "Authorization: Bearer ${CRON_SECRET}"
   
   - name: generate-forecasts
     schedule: "0 6 * * *"  # Daily at 6 AM
     service: cosmic-spiritual-guide
     command: |
-      curl -X POST ${NEXT_PUBLIC_BASE_URL}/api/cron/generate-forecasts \
+      curl ${NEXT_PUBLIC_BASE_URL}/api/cron/generate-forecasts \
         -H "Authorization: Bearer ${CRON_SECRET}"
