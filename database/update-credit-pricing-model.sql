@@ -28,3 +28,4 @@ COMMENT ON COLUMN credits.credit_type IS 'Type of credit: free (24hr expiry) or 
 
 
 
+

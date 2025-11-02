@@ -35,12 +35,30 @@ export async function GET(req) {
       }, { status: 500 });
     }
 
-    if (!authHeader || authHeader !== `Bearer ${cronSecret}`) {
+    // Trim whitespace and normalize
+    const trimmedSecret = cronSecret.trim();
+    const trimmedHeader = authHeader?.trim();
+    const expectedAuth = `Bearer ${trimmedSecret}`;
+    
+    console.log('[Cron Debug] Secret length:', trimmedSecret.length);
+    console.log('[Cron Debug] Header length:', trimmedHeader?.length);
+    console.log('[Cron Debug] Expected full (masked):', `Bearer ${trimmedSecret.substring(0, 10)}...${trimmedSecret.substring(trimmedSecret.length - 4)}`);
+    console.log('[Cron Debug] Received full:', trimmedHeader);
+    console.log('[Cron Debug] Exact match:', trimmedHeader === expectedAuth);
+    console.log('[Cron Debug] Secret has whitespace:', cronSecret !== trimmedSecret);
+    
+    if (!authHeader || trimmedHeader !== expectedAuth) {
       console.warn('[Cron] Unauthorized cron job attempt');
-      console.warn('[Cron Debug] Expected:', `Bearer ${cronSecret.substring(0, 10)}...`);
-      console.warn('[Cron Debug] Received:', authHeader);
+      console.warn('[Cron Debug] Expected length:', expectedAuth.length);
+      console.warn('[Cron Debug] Received length:', trimmedHeader?.length);
       return NextResponse.json({ 
-        error: 'Unauthorized' 
+        error: 'Unauthorized',
+        debug: {
+          expectedLength: expectedAuth.length,
+          receivedLength: trimmedHeader?.length,
+          firstCharsMatch: trimmedHeader?.substring(0, 20) === expectedAuth.substring(0, 20),
+          lastCharsMatch: trimmedHeader?.substring(trimmedHeader.length - 10) === expectedAuth.substring(expectedAuth.length - 10)
+        }
       }, { status: 401 });
     }
 
