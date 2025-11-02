@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2, Eye, Calendar, User, Tag, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Calendar, User, Tag, ArrowLeft, Archive } from 'lucide-react';
 
 export default function BlogAdminPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [changingStatus, setChangingStatus] = useState(null);
+  const [deletingPost, setDeletingPost] = useState(null);
 
   useEffect(() => {
     fetchUser();
@@ -63,6 +65,80 @@ export default function BlogAdminPage() {
         return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleDelete = async (postId, postTitle) => {
+    if (!confirm(`Are you sure you want to delete "${postTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      setDeletingPost(postId);
+      const response = await fetch(`/api/blog/${postId}`, {
+        method: 'DELETE'
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert('Post deleted successfully!');
+        fetchPosts(); // Refresh the list
+      } else {
+        alert(`Failed to delete post: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete post: ' + error.message);
+    } finally {
+      setDeletingPost(null);
+    }
+  };
+
+  const handleStatusChange = async (postId, newStatus) => {
+    try {
+      setChangingStatus(postId);
+      
+      // Get the current post to update
+      const post = posts.find(p => p.id === postId);
+      if (!post) {
+        alert('Post not found');
+        return;
+      }
+
+      const response = await fetch('/api/blog', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: post.id,
+          title: post.title,
+          slug: post.slug,
+          excerpt: post.excerpt,
+          content: post.content,
+          featured_image: post.featured_image,
+          status: newStatus,
+          tags: post.tags,
+          category: post.category,
+          meta_title: post.meta_title,
+          meta_description: post.meta_description
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert(`Post status changed to ${newStatus}!`);
+        fetchPosts(); // Refresh the list
+      } else {
+        alert(`Failed to update status: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Status change error:', error);
+      alert('Failed to update status: ' + error.message);
+    } finally {
+      setChangingStatus(null);
     }
   };
 
@@ -227,9 +303,21 @@ export default function BlogAdminPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(post.status)}`}>
-                          {post.status}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <select
+                            value={post.status}
+                            onChange={(e) => handleStatusChange(post.id, e.target.value)}
+                            disabled={changingStatus === post.id}
+                            className={`text-xs font-semibold rounded-full px-2 py-1 border-none cursor-pointer ${getStatusColor(post.status)} disabled:opacity-50`}
+                          >
+                            <option value="draft">draft</option>
+                            <option value="published">published</option>
+                            <option value="archived">archived</option>
+                          </select>
+                          {changingStatus === post.id && (
+                            <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
                         {post.author_name ? `${post.author_name} ${post.author_last_name || ''}`.trim() : 'Admin'}
@@ -241,7 +329,7 @@ export default function BlogAdminPage() {
                         {post.view_count || 0}
                       </td>
                       <td className="px-6 py-4 text-sm font-medium">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3">
                           <Link
                             href={`/blog/${post.slug}`}
                             target="_blank"
@@ -257,6 +345,18 @@ export default function BlogAdminPage() {
                           >
                             <Edit className="w-4 h-4" />
                           </Link>
+                          <button
+                            onClick={() => handleDelete(post.id, post.title)}
+                            disabled={deletingPost === post.id}
+                            className="text-red-600 hover:text-red-700 smooth-transition disabled:opacity-50"
+                            title="Delete Post"
+                          >
+                            {deletingPost === post.id ? (
+                              <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
                         </div>
                       </td>
                     </tr>
