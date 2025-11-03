@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,7 +11,6 @@ import LowCreditsUpsellBanner from "@/components/LowCreditsUpsellBanner";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import LazyComponent from "@/components/LazyComponent";
 import HelpSystem from "@/components/HelpSystem";
-import QuickTour from "@/components/QuickTour";
 
 // Dynamically import to avoid SSR issues with Next.js Image component
 const InteractiveTarotSelector = dynamic(
@@ -179,58 +178,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-      {/* Enhanced Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo and Brand */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">🔮</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Cosmic Spiritual Guide</h1>
-                <p className="text-xs text-gray-500 hidden sm:block">Discover clarity through ancient wisdom</p>
-              </div>
-            </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
-              <Link href="/dashboard" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                Dashboard
-              </Link>
-              <Link href="/my-chart" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                My Chart
-              </Link>
-              <Link href="/birth-chart" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                Create Chart
-              </Link>
-              <Link href="/compatibility" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                Compatibility
-              </Link>
-              <Link href="/profile" className="px-4 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                Profile
-              </Link>
-            </div>
-            
-            {/* User Actions */}
-            <div className="flex items-center space-x-3">
-              <div className="hidden sm:block text-sm text-gray-600">
-                Welcome, {user?.firstName || user?.email}!
-              </div>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
-      <div className="p-4 sm:p-6">
+      <div className="p-8 sm:p-10">
         {/* Error Message */}
         {error && (
           <div className="mb-6 animate-slide-up">
@@ -361,7 +310,7 @@ export default function DashboardPage() {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 smooth-transition"></div>
                 <div className="relative flex flex-col items-center space-y-1 z-10">
-                  <span className="text-2xl group-hover:animate-bounce-gentle">🔮</span>
+                  <span className="text-2xl group-hover:animate-bounce-gentle">ðŸ”®</span>
                   <span className="group-hover:translate-y-[-2px] smooth-transition">Tarot Reading</span>
                 </div>
               </button>
@@ -371,7 +320,7 @@ export default function DashboardPage() {
                 aria-label="Create your birth chart"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">⭐</span>
+                  <span className="text-2xl">â­</span>
                   <span>Birth Chart</span>
                 </div>
               </Link>
@@ -381,7 +330,7 @@ export default function DashboardPage() {
                 aria-label="Get a personalized moon reading"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">🌙</span>
+                  <span className="text-2xl">ðŸŒ™</span>
                   <span>Moon Reading</span>
                 </div>
               </Link>
@@ -391,7 +340,7 @@ export default function DashboardPage() {
                 aria-label="Check relationship compatibility"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">💕</span>
+                  <span className="text-2xl">ðŸ’•</span>
                   <span>Compatibility</span>
                 </div>
               </Link>
@@ -401,7 +350,7 @@ export default function DashboardPage() {
                 aria-label="View planetary transits"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">⚡</span>
+                  <span className="text-2xl">âš¡</span>
                   <span>Transit Dashboard</span>
                   {stats.status === 'Premium' && (
                     <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
@@ -416,7 +365,7 @@ export default function DashboardPage() {
                 aria-label="View personalized forecasts"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">✨</span>
+                  <span className="text-2xl">âœ¨</span>
                   <span>Daily Forecasts</span>
                   {stats.status === 'Premium' && (
                     <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
@@ -431,7 +380,7 @@ export default function DashboardPage() {
                 aria-label="Upgrade to premium subscription"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">👑</span>
+                  <span className="text-2xl">ðŸ‘‘</span>
                   <span>Go Premium</span>
                 </div>
               </Link>
@@ -441,7 +390,7 @@ export default function DashboardPage() {
                 aria-label="Purchase credits"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">💳</span>
+                  <span className="text-2xl">ðŸ’³</span>
                   <span>Buy Credits</span>
                 </div>
               </Link>
@@ -451,7 +400,7 @@ export default function DashboardPage() {
                 aria-label="Get AI coaching guidance - Premium Feature"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">🤖</span>
+                  <span className="text-2xl">ðŸ¤–</span>
                   <span>AI Coach</span>
                   {stats.status === 'Premium' && (
                     <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
@@ -466,7 +415,7 @@ export default function DashboardPage() {
                 aria-label="Read spiritual blog articles"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">📝</span>
+                  <span className="text-2xl">ðŸ“</span>
                   <span>Blog</span>
                 </div>
               </Link>
@@ -479,7 +428,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center">
-                    <span className="text-2xl">👑</span>
+                    <span className="text-2xl">ðŸ‘‘</span>
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">Unlock Premium Features</h3>
@@ -833,7 +782,7 @@ export default function DashboardPage() {
         <HelpSystem />
 
         {/* Quick Tour */}
-        <QuickTour />
+        
 
         {/* Tarot Selector Modal */}
         {showTarotSelector && (
@@ -852,3 +801,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
