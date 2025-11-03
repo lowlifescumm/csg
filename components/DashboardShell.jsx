@@ -17,6 +17,7 @@ export default function DashboardShell({ children }) {
   const [credits, setCredits] = useState(null);
   const [readings, setReadings] = useState(null);
   const [streak, setStreak] = useState(null);
+  const [moonPhase, setMoonPhase] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -63,6 +64,20 @@ export default function DashboardShell({ children }) {
       } catch (streakError) {
         // Streak endpoint is optional, continue if it fails
         console.log("Streak endpoint not available:", streakError);
+      }
+
+      // Fetch moon phase (optional - gracefully handles if endpoint doesn't exist)
+      try {
+        const moonRes = await fetch("/api/moon-phase");
+        if (moonRes.ok) {
+          const moonData = await moonRes.json();
+          if (moonData.success && moonData.data) {
+            setMoonPhase(moonData.data);
+          }
+        }
+      } catch (moonError) {
+        // Moon phase endpoint is optional, continue if it fails
+        console.log("Moon phase endpoint not available:", moonError);
       }
 
     } catch (err) {
@@ -122,6 +137,7 @@ export default function DashboardShell({ children }) {
     credits,
     readings,
     streak,
+    moonPhase,
     refetch: fetchDashboardData,
   });
 }

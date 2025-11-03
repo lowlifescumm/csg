@@ -1,6 +1,7 @@
 "use client";
 import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard } from "lucide-react";
 import Link from "next/link";
+import HeroHeader from "./HeroHeader";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -11,7 +12,7 @@ import Link from "next/link";
  * - Modern, sleek Apple-inspired design
  * - Component-based architecture for easy feature toggling
  */
-export default function DashboardV3({ user, credits, readings, streak, refetch }) {
+export default function DashboardV3({ user, credits, readings, streak, moonPhase, refetch }) {
   const isPremium = user?.stripe_subscription_id || credits?.isPremium;
   const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
   const readingCount = readings?.stats?.readingCount || 0;
@@ -22,25 +23,13 @@ export default function DashboardV3({ user, credits, readings, streak, refetch }
       {/* Main Content */}
       <div className="p-8 sm:p-10">
         <div className="max-w-7xl mx-auto">
-          {/* Welcome Section */}
-          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex-1">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-white mb-2">
-                  Welcome back, {user?.firstName || user?.email}!
-                </h1>
-                <p className="text-purple-200">Your cosmic journey continues</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Link
-                  href="/profile"
-                  className="px-6 py-3 bg-white bg-opacity-20 text-white rounded-xl font-medium smooth-transition hover:bg-opacity-30 apple-shadow text-center"
-                >
-                  Profile
-                </Link>
-              </div>
-            </div>
-          </div>
+          {/* Hero Header */}
+          <HeroHeader 
+            user={user}
+            credits={credits}
+            streak={streak}
+            moonPhase={moonPhase}
+          />
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">

@@ -54,12 +54,13 @@ export default function DashboardPage() {
   if (isV2Enabled) {
     return (
       <DashboardShell>
-        {({ user, credits, readings, streak, refetch }) => (
+        {({ user, credits, readings, streak, moonPhase, refetch }) => (
           <DashboardV3 
             user={user}
             credits={credits}
             readings={readings}
             streak={streak}
+            moonPhase={moonPhase}
             refetch={refetch}
           />
         )}
