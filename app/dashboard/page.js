@@ -22,6 +22,8 @@ import LowCreditsUpsellBanner from "@/components/LowCreditsUpsellBanner";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import LazyComponent from "@/components/LazyComponent";
 import HelpSystem from "@/components/HelpSystem";
+import DashboardShell from "@/components/DashboardShell";
+import DashboardV3 from "@/components/DashboardV3/index";
 
 // Dynamically import to avoid SSR issues with Next.js Image component
 const InteractiveTarotSelector = dynamic(
@@ -29,7 +31,47 @@ const InteractiveTarotSelector = dynamic(
   { ssr: false }
 );
 
+/**
+ * DashboardPage - Main dashboard route with feature flag support
+ * 
+ * Feature Flag: DASHBOARD_V2 (or NEXT_PUBLIC_DASHBOARD_V2)
+ * - When enabled: Renders DashboardV3 with new design
+ * - When disabled: Renders existing DashboardPageContent
+ * 
+ * To enable: Set NEXT_PUBLIC_DASHBOARD_V2=true in your .env.local file
+ */
 export default function DashboardPage() {
+  const [isV2Enabled, setIsV2Enabled] = useState(false);
+
+  useEffect(() => {
+    // Check for feature flag via environment variable or URL parameter
+    const envFlag = process.env.NEXT_PUBLIC_DASHBOARD_V2 === 'true';
+    const urlFlag = typeof window !== 'undefined' && window.location.search.includes('dashboard_v2=true');
+    setIsV2Enabled(envFlag || urlFlag);
+  }, []);
+
+  // If feature flag is enabled, render new dashboard
+  if (isV2Enabled) {
+    return (
+      <DashboardShell>
+        {({ user, credits, readings, streak, refetch }) => (
+          <DashboardV3 
+            user={user}
+            credits={credits}
+            readings={readings}
+            streak={streak}
+            refetch={refetch}
+          />
+        )}
+      </DashboardShell>
+    );
+  }
+
+  // Otherwise, render existing dashboard
+  return <DashboardPageContent />;
+}
+
+function DashboardPageContent() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState({ credits: 0, readingCount: 0, chartCount: 0, status: "Free" });
