@@ -130,9 +130,17 @@ export async function POST(request) {
       author_id
     } = body;
 
-    if (!title || !content) {
-      return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
+    // Only require title for drafts, require both title and content for published posts
+    if (!title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
+    
+    if (status === 'published' && !content) {
+      return NextResponse.json({ error: 'Content is required to publish' }, { status: 400 });
+    }
+    
+    // Ensure tags is always an array
+    const tagsArray = Array.isArray(tags) ? tags : (tags ? [tags] : []);
 
     // Create blog_posts table if it doesn't exist
     await pool.query(`
@@ -141,7 +149,7 @@ export async function POST(request) {
         title VARCHAR(255) NOT NULL,
         slug VARCHAR(255) UNIQUE NOT NULL,
         excerpt TEXT,
-        content TEXT NOT NULL,
+        content TEXT,
         featured_image VARCHAR(500),
         status VARCHAR(20) DEFAULT 'draft',
         tags TEXT[],
@@ -154,6 +162,16 @@ export async function POST(request) {
         updated_at TIMESTAMP DEFAULT NOW()
       )
     `);
+    
+    // Modify existing table to allow NULL content if it was previously NOT NULL
+    try {
+      await pool.query(`
+        ALTER TABLE blog_posts 
+        ALTER COLUMN content DROP NOT NULL
+      `);
+    } catch (error) {
+      // Column might already allow NULL or table doesn't exist yet, ignore error
+    }
 
     // Check if slug already exists and generate a unique one if needed
     let finalSlug = slug;
@@ -188,7 +206,7 @@ export async function POST(request) {
       content,
       featured_image,
       status,
-      tags,
+      tagsArray,
       category,
       meta_title,
       meta_description,
@@ -239,15 +257,48 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'Post ID is required' }, { status: 400 });
     }
 
-    // Update blog post
+    // Ensure tags is always an array
+    const tagsArray = Array.isArray(tags) ? tags : (tags ? [tags] : []);
+    
+    // Ensure all values are not undefined (convert to null for PostgreSQL)
+    const safeData = {
+      title: title ?? '',
+      slug: slug ?? '',
+      excerpt: excerpt ?? '',
+      content: content ?? null,
+      featured_image: featured_image ?? '',
+      status: status ?? 'draft',
+      tags: tagsArray,
+      category: category ?? '',
+      meta_title: meta_title ?? '',
+      meta_description: meta_description ?? ''
+    };
+
+    // Update blog post - handle published_at separately to avoid parameter reuse issues
+    const publishedAtUpdate = safeData.status === 'published' ? 
+      `published_at = CASE WHEN published_at IS NULL THEN NOW() ELSE published_at END` :
+      `published_at = published_at`;
+    
     const { rows } = await pool.query(`
       UPDATE blog_posts 
       SET title = $1, slug = $2, excerpt = $3, content = $4, featured_image = $5, 
           status = $6, tags = $7, category = $8, meta_title = $9, meta_description = $10,
-          updated_at = NOW(), published_at = CASE WHEN $6 = 'published' AND published_at IS NULL THEN NOW() ELSE published_at END
+          updated_at = NOW(), ${publishedAtUpdate}
       WHERE id = $11
       RETURNING id, title, slug, status, updated_at
-    `, [title, slug, excerpt, content, featured_image, status, tags, category, meta_title, meta_description, id]);
+    `, [
+      safeData.title,
+      safeData.slug,
+      safeData.excerpt,
+      safeData.content,
+      safeData.featured_image,
+      safeData.status,
+      safeData.tags,
+      safeData.category,
+      safeData.meta_title,
+      safeData.meta_description,
+      id
+    ]);
 
     if (rows.length === 0) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
@@ -260,7 +311,10 @@ export async function PUT(request) {
 
   } catch (error) {
     console.error('Update blog post error:', error);
-    return NextResponse.json({ error: 'Failed to update blog post' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to update blog post', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }
 

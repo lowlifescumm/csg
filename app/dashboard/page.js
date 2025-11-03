@@ -3,6 +3,17 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { 
+  Sparkles, 
+  Star, 
+  Moon, 
+  Heart, 
+  Zap, 
+  Crown, 
+  CreditCard, 
+  Brain, 
+  FileText 
+} from "lucide-react";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import DailyHoroscope from "@/components/DailyHoroscope";
 import MoonPhaseWidget from "@/components/MoonPhaseWidget";
@@ -309,10 +320,10 @@ export default function DashboardPage() {
                 aria-label="Scroll to tarot reading section"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 smooth-transition"></div>
-                <div className="relative flex flex-col items-center space-y-1 z-10">
-                  <span className="text-2xl group-hover:animate-bounce-gentle">ðŸ”®</span>
-                  <span className="group-hover:translate-y-[-2px] smooth-transition">Tarot Reading</span>
-                </div>
+                                  <div className="relative flex flex-col items-center space-y-1 z-10">
+                    <Sparkles className="w-6 h-6 group-hover:animate-bounce-gentle" />
+                    <span className="group-hover:translate-y-[-2px] smooth-transition">Tarot Reading</span>
+                  </div>
               </button>
               <Link
                 href="/birth-chart"
@@ -320,7 +331,7 @@ export default function DashboardPage() {
                 aria-label="Create your birth chart"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">â­</span>
+                  <Star className="w-6 h-6" />
                   <span>Birth Chart</span>
                 </div>
               </Link>
@@ -330,7 +341,7 @@ export default function DashboardPage() {
                 aria-label="Get a personalized moon reading"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">ðŸŒ™</span>
+                  <Moon className="w-6 h-6" />
                   <span>Moon Reading</span>
                 </div>
               </Link>
@@ -340,7 +351,7 @@ export default function DashboardPage() {
                 aria-label="Check relationship compatibility"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">ðŸ’•</span>
+                  <Heart className="w-6 h-6" />
                   <span>Compatibility</span>
                 </div>
               </Link>
@@ -350,7 +361,7 @@ export default function DashboardPage() {
                 aria-label="View planetary transits"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">âš¡</span>
+                  <Zap className="w-6 h-6" />
                   <span>Transit Dashboard</span>
                   {stats.status === 'Premium' && (
                     <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
@@ -365,7 +376,7 @@ export default function DashboardPage() {
                 aria-label="View personalized forecasts"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">âœ¨</span>
+                  <Sparkles className="w-6 h-6" />
                   <span>Daily Forecasts</span>
                   {stats.status === 'Premium' && (
                     <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
@@ -380,7 +391,7 @@ export default function DashboardPage() {
                 aria-label="Upgrade to premium subscription"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">ðŸ‘‘</span>
+                  <Crown className="w-6 h-6" />
                   <span>Go Premium</span>
                 </div>
               </Link>
@@ -390,7 +401,7 @@ export default function DashboardPage() {
                 aria-label="Purchase credits"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">ðŸ’³</span>
+                  <CreditCard className="w-6 h-6" />
                   <span>Buy Credits</span>
                 </div>
               </Link>
@@ -400,7 +411,7 @@ export default function DashboardPage() {
                 aria-label="Get AI coaching guidance - Premium Feature"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">ðŸ¤–</span>
+                  <Brain className="w-6 h-6" />
                   <span>AI Coach</span>
                   {stats.status === 'Premium' && (
                     <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
@@ -415,7 +426,7 @@ export default function DashboardPage() {
                 aria-label="Read spiritual blog articles"
               >
                 <div className="flex flex-col items-center space-y-1">
-                  <span className="text-2xl">ðŸ“</span>
+                  <FileText className="w-6 h-6" />
                   <span>Blog</span>
                 </div>
               </Link>
@@ -427,9 +438,9 @@ export default function DashboardPage() {
             <div className="glassmorphic rounded-2xl p-6 mb-8 border border-yellow-400/30 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 apple-shadow-lg animate-fade-in">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center">
-                    <span className="text-2xl">ðŸ‘‘</span>
-                  </div>
+                                      <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center">
+                      <Crown className="w-6 h-6 text-white" />
+                    </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">Unlock Premium Features</h3>
                     <p className="text-sm text-gray-600">Access AI Coach and Transit Dashboard with unlimited readings</p>
@@ -454,9 +465,7 @@ export default function DashboardPage() {
                 <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow animate-fade-in">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                      <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm text-gray-600 font-medium">Credits</p>
@@ -468,9 +477,7 @@ export default function DashboardPage() {
                 <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow animate-fade-in">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                      </svg>
+                      <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm text-gray-600 font-medium">Readings</p>
@@ -482,9 +489,7 @@ export default function DashboardPage() {
                 <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow sm:col-span-2 lg:col-span-1 animate-fade-in">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                      <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm text-gray-600 font-medium">Status</p>
@@ -516,9 +521,7 @@ export default function DashboardPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
+                    <Sparkles className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <h3 className="text-2xl font-semibold gradient-text">Daily Tarot Reading</h3>

@@ -24,7 +24,7 @@ export async function GET(req, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    const { id } = params;
+    const { id } = await params;
 
     // Get the natal chart
     const { rows } = await pool.query(
@@ -115,7 +115,7 @@ export async function PUT(req, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    const { id } = params;
+    const { id } = await params;
 
     // Verify ownership
     const { rows: chartRows } = await pool.query(
@@ -210,7 +210,7 @@ export async function DELETE(req, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    const { id } = params;
+    const { id } = await params;
 
     // Verify ownership
     const { rows: chartRows } = await pool.query(

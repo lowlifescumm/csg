@@ -8,7 +8,7 @@ import { verifyToken } from '@/lib/auth';
 // GET /api/blog/[slug] - Get single blog post (by slug or ID)
 export async function GET(request, { params }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const url = new URL(request.url);
     const isAdmin = url.searchParams.get('admin') === 'true';
 
@@ -99,10 +99,10 @@ export async function GET(request, { params }) {
 // DELETE /api/blog/[slug] - Delete blog post (admin only)
 export async function DELETE(request, { params }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     
     // Check authentication for admin access
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
     
     if (!token) {
