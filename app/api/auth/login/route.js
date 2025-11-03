@@ -14,8 +14,20 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const isValid = await verifyPassword(password, user.password);
-    if (!isValid) {
+    // Check if user has a password (OAuth users have password_hash = null)
+    if (!user.password) {
+      return NextResponse.json({ 
+        error: 'This account uses Google sign-in. Please sign in with Google instead.' 
+      }, { status: 401 });
+    }
+
+    try {
+      const isValid = await verifyPassword(password, user.password);
+      if (!isValid) {
+        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+      }
+    } catch (error) {
+      console.error('Password verification error:', error);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
