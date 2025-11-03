@@ -96,7 +96,7 @@ export default function Header() {
                       : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  {Icon ? <Icon className="w-4 h-4" \/> : null}
                   <span>{item.name}</span>
                 </Link>
               );
@@ -175,7 +175,7 @@ export default function Header() {
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    {Icon ? <Icon className="w-5 h-5" \/> : null}
                     <span>{item.name}</span>
                   </Link>
                 );
@@ -234,6 +234,7 @@ export default function Header() {
     </header>
   );
 }
+
 
 
 
