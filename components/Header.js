@@ -81,7 +81,7 @@ export default function Header() {
               <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
             <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Cosmic Guide
+              Cosmic Spiritual Guide
             </span>
           </Link>
 
@@ -236,3 +236,6 @@ export default function Header() {
     </header>
   );
 }
+
+
+
