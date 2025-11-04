@@ -2,6 +2,7 @@ import "./globals.css";
 import Script from "next/script";
 import NextAuthProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
+import { ToastContainer } from "@/components/ui";
 
 export default function RootLayout({ children }) {
   return (
@@ -72,6 +73,9 @@ export default function RootLayout({ children }) {
               </div>
             </div>
           </footer>
+          
+          {/* Toast Notifications */}
+          <ToastContainer />
         </NextAuthProvider>
       </body>
     </html>
