@@ -9,6 +9,7 @@ import DailyTasks from "./DailyTasks";
 import EnergyChart from "./EnergyChart";
 import CrystalsWidget from "./CrystalsWidget";
 import GrowthBar from "./GrowthBar";
+import BestMatches from "./BestMatches";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -98,6 +99,11 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           {/* Crystals Widget */}
           <CrystalsWidget 
             moonPhase={moonPhase}
+          />
+
+          {/* Best Matches */}
+          <BestMatches 
+            userId={user?.id}
           />
 
           {/* Stats Grid */}
