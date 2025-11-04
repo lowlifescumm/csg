@@ -98,6 +98,10 @@ export default function DailyTasks({ userId, streak }) {
               completed: completedIds.includes(task.id),
             }))
           );
+          // Notify parent of stats update
+          if (onStatsUpdate) {
+            onStatsUpdate(data.stats);
+          }
         }
       }
     } catch (err) {
@@ -141,11 +145,17 @@ export default function DailyTasks({ userId, streak }) {
         const streakBonus = calculateStreakBonus(streak?.currentStreak || 0);
         const totalXPGained = xpGained + streakBonus;
 
-        setUserStats((prev) => ({
-          ...prev,
-          totalXP: (prev.totalXP || 0) + totalXPGained,
-          completedTasks: [...(prev.completedTasks || []), taskId],
-        }));
+        const newStats = {
+          ...userStats,
+          totalXP: (userStats.totalXP || 0) + totalXPGained,
+          completedTasks: [...(userStats.completedTasks || []), taskId],
+        };
+        setUserStats(newStats);
+        
+        // Notify parent of stats update
+        if (onStatsUpdate) {
+          onStatsUpdate(newStats);
+        }
 
         // Show toast notification
         showToast({
@@ -196,6 +206,13 @@ export default function DailyTasks({ userId, streak }) {
   const currentLevel = calculateLevel(userStats.totalXP || 0);
   const xpToNextLevel = calculateXPToNextLevel(userStats.totalXP || 0);
   const xpProgress = ((userStats.totalXP || 0) % 100) / 100;
+  
+  // Expose level data for parent component
+  const levelData = {
+    level: currentLevel,
+    xpCurrent: userStats.totalXP || 0,
+    xpTarget: currentLevel * 100,
+  };
 
   if (loading) {
     return (

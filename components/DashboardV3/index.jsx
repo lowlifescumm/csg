@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard } from "lucide-react";
 import Link from "next/link";
 import HeroHeader from "./HeroHeader";
@@ -7,6 +8,7 @@ import CosmicBriefing from "./CosmicBriefing";
 import DailyTasks from "./DailyTasks";
 import EnergyChart from "./EnergyChart";
 import CrystalsWidget from "./CrystalsWidget";
+import GrowthBar from "./GrowthBar";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -22,6 +24,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
   const readingCount = readings?.stats?.readingCount || 0;
   const chartCount = readings?.stats?.chartCount || 0;
+  const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
@@ -54,10 +57,37 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             }}
           />
 
+          {/* Growth Bar */}
+          <GrowthBar 
+            level={levelData.level}
+            xpCurrent={levelData.xpCurrent % 100}
+            xpTarget={100}
+            userId={user?.id}
+            onLevelUp={(data) => {
+              // Update level data when level is claimed
+              const newLevel = data.level || levelData.level + 1;
+              setLevelData({
+                level: newLevel,
+                xpCurrent: levelData.xpCurrent,
+                xpTarget: 100,
+              });
+              if (refetch) refetch();
+            }}
+          />
+
           {/* Daily Tasks */}
           <DailyTasks 
             userId={user?.id}
             streak={streak}
+            onStatsUpdate={(stats) => {
+              // Update level data when tasks complete
+              const level = Math.floor((stats.totalXP || 0) / 100) + 1;
+              setLevelData({
+                level,
+                xpCurrent: stats.totalXP || 0,
+                xpTarget: level * 100,
+              });
+            }}
           />
 
           {/* Energy Chart */}
