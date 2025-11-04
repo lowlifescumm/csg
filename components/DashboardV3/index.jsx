@@ -6,6 +6,7 @@ import FocusGrid from "./FocusGrid";
 import CosmicBriefing from "./CosmicBriefing";
 import DailyTasks from "./DailyTasks";
 import EnergyChart from "./EnergyChart";
+import CrystalsWidget from "./CrystalsWidget";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -62,6 +63,11 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           {/* Energy Chart */}
           <EnergyChart 
             userId={user?.id}
+          />
+
+          {/* Crystals Widget */}
+          <CrystalsWidget 
+            moonPhase={moonPhase}
           />
 
           {/* Stats Grid */}
