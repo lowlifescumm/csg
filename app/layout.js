@@ -1,6 +1,6 @@
 import "./globals.css";
 import Script from "next/script";
-import NextAuthProvider from "@/components/SessionProvider";
+import AuthProviderWrapper from "@/components/AuthProviderWrapper";
 import Header from "@/components/Header";
 import ToastContainerWrapper from "@/components/ui/ToastContainerWrapper";
 
@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-        <NextAuthProvider>
+        <AuthProviderWrapper>
           {/* Google Analytics */}
           <Script
             src="https://www.googletagmanager.com/gtag/js?id=G-T0J78R09VN"
@@ -76,7 +76,7 @@ export default function RootLayout({ children }) {
           
           {/* Toast Notifications */}
           <ToastContainerWrapper />
-        </NextAuthProvider>
+        </AuthProviderWrapper>
       </body>
     </html>
   )
