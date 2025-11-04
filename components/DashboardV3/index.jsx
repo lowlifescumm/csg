@@ -3,6 +3,7 @@ import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard } from "lucide-reac
 import Link from "next/link";
 import HeroHeader from "./HeroHeader";
 import FocusGrid from "./FocusGrid";
+import CosmicBriefing from "./CosmicBriefing";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -34,6 +35,15 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
           {/* Focus Grid */}
           <FocusGrid 
+            userId={user?.id}
+            onReadingComplete={(reading) => {
+              // Refresh readings after completion
+              if (refetch) refetch();
+            }}
+          />
+
+          {/* Cosmic Briefing */}
+          <CosmicBriefing 
             userId={user?.id}
             onReadingComplete={(reading) => {
               // Refresh readings after completion

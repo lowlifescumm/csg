@@ -6,6 +6,7 @@ import spreads from "@/lib/tarot-spreads.json";
 import { generateTarotReading } from "@/lib/openai";
 import { saveReading } from "@/lib/db";
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
+import { zodiacSigns } from "@/lib/zodiac-data";
 
 export const runtime = "nodejs";
 
@@ -140,6 +141,87 @@ export async function POST(request) {
           details: "Please use the compatibility form to provide birth information for both people",
           redirect: "/compatibility",
         }, { status: 400 });
+      }
+
+      case "guided": {
+        // Guided reading based on sign - uses tarot with sign-specific focus
+        const sign = body.sign || body.focusOptional;
+        if (!sign) {
+          return NextResponse.json({ error: "Sign is required for guided reading" }, { status: 400 });
+        }
+
+        // Use daily tarot spread with sign-specific reading type
+        const spreadType = "daily";
+        const resolvedId = "daily_tarot";
+        const spread = spreads.find(s => s.id === resolvedId);
+        if (!spread) {
+          return NextResponse.json({ error: "Invalid spread type" }, { status: 400 });
+        }
+
+        // Determine reading type based on sign element
+        const signData = zodiacSigns.find(s => s.name === sign);
+        const readingType = signData?.element?.toLowerCase() || "general";
+
+        // Check access permissions
+        const readingTypeKey = 'TAROT_BASIC';
+        const accessCheck = await canAccessReading(userId, readingTypeKey);
+        
+        if (!accessCheck.allowed) {
+          if (accessCheck.reason === 'insufficient_credits') {
+            return NextResponse.json({
+              error: 'Insufficient credits',
+              details: `Guided reading requires ${accessCheck.required} credits`,
+              cost: accessCheck.required
+            }, { status: 402 });
+          }
+          return NextResponse.json({
+            error: 'Access denied',
+            details: accessCheck.reason
+          }, { status: 403 });
+        }
+
+        // Draw cards
+        const requiredCount = spread.ui?.required_selection_count ?? spread.card_count;
+        const cards = drawCards(requiredCount);
+
+        // Generate question with sign focus
+        const question = `A personalized guided reading for ${sign} focusing on ${signData?.element || 'spiritual'} energy`;
+
+        // Generate interpretation
+        const interpretation = await generateTarotReading(cards, question, resolvedId, readingType);
+
+        // Consume credits
+        const creditResult = await consumeCreditsForReading(userId, readingTypeKey);
+        
+        if (!creditResult.success) {
+          return NextResponse.json({
+            error: 'Credit processing failed',
+            details: creditResult.message,
+            cost: creditResult.cost
+          }, { status: 402 });
+        }
+
+        // Save reading
+        const saved = await saveReading({
+          userId: userId,
+          type: "tarot",
+          question,
+          cards,
+          interpretation,
+          spreadType: resolvedId,
+        });
+
+        return NextResponse.json({
+          success: true,
+          reading: {
+            id: saved.id,
+            cards,
+            interpretation,
+            spreadType: resolvedId,
+            sign: sign,
+            createdAt: saved.created_at
+          },
+        });
       }
 
       default:
