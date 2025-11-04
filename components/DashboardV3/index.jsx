@@ -10,6 +10,7 @@ import EnergyChart from "./EnergyChart";
 import CrystalsWidget from "./CrystalsWidget";
 import GrowthBar from "./GrowthBar";
 import BestMatches from "./BestMatches";
+import ReadingHistory from "./ReadingHistory";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -104,6 +105,15 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           {/* Best Matches */}
           <BestMatches 
             userId={user?.id}
+          />
+
+          {/* Reading History */}
+          <ReadingHistory 
+            userId={user?.id}
+            onReadingSelect={(reading) => {
+              // Optionally refresh readings after selection
+              if (refetch) refetch();
+            }}
           />
 
           {/* Stats Grid */}
