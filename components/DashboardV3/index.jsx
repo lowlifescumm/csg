@@ -11,6 +11,7 @@ import CrystalsWidget from "./CrystalsWidget";
 import GrowthBar from "./GrowthBar";
 import BestMatches from "./BestMatches";
 import ReadingHistory from "./ReadingHistory";
+import PremiumCard from "./PremiumCard";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -113,6 +114,16 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             onReadingSelect={(reading) => {
               // Optionally refresh readings after selection
               if (refetch) refetch();
+            }}
+          />
+
+          {/* Premium Card */}
+          <PremiumCard 
+            isPremium={isPremium}
+            variant="auto"
+            onUpgrade={() => {
+              // Optional: track upgrade click
+              console.log("Premium upgrade initiated");
             }}
           />
 
