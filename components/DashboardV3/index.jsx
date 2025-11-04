@@ -4,6 +4,7 @@ import Link from "next/link";
 import HeroHeader from "./HeroHeader";
 import FocusGrid from "./FocusGrid";
 import CosmicBriefing from "./CosmicBriefing";
+import DailyTasks from "./DailyTasks";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -49,6 +50,12 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               // Refresh readings after completion
               if (refetch) refetch();
             }}
+          />
+
+          {/* Daily Tasks */}
+          <DailyTasks 
+            userId={user?.id}
+            streak={streak}
           />
 
           {/* Stats Grid */}
