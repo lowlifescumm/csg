@@ -2,7 +2,10 @@ import "./globals.css";
 import Script from "next/script";
 import NextAuthProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
-import { ToastContainer } from "@/components/ui";
+import dynamic from "next/dynamic";
+
+// Dynamically import ToastContainer to avoid SSR issues
+const ToastContainer = dynamic(() => import("@/components/ui").then(mod => mod.ToastContainer), { ssr: false });
 
 export default function RootLayout({ children }) {
   return (

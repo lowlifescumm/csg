@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Sparkles, Heart, X, Loader2, Info } from "lucide-react";
+import { zodiacSigns } from "@/lib/zodiac-data";
 
 // Crystal data by element
 const CRYSTALS_BY_ELEMENT = {
@@ -168,8 +169,6 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
   };
 
   const getElementFromSign = (sign) => {
-    // Dynamic import to avoid SSR issues
-    const { zodiacSigns } = require("@/lib/zodiac-data");
     const signData = zodiacSigns.find((s) => s.name === sign);
     return signData?.element || "Fire";
   };
