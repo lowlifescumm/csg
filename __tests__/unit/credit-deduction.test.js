@@ -177,21 +177,18 @@ describe('Credit Deduction', () => {
         [userId]
       );
 
-      expect(currentCredits).toBe(5);
-      expect(deductionResult.rows[0].credits).toBe(4);
+      expect(currentCredits).toBe(initialCredits);
+      expect(deductionResult.rows[0].credits).toBe(initialCredits - 1);
+      expect(pool.query).toHaveBeenCalledTimes(2);
     });
 
     test('should prevent negative credit balance', async () => {
       const userId = 1;
       const initialCredits = 0;
 
-      pool.query
-        .mockResolvedValueOnce({
-          rows: [{ credits: initialCredits }],
-        })
-        .mockResolvedValueOnce({
-          rows: [], // No rows returned if credits would be negative
-        });
+      pool.query.mockResolvedValueOnce({
+        rows: [{ credits: initialCredits }],
+      });
 
       // Simulate credit check
       const creditCheck = await pool.query(
@@ -200,7 +197,8 @@ describe('Credit Deduction', () => {
       );
       const currentCredits = creditCheck.rows[0]?.credits || 0;
 
-      // Attempt deduction (should fail)
+      // Attempt deduction (should fail because credits are 0)
+      // The condition prevents the deduction query from running
       if (currentCredits > 0) {
         await pool.query(
           'UPDATE credits SET credits = credits - 1 WHERE user_id = $1 AND credits > 0 RETURNING credits',
@@ -208,9 +206,13 @@ describe('Credit Deduction', () => {
         );
       }
 
-      expect(currentCredits).toBe(0);
-      // Deduction should not happen
-      expect(pool.query.mock.calls[1][0]).toContain('credits > 0');
+      expect(currentCredits).toBe(initialCredits);
+      // Should only have checked credits (deduction query never runs because credits are 0)
+      expect(pool.query).toHaveBeenCalledTimes(1);
+      expect(pool.query).toHaveBeenCalledWith(
+        'SELECT credits FROM credits WHERE user_id = $1',
+        [userId]
+      );
     });
   });
 });
