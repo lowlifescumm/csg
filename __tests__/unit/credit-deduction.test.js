@@ -28,7 +28,7 @@ const { canAccessReading, consumeCreditsForReading } = require('@/lib/access-con
 
 describe('Credit Deduction', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   describe('Reading Generation Credit Deduction', () => {

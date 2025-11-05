@@ -36,9 +36,10 @@ test.describe('Authentication Flow', () => {
     await page.fill('input[name="password"]', 'wrongpassword');
     await page.click('button[type="submit"]');
     
-    // Should show error message
-    const errorVisible = await page.locator('text=/invalid credentials|something went wrong/i').isVisible({ timeout: 5000 });
-    expect(errorVisible).toBeTruthy();
+    // Should show error message using data-testid selector
+    const errorElement = page.locator('[data-testid="auth-error"]');
+    await expect(errorElement).toBeVisible({ timeout: 10000 });
+    await expect(errorElement).toContainText(/invalid credentials|something went wrong/i);
   });
 
   test('should show Google sign-in button', async ({ page }) => {
@@ -90,6 +91,8 @@ test.describe('Authentication Flow', () => {
     }
   });
 });
+
+
 
 
 
