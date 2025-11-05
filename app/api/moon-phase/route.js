@@ -1,208 +1,259 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import * as Astronomy from 'astronomy-engine';
-import { getAuthenticatedUser } from '@/lib/auth';
-import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 
-const phaseNames = {
-  0: { name: 'New Moon', emoji: '🌑' },
-  1: { name: 'Waxing Crescent', emoji: '🌒' },
-  2: { name: 'First Quarter', emoji: '🌓' },
-  3: { name: 'Waxing Gibbous', emoji: '🌔' },
-  4: { name: 'Full Moon', emoji: '🌕' },
-  5: { name: 'Waning Gibbous', emoji: '🌖' },
-  6: { name: 'Last Quarter', emoji: '🌗' },
-  7: { name: 'Waning Crescent', emoji: '🌘' }
-};
+/**
+ * Get current moon phase using astronomy-engine
+ */
+function getCurrentMoonPhase() {
+  const now = new Date();
+  const time = Astronomy.MakeTime(now);
 
-const phaseGuidance = {
-  'New Moon': {
-    energy: 'A time of new beginnings and fresh starts. The slate is clean, making this the perfect moment to set intentions and plant seeds for the lunar cycle ahead.',
-    bestFor: ['Setting intentions', 'Starting new projects', 'Rest and reflection'],
-    avoid: ['Making major commitments', 'Forcing action'],
-    ritual: 'Write down your intentions for this lunar cycle. Light a candle and speak them aloud, then place the paper somewhere you\'ll see it daily.'
-  },
-  'Waxing Crescent': {
-    energy: 'Energy is building as the moon grows. This is a time of action and momentum. Take the first steps toward your new moon intentions.',
-    bestFor: ['Taking action', 'Building momentum', 'Learning new skills'],
-    avoid: ['Giving up too soon', 'Perfectionism'],
-    ritual: 'Create a vision board or action plan for your goals. Take one concrete step toward each intention.'
-  },
-  'First Quarter': {
-    energy: 'A crossroads moment requiring commitment and decision-making. Obstacles may appear, testing your dedication to your goals.',
-    bestFor: ['Making decisions', 'Overcoming challenges', 'Taking decisive action'],
-    avoid: ['Avoiding difficult choices', 'Staying in comfort zone'],
-    ritual: 'Review your progress. Address any obstacles head-on with courage and clarity.'
-  },
-  'Waxing Gibbous': {
-    energy: 'Building momentum toward the full moon. Energy is growing, making this an excellent time for manifestation work and refinement.',
-    bestFor: ['Finishing projects', 'Building relationships', 'Physical activity'],
-    avoid: ['Starting new ventures', 'Major life changes'],
-    ritual: 'Light a candle and write down 3 things you want to bring to completion by the full moon.'
-  },
-  'Full Moon': {
-    energy: 'Peak illumination and maximum energy. This is a time of culmination, celebration, and release. Emotions run high under the full moon.',
-    bestFor: ['Celebrating achievements', 'Releasing what no longer serves', 'Charging crystals'],
-    avoid: ['Making impulsive decisions', 'Starting new projects'],
-    ritual: 'Write what you want to release on paper, then safely burn it under the moonlight. Give thanks for lessons learned.'
-  },
-  'Waning Gibbous': {
-    energy: 'Time to share wisdom and give back. Reflect on what you\'ve learned and how you can serve others with your knowledge.',
-    bestFor: ['Teaching others', 'Sharing knowledge', 'Gratitude practices'],
-    avoid: ['Hoarding resources', 'Isolation'],
-    ritual: 'Share something valuable with someone who needs it. Reflect on the wisdom gained this cycle.'
-  },
-  'Last Quarter': {
-    energy: 'A period of letting go and clearing out. Release old patterns, forgive, and make space for the new cycle approaching.',
-    bestFor: ['Decluttering', 'Forgiveness work', 'Breaking bad habits'],
-    avoid: ['Holding grudges', 'Clinging to the past'],
-    ritual: 'Clean your space thoroughly. As you do, consciously release emotional baggage and old patterns.'
-  },
-  'Waning Crescent': {
-    energy: 'Deep rest and surrender. The cycle is ending, making this a time for introspection, healing, and preparation for renewal.',
-    bestFor: ['Rest and recovery', 'Meditation', 'Self-care'],
-    avoid: ['Overexertion', 'Major social commitments'],
-    ritual: 'Take a ritual bath with salt and lavender. Journal about your cycle and prepare for new beginnings.'
+  // Get Sun and Moon positions
+  const sunVec = Astronomy.GeoVector('Sun', time, true);
+  const moonVec = Astronomy.GeoVector('Moon', time, true);
+
+  const sunEcl = Astronomy.Ecliptic(sunVec);
+  const moonEcl = Astronomy.Ecliptic(moonVec);
+
+  const sunLon = sunEcl.elon;
+  const moonLon = moonEcl.elon;
+
+  // Calculate phase angle (0-360)
+  let phaseAngle = moonLon - sunLon;
+  if (phaseAngle < 0) phaseAngle += 360;
+
+  // Get illumination percentage
+  const illumination = Astronomy.Illumination('Moon', time);
+  const illuminationPercent = Math.round(illumination.phase_fraction * 100);
+
+  // Determine phase name and emoji
+  let phaseName, phaseEmoji, zodiacSign;
+  
+  if (phaseAngle < 22.5) {
+    phaseName = 'New Moon';
+    phaseEmoji = '🌑';
+  } else if (phaseAngle < 67.5) {
+    phaseName = 'Waxing Crescent';
+    phaseEmoji = '🌒';
+  } else if (phaseAngle < 112.5) {
+    phaseName = 'First Quarter';
+    phaseEmoji = '🌓';
+  } else if (phaseAngle < 157.5) {
+    phaseName = 'Waxing Gibbous';
+    phaseEmoji = '🌔';
+  } else if (phaseAngle < 202.5) {
+    phaseName = 'Full Moon';
+    phaseEmoji = '🌕';
+  } else if (phaseAngle < 247.5) {
+    phaseName = 'Waning Gibbous';
+    phaseEmoji = '🌖';
+  } else if (phaseAngle < 292.5) {
+    phaseName = 'Last Quarter';
+    phaseEmoji = '🌗';
+  } else if (phaseAngle < 337.5) {
+    phaseName = 'Waning Crescent';
+    phaseEmoji = '🌘';
+  } else {
+    phaseName = 'New Moon';
+    phaseEmoji = '🌑';
   }
-};
 
-function getMoonPhaseIndex(phaseAngle) {
-  if (phaseAngle >= 337.5 || phaseAngle < 22.5) return 0;
-  if (phaseAngle >= 22.5 && phaseAngle < 67.5) return 1;
-  if (phaseAngle >= 67.5 && phaseAngle < 112.5) return 2;
-  if (phaseAngle >= 112.5 && phaseAngle < 157.5) return 3;
-  if (phaseAngle >= 157.5 && phaseAngle < 202.5) return 4;
-  if (phaseAngle >= 202.5 && phaseAngle < 247.5) return 5;
-  if (phaseAngle >= 247.5 && phaseAngle < 292.5) return 6;
-  if (phaseAngle >= 292.5 && phaseAngle < 337.5) return 7;
-  return 0;
-}
-
-function getZodiacSign(longitude) {
+  // Get zodiac sign of Moon
   const signs = [
-    'Aries', 'Taurus', 'Gemini', 'Cancer', 
-    'Leo', 'Virgo', 'Libra', 'Scorpio',
-    'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
   ];
-  const index = Math.floor(longitude / 30);
-  return signs[index];
+  zodiacSign = signs[Math.floor(moonLon / 30) % 12];
+
+  // Calculate next phases
+  const nextPhases = [];
+  const daysInCycle = 29.53;
+  const phases = [
+    { name: 'First Quarter', emoji: '🌓', angle: 90 },
+    { name: 'Full Moon', emoji: '🌕', angle: 180 },
+    { name: 'Last Quarter', emoji: '🌗', angle: 270 },
+    { name: 'New Moon', emoji: '🌑', angle: 360 }
+  ];
+
+  for (const phase of phases) {
+    let targetAngle = phase.angle;
+    if (targetAngle <= phaseAngle) targetAngle += 360;
+    
+    const angleDiff = targetAngle - phaseAngle;
+    const daysUntil = (angleDiff / 360) * daysInCycle;
+    const nextDate = new Date(now.getTime() + daysUntil * 24 * 60 * 60 * 1000);
+    
+    nextPhases.push({
+      name: phase.name,
+      date: nextDate.toISOString().split('T')[0],
+      emoji: phase.emoji
+    });
+  }
+
+  // Generate guidance based on phase
+  const guidance = getPhaseGuidance(phaseName);
+
+  return {
+    phase: phaseName,
+    phaseName,
+    phaseEmoji,
+    name: phaseName,
+    illumination: illuminationPercent,
+    zodiacSign,
+    date: now.toISOString(),
+    guidance,
+    nextPhases
+  };
 }
 
-export async function GET(request) {
+/**
+ * Generate guidance for moon phase
+ */
+function getPhaseGuidance(phaseName) {
+  const guidanceMap = {
+    'New Moon': {
+      energy: 'This is a powerful time for new beginnings and setting intentions. The New Moon represents a fresh start and a blank slate. Plant seeds for what you want to manifest in this lunar cycle.',
+      bestFor: [
+        'Setting intentions',
+        'Starting new projects',
+        'Making commitments',
+        'Vision boarding'
+      ],
+      avoid: [
+        'Rushing into decisions',
+        'Making major commitments without reflection',
+        'Ignoring your intuition'
+      ],
+      ritual: 'Perform a New Moon ritual: Light a candle, write down your intentions for this lunar cycle, and meditate on what you want to manifest. Bury the paper or burn it safely as a symbol of releasing your intentions to the universe.'
+    },
+    'Waxing Crescent': {
+      energy: 'This is a time of new beginnings and taking action. The waxing crescent moon supports taking initiative toward your goals. Energy is building and growing.',
+      bestFor: [
+        'Starting new projects',
+        'Setting intentions',
+        'Making plans',
+        'Taking initiative'
+      ],
+      avoid: [
+        'Rushing important decisions',
+        'Being too impulsive',
+        'Neglecting rest'
+      ],
+      ritual: 'Perform a candle meditation to set your intentions for this lunar cycle. Light a white candle and focus on your goals while the flame burns.'
+    },
+    'First Quarter': {
+      energy: 'This is a time of action and decision-making. The First Quarter Moon brings challenges that require you to take action. You may encounter obstacles that test your commitment.',
+      bestFor: [
+        'Taking action',
+        'Making decisions',
+        'Overcoming obstacles',
+        'Problem-solving'
+      ],
+      avoid: [
+        'Avoiding challenges',
+        'Procrastination',
+        'Giving up too easily'
+      ],
+      ritual: 'Write down any obstacles or challenges you\'re facing. Create an action plan to address them, and commit to taking one concrete step today.'
+    },
+    'Waxing Gibbous': {
+      energy: 'This is a time of refinement and adjustment. The waxing gibbous moon encourages you to fine-tune your plans and make necessary adjustments before the Full Moon.',
+      bestFor: [
+        'Refining plans',
+        'Making adjustments',
+        'Gathering feedback',
+        'Preparing for culmination'
+      ],
+      avoid: [
+        'Being too rigid',
+        'Ignoring feedback',
+        'Rushing to completion'
+      ],
+      ritual: 'Review your intentions and progress. Make any necessary adjustments to your plans, and prepare for the Full Moon ahead.'
+    },
+    'Full Moon': {
+      energy: 'This is a time of culmination, release, and illumination. The Full Moon brings clarity and reveals what needs to be released or celebrated. Emotions may be heightened.',
+      bestFor: [
+        'Celebrating achievements',
+        'Releasing what no longer serves',
+        'Gaining clarity',
+        'Expressing gratitude'
+      ],
+      avoid: [
+        'Holding onto the past',
+        'Making impulsive decisions',
+        'Ignoring your emotions'
+      ],
+      ritual: 'Perform a Full Moon release ritual: Write down what you want to release, then safely burn the paper or bury it. Express gratitude for what you\'ve accomplished and what you\'ve learned.'
+    },
+    'Waning Gibbous': {
+      energy: 'This is a time of gratitude and sharing. The waning gibbous moon encourages you to give thanks and share your wisdom with others. Reflect on what you\'ve learned.',
+      bestFor: [
+        'Expressing gratitude',
+        'Sharing wisdom',
+        'Teaching others',
+        'Reflecting on lessons'
+      ],
+      avoid: [
+        'Being ungrateful',
+        'Holding onto negativity',
+        'Isolating yourself'
+      ],
+      ritual: 'Create a gratitude list. Share something you\'ve learned with someone else, or write a thank-you note to someone who has helped you.'
+    },
+    'Last Quarter': {
+      energy: 'This is a time of release and forgiveness. The Last Quarter Moon encourages you to let go of what no longer serves you and forgive yourself and others.',
+      bestFor: [
+        'Letting go',
+        'Forgiveness',
+        'Clearing space',
+        'Releasing attachments'
+      ],
+      avoid: [
+        'Holding grudges',
+        'Clinging to the past',
+        'Being unwilling to forgive'
+      ],
+      ritual: 'Write a forgiveness letter (you don\'t have to send it). Cleanse your space physically and energetically. Clear out old items or habits that no longer serve you.'
+    },
+    'Waning Crescent': {
+      energy: 'This is a time of rest, reflection, and preparation. The waning crescent moon is a period of surrender and rest before the next New Moon cycle begins.',
+      bestFor: [
+        'Resting and recuperating',
+        'Reflecting on the cycle',
+        'Preparing for the next cycle',
+        'Surrendering and letting go'
+      ],
+      avoid: [
+        'Overworking',
+        'Starting new projects',
+        'Pushing too hard',
+        'Ignoring your need for rest'
+      ],
+      ritual: 'Take time for deep rest. Reflect on what you\'ve learned during this lunar cycle. Journal about what you want to release and what you want to bring into the next cycle.'
+    }
+  };
+
+  return guidanceMap[phaseName] || guidanceMap['New Moon'];
+}
+
+export async function GET() {
   try {
-    // Get authenticated user (supports both NextAuth and JWT)
-    const authResult = await getAuthenticatedUser(request.cookies, authOptions);
+    const moonPhaseData = getCurrentMoonPhase();
     
-    if (!authResult) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const { userId } = authResult;
-
-    // Check query params to determine reading type
-    const { searchParams } = new URL(request.url);
-    const personalized = searchParams.get('personalized') === 'true';
-    const readingType = personalized ? 'MOON_PHASE_PERSONALIZED' : 'MOON_PHASE_BASIC';
-
-    // Check access permissions
-    const accessCheck = await canAccessReading(userId, readingType);
-    
-    if (!accessCheck.allowed) {
-      if (accessCheck.reason === 'insufficient_credits') {
-        return NextResponse.json({
-          error: 'Insufficient credits',
-          details: `${personalized ? 'Personalized' : 'Basic'} Moon Phase reading requires ${accessCheck.required} credits`,
-          cost: accessCheck.required
-        }, { status: 402 });
-      }
-      return NextResponse.json({
-        error: 'Access denied',
-        details: accessCheck.reason
-      }, { status: 403 });
-    }
-
-    // Consume credits for the reading
-    const creditResult = await consumeCreditsForReading(userId, readingType);
-    
-    if (!creditResult.success) {
-      return NextResponse.json({
-        error: 'Credit processing failed',
-        details: creditResult.message,
-        cost: creditResult.cost
-      }, { status: 402 });
-    }
-
-    const now = new Date();
-    
-    const illumination = Astronomy.Illumination('Moon', now);
-    const moonPhase = illumination.phase_fraction * 100;
-    
-    const sunEcliptic = Astronomy.Ecliptic(Astronomy.GeoVector('Sun', now, false));
-    const moonEcliptic = Astronomy.Ecliptic(Astronomy.GeoVector('Moon', now, true));
-    const phase360 = (moonEcliptic.elon - sunEcliptic.elon + 360) % 360;
-    
-    const phaseIndex = getMoonPhaseIndex(phase360);
-    const phaseInfo = phaseNames[phaseIndex];
-    
-    const zodiacSign = getZodiacSign(moonEcliptic.elon);
-    
-    const guidance = phaseGuidance[phaseInfo.name] || phaseGuidance['New Moon'];
-    
-    const nextPhases = [];
-    let searchDate = now;
-    const targetPhases = [
-      { quarter: 0, name: 'New Moon', emoji: '🌑' },
-      { quarter: 1, name: 'First Quarter', emoji: '🌓' },
-      { quarter: 2, name: 'Full Moon', emoji: '🌕' },
-      { quarter: 3, name: 'Last Quarter', emoji: '🌗' }
-    ];
-    
-    for (let i = 0; i < 4; i++) {
-      const nextPhase = Astronomy.SearchMoonQuarter(searchDate);
-      
-      if (nextPhase && nextPhase.time) {
-        const phaseDate = nextPhase.time.date;
-        const daysUntil = Math.ceil((phaseDate - now) / (1000 * 60 * 60 * 24));
-        
-        if (daysUntil > 0) {
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          const formattedDate = `${monthNames[phaseDate.getMonth()]} ${phaseDate.getDate()}`;
-          
-          const phaseNameInfo = targetPhases.find(p => p.quarter === nextPhase.quarter);
-          
-          nextPhases.push({
-            name: phaseNameInfo.name,
-            date: formattedDate,
-            daysUntil: daysUntil,
-            emoji: phaseNameInfo.emoji
-          });
-        }
-        
-        // Advance search date by 2 days after found phase to ensure we find the NEXT phase
-        searchDate = new Date(nextPhase.time.date.getTime() + 2 * 24 * 60 * 60 * 1000);
-      }
-    }
-    
-    nextPhases.sort((a, b) => a.daysUntil - b.daysUntil);
-    const uniquePhases = nextPhases.slice(0, 4);
-
     return NextResponse.json({
       success: true,
-      data: {
-        phaseName: phaseInfo.name,
-        phaseEmoji: phaseInfo.emoji,
-        illumination: Math.round(moonPhase),
-        zodiacSign: zodiacSign,
-        guidance: guidance,
-        nextPhases: uniquePhases
-      }
+      data: moonPhaseData
     });
   } catch (error) {
-    console.error('Moon phase error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to calculate moon phase',
-      details: error.message 
-    }, { status: 500 });
+    console.error('Moon phase calculation error:', error);
+    return NextResponse.json(
+      { 
+        success: false,
+        error: 'Failed to calculate moon phase',
+        data: null
+      },
+      { status: 500 }
+    );
   }
 }
