@@ -19,6 +19,25 @@ The new `dashboard-v2-scaffold` branch modernizes the dashboard visuals but drop
 
 No artifacts are missing or corrupted as of the latest verification (2025-11-10 15:05 UTC). Any newly generated files (e.g., `artifacts/test_results.md`, `artifacts/staging_issues.csv`) will be tracked separately during activation.
 
+### Activation Progress – 2025-11-10
+- ✅ Monetization restored (`/api/credits/purchase`, `/api/stripe*`, `/credits`, `/subscription`)
+- ✅ Admin tooling restored (`/admin/**`, `/api/admin/*`, `/api/blog/*`)
+- ✅ Cron suite re-enabled (`/api/cron/*`, forecasts/transits APIs)
+- ✅ Account recovery restored (`/api/auth/forgot-password`, `/api/auth/reset-password`, `/reset-password`)
+- ⚠️ Local verification: lint/Jest/Playwright raise pre-existing issues (see `artifacts/test_results.md` for details)
+- 🔁 Overlay toggle: default to legacy unless `DASHBOARD_V3=true` or invite `?v3_invite=<token>` matches `DASHBOARD_V3_INVITE`
+- 📌 Project stack note: **Ready for Cutover Simulation** (flag gating + restored systems staged)
+
+## Staging Rehearsal Status – 2025-11-10
+- **Deployment:** Not executed (Render access unavailable). Operators should deploy branch `restore-core-systems` to a green service using `render.yaml`:
+  1. `git push render restore-core-systems:green-dashboard` (or deploy via Render UI).
+  2. Set env vars from `env.template`, ensuring `DASHBOARD_V3=false` by default.
+- **Database Prep:** Once staging is live, execute `psql $STAGING_DATABASE_URL -f artifacts/sql/dashboard_migration.sql` after taking a snapshot/backup.
+- **Schema Verification:** Run helper queries (`SELECT table_name FROM information_schema.tables WHERE table_name IN ('forecasts','transits');`) to confirm schema parity.
+- **Smoke Tests:** Trigger Playwright against staging (after defining `dashboard-smoke` project) with `PWTEST_BASE_URL=https://staging-green.example.com npx playwright test --project=dashboard-smoke`.
+- **Issue Logging:** Record any 4xx/5xx responses in `artifacts/staging_issues.csv` with timestamp, endpoint, and notes.
+- **Follow-up:** Update this section once staging rehearsal completes; current status is 📋 pending execution.
+
 ## Answered Questions
 - **UI → API dependencies / missing endpoints:** Full list in `artifacts/inventory.json` (`endpoints` array). Missing high-risk APIs include `/api/credits/purchase`, `/api/stripe`, `/api/cron/*`, `/api/auth/forgot-password`, `/api/readings/create`, `/api/compatibility`, `/api/upload/image`, `/api/blog/*`, `/api/admin/*`.
 - **Environment variables / secrets to migrate:** `DATABASE_URL`, `JWT_SECRET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `OPENAI_API_KEY`, `RESEND_API_KEY`, `PINECONE_API_KEY`, `PINECONE_INDEX`, `PINECONE_DIM`, `PINECONE_METRIC`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `CRON_SECRET`, `CLOUDINARY_URL` (or component vars), `NEXT_PUBLIC_BASE_URL`, `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`.

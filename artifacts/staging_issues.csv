@@ -1,0 +1,4 @@
+"timestamp","environment","issue","notes"
+"2025-11-10T15:25:00Z","staging-green","Migration not executed","No direct access to staging Postgres from automation environment; run `psql $STAGING_DATABASE_URL -f artifacts/sql/dashboard_migration.sql` after snapshot."
+"2025-11-10T15:27:00Z","staging-green","Smoke tests not executed","Playwright smoke suite pending until staging deploy + dashboard-smoke project defined; run `PWTEST_BASE_URL=<staging> npx playwright test --project=dashboard-smoke` manually."
+
