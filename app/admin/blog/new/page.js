@@ -10,6 +10,7 @@ export default function NewBlogPostPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [post, setPost] = useState({
     title: '',
     slug: '',
@@ -45,6 +46,37 @@ export default function NewBlogPostPage() {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.url) {
+        setPost(prev => ({ ...prev, featured_image: data.url }));
+      } else {
+        console.error('Upload failed:', data);
+        alert('Failed to upload image: ' + (data.error || 'Unknown error') + (data.details ? ' - ' + data.details : ''));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Failed to upload image: ' + error.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const generateSlug = (title) => {
     return title
       .toLowerCase()
@@ -76,8 +108,9 @@ export default function NewBlogPostPage() {
         return;
       }
       
-      if (!post.content.trim()) {
-        alert('Please enter content');
+      // Only require content when publishing
+      if (status === 'published' && !post.content.trim()) {
+        alert('Please enter content to publish');
         setSaving(false);
         return;
       }
@@ -286,9 +319,30 @@ export default function NewBlogPostPage() {
                 Featured Image
               </h3>
               <div className="space-y-4">
+                {/* Image Upload */}
+                <div>
+                  <input
+                    type="file"
+                    id="imageUpload"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="imageUpload"
+                    className={`cursor-pointer flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 smooth-transition text-gray-600 hover:text-purple-600 ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Image className="w-5 h-5" />
+                      {uploadingImage ? 'Uploading...' : 'Click to upload image (max 10MB)'}
+                    </span>
+                  </label>
+                </div>
+                
+                {/* Manual URL input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL
+                    Or enter image URL
                   </label>
                   <input
                     type="url"
@@ -298,6 +352,8 @@ export default function NewBlogPostPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
+                
+                {/* Preview */}
                 {post.featured_image && (
                   <div>
                     <img

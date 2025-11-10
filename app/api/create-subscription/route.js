@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import Stripe from 'stripe';
 import { verifyToken } from '@/lib/auth';
 import { getUserById, updateUserStripeInfo } from '@/lib/db';
@@ -7,11 +8,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 });
 
-export async function POST(req) {
+export async function POST(request) {
   try {
-    const token = req.cookies.get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
     const decoded = verifyToken(token);
-    
+
     if (!decoded) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -36,26 +38,30 @@ export async function POST(req) {
       await updateUserStripeInfo(user.id, customerId, null);
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${req.headers.get('host')}`;
+    const hostHeader = request.headers.get('host');
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (hostHeader ? `https://${hostHeader}` : 'http://localhost:5000');
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Cosmic Spiritual Guide - Premium Subscription',
-            description: 'Monthly credits: 4 moon readings, 2 compatibility reports, 2 birth charts + unlimited tarot & transits',
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Cosmic Spiritual Guide - Premium Subscription',
+              description:
+                'Monthly credits: 4 moon readings, 2 compatibility reports, 2 birth charts + unlimited tarot & transits',
+            },
+            unit_amount: 2999,
+            recurring: {
+              interval: 'month',
+            },
           },
-          unit_amount: 2999,
-          recurring: {
-            interval: 'month',
-          },
+          quantity: 1,
         },
-        quantity: 1,
-      }],
+      ],
       success_url: `${baseUrl}/subscription?success=true`,
       cancel_url: `${baseUrl}/subscription?canceled=true`,
       metadata: {
@@ -68,9 +74,6 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error('Subscription error:', error);
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
