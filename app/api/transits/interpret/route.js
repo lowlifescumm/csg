@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { Pool } from 'pg';
+import { cookies } from 'next/headers';
 import OpenAI from 'openai';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+import { pool } from '@/lib/db.js';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -13,30 +11,16 @@ const openai = new OpenAI({
 
 export async function POST(req) {
   try {
-    const token = req.cookies.get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authResult = await getAuthenticatedUser(cookieStore, authOptions);
 
-    if (!token) {
-      return NextResponse.json({ 
-        error: 'Unauthorized',
-        requiresAuth: true 
-      }, { status: 401 });
+    if (!authResult) {
+      return NextResponse.json({ error: 'Unauthorized', requiresAuth: true }, { status: 401 });
     }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (jwtError) {
-      return NextResponse.json({ 
-        error: 'Invalid or expired session',
-        requiresAuth: true 
-      }, { status: 401 });
-    }
-
-    const userId = decoded.userId;
 
     const userResult = await pool.query(
       'SELECT role, stripe_subscription_id FROM users WHERE id = $1',
-      [userId]
+      [authResult.userId],
     );
 
     if (userResult.rows.length === 0) {
@@ -45,32 +29,28 @@ export async function POST(req) {
 
     const user = userResult.rows[0];
     const isAdmin = user.role === 'admin';
-    const isPremium = user.stripe_subscription_id !== null && user.stripe_subscription_id !== '';
+    const isPremium = Boolean(user.stripe_subscription_id);
 
     if (!isAdmin && !isPremium) {
-      return NextResponse.json({ 
-        error: 'Premium subscription required',
-        requiresPremium: true
-      }, { status: 402 });
+      return NextResponse.json(
+        { error: 'Premium subscription required', requiresPremium: true },
+        { status: 402 },
+      );
     }
 
-    const body = await req.json();
-    const { transit } = body;
-
+    const { transit } = await req.json();
     if (!transit) {
       return NextResponse.json({ error: 'Transit data required' }, { status: 400 });
     }
 
     const interpretation = await generateTransitInterpretation(transit);
-
     return NextResponse.json({ interpretation });
-
   } catch (error) {
     console.error('Transit interpretation error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to generate interpretation',
-      details: error.message
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to generate interpretation', details: error.message },
+      { status: 500 },
+    );
   }
 }
 
@@ -85,45 +65,41 @@ Affected Area: ${transit.affectedArea}
 
 Provide a comprehensive interpretation in the following JSON format:
 {
-  "summary": "A concise 2-3 sentence overview of this transit's main theme and energy",
-  "fullGuidance": "A detailed 3-4 paragraph explanation of what this transit means, its deeper significance, and how the energies interact",
-  "timing": "Guidance on the timing and duration of this transit's influence, including peak periods and how long effects may last",
+  "summary": "Concise 2-3 sentence overview",
+  "fullGuidance": "Detailed 3-4 paragraph explanation",
+  "timing": "Guidance on duration and peak periods",
   "areas": {
-    "career": "Specific guidance for how this transit affects professional life, work, and career matters (2-3 sentences)",
-    "relationships": "Specific guidance for how this transit impacts relationships, love, and interpersonal connections (2-3 sentences)",
-    "wellness": "Specific guidance for how this transit influences health, wellbeing, and self-care (2-3 sentences)"
+    "career": "Impact on career (2-3 sentences)",
+    "relationships": "Impact on relationships (2-3 sentences)",
+    "wellness": "Impact on wellbeing (2-3 sentences)"
   },
   "advice": [
-    "First actionable step or piece of advice",
-    "Second actionable step or piece of advice",
-    "Third actionable step or piece of advice",
-    "Fourth actionable step or piece of advice"
+    "Actionable step 1",
+    "Actionable step 2",
+    "Actionable step 3",
+    "Actionable step 4"
   ]
 }
 
-Make the interpretation personalized, insightful, and actionable. Consider the intensity level (${transit.intensity}/10) and aspect nature (${transit.aspectNature}) in your interpretation.`;
+Make the interpretation personalized, insightful, and actionable. Consider the intensity (${transit.intensity}/10) and aspect nature (${transit.aspectNature}).`;
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',
-        content: 'You are an expert astrologer providing detailed, accurate, and personalized transit interpretations. Always respond with valid JSON only, no additional text.'
+        content: 'You are an expert astrologer providing detailed, accurate, and personalized transit interpretations. Always respond with valid JSON only.',
       },
-      {
-        role: 'user',
-        content: prompt
-      }
+      { role: 'user', content: prompt },
     ],
     temperature: 0.8,
     max_tokens: 1500,
   });
 
   const content = completion.choices[0].message.content.trim();
-  
+
   try {
-    const interpretation = JSON.parse(content);
-    return interpretation;
+    return JSON.parse(content);
   } catch (parseError) {
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -132,3 +108,4 @@ Make the interpretation personalized, insightful, and actionable. Consider the i
     throw new Error('Failed to parse AI response');
   }
 }
+

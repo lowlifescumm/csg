@@ -24,4 +24,11 @@
 | `/api/auth/forgot-password` | restored password reset request endpoint |
 | `/api/auth/reset-password` | restored password reset completion endpoint |
 | `/api/auth/logout` | restored auth token logout handler |
+| `/api/forecasts` | restored forecast retrieval with credit gating |
+| `/api/forecasts/generate` | restored on-demand forecast generation |
+| `/api/forecasts/preferences` | restored user preferences CRUD |
+| `/api/transits` | restored transit dashboard data pipeline |
+| `/api/transits/interpret` | restored AI transit interpretation |
+| `/api/subscriptions/transit` | restored transit monitoring subscription APIs |
+| `/api/webhooks/transit/test` | restored webhook verification utility |
 

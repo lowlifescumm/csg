@@ -17,6 +17,8 @@ The new `dashboard-v2-scaffold` branch modernizes the dashboard visuals but drop
 | `artifacts/sql/dashboard_migration.sql` | ✅ OK | Non-empty SQL script present |
 | `artifacts/tickets.csv` | ✅ OK | CSV header intact |
 
+No artifacts are missing or corrupted as of the latest verification (2025-11-10 15:05 UTC). Any newly generated files (e.g., `artifacts/test_results.md`, `artifacts/staging_issues.csv`) will be tracked separately during activation.
+
 ## Answered Questions
 - **UI → API dependencies / missing endpoints:** Full list in `artifacts/inventory.json` (`endpoints` array). Missing high-risk APIs include `/api/credits/purchase`, `/api/stripe`, `/api/cron/*`, `/api/auth/forgot-password`, `/api/readings/create`, `/api/compatibility`, `/api/upload/image`, `/api/blog/*`, `/api/admin/*`.
 - **Environment variables / secrets to migrate:** `DATABASE_URL`, `JWT_SECRET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `OPENAI_API_KEY`, `RESEND_API_KEY`, `PINECONE_API_KEY`, `PINECONE_INDEX`, `PINECONE_DIM`, `PINECONE_METRIC`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `CRON_SECRET`, `CLOUDINARY_URL` (or component vars), `NEXT_PUBLIC_BASE_URL`, `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`.
@@ -111,6 +113,13 @@ For each entry, concrete code references are listed in `artifacts/inventory.json
 - **Tests:** Verification queries in staging, DB diff report.
 - **Artifacts:** Migration runbook, rollback plan, DB snapshots.
 - **Guardrails:** no destructive migrations without backups.
+
+### Staging Rehearsal – 2025-11-10
+- **Deploy:** Pending – requires Render staging credentials to provision the `dashboard-v2-scaffold` build as green environment.
+- **DB Snapshot:** Pending – staging database snapshot + `artifacts/sql/dashboard_migration.sql` application blocked until access granted.
+- **Schema Helper:** Pending – schema parity tool ready but not executed.
+- **Smoke:** Playwright suite not run against staging (local config only exposes `chromium` project; `dashboard-smoke` profile missing). See `artifacts/test_results.md`.
+- **Next Steps:** Coordinate with DevOps to schedule staging deploy window, add Playwright smoke profile for staging, and capture output in `artifacts/staging_issues.csv`.
 
 ### Milestone 5 – QA, Monitoring, Release Prep
 - **Owner:** `qa-release`

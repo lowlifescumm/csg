@@ -1,44 +1,29 @@
-/**
- * Webhook Test Endpoint
- * POST /api/webhooks/transit/test
- * 
- * Allows users to test their webhook endpoint configuration
- */
-
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function POST(req) {
   try {
-    // Authenticate user
-    const token = req.cookies.get('auth_token')?.value;
-    if (!token) {
+    const cookieStore = await cookies();
+    const authResult = await getAuthenticatedUser(cookieStore, authOptions);
+
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-
-    // Parse webhook URL from request
-    const body = await req.json();
-    const { webhookUrl } = body;
+    const { webhookUrl } = await req.json();
 
     if (!webhookUrl) {
-      return NextResponse.json({
-        error: 'Webhook URL required'
-      }, { status: 400 });
+      return NextResponse.json({ error: 'Webhook URL required' }, { status: 400 });
     }
 
-    // Validate URL format
     try {
       new URL(webhookUrl);
-    } catch (error) {
-      return NextResponse.json({
-        error: 'Invalid webhook URL format'
-      }, { status: 400 });
+    } catch {
+      return NextResponse.json({ error: 'Invalid webhook URL format' }, { status: 400 });
     }
 
-    // Create test payload
     const testPayload = {
       test: true,
       message: 'This is a test webhook from Cosmic Spiritual Guide',
@@ -48,24 +33,23 @@ export async function POST(req) {
         aspect: 'square',
         exactTime: new Date().toISOString(),
         strengthScore: 85,
-        orb: 0.5
+        orb: 0.5,
       },
       eventType: 'exact',
       timestamp: new Date().toISOString(),
-      userId: userId
+      userId: authResult.userId,
     };
 
-    // Send test webhook
     const startTime = Date.now();
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'Cosmic-Transit-Monitor/1.0',
-        'X-Webhook-Test': 'true'
+        'X-Webhook-Test': 'true',
       },
       body: JSON.stringify(testPayload),
-      signal: AbortSignal.timeout(10000) // 10 second timeout
+      signal: AbortSignal.timeout(10000),
     });
 
     const responseTime = Date.now() - startTime;
@@ -79,32 +63,24 @@ export async function POST(req) {
         statusText: response.statusText,
         responseTime: `${responseTime}ms`,
         headers: Object.fromEntries(response.headers.entries()),
-        body: responseBody.substring(0, 500) // Limit response body length
+        body: responseBody.substring(0, 500),
       },
-      testPayload
+      testPayload,
     });
-
   } catch (error) {
     console.error('Webhook test error:', error);
 
-    if (error.name === 'JsonWebTokenError') {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-      return NextResponse.json({
-        error: 'Webhook timeout',
-        details: 'The webhook URL did not respond within 10 seconds'
-      }, { status: 408 });
+      return NextResponse.json(
+        { error: 'Webhook timeout', details: 'The webhook URL did not respond within 10 seconds' },
+        { status: 408 },
+      );
     }
 
-    return NextResponse.json({
-      error: 'Webhook test failed',
-      details: error.message
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Webhook test failed', details: error.message },
+      { status: 500 },
+    );
   }
 }
-
-
-
 

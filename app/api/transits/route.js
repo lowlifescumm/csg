@@ -1,107 +1,85 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
+import { cookies } from 'next/headers';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/lib/db.js';
-import { 
-  calculateActiveTransits, 
-  getCurrentPlanetaryPositions, 
-  getAffectedArea, 
-  getAspectNature, 
-  getTransitColor, 
-  calculateTransitPeakDate 
+import {
+  calculateActiveTransits,
+  getCurrentPlanetaryPositions,
+  getAffectedArea,
+  getAspectNature,
+  getTransitColor,
+  calculateTransitPeakDate,
 } from '@/lib/transits';
 import { generateAllTransitInterpretations } from '@/lib/transit-interpretation';
-import { 
-  getUserTransits, 
-  calculateAndStoreTransits, 
-  updateTransitStatuses 
-} from '@/lib/transit-engine.js';
+import { getUserTransits, updateTransitStatuses } from '@/lib/transit-engine.js';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 
 export async function GET(req) {
   try {
-    // Get authenticated user (supports both NextAuth and JWT)
-    const authResult = await getAuthenticatedUser(req.cookies, authOptions);
-    
+    const cookieStore = await cookies();
+    const authResult = await getAuthenticatedUser(cookieStore, authOptions);
+
     if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const { userId } = authResult;
+    const searchParams = req.nextUrl?.searchParams;
+    const mode = searchParams?.get('mode') || 'live';
+    const windowDays = parseInt(searchParams?.get('windowDays') || '30', 10);
 
-    // Get query params
-    const { searchParams } = new URL(req.url);
-    const mode = searchParams.get('mode') || 'live'; // 'live' or 'database'
-    const windowDays = parseInt(searchParams.get('windowDays') || '30');
-
-    // Check access permissions for Transit Tracking
     const accessCheck = await canAccessReading(userId, 'TRANSIT_TRACKING');
-    
     if (!accessCheck.allowed) {
       if (accessCheck.reason === 'insufficient_credits') {
         return NextResponse.json({
           error: 'Insufficient credits',
           details: `Transit Tracking requires ${accessCheck.required} credits`,
-          cost: accessCheck.required
+          cost: accessCheck.required,
         }, { status: 402 });
       }
-      return NextResponse.json({
-        error: 'Access denied',
-        details: accessCheck.reason
-      }, { status: 403 });
+      return NextResponse.json({ error: 'Access denied', details: accessCheck.reason }, { status: 403 });
     }
 
-    // Consume credits for the reading (if not subscription-included)
     const creditResult = await consumeCreditsForReading(userId, 'TRANSIT_TRACKING');
-    
     if (!creditResult.success) {
       return NextResponse.json({
         error: 'Credit processing failed',
         details: creditResult.message,
-        cost: creditResult.cost
+        cost: creditResult.cost,
       }, { status: 402 });
     }
 
-    // Check for natal chart in new table first, fallback to old birth_charts table
     let chartResult = await pool.query(
       'SELECT * FROM natal_charts WHERE user_id = $1 AND is_primary = true',
-      [userId]
+      [userId],
     );
 
-    // Fallback to old birth_charts table
     if (chartResult.rows.length === 0) {
       chartResult = await pool.query(
         'SELECT * FROM birth_charts WHERE user_id = $1',
-        [userId]
+        [userId],
       );
 
       if (chartResult.rows.length === 0) {
-        return NextResponse.json({ 
-          error: 'Birth chart required',
-          needsBirthChart: true
-        }, { status: 400 });
+        return NextResponse.json({ error: 'Birth chart required', needsBirthChart: true }, { status: 400 });
       }
 
-      // Use old format
       const chart = chartResult.rows[0];
-      const chartData = typeof chart.chart_data === 'string' 
-        ? JSON.parse(chart.chart_data) 
+      const chartData = typeof chart.chart_data === 'string'
+        ? JSON.parse(chart.chart_data)
         : chart.chart_data;
-      
+
       const userBirthChart = {
         planets: chartData.planets,
         houses: chartData.houses,
-        ascendant: chartData.ascendant
+        ascendant: chartData.ascendant,
       };
 
-      // Use old calculation method
       const activeTransits = calculateActiveTransits(userBirthChart);
-      
-      // Continue with old response format
       const enrichedTransits = await enrichTransitsOldFormat(activeTransits, userBirthChart);
       const currentPositions = getCurrentPlanetaryPositions();
-      
+
       return NextResponse.json({
         transits: enrichedTransits,
         currentPositions,
@@ -109,24 +87,18 @@ export async function GET(req) {
         userChart: {
           sunSign: chartData.planets.sun.sign,
           moonSign: chartData.planets.moon.sign,
-          risingSign: chartData.ascendant
+          risingSign: chartData.ascendant,
         },
-        mode: 'legacy'
+        mode: 'legacy',
       });
     }
 
-    // Use new natal_charts table format
     const natalChart = chartResult.rows[0];
     const natalChartId = natalChart.id;
 
     if (mode === 'database') {
-      // Update transit statuses first
       await updateTransitStatuses();
-
-      // Get transits from database
       const dbTransits = await getUserTransits(userId, windowDays);
-
-      // Convert database format to UI format
       const enrichedTransits = await enrichTransitsFromDatabase(dbTransits, natalChart);
       const currentPositions = getCurrentPlanetaryPositions();
 
@@ -137,28 +109,26 @@ export async function GET(req) {
         userChart: {
           sunSign: natalChart.natal_positions.sun.sign,
           moonSign: natalChart.natal_positions.moon.sign,
-          risingSign: natalChart.ascendant.sign || natalChart.ascendant
+          risingSign: natalChart.ascendant?.sign || natalChart.ascendant,
         },
         mode: 'database',
-        transitCount: dbTransits.length
+        transitCount: dbTransits.length,
       });
     }
 
-    // Live mode - calculate on the fly
     const userBirthChart = {
       planets: natalChart.natal_positions,
       houses: natalChart.houses,
-      ascendant: natalChart.ascendant
+      ascendant: natalChart.ascendant,
     };
 
     const activeTransits = calculateActiveTransits(userBirthChart);
-    
-    const enrichedTransits = activeTransits.map(transit => {
+    const enrichedTransits = activeTransits.map((transit) => {
       const aspectNature = getAspectNature(transit.aspect);
       const affectedArea = getAffectedArea(transit.natalPlanet, transit.affectedHouse);
       const color = getTransitColor(transit.intensity, aspectNature);
       const peakInfo = calculateTransitPeakDate(transit.transitPlanet, userBirthChart.planets[transit.natalPlanet].longitude);
-      
+
       return {
         ...transit,
         affectedArea,
@@ -166,25 +136,22 @@ export async function GET(req) {
         color,
         peakDate: peakInfo.date,
         daysUntilPeak: peakInfo.daysUntil,
-        type: transit.intensity >= 7 ? 'major' : 'moderate'
+        type: transit.intensity >= 7 ? 'major' : 'moderate',
       };
     });
 
-    const majorTransits = enrichedTransits.filter(t => t.type === 'major').slice(0, 3);
+    const majorTransits = enrichedTransits.filter((t) => t.type === 'major').slice(0, 3);
     const interpretedTransits = await generateAllTransitInterpretations(majorTransits, userBirthChart);
 
-    const allTransitsWithInterpretations = enrichedTransits.map(transit => {
+    const allTransitsWithInterpretations = enrichedTransits.map((transit) => {
       const interpreted = interpretedTransits.find(
-        it => it.transitPlanet === transit.transitPlanet && it.natalPlanet === transit.natalPlanet
+        (it) => it.transitPlanet === transit.transitPlanet && it.natalPlanet === transit.natalPlanet,
       );
       return interpreted || transit;
     });
 
     const currentPositions = getCurrentPlanetaryPositions();
-    
-    const sunSign = currentPositions.sun.sign;
-    const moonSign = currentPositions.moon.sign;
-    const avgIntensity = activeTransits.length > 0 
+    const avgIntensity = activeTransits.length > 0
       ? Math.round(activeTransits.reduce((sum, t) => sum + t.intensity, 0) / activeTransits.length)
       : 0;
 
@@ -192,35 +159,34 @@ export async function GET(req) {
       transits: allTransitsWithInterpretations,
       currentPositions,
       stats: {
-        majorCount: allTransitsWithInterpretations.filter(t => t.type === 'major').length,
-        moderateCount: allTransitsWithInterpretations.filter(t => t.type === 'moderate').length,
+        majorCount: allTransitsWithInterpretations.filter((t) => t.type === 'major').length,
+        moderateCount: allTransitsWithInterpretations.filter((t) => t.type === 'moderate').length,
         totalActive: allTransitsWithInterpretations.length,
-        averageIntensity: avgIntensity
+        averageIntensity: avgIntensity,
       },
       userChart: {
-        sunSign: chartData.planets.sun.sign,
-        moonSign: chartData.planets.moon.sign,
-        risingSign: chartData.ascendant.sign
-      }
+        sunSign: userBirthChart.planets.sun?.sign,
+        moonSign: userBirthChart.planets.moon?.sign,
+        risingSign: userBirthChart.ascendant?.sign || userBirthChart.ascendant,
+      },
+      mode: 'live',
     });
-
   } catch (error) {
     console.error('Transit API error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch transits',
-      details: error.message
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch transits', details: error.message },
+      { status: 500 },
+    );
   }
 }
 
-// Helper functions
 async function enrichTransitsOldFormat(transits, userBirthChart) {
-  const enriched = transits.map(transit => {
+  const enriched = transits.map((transit) => {
     const aspectNature = getAspectNature(transit.aspect);
     const affectedArea = getAffectedArea(transit.natalPlanet, transit.affectedHouse);
     const color = getTransitColor(transit.intensity, aspectNature);
     const peakInfo = calculateTransitPeakDate(transit.transitPlanet, userBirthChart.planets[transit.natalPlanet].longitude);
-    
+
     return {
       ...transit,
       affectedArea,
@@ -228,23 +194,23 @@ async function enrichTransitsOldFormat(transits, userBirthChart) {
       color,
       peakDate: peakInfo.date,
       daysUntilPeak: peakInfo.daysUntil,
-      type: transit.intensity >= 7 ? 'major' : 'moderate'
+      type: transit.intensity >= 7 ? 'major' : 'moderate',
     };
   });
 
-  const majorTransits = enriched.filter(t => t.type === 'major').slice(0, 3);
+  const majorTransits = enriched.filter((t) => t.type === 'major').slice(0, 3);
   const interpretedTransits = await generateAllTransitInterpretations(majorTransits, userBirthChart);
 
-  return enriched.map(transit => {
+  return enriched.map((transit) => {
     const interpreted = interpretedTransits.find(
-      it => it.transitPlanet === transit.transitPlanet && it.natalPlanet === transit.natalPlanet
+      (it) => it.transitPlanet === transit.transitPlanet && it.natalPlanet === transit.natalPlanet,
     );
     return interpreted || transit;
   });
 }
 
 async function enrichTransitsFromDatabase(dbTransits, natalChart) {
-  return dbTransits.map(transit => {
+  return dbTransits.map((transit) => {
     const now = new Date();
     const exactTime = new Date(transit.exact_time);
     const daysUntilPeak = Math.ceil((exactTime - now) / (1000 * 60 * 60 * 24));
@@ -269,13 +235,12 @@ async function enrichTransitsFromDatabase(dbTransits, natalChart) {
       daysUntilPeak: daysUntilPeak,
       type: transit.strength_score >= 70 ? 'major' : 'moderate',
       status: transit.status,
-      interpretation: transit.interpretation || null
+      interpretation: transit.interpretation || null,
     };
   });
 }
 
 function getSignForBody(body) {
-  // This should query current ephemeris, but for now use a placeholder
   const positions = getCurrentPlanetaryPositions();
   return positions[body.toLowerCase()]?.sign || 'Unknown';
 }
@@ -293,7 +258,7 @@ function getHouseMeaning(houseNumber) {
     9: 'Philosophy & Travel',
     10: 'Career & Status',
     11: 'Friends & Community',
-    12: 'Spirituality & Unconscious'
+    12: 'Spirituality & Unconscious',
   };
   return meanings[houseNumber] || 'Unknown';
 }
@@ -306,10 +271,10 @@ function getTransitColorFromStrength(strength, aspectNature) {
 }
 
 function calculateStats(transits) {
-  const majorCount = transits.filter(t => t.type === 'major').length;
-  const moderateCount = transits.filter(t => t.type === 'moderate').length;
+  const majorCount = transits.filter((t) => t.type === 'major').length;
+  const moderateCount = transits.filter((t) => t.type === 'moderate').length;
   const totalActive = transits.length;
-  const avgIntensity = totalActive > 0 
+  const avgIntensity = totalActive > 0
     ? Math.round(transits.reduce((sum, t) => sum + (t.intensity || t.strengthScore / 10 || 0), 0) / totalActive)
     : 0;
 
@@ -317,6 +282,7 @@ function calculateStats(transits) {
     majorCount,
     moderateCount,
     totalActive,
-    averageIntensity: avgIntensity
+    averageIntensity: avgIntensity,
   };
 }
+

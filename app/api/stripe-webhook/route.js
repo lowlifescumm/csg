@@ -122,7 +122,10 @@ export async function POST(request) {
           if (userId && packSize) {
             // Add credits to user
             await pool.query(
-              'INSERT INTO credits (user_id, credits) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET credits = credits.credits + $2',
+              `INSERT INTO credits (user_id, credits)
+               VALUES ($1, $2)
+               ON CONFLICT (user_id)
+               DO UPDATE SET credits = credits + EXCLUDED.credits`,
               [userId, packSize]
             );
             
