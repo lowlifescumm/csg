@@ -1,8 +1,15 @@
+/**
+ * @fileoverview This script runs a database migration to set up the schema for the blog functionality.
+ * It reads and executes the SQL commands from the `add-blog-schema.sql` file.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/run-blog-migration.js
+ */
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-// Use the same connection pattern as the existing app
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -10,15 +17,16 @@ const pool = new Pool({
   },
 });
 
+/**
+ * Executes the blog database migration.
+ */
 async function runBlogMigration() {
   try {
     console.log('🚀 Running blog database migration...');
     
-    // Read and execute the blog schema SQL
     const schemaPath = path.join(__dirname, '../database/add-blog-schema.sql');
     const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
     
-    // Split the SQL into individual statements
     const statements = schemaSQL.split(';').filter(stmt => stmt.trim().length > 0);
     
     for (const statement of statements) {
@@ -50,5 +58,4 @@ async function runBlogMigration() {
   }
 }
 
-// Run the migration
 runBlogMigration();

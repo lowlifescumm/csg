@@ -4,6 +4,16 @@ import { X, Sparkles } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
 
+/**
+ * A component that allows users to interactively select tarot cards for a reading.
+ * It handles the card selection, question input, and displays the final reading.
+ * @param {object} props - The component props.
+ * @param {Function} props.onClose - A function to close the selector.
+ * @param {Function} props.onComplete - A function to call when the reading is complete.
+ * @param {string} [props.spreadType="three-card"] - The type of tarot spread to use.
+ * @param {string} [props.readingType="general"] - The type of reading (e.g., 'love', 'career').
+ * @returns {JSX.Element} The InteractiveTarotSelector component.
+ */
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general" }) {
   const [selectedCards, setSelectedCards] = useState([]);
   const [availableCards, setAvailableCards] = useState([]);
@@ -16,7 +26,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   const [flashMismatch, setFlashMismatch] = useState(false);
   
   const spread = (function resolveSpread() {
-    // Map old spreadType strings to config ids
     const map = {
       "three-card": "past_present_future",
       "one-card": "one_card",
@@ -37,7 +46,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   const positions = spread.layout;
 
   useEffect(() => {
-    // On mount and when spread changes, clear selections and prepare exactly N cards
     setSelectedCards([]);
     setShowQuestionInput(false);
     setError("");
@@ -45,21 +53,25 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setAvailableCards(shuffled.slice(0, spread.card_count));
   }, [spreadType]);
 
+  /**
+   * Handles the click event on a tarot card.
+   * @param {number} index - The index of the clicked card.
+   */
   const handleCardClick = (index) => {
-    // If card is already selected, don't do anything
     if (selectedCards.includes(index)) return;
     
-    // Add card to selected cards
     const newSelectedCards = [...selectedCards, index];
     setSelectedCards(newSelectedCards);
     
-    // If all cards are selected, show question input for spreads that allow or require questions
     const count = spread.card_count;
     if (newSelectedCards.length === count && !showQuestionInput && (spread.ui?.require_question || spread.allow_question)) {
       setShowQuestionInput(true);
     }
   };
 
+  /**
+   * Fetches the tarot reading from the server.
+   */
   const handleGetReading = async () => {
     const required = spread.ui?.required_selection_count ?? spread.card_count;
     const selected = selectedCards.length;
@@ -80,7 +92,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setLoading(true);
     
     try {
-      // Prepare the selected cards data
       const selectedCardsData = selectedCards.map(index => ({
         ...availableCards[index],
         reversed: Math.random() > 0.5,
@@ -105,7 +116,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         setReading(data.reading);
         setShowReading(true);
       } else {
-        // Tarot is free, but handle other errors
         alert(data.error || "Something went wrong");
       }
     } catch (error) {
@@ -116,8 +126,10 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     }
   };
 
+  /**
+   * Resets the component to start a new reading.
+   */
   const handleNewReading = () => {
-    // Reset everything for a new reading
     setSelectedCards([]);
     setShowReading(false);
     setReading(null);
@@ -125,7 +137,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setShowQuestionInput(false);
     setError("");
     
-    // Shuffle and pick new cards
     const shuffled = [...ALL_CARDS].sort(() => Math.random() - 0.5);
     setAvailableCards(shuffled.slice(0, spread.card_count));
   };

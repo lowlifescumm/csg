@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
 
+/**
+ * A component that provides a help system with a floating button and a modal.
+ * It displays information about getting started, features, credits, and tips.
+ * @returns {JSX.Element} The HelpSystem component.
+ */
 export default function HelpSystem() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("getting-started");
@@ -107,7 +112,6 @@ export default function HelpSystem() {
 
   return (
     <>
-      {/* Help Button */}
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl smooth-transition hover:scale-110 z-40"
@@ -118,11 +122,9 @@ export default function HelpSystem() {
         </svg>
       </button>
 
-      {/* Help Modal */}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-2xl font-semibold text-gray-900">Help & Guidance</h2>
               <button
@@ -135,9 +137,7 @@ export default function HelpSystem() {
               </button>
             </div>
 
-            {/* Content */}
             <div className="flex h-96">
-              {/* Sidebar */}
               <div className="w-1/3 bg-gray-50 p-4 border-r border-gray-200">
                 <nav className="space-y-2">
                   {Object.entries(helpSections).map(([key, section]) => (
@@ -156,13 +156,11 @@ export default function HelpSystem() {
                 </nav>
               </div>
 
-              {/* Main Content */}
               <div className="flex-1 p-6 overflow-y-auto">
                 {helpSections[activeSection]?.content}
               </div>
             </div>
 
-            {/* Footer */}
             <div className="p-6 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-600">

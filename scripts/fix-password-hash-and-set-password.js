@@ -1,13 +1,24 @@
 #!/usr/bin/env node
 /**
- * URGENT FIX: Add password_hash column and set password for admin account
- * This will restore your ability to login with local authentication
+ * @fileoverview This script is an urgent fix to address issues with local authentication.
+ * It ensures the 'password_hash' column exists in the 'users' table and sets a temporary password for a specified admin user.
+ * This is crucial for restoring login access if the password system is broken.
+ *
+ * @usage
+ * To run this script, use the following command. You can optionally provide an email and password as arguments.
+ * node scripts/fix-password-hash-and-set-password.js [email] [password]
+ *
+ * @example
+ * // Use default email and password
+ * node scripts/fix-password-hash-and-set-password.js
+ *
+ * // Specify email and password
+ * node scripts/fix-password-hash-and-set-password.js your@email.com MySecurePassword123
  */
 
 import { Pool } from "pg";
 import { hashPassword } from "../lib/auth.js";
 
-// Get DB URL from environment
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
@@ -22,11 +33,14 @@ const pool = new Pool({
     : { rejectUnauthorized: false }
 });
 
+/**
+ * Adds the 'password_hash' column to the 'users' table if it doesn't exist,
+ * and sets a password for the specified admin user.
+ */
 async function fixPasswordHash() {
   try {
     console.log('🚀 Starting password_hash fix...\n');
 
-    // Step 1: Add password_hash column if it doesn't exist
     console.log('Step 1: Adding password_hash column...');
     try {
       await pool.query(`
@@ -39,7 +53,6 @@ async function fixPasswordHash() {
       throw error;
     }
 
-    // Step 2: Get your email from command line or use default
     const email = process.argv[2] || 'ethan.fitzhenry@gmail.com';
     const password = process.argv[3] || 'TempPass123!';
     
@@ -62,7 +75,6 @@ async function fixPasswordHash() {
     console.log(`   Name: ${user.first_name} ${user.last_name}`);
     console.log(`   Role: ${user.role}\n`);
 
-    // Step 3: Set password
     console.log('Step 3: Setting password...');
     const hashedPassword = await hashPassword(password);
     
@@ -74,7 +86,6 @@ async function fixPasswordHash() {
     
     console.log(`✅ Password set for ${email}\n`);
 
-    // Step 4: Verify
     console.log('Step 4: Verifying fix...');
     const { rows: verifyRows } = await pool.query(
       "SELECT password_hash IS NOT NULL as has_password FROM users WHERE email = $1",
@@ -104,4 +115,3 @@ async function fixPasswordHash() {
 }
 
 fixPasswordHash();
-

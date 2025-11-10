@@ -14,6 +14,12 @@ const TYPES = [
   { key: "yin-yang", title: "Yin Yang Tarot", desc: "Balance opposing energies.", spreadType: "yin-yang" },
 ];
 
+/**
+ * A component that allows users to pick a type of tarot reading.
+ * @param {object} props - The component props.
+ * @param {Function} [props.onPick] - A callback function to be called when a reading type is picked.
+ * @returns {JSX.Element} The TarotReadingTypePicker component.
+ */
 export default function TarotReadingTypePicker({ onPick }) {
   const [selected, setSelected] = useState(null);
 
@@ -35,5 +41,3 @@ export default function TarotReadingTypePicker({ onPick }) {
     </div>
   );
 }
-
-

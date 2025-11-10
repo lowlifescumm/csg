@@ -1,6 +1,17 @@
 "use client";
 import { useState, useEffect } from 'react';
 
+/**
+ * A component that displays a tour guide character with a speech bubble.
+ * The tour guide can be positioned on the screen and display different states and messages.
+ * @param {object} props - The component props.
+ * @param {boolean} [props.isVisible=false] - Whether the tour guide is visible.
+ * @param {{x: number, y: number}} [props.position={ x: 50, y: 50 }] - The position of the tour guide as a percentage of the screen.
+ * @param {string} [props.state='idle'] - The state of the tour guide ('idle', 'pointing', 'celebrating').
+ * @param {string} [props.message=''] - The message to be displayed in the speech bubble.
+ * @param {Function} [props.onClose=() => {}] - A callback function to be called when the tour guide is closed.
+ * @returns {JSX.Element|null} The TourGuide component, or null if not visible.
+ */
 const TourGuide = ({ 
   isVisible = false, 
   position = { x: 50, y: 50 }, 
@@ -14,12 +25,16 @@ const TourGuide = ({
     if (!isVisible) return;
 
     const interval = setInterval(() => {
-      setAnimationFrame(prev => (prev + 1) % 60); // 60 frame cycle
+      setAnimationFrame(prev => (prev + 1) % 60);
     }, 100);
 
     return () => clearInterval(interval);
   }, [isVisible]);
 
+  /**
+   * Gets the source URL for the tour guide's sprite based on its state.
+   * @returns {string} The URL of the sprite image.
+   */
   const getSpriteSrc = () => {
     switch (state) {
       case 'pointing':
@@ -31,6 +46,10 @@ const TourGuide = ({
     }
   };
 
+  /**
+   * Gets the animation class for the tour guide based on its state.
+   * @returns {string} The CSS animation class.
+   */
   const getAnimationClass = () => {
     if (state === 'celebrating') {
       return 'animate-bounce';
@@ -52,7 +71,6 @@ const TourGuide = ({
         transform: 'translate(-50%, -50%)'
       }}
     >
-      {/* Tour Guide Character */}
       <div className={`relative ${getAnimationClass()}`}>
         <img 
           src={getSpriteSrc()} 
@@ -63,18 +81,15 @@ const TourGuide = ({
           }}
         />
         
-        {/* Speech Bubble */}
         {message && (
           <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl px-4 py-2 shadow-lg border-2 border-purple-300 max-w-xs">
             <div className="text-sm text-gray-800 font-medium text-center">
               {message}
             </div>
-            {/* Speech bubble tail */}
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white"></div>
           </div>
         )}
         
-        {/* Close button */}
         <button
           onClick={onClose}
           className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-colors pointer-events-auto"

@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Edit, Trash2, Eye, Calendar, User, Tag, ArrowLeft, Archive, RefreshCw } from 'lucide-react';
 
+/**
+ * The main page for blog administration.
+ * It allows administrators to view, manage, and create blog posts.
+ * @returns {JSX.Element} The BlogAdminPage component.
+ */
 export default function BlogAdminPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +21,9 @@ export default function BlogAdminPage() {
     fetchPosts();
   }, []);
 
+  /**
+   * Fetches the current user's data and checks for admin privileges.
+   */
   const fetchUser = async () => {
     try {
       const response = await fetch('/api/auth/user');
@@ -34,6 +42,9 @@ export default function BlogAdminPage() {
     }
   };
 
+  /**
+   * Fetches all blog posts from the API.
+   */
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -47,6 +58,11 @@ export default function BlogAdminPage() {
     }
   };
 
+  /**
+   * Formats a date string into a more readable format.
+   * @param {string} dateString - The date string to format.
+   * @returns {string} The formatted date.
+   */
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -55,6 +71,11 @@ export default function BlogAdminPage() {
     });
   };
 
+  /**
+   * Gets the appropriate color class for a given post status.
+   * @param {string} status - The status of the post.
+   * @returns {string} The Tailwind CSS color class.
+   */
   const getStatusColor = (status) => {
     switch (status) {
       case 'published':
@@ -68,6 +89,11 @@ export default function BlogAdminPage() {
     }
   };
 
+  /**
+   * Deletes a blog post after confirmation.
+   * @param {string} postId - The ID of the post to delete.
+   * @param {string} postTitle - The title of the post to delete.
+   */
   const handleDelete = async (postId, postTitle) => {
     if (!confirm(`Are you sure you want to delete "${postTitle}"? This action cannot be undone.`)) {
       return;
@@ -83,7 +109,7 @@ export default function BlogAdminPage() {
 
       if (response.ok && data.success) {
         alert('Post deleted successfully!');
-        fetchPosts(); // Refresh the list
+        fetchPosts();
       } else {
         alert(`Failed to delete post: ${data.error || 'Unknown error'}`);
       }
@@ -95,11 +121,15 @@ export default function BlogAdminPage() {
     }
   };
 
+  /**
+   * Changes the status of a blog post.
+   * @param {string} postId - The ID of the post to update.
+   * @param {string} newStatus - The new status for the post.
+   */
   const handleStatusChange = async (postId, newStatus) => {
     try {
       setChangingStatus(postId);
       
-      // Get the current post to update
       const post = posts.find(p => p.id === postId);
       if (!post) {
         alert('Post not found');
@@ -130,7 +160,7 @@ export default function BlogAdminPage() {
 
       if (response.ok && data.success) {
         alert(`Post status changed to ${newStatus}!`);
-        fetchPosts(); // Refresh the list
+        fetchPosts();
       } else {
         alert(`Failed to update status: ${data.error || 'Unknown error'}`);
       }
@@ -155,7 +185,6 @@ export default function BlogAdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-      {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -193,7 +222,6 @@ export default function BlogAdminPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="glassmorphic rounded-2xl p-6 apple-shadow-lg">
             <div className="flex items-center justify-between">
@@ -250,7 +278,6 @@ export default function BlogAdminPage() {
           </div>
         </div>
 
-        {/* Posts Table */}
         <div className="glassmorphic rounded-2xl apple-shadow-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-white/20">
             <h2 className="text-xl font-semibold text-gray-900">All Posts</h2>

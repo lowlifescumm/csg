@@ -3,16 +3,22 @@ import { useEffect, useState } from 'react';
 import { Crown, X } from 'lucide-react';
 import Link from 'next/link';
 
+/**
+ * A floating prompt that appears to encourage users to upgrade to a premium plan.
+ * @param {object} props - The component props.
+ * @param {string} [props.message="Out of credits! Upgrade for unlimited access"] - The message to display.
+ * @param {boolean} [props.autoHide=true] - Whether the prompt should hide automatically.
+ * @param {number} [props.duration=5000] - The duration in milliseconds before auto-hiding.
+ * @returns {JSX.Element|null} The FloatingUpgradePrompt component, or null if not visible.
+ */
 const FloatingUpgradePrompt = ({ message = "Out of credits! Upgrade for unlimited access", autoHide = true, duration = 5000 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    // Show with animation
     setIsVisible(true);
     setTimeout(() => setIsAnimating(true), 50);
 
-    // Auto-hide after duration
     if (autoHide) {
       const hideTimer = setTimeout(() => {
         handleClose();
@@ -22,6 +28,9 @@ const FloatingUpgradePrompt = ({ message = "Out of credits! Upgrade for unlimite
     }
   }, [autoHide, duration]);
 
+  /**
+   * Closes the prompt with an animation.
+   */
   const handleClose = () => {
     setIsAnimating(false);
     setTimeout(() => setIsVisible(false), 300);
@@ -69,7 +78,6 @@ const FloatingUpgradePrompt = ({ message = "Out of credits! Upgrade for unlimite
         </div>
       </div>
 
-      {/* Progress bar showing auto-hide timer */}
       {autoHide && (
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 rounded-b-2xl overflow-hidden">
           <div 

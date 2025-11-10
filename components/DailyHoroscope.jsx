@@ -2,6 +2,12 @@
 import { useState, useEffect } from 'react';
 import { zodiacSigns } from '@/lib/zodiac-data';
 
+/**
+ * A component that displays the daily horoscope for a selected zodiac sign.
+ * @param {object} props - The component props.
+ * @param {string|null} [props.userSign=null] - The user's zodiac sign, if available.
+ * @returns {JSX.Element} The DailyHoroscope component.
+ */
 export default function DailyHoroscope({ userSign = null }) {
   const [selectedSign, setSelectedSign] = useState(userSign || 'aries');
   const [horoscope, setHoroscope] = useState(null);
@@ -11,6 +17,10 @@ export default function DailyHoroscope({ userSign = null }) {
     loadHoroscope(selectedSign);
   }, [selectedSign]);
 
+  /**
+   * Fetches the horoscope for the selected zodiac sign.
+   * @param {string} sign - The zodiac sign to fetch the horoscope for.
+   */
   const loadHoroscope = async (sign) => {
     setLoading(true);
     try {
@@ -26,6 +36,11 @@ export default function DailyHoroscope({ userSign = null }) {
     }
   };
 
+  /**
+   * Gets the emoji for a given zodiac sign.
+   * @param {string} sign - The zodiac sign.
+   * @returns {string} The emoji for the sign.
+   */
   const getSignEmoji = (sign) => {
     const emojis = {
       Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',

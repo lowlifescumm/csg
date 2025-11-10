@@ -3,6 +3,22 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { pool } from '@/lib/db';
 
+/**
+ * @swagger
+ * /api/admin/users:
+ *   get:
+ *     summary: Get all users.
+ *     description: Retrieves a list of all users with their subscription status. Only accessible by administrators.
+ *     responses:
+ *       200:
+ *         description: A list of users.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden, user is not an admin.
+ *       500:
+ *         description: Failed to fetch users.
+ */
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -17,7 +33,6 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user is admin
     const { rows: userRows } = await pool.query(
       "SELECT role FROM users WHERE id=$1",
       [decoded.userId]
@@ -27,7 +42,6 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get all users with their subscription status
     const { rows } = await pool.query(`
       SELECT 
         u.id,

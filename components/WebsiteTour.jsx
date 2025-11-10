@@ -2,6 +2,13 @@
 import { useState, useEffect } from 'react';
 import TourGuide from './TourGuide';
 
+/**
+ * A component that provides a guided tour of the website.
+ * It uses the TourGuide component to display messages and highlight elements.
+ * @param {object} props - The component props.
+ * @param {Function} [props.onComplete=() => {}] - A callback function to be called when the tour is completed.
+ * @returns {JSX.Element} The WebsiteTour component.
+ */
 const WebsiteTour = ({ onComplete = () => {} }) => {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -52,11 +59,17 @@ const WebsiteTour = ({ onComplete = () => {} }) => {
     }
   ];
 
+  /**
+   * Starts the tour.
+   */
   const startTour = () => {
     setIsActive(true);
     setCurrentStep(0);
   };
 
+  /**
+   * Moves to the next step in the tour.
+   */
   const nextStep = () => {
     if (currentStep < tourSteps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -65,18 +78,27 @@ const WebsiteTour = ({ onComplete = () => {} }) => {
     }
   };
 
+  /**
+   * Moves to the previous step in the tour.
+   */
   const previousStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
+  /**
+   * Completes the tour.
+   */
   const completeTour = () => {
     setIsActive(false);
     setCurrentStep(0);
     onComplete();
   };
 
+  /**
+   * Skips the tour.
+   */
   const skipTour = () => {
     setIsActive(false);
     setCurrentStep(0);
@@ -86,23 +108,18 @@ const WebsiteTour = ({ onComplete = () => {} }) => {
 
   return (
     <>
-      {/* Tour Overlay */}
       {isActive && (
         <div className="fixed inset-0 z-40 bg-black bg-opacity-50 pointer-events-auto">
-          {/* Highlighted target element */}
           {currentStepData.target && (
             <div 
               className="absolute border-4 border-yellow-400 rounded-lg shadow-lg animate-pulse"
               style={{
-                // This would be positioned based on the target element
-                // In a real implementation, you'd calculate this from the DOM
               }}
             />
           )}
         </div>
       )}
 
-      {/* Tour Guide */}
       {isActive && (
         <TourGuide
           isVisible={isActive}
@@ -113,7 +130,6 @@ const WebsiteTour = ({ onComplete = () => {} }) => {
         />
       )}
 
-      {/* Tour Controls */}
       {isActive && (
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 bg-white rounded-2xl shadow-2xl p-4 border-2 border-purple-300">
           <div className="flex items-center gap-4">
@@ -154,7 +170,6 @@ const WebsiteTour = ({ onComplete = () => {} }) => {
         </div>
       )}
 
-      {/* Tour Start Button */}
       {!isActive && (
         <button
           onClick={startTour}

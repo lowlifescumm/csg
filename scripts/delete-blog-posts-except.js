@@ -1,9 +1,15 @@
 #!/usr/bin/env node
-
 /**
- * Delete all blog posts except the one with the specified slug
+ * @fileoverview This script deletes all blog posts from the database except for the one with a specified slug.
+ * It prompts the user for confirmation before deleting any posts.
+ *
+ * @usage
+ * To run this script, use the following command, replacing `<slug-to-keep>` with the slug of the post you want to preserve:
+ * node scripts/delete-blog-posts-except.js <slug-to-keep>
+ *
+ * @example
+ * node scripts/delete-blog-posts-except.js "the-future-of-intuition-how-ai-is-transforming-spiritual-guidance"
  */
-
 import { pool } from '../lib/db.js';
 import readline from 'readline';
 
@@ -12,13 +18,21 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
+/**
+ * Asks a question in the command line and returns the user's answer.
+ * @param {string} query - The question to ask the user.
+ * @returns {Promise<string>} The user's answer.
+ */
 function askQuestion(query) {
   return new Promise(resolve => rl.question(query, resolve));
 }
 
+/**
+ * Deletes all blog posts except for the one with the specified slug.
+ * @param {string} slugToKeep - The slug of the blog post to keep.
+ */
 async function deletePostsExcept(slugToKeep) {
   try {
-    // First, list all posts
     console.log('\nFetching all blog posts...\n');
     
     const allPosts = await pool.query(`
@@ -32,7 +46,6 @@ async function deletePostsExcept(slugToKeep) {
       return;
     }
 
-    // Find the post to keep
     const keepPost = allPosts.rows.find(p => p.slug === slugToKeep);
     
     if (!keepPost) {
@@ -44,7 +57,6 @@ async function deletePostsExcept(slugToKeep) {
       return;
     }
 
-    // Find posts to delete
     const postsToDelete = allPosts.rows.filter(p => p.id !== keepPost.id);
 
     if (postsToDelete.length === 0) {
@@ -69,7 +81,6 @@ async function deletePostsExcept(slugToKeep) {
       return;
     }
 
-    // Delete the posts
     console.log('\n🗑️  Deleting posts...\n');
     
     for (const post of postsToDelete) {
@@ -93,7 +104,6 @@ async function deletePostsExcept(slugToKeep) {
   }
 }
 
-// Get slug from command line args
 const slugToKeep = process.argv[2];
 
 if (!slugToKeep) {
@@ -104,4 +114,3 @@ if (!slugToKeep) {
 }
 
 deletePostsExcept(slugToKeep);
-

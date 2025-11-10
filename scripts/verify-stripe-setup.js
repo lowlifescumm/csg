@@ -1,17 +1,28 @@
 #!/usr/bin/env node
-
 /**
- * Stripe Setup Verification Script
- * Checks your current Stripe configuration and provides recommendations
+ * @fileoverview This script verifies the Stripe setup for the application.
+ * It checks environment variables, API connectivity, existing products, webhooks, and recent payments.
+ * It provides a summary and recommendations for configuring Stripe correctly.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/verify-stripe-setup.js
+ *
+ * @environment_variables
+ * - STRIPE_SECRET_KEY: Your Stripe secret key.
+ * - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: Your Stripe publishable key.
+ * - STRIPE_WEBHOOK_SECRET: Your Stripe webhook secret.
  */
 
 const Stripe = require('stripe');
 require('dotenv').config({ path: '../env.local' });
 
+/**
+ * Executes a series of checks to verify the Stripe setup and provides a summary and recommendations.
+ */
 async function verifyStripeSetup() {
   console.log('🔍 Verifying Stripe Setup for Cosmic Spiritual Guide...\n');
 
-  // Check environment variables
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -30,14 +41,12 @@ async function verifyStripeSetup() {
   try {
     const stripe = new Stripe(stripeSecretKey);
 
-    // Test API connection
     console.log('\n🔌 Testing Stripe API Connection...');
     const account = await stripe.accounts.retrieve();
     console.log(`   ✅ Connected to Stripe account: ${account.display_name || account.id}`);
     console.log(`   📊 Account type: ${account.type}`);
     console.log(`   🌍 Country: ${account.country}`);
 
-    // Check existing products
     console.log('\n📦 Checking Existing Products...');
     const products = await stripe.products.list({ limit: 100 });
     console.log(`   📊 Total products found: ${products.data.length}`);
@@ -53,7 +62,6 @@ async function verifyStripeSetup() {
       console.log('   ℹ️  No products found - this is normal for dynamic product creation');
     }
 
-    // Check webhooks
     console.log('\n🔗 Checking Webhooks...');
     const webhooks = await stripe.webhookEndpoints.list();
     console.log(`   📊 Total webhooks found: ${webhooks.data.length}`);
@@ -69,7 +77,6 @@ async function verifyStripeSetup() {
       console.log('   ⚠️  No webhooks found - you may need to set up webhooks for subscription handling');
     }
 
-    // Check recent payments
     console.log('\n💳 Checking Recent Payments...');
     const payments = await stripe.paymentIntents.list({ limit: 5 });
     console.log(`   📊 Recent payments: ${payments.data.length}`);
@@ -86,7 +93,6 @@ async function verifyStripeSetup() {
       console.log('   ℹ️  No recent payments found');
     }
 
-    // Recommendations
     console.log('\n💡 Recommendations:');
     
     if (products.data.length === 0) {
@@ -118,7 +124,6 @@ async function verifyStripeSetup() {
   }
 }
 
-// Run the script
 if (require.main === module) {
   verifyStripeSetup();
 }

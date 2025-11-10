@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Moon, Sparkles, Calendar, Info } from 'lucide-react';
 
+/**
+ * A widget that displays the current moon phase and provides related guidance.
+ * @returns {JSX.Element|null} The MoonPhaseWidget component, or null if data is not available.
+ */
 export default function MoonPhaseWidget() {
   const router = useRouter();
   const [moonData, setMoonData] = useState(null);
@@ -10,6 +14,9 @@ export default function MoonPhaseWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    /**
+     * Fetches the current moon phase data from the API.
+     */
     const fetchMoonData = async () => {
       try {
         const response = await fetch('/api/moon-phase');

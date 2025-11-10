@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Users, Search, Filter, ArrowLeft, Mail, Calendar, Crown, Shield } from 'lucide-react';
 
+/**
+ * The user management page for administrators.
+ * It allows admins to view, search, and manage user accounts, including adjusting credits.
+ * @returns {JSX.Element} The UserManagementPage component.
+ */
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +28,9 @@ export default function UserManagementPage() {
     fetchUsers();
   }, []);
 
+  /**
+   * Fetches the current user's data and checks for admin privileges.
+   */
   const fetchUser = async () => {
     try {
       const response = await fetch('/api/auth/user');
@@ -41,6 +49,10 @@ export default function UserManagementPage() {
     }
   };
 
+  /**
+   * Opens the credit adjustment modal for a selected user.
+   * @param {object} user - The user to adjust credits for.
+   */
   const openModal = async (user) => {
     setSelectedUser(user);
     setIsModalOpen(true);
@@ -57,6 +69,9 @@ export default function UserManagementPage() {
     }
   };
 
+  /**
+   * Closes the credit adjustment modal.
+   */
   const closeModal = () => {
     setSelectedUser(null);
     setIsModalOpen(false);
@@ -66,6 +81,10 @@ export default function UserManagementPage() {
     setCreditSuccess('');
   };
 
+  /**
+   * Handles the form submission to adjust a user's credits.
+   * @param {Event} e - The form submission event.
+   */
   const handleCreditChange = async (e) => {
     e.preventDefault();
     setCreditError('');
@@ -97,7 +116,7 @@ export default function UserManagementPage() {
         setNewCredits('');
         setTimeout(() => {
           closeModal();
-          fetchUsers(); // Refresh user list
+          fetchUsers();
         }, 2000);
       } else {
         setCreditError(data.error || 'Failed to update credits');
@@ -110,6 +129,9 @@ export default function UserManagementPage() {
     }
   };
 
+  /**
+   * Fetches the list of all users from the API.
+   */
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -135,6 +157,11 @@ export default function UserManagementPage() {
     return matchesSearch && matchesRole;
   });
 
+  /**
+   * Formats a date string into a more readable format.
+   * @param {string} dateString - The date string to format.
+   * @returns {string} The formatted date.
+   */
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -156,7 +183,6 @@ export default function UserManagementPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-      {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -174,7 +200,6 @@ export default function UserManagementPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="glassmorphic rounded-2xl p-6 apple-shadow-lg">
             <div className="flex items-center justify-between">
@@ -235,7 +260,6 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="glassmorphic rounded-2xl p-6 apple-shadow-lg mb-8">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
@@ -265,7 +289,6 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        {/* Users Table */}
         <div className="glassmorphic rounded-2xl apple-shadow-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-white/20">
             <h2 className="text-xl font-semibold text-gray-900">All Users</h2>

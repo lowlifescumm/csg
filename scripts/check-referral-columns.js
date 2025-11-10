@@ -1,18 +1,20 @@
 #!/usr/bin/env node
-
 /**
- * Check and add missing referral columns
+ * @fileoverview This script checks for and adds missing columns and tables required for a user referral system.
+ * It ensures the 'users' table has 'referral_code' and 'referred_by' columns, and that the 'referral_redemptions' table exists.
+ * It also backfills referral codes for existing users.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/check-referral-columns.js
  */
 
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') });
 const { Pool } = require('pg');
 
-// Parse database URL
 let dbUrl = process.env.DATABASE_URL || '';
-// Remove quotes if present
 dbUrl = dbUrl.replace(/^["']|["']$/g, '');
 
-// Render database requires SSL
 const sslConfig = !dbUrl.includes('localhost') && dbUrl.includes('render.com') 
   ? { rejectUnauthorized: false } 
   : false;
@@ -22,13 +24,15 @@ const pool = new Pool({
   ssl: sslConfig,
 });
 
+/**
+ * Checks for and adds the necessary database columns and tables for the referral system.
+ */
 async function checkReferralColumns() {
   const client = await pool.connect();
   
   try {
     console.log('🔍 Checking for missing referral columns...\n');
     
-    // Check users table columns
     const usersColumns = await client.query(`
       SELECT column_name
       FROM information_schema.columns
@@ -39,7 +43,6 @@ async function checkReferralColumns() {
     const existingColumns = usersColumns.rows.map(row => row.column_name);
     console.log('📊 Existing referral columns:', existingColumns);
     
-    // Add missing columns
     if (!existingColumns.includes('referral_code')) {
       console.log('🚀 Adding referral_code column...');
       await client.query(`
@@ -58,7 +61,6 @@ async function checkReferralColumns() {
       console.log('✅ Added referred_by column');
     }
     
-    // Check if referral_redemptions table exists
     const tableExists = await client.query(`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
@@ -82,7 +84,6 @@ async function checkReferralColumns() {
       console.log('✅ Created referral_redemptions table');
     }
     
-    // Generate referral codes for existing users
     console.log('🚀 Generating referral codes for existing users...');
     await client.query(`
       UPDATE users
@@ -102,7 +103,3 @@ async function checkReferralColumns() {
 }
 
 checkReferralColumns();
-
-
-
-

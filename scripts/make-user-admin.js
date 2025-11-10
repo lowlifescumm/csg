@@ -1,5 +1,20 @@
 #!/usr/bin/env node
-
+/**
+ * @fileoverview This script elevates a user to administrator status.
+ * If the user does not exist, it creates a new admin account with the specified email.
+ * It also ensures the admin user has a sufficient number of credits.
+ *
+ * @usage
+ * To run this script, use the following command. You can optionally provide an email address.
+ * node scripts/make-user-admin.js [email]
+ *
+ * @example
+ * // Use the default email address
+ * node scripts/make-user-admin.js
+ *
+ * // Specify an email address
+ * node scripts/make-user-admin.js new-admin@example.com
+ */
 import { Pool } from "pg";
 import { hashPassword } from "../lib/auth.js";
 
@@ -10,11 +25,15 @@ const pool = new Pool({
     : { rejectUnauthorized: false },
 });
 
+/**
+ * Finds a user by email and updates their role to 'admin'.
+ * If the user does not exist, a new admin user is created.
+ * @param {string} email - The email of the user to make an admin.
+ */
 async function makeUserAdmin(email) {
   try {
     console.log(`🔍 Looking up user: ${email}`);
     
-    // Check if user exists
     const { rows: userRows } = await pool.query(
       "SELECT id, email, first_name, last_name, role FROM users WHERE email = $1",
       [email]
@@ -23,8 +42,7 @@ async function makeUserAdmin(email) {
     if (userRows.length === 0) {
       console.log(`❌ User ${email} not found. Creating new admin user...`);
       
-      // Create new admin user
-      const password = 'admin123'; // You can change this
+      const password = 'admin123';
       const hashedPassword = await hashPassword(password);
       
       const { rows: newUserRows } = await pool.query(`
@@ -41,7 +59,6 @@ async function makeUserAdmin(email) {
       console.log(`   Role: ${newUser.role}`);
       console.log(`   Password: admin123`);
       
-      // Add credits
       await pool.query(`
         INSERT INTO credits (user_id, credits)
         VALUES ($1, 1000)
@@ -75,7 +92,6 @@ async function makeUserAdmin(email) {
         console.log(`   Email: ${updatedUser.email}`);
         console.log(`   New Role: ${updatedUser.role}`);
         
-        // Ensure user has credits
         await pool.query(`
           INSERT INTO credits (user_id, credits)
           VALUES ($1, 1000)
@@ -94,7 +110,6 @@ async function makeUserAdmin(email) {
   }
 }
 
-// Get email from command line argument or use default
 const email = process.argv[2] || 'ethan.fitzhenry@gmail.com';
 
 console.log('🚀 Making user admin...');

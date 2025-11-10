@@ -1,6 +1,17 @@
 "use client";
 
+/**
+ * A component that displays a loading skeleton for various UI elements.
+ * @param {object} props - The component props.
+ * @param {string} [props.type="card"] - The type of skeleton to display ('card', 'button', 'reading', 'text').
+ * @param {number} [props.count=1] - The number of skeletons to render.
+ * @returns {JSX.Element} The LoadingSkeleton component.
+ */
 export default function LoadingSkeleton({ type = "card", count = 1 }) {
+  /**
+   * Renders a single skeleton based on the 'type' prop.
+   * @returns {JSX.Element} The skeleton element.
+   */
   const renderSkeleton = () => {
     switch (type) {
       case "card":

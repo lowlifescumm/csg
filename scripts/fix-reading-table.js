@@ -1,5 +1,12 @@
 #!/usr/bin/env node
-
+/**
+ * @fileoverview This script checks the 'readings' table for missing columns and applies a database migration to add them.
+ * It is designed to update the table to a newer schema that includes additional fields for readings.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/fix-reading-table.js
+ */
 import { Pool } from "pg";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -15,15 +22,17 @@ const pool = new Pool({
     : { rejectUnauthorized: false },
 });
 
+/**
+ * Checks the 'readings' table for the 'reading_type' column and, if missing,
+ * applies a migration to add it and other related columns.
+ */
 async function fixReadingTable() {
   try {
     console.log("Connecting to database...");
     
-    // Test connection
     const { rows } = await pool.query("SELECT NOW()");
     console.log("✅ Database connection successful:", rows[0].now);
     
-    // Check current table structure
     console.log("\n📋 Current readings table structure:");
     const { rows: columns } = await pool.query(`
       SELECT column_name, data_type, is_nullable 
@@ -36,19 +45,16 @@ async function fixReadingTable() {
       console.log(`  - ${col.column_name}: ${col.data_type} (${col.is_nullable === 'YES' ? 'nullable' : 'not null'})`);
     });
     
-    // Check if reading_type column exists
     const hasReadingType = columns.some(col => col.column_name === 'reading_type');
     
     if (!hasReadingType) {
       console.log("\n🔧 Adding missing columns to readings table...");
       
-      // Read and execute the migration
       const migrationSQL = readFileSync(join(__dirname, '../database/add-reading-fields.sql'), 'utf8');
       await pool.query(migrationSQL);
       
       console.log("✅ Migration completed successfully!");
       
-      // Verify the columns were added
       console.log("\n📋 Updated readings table structure:");
       const { rows: newColumns } = await pool.query(`
         SELECT column_name, data_type, is_nullable 
@@ -74,4 +80,3 @@ async function fixReadingTable() {
 }
 
 fixReadingTable();
-

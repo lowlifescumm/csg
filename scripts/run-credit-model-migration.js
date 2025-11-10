@@ -1,8 +1,11 @@
 #!/usr/bin/env node
-
 /**
- * Run Credit & Subscription Pricing Model Migration
- * Safely checks and adds required columns to the database
+ * @fileoverview This script runs a database migration to update the credit and subscription pricing model.
+ * It safely checks for and adds required columns to the 'credits' and 'users' tables.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/run-credit-model-migration.js
  */
 
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') });
@@ -10,16 +13,13 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-// Parse database URL
 let dbUrl = process.env.DATABASE_URL || '';
-// Remove quotes if present
 dbUrl = dbUrl.replace(/^["']|["']$/g, '');
 
 console.log('🔍 Database URL preview:', dbUrl.substring(0, 50) + '...');
 
 const isLocalhost = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
 
-// Render database requires SSL
 const sslConfig = !isLocalhost && dbUrl.includes('render.com') 
   ? { rejectUnauthorized: false } 
   : false;
@@ -29,13 +29,15 @@ const pool = new Pool({
   ssl: sslConfig,
 });
 
+/**
+ * Executes the database migration for the credit and subscription model.
+ */
 async function runMigration() {
   const client = await pool.connect();
   
   try {
     console.log('🔍 Checking database schema...\n');
     
-    // Check credits table columns
     const creditsColumns = await client.query(`
       SELECT column_name, data_type, column_default
       FROM information_schema.columns
@@ -47,7 +49,6 @@ async function runMigration() {
     const creditColumnNames = creditsColumns.rows.map(r => r.column_name);
     console.log('   ', creditColumnNames.join(', '));
     
-    // Check users table columns
     const usersColumns = await client.query(`
       SELECT column_name, data_type
       FROM information_schema.columns
@@ -64,7 +65,6 @@ async function runMigration() {
       console.log('   ', userColumnNames.join(', '));
     }
     
-    // Determine what needs to be added
     const needsCreditType = !creditColumnNames.includes('credit_type');
     const needsExpiresAt = !creditColumnNames.includes('expires_at');
     const needsSource = !creditColumnNames.includes('source');
@@ -76,7 +76,6 @@ async function runMigration() {
     console.log('   source column:', needsSource ? '❌ Missing' : '✅ Exists');
     console.log('   free_natal_chart_used column:', needsFreeNatalChart ? '❌ Missing' : '✅ Exists');
     
-    // Only run migration if needed
     if (!needsCreditType && !needsExpiresAt && !needsSource && !needsFreeNatalChart) {
       console.log('\n✅ All columns already exist! Migration already completed.');
       return;
@@ -84,7 +83,6 @@ async function runMigration() {
     
     console.log('\n🚀 Running migration...\n');
     
-    // Add missing columns
     if (needsCreditType) {
       console.log('Adding credit_type column...');
       await client.query('ALTER TABLE credits ADD COLUMN credit_type VARCHAR(20) DEFAULT \'paid\'');
@@ -109,7 +107,6 @@ async function runMigration() {
       console.log('✅ Added free_natal_chart_used column');
     }
     
-    // Update existing records
     console.log('\nUpdating existing credit records...');
     await client.query(`
       UPDATE credits 
@@ -118,7 +115,6 @@ async function runMigration() {
     `);
     console.log('✅ Updated existing credit records');
     
-    // Create index if it doesn't exist
     console.log('\nCreating indexes...');
     try {
       await client.query(`

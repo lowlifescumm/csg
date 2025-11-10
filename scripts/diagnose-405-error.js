@@ -1,14 +1,18 @@
 #!/usr/bin/env node
-
 /**
- * Comprehensive diagnostic script for 405 errors
+ * @fileoverview This script is a comprehensive diagnostic tool for troubleshooting 405 (Method Not Allowed) errors,
+ * which are common with NextAuth.js setups. It checks environment variables, Next.js configuration,
+ * NextAuth route handlers, and `package.json` scripts to identify common misconfigurations.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/diagnose-405-error.js
  */
 
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') });
 
 console.log('🔍 Diagnosing 405 Error Issues...\n');
 
-// Check environment variables
 console.log('📋 Environment Variables:');
 const requiredEnvVars = [
   'NEXTAUTH_URL',
@@ -30,12 +34,10 @@ requiredEnvVars.forEach(varName => {
 
 console.log('\n🔍 NextAuth Configuration Issues:');
 
-// Check NEXTAUTH_URL format
 const nextAuthUrl = process.env.NEXTAUTH_URL;
 if (nextAuthUrl) {
   console.log(`   NEXTAUTH_URL: ${nextAuthUrl}`);
   
-  // Check if URL has correct format
   try {
     const url = new URL(nextAuthUrl);
     console.log(`   ✅ Valid URL format`);
@@ -49,12 +51,10 @@ if (nextAuthUrl) {
   console.log('   ❌ NEXTAUTH_URL not set');
 }
 
-// Check if we're in production vs development
 console.log('\n🔍 Environment Detection:');
 console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'undefined'}`);
 console.log(`   PORT: ${process.env.PORT || 'undefined'}`);
 
-// Check Next.js configuration
 console.log('\n🔍 Next.js Configuration:');
 const fs = require('fs');
 const path = require('path');
@@ -76,7 +76,6 @@ try {
   console.log(`   ❌ Could not read next.config.js: ${e.message}`);
 }
 
-// Check if NextAuth route exists and is valid
 console.log('\n🔍 NextAuth Route Check:');
 const nextAuthRoutePath = path.join(__dirname, '../app/api/auth/[...nextauth]/route.js');
 try {
@@ -104,7 +103,6 @@ try {
   console.log(`   ❌ Could not read NextAuth route: ${e.message}`);
 }
 
-// Check package.json scripts
 console.log('\n🔍 Package.json Scripts:');
 try {
   const packageJsonPath = path.join(__dirname, '../package.json');
@@ -134,7 +132,3 @@ console.log('   2. For production: NEXTAUTH_URL=https://cosmicspiritguide.com');
 console.log('   3. For development: NEXTAUTH_URL=http://localhost:5000');
 console.log('   4. Use correct start command based on output config');
 console.log('   5. Verify all environment variables are set in Render');
-
-
-
-

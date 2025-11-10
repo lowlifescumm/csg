@@ -1,13 +1,11 @@
 /**
- * Transit Tracker Setup Script
+ * @fileoverview This script sets up the transit tracker system. It creates the necessary database tables,
+ * checks for admin users, and provides a summary of the current state of the transit tracker data.
  * 
- * This script helps set up the transit tracker system:
- * 1. Creates database tables
- * 2. Grants admin access for testing
- * 3. Creates sample natal chart (optional)
- * 4. Runs initial transit calculation
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/setup-transit-tracker.js
  */
-
 import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
@@ -23,12 +21,14 @@ const pool = new Pool({
     : { rejectUnauthorized: false }
 });
 
+/**
+ * The main function that orchestrates the setup process for the transit tracker.
+ */
 async function main() {
   console.log('🔮 Transit Tracker Setup');
   console.log('========================\n');
 
   try {
-    // 1. Create tables
     console.log('1️⃣  Creating database tables...');
     const schema = readFileSync(
       join(__dirname, '../database/transit-tracker-schema.sql'),
@@ -37,7 +37,6 @@ async function main() {
     await pool.query(schema);
     console.log('✅ Database tables created successfully\n');
 
-    // 2. Check for admin users
     console.log('2️⃣  Checking for admin users...');
     const { rows: adminRows } = await pool.query(
       "SELECT email FROM users WHERE role = 'admin'"
@@ -53,28 +52,24 @@ async function main() {
       console.log();
     }
 
-    // 3. Check existing natal charts
     console.log('3️⃣  Checking natal charts...');
     const { rows: chartRows } = await pool.query(
       'SELECT COUNT(*) as count FROM natal_charts'
     );
     console.log(`📊 Found ${chartRows[0].count} natal chart(s) in the system\n`);
 
-    // 4. Check transits
     console.log('4️⃣  Checking calculated transits...');
     const { rows: transitRows } = await pool.query(
       'SELECT COUNT(*) as count FROM transits'
     );
     console.log(`⚡ Found ${transitRows[0].count} transit record(s)\n`);
 
-    // 5. Check subscriptions
     console.log('5️⃣  Checking transit subscriptions...');
     const { rows: subRows } = await pool.query(
       'SELECT COUNT(*) as count FROM transit_subscriptions WHERE is_active = true'
     );
     console.log(`🔔 Found ${subRows[0].count} active subscription(s)\n`);
 
-    // 6. Summary
     console.log('========================');
     console.log('Setup Complete! ✨\n');
 
@@ -97,7 +92,3 @@ async function main() {
 }
 
 main();
-
-
-
-

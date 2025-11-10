@@ -1,5 +1,19 @@
 #!/usr/bin/env node
-
+/**
+ * @fileoverview This script updates a user's role to 'admin'.
+ * If the user is already an admin, it confirms their status. If not, it updates their role and ensures they have sufficient credits.
+ *
+ * @usage
+ * To run this script, use the following command. You can optionally provide an email address.
+ * node scripts/update-user-role.js [email]
+ *
+ * @example
+ * // Use the default email address
+ * node scripts/update-user-role.js
+ *
+ * // Specify an email address
+ * node scripts/update-user-role.js new-admin@example.com
+ */
 import { Pool } from "pg";
 
 const pool = new Pool({
@@ -9,11 +23,15 @@ const pool = new Pool({
     : { rejectUnauthorized: false },
 });
 
+/**
+ * Updates a user's role to 'admin' and ensures they have at least 1000 credits.
+ * @param {string} email - The email of the user to update.
+ * @param {string} [newRole='admin'] - The new role to assign to the user.
+ */
 async function updateUserRole(email, newRole = 'admin') {
   try {
     console.log(`🔍 Looking up user: ${email}`);
     
-    // Check if user exists
     const { rows: userRows } = await pool.query(
       "SELECT id, email, first_name, last_name, role FROM users WHERE email = $1",
       [email]
@@ -49,7 +67,6 @@ async function updateUserRole(email, newRole = 'admin') {
       console.log(`   Email: ${updatedUser.email}`);
       console.log(`   New Role: ${updatedUser.role}`);
       
-      // Ensure user has credits if they're becoming admin
       if (newRole === 'admin') {
         await pool.query(`
           INSERT INTO credits (user_id, credits)
@@ -72,7 +89,6 @@ async function updateUserRole(email, newRole = 'admin') {
   }
 }
 
-// Get email from command line argument or use default
 const email = process.argv[2] || 'ethan.fitzhenry@gmail.com';
 
 console.log('🚀 Updating user role...');

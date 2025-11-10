@@ -2,6 +2,35 @@ import { NextResponse } from 'next/server';
 import { createUser, getUserByEmail, generateToken } from '@/lib/auth';
 import { initializeUserCreditsOnSignup } from '@/lib/credits';
 
+/**
+ * @swagger
+ * /api/auth/signup:
+ *   post:
+ *     summary: Register a new user.
+ *     description: Creates a new user account, initializes their credits, and returns a JWT.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Signup successful.
+ *       400:
+ *         description: Bad request, missing parameters or email already registered.
+ *       500:
+ *         description: Failed to create account.
+ */
 export async function POST(request) {
   try {
     const { email, password, firstName, lastName } = await request.json();
@@ -23,13 +52,11 @@ export async function POST(request) {
 
     const user = await createUser({ email, password, firstName, lastName });
     
-    // Initialize signup credits (3 free credits)
     try {
       await initializeUserCreditsOnSignup(user.id);
       console.log(`[Signup] Initialized 3 signup credits for user ${user.id}`);
     } catch (creditsError) {
       console.error('[Signup] Failed to initialize credits:', creditsError);
-      // Don't fail signup if credits initialization fails
     }
     
     const token = generateToken(user.id);

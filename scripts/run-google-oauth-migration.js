@@ -1,17 +1,25 @@
-// Run Google OAuth database migration
+/**
+ * @fileoverview This script runs a database migration to add the necessary columns for Google OAuth authentication.
+ * It executes the SQL commands from the `add-google-oauth.sql` file.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/run-google-oauth-migration.js
+ */
 const { pool } = require('../lib/db');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Executes the Google OAuth database migration.
+ */
 async function runMigration() {
   try {
     console.log('🚀 Starting Google OAuth database migration...');
     
-    // Read the SQL file
     const sqlPath = path.join(__dirname, '../database/add-google-oauth.sql');
     const sql = fs.readFileSync(sqlPath, 'utf8');
     
-    // Execute the migration
     await pool.query(sql);
     
     console.log('✅ Google OAuth database migration completed successfully');
@@ -33,8 +41,3 @@ async function runMigration() {
 }
 
 runMigration();
-
-
-
-
-

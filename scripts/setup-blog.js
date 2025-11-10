@@ -1,3 +1,11 @@
+/**
+ * @fileoverview This script sets up the blog by running the database schema migration and creating a sample post.
+ * It's a comprehensive setup utility for initializing the blog functionality.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/setup-blog.js
+ */
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
@@ -9,18 +17,19 @@ const pool = new Pool({
   } : false,
 });
 
+/**
+ * Executes the blog setup process, including database migration and sample post creation.
+ */
 async function setupBlog() {
   try {
     console.log('🚀 Setting up blog database schema...');
     
-    // Read and execute the blog schema SQL
     const schemaPath = path.join(__dirname, '../database/add-blog-schema.sql');
     const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
     
     await pool.query(schemaSQL);
     console.log('✅ Blog database schema created successfully!');
     
-    // Create a sample blog post for testing
     console.log('📝 Creating sample blog post...');
     
     const samplePost = {
@@ -45,7 +54,7 @@ async function setupBlog() {
         <p>Stay tuned for regular updates and new articles that will deepen your understanding of the cosmic forces that shape our lives.</p>
       `,
       featured_image: null,
-      author_id: 1, // Assuming admin user has ID 1
+      author_id: 1,
       status: 'published',
       published_at: new Date().toISOString(),
       meta_title: 'Welcome to Our Spiritual Blog - Cosmic Spiritual Guide',
@@ -92,5 +101,4 @@ async function setupBlog() {
   }
 }
 
-// Run the setup
 setupBlog();

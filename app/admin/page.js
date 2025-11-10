@@ -17,6 +17,11 @@ import {
   Settings
 } from "lucide-react";
 
+/**
+ * The main dashboard for administrators.
+ * It displays key statistics about the application, recent user activity, and provides links to management tools.
+ * @returns {JSX.Element} The AdminDashboard component.
+ */
 export default function AdminDashboard() {
   const router = useRouter();
   const [stats, setStats] = useState(null);
@@ -29,6 +34,9 @@ export default function AdminDashboard() {
     fetchStats();
   }, []);
 
+  /**
+   * Fetches the statistics for the admin dashboard from the API.
+   */
   const fetchStats = async () => {
     try {
       const res = await fetch("/api/admin/stats");
@@ -51,6 +59,9 @@ export default function AdminDashboard() {
     }
   };
 
+  /**
+   * Logs the administrator out.
+   */
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/admin/login");
@@ -78,6 +89,16 @@ export default function AdminDashboard() {
     );
   }
 
+  /**
+   * A reusable card component for displaying statistics.
+   * @param {object} props - The component props.
+   * @param {React.ElementType} props.icon - The icon to display.
+   * @param {string} props.label - The label for the statistic.
+   * @param {string|number} props.value - The value of the statistic.
+   * @param {string} [props.subtext] - Additional text to display below the value.
+   * @param {string} [props.color="purple"] - The color theme for the card.
+   * @returns {JSX.Element} The StatCard component.
+   */
   const StatCard = ({ icon: Icon, label, value, subtext, color = "purple" }) => (
     <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-[1.02]">
       <div className="flex items-center justify-between">
@@ -144,7 +165,6 @@ export default function AdminDashboard() {
           />
         </div>
 
-        {/* Admin Management Tools */}
         <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40 mb-8">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Settings className="w-5 h-5 text-purple-500" />

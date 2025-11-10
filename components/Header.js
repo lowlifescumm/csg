@@ -1,10 +1,15 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard } from "lucide-react";
 
+/**
+ * The main header component for the application.
+ * It includes navigation links, user authentication status, and a mobile menu.
+ * @returns {JSX.Element} The Header component.
+ */
 export default function Header() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,6 +18,9 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
 
+  /**
+   * Checks if the user is authenticated by fetching user data from the API.
+   */
   const checkAuth = async () => {
     try {
       const res = await fetch("/api/auth/user");
@@ -30,6 +38,9 @@ export default function Header() {
   useEffect(() => {
     checkAuth();
     
+    /**
+     * Handles the scroll event to change the header's appearance.
+     */
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
@@ -41,6 +52,9 @@ export default function Header() {
     }
   }, []);
 
+  /**
+   * Logs the user out by calling the logout API endpoint.
+   */
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -52,6 +66,11 @@ export default function Header() {
     }
   };
 
+  /**
+   * Determines if a navigation link is active based on the current path.
+   * @param {string} path - The path of the navigation link.
+   * @returns {boolean} True if the link is active, false otherwise.
+   */
   const isActive = (path) => {
     if (path === "/" && pathname !== "/") return false;
     return pathname === path || pathname.startsWith(path + "/");
@@ -234,14 +253,3 @@ export default function Header() {
     </header>
   );
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -3,21 +3,31 @@ import { useState, useEffect } from 'react';
 import { X, Sparkles, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
+/**
+ * A banner that appears when a user is low on credits, encouraging them to upgrade.
+ * @param {object} props - The component props.
+ * @param {string} [props.creditType='all'] - The type of credit being checked.
+ * @param {number} [props.creditsNeeded=1] - The number of credits needed for an action.
+ * @param {number} [props.currentCredits=0] - The user's current credit balance.
+ * @param {boolean} [props.forceShow=false] - Whether to force the banner to show, regardless of dismissal state.
+ * @returns {JSX.Element|null} The LowCreditsUpsellBanner component, or null if not visible.
+ */
 const LowCreditsUpsellBanner = ({ creditType = 'all', creditsNeeded = 1, currentCredits = 0, forceShow = false }) => {
   const [isDismissed, setIsDismissed] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
 
   useEffect(() => {
-    // Check if banner was dismissed this session
     const dismissed = sessionStorage.getItem('upsell-banner-dismissed');
     if (!dismissed || forceShow) {
       setIsVisible(true);
-      // Delay animation for smooth entrance
       setTimeout(() => setAnimateIn(true), 100);
     }
   }, [forceShow]);
 
+  /**
+   * Dismisses the banner and stores the dismissal state in session storage.
+   */
   const handleDismiss = () => {
     setAnimateIn(false);
     setTimeout(() => {
@@ -27,10 +37,13 @@ const LowCreditsUpsellBanner = ({ creditType = 'all', creditsNeeded = 1, current
     }, 300);
   };
 
-  // Don't show if dismissed or has enough credits (unless forced)
   if (isDismissed || !isVisible) return null;
   if (!forceShow && currentCredits >= creditsNeeded) return null;
 
+  /**
+   * Gets the appropriate message to display based on the user's credit balance.
+   * @returns {{title: string, subtitle: string, urgency: string}} The message object.
+   */
   const getMessage = () => {
     if (currentCredits === 0) {
       return {
@@ -60,7 +73,6 @@ const LowCreditsUpsellBanner = ({ creditType = 'all', creditsNeeded = 1, current
 
   const { title, subtitle, urgency } = getMessage();
 
-  // Different gradient styles based on urgency
   const gradientStyles = {
     high: 'from-orange-500 via-red-500 to-pink-500',
     medium: 'from-yellow-500 via-orange-500 to-amber-500',
@@ -117,7 +129,6 @@ const LowCreditsUpsellBanner = ({ creditType = 'all', creditsNeeded = 1, current
         </div>
       </div>
 
-      {/* Mobile responsive version */}
       <style jsx>{`
         @media (max-width: 640px) {
           .fixed {

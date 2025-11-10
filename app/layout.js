@@ -3,6 +3,13 @@ import Script from "next/script";
 import NextAuthProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
 
+/**
+ * The root layout for the application.
+ * It sets up the HTML structure, includes global styles and scripts, and wraps the application with necessary providers.
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to be rendered within the layout.
+ * @returns {JSX.Element} The RootLayout component.
+ */
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="scroll-smooth">
@@ -22,7 +29,6 @@ export default function RootLayout({ children }) {
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
         <NextAuthProvider>
-          {/* Google Analytics */}
           <Script
             src="https://www.googletagmanager.com/gtag/js?id=G-T0J78R09VN"
             strategy="afterInteractive"
@@ -36,14 +42,12 @@ export default function RootLayout({ children }) {
             `}
           </Script>
           
-          {/* Skip Link for Accessibility */}
           <a href="#main-content" className="skip-link focus:top-4">
             Skip to main content
           </a>
         
           <Header />
           
-          {/* Add padding to account for fixed header */}
           <div className="pt-[80px]"></div>
           
           <main id="main-content" className="flex-1">

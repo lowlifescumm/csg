@@ -2,6 +2,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+/**
+ * A widget that displays the user's current credit balance and subscription status.
+ * It provides a link to the subscription management page.
+ * @returns {JSX.Element|null} The CreditManagementWidget component, or null if user stats are not available.
+ */
 const CreditManagementWidget = () => {
   const [userStats, setUserStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,6 +15,9 @@ const CreditManagementWidget = () => {
     fetchUserStats();
   }, []);
 
+  /**
+   * Fetches the user's statistics from the server.
+   */
   const fetchUserStats = async () => {
     try {
       const response = await fetch('/api/auth/user');
@@ -39,7 +47,7 @@ const CreditManagementWidget = () => {
 
   if (!userStats) return null;
 
-  // Premium User View - simplified
+  // Premium User View
   if (userStats.status === 'Premium') {
     return (
       <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
@@ -63,7 +71,7 @@ const CreditManagementWidget = () => {
     );
   }
 
-  // Free User View - simplified
+  // Free User View
   return (
     <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
       <div className="flex items-center justify-between mb-4">

@@ -1,16 +1,20 @@
 #!/usr/bin/env node
-
 /**
- * Product Sync Verification Script
- * Verifies that application products match Stripe portal products
+ * @fileoverview This script verifies that the products defined in the application match the products in the Stripe portal.
+ * It checks for the existence and correct pricing of credit packs and the premium subscription.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/verify-product-sync.js
+ *
+ * @environment_variables
+ * - STRIPE_SECRET_KEY: Your Stripe secret key.
  */
-
 const Stripe = require('stripe');
 require('dotenv').config({ path: '../env.local' });
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Application product definitions
 const appProducts = {
   creditPacks: [
     { size: 10, price: 999, name: "10 Credits", description: "Perfect for trying out readings" },
@@ -26,17 +30,18 @@ const appProducts = {
   }
 };
 
+/**
+ * Fetches products from Stripe and compares them with the application's product definitions.
+ */
 async function verifyProductSync() {
   console.log('🔍 Verifying Product Sync: Live Site vs Stripe Portal\n');
 
   try {
-    // Get all products from Stripe
     const products = await stripe.products.list({ limit: 100, active: true });
     
     console.log('📊 Stripe Products Analysis:');
     console.log(`   Total products found: ${products.data.length}`);
     
-    // Find our specific products
     const ourProducts = products.data.filter(p => 
       p.name.includes('Credits Pack') || 
       p.name.includes('Cosmic Spiritual Guide - Premium Subscription')
@@ -44,7 +49,6 @@ async function verifyProductSync() {
     
     console.log(`   Our products found: ${ourProducts.length}\n`);
 
-    // Verify Credit Packs
     console.log('💳 Credit Packs Verification:');
     let creditPacksMatch = true;
     
@@ -52,7 +56,6 @@ async function verifyProductSync() {
       const stripeProduct = ourProducts.find(p => p.name === `${appPack.size} Credits Pack`);
       
       if (stripeProduct) {
-        // Get the price for this product
         const prices = await stripe.prices.list({ product: stripeProduct.id, active: true });
         const price = prices.data[0];
         
@@ -72,7 +75,6 @@ async function verifyProductSync() {
       console.log('');
     }
 
-    // Verify Subscription
     console.log('🔄 Subscription Verification:');
     const subscriptionProduct = ourProducts.find(p => 
       p.name === 'Cosmic Spiritual Guide - Premium Subscription'
@@ -95,7 +97,6 @@ async function verifyProductSync() {
       console.log(`   ❌ Subscription: Not found in Stripe`);
     }
 
-    // Summary
     console.log('\n📋 Summary:');
     console.log(`   Credit Packs Match: ${creditPacksMatch ? '✅ Yes' : '❌ No'}`);
     console.log(`   Subscription Match: ${subscriptionProduct ? '✅ Yes' : '❌ No'}`);
@@ -109,7 +110,6 @@ async function verifyProductSync() {
       console.log('   Check the details above for any mismatches.');
     }
 
-    // Additional verification
     console.log('\n🔍 Additional Verification:');
     console.log('   ✅ Application uses dynamic product creation');
     console.log('   ✅ Products are created during checkout');
@@ -121,7 +121,6 @@ async function verifyProductSync() {
   }
 }
 
-// Run the script
 if (require.main === module) {
   verifyProductSync();
 }

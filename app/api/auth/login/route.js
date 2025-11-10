@@ -1,6 +1,33 @@
 import { NextResponse } from 'next/server';
 import { getUserByEmail, verifyPassword, generateToken } from '@/lib/auth';
 
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Authenticate a user.
+ *     description: Verifies a user's credentials and returns a JWT if successful.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful.
+ *       400:
+ *         description: Bad request, missing parameters.
+ *       401:
+ *         description: Invalid credentials.
+ *       500:
+ *         description: Failed to login.
+ */
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
@@ -14,7 +41,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    // Check if user has a password (OAuth users have password_hash = null)
     if (!user.password) {
       return NextResponse.json({ 
         error: 'This account uses Google sign-in. Please sign in with Google instead.' 
@@ -48,9 +74,9 @@ export async function POST(request) {
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',   // change to 'none' if cross-site and using HTTPS
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
-      path: '/',         // ensure cookie is sent for all routes
+      path: '/',
     });
 
     return response;

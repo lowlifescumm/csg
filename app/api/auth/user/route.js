@@ -4,13 +4,23 @@ import { verifyToken, getUserById } from '@/lib/auth';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
+/**
+ * @swagger
+ * /api/auth/user:
+ *   get:
+ *     summary: Get the authenticated user's data.
+ *     description: Retrieves the currently authenticated user's profile information.
+ *     responses:
+ *       200:
+ *         description: User data retrieved successfully.
+ *       401:
+ *         description: Unauthorized.
+ */
 export async function GET() {
   try {
-    // First, check for NextAuth session (for Google OAuth users)
     const session = await getServerSession(authOptions);
     
     if (session?.user) {
-      // User is authenticated via NextAuth (Google OAuth)
       return NextResponse.json({
         user: {
           id: session.user.id,
@@ -23,7 +33,6 @@ export async function GET() {
       });
     }
 
-    // Fall back to JWT cookie authentication (for email/password users)
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 
@@ -63,6 +72,35 @@ export async function GET() {
   }
 }
 
+/**
+ * @swagger
+ * /api/auth/user:
+ *   put:
+ *     summary: Update the authenticated user's profile.
+ *     description: Allows the authenticated user to update their profile information.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully.
+ *       400:
+ *         description: Bad request, missing parameters or email already in use.
+ *       401:
+ *         description: Unauthorized.
+ *       500:
+ *         description: Failed to update profile.
+ */
 export async function PUT(request) {
   try {
     const cookieStore = await cookies();

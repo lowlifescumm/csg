@@ -33,6 +33,13 @@ const planetSymbols = {
   'partoffortune': '⊕'
 };
 
+/**
+ * Renders a detailed SVG birth chart wheel with astrological data.
+ * @param {object} props - The component props.
+ * @param {object} props.chartData - The astrological data for the chart.
+ * @param {object} props.birthInfo - Information about the birth (date, time, location).
+ * @returns {JSX.Element} The BirthChartWheel component.
+ */
 export default function BirthChartWheel({ chartData, birthInfo }) {
   const svgRef = useRef(null);
   const centerX = 500;
@@ -42,7 +49,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
   const planetRadius = 280;
   const innerRadius = 240;
 
-  // Format date nicely
+  /**
+   * Formats a date string into a more readable format.
+   * @param {string} dateStr - The date string to format.
+   * @returns {string} The formatted date.
+   */
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -53,7 +64,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     });
   };
 
-  // Format time nicely
+  /**
+   * Formats a time string into a 12-hour format with AM/PM.
+   * @param {string} timeStr - The time string to format.
+   * @returns {string} The formatted time.
+   */
   const formatTime = (timeStr) => {
     if (!timeStr) return '';
     const [hours, minutes] = timeStr.split(':');
@@ -63,6 +78,9 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     return `${displayHour}:${minutes} ${period}`;
   };
 
+  /**
+   * Downloads the birth chart as a PNG image.
+   */
   const downloadChart = () => {
     if (!svgRef.current) return;
     
@@ -93,6 +111,9 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     img.src = url;
   };
 
+  /**
+   * Downloads the birth chart as an SVG file.
+   */
   const downloadSVG = () => {
     if (!svgRef.current) return;
     const svgData = new XMLSerializer().serializeToString(svgRef.current);
@@ -105,6 +126,12 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     URL.revokeObjectURL(url);
   };
 
+  /**
+   * Calculates the x and y coordinates of a point on a circle.
+   * @param {number} radius - The radius of the circle.
+   * @param {number} angle - The angle in degrees.
+   * @returns {{x: number, y: number}} The coordinates of the point.
+   */
   const getPointOnCircle = (radius, angle) => {
     if (typeof angle !== 'number' || isNaN(angle)) {
       return { x: NaN, y: NaN };
@@ -116,6 +143,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     };
   };
 
+  /**
+   * Renders the zodiac signs on the wheel.
+   * @returns {JSX.Element[]} An array of SVG elements representing the zodiac wheel.
+   */
   const renderZodiacWheel = () => {
     const zodiacSigns = Object.keys(zodiacSymbols);
     return zodiacSigns.map((sign, index) => {
@@ -153,6 +184,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     });
   };
 
+  /**
+   * Renders the planets on the wheel.
+   * @returns {JSX.Element[]|null} An array of SVG elements representing the planets, or null if no data.
+   */
   const renderPlanets = () => {
     if (!chartData?.planets) return null;
     
@@ -173,20 +208,19 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
       const isSpecialPoint = ['northnode', 'southnode', 'chiron'].includes(planet.toLowerCase());
       const dignity = chartData?.dignities?.[planet];
       
-      // Dignity indicator
       let dignitySymbol = '';
       let dignityColor = '#6366f1';
       if (dignity === 'domicile') {
-        dignitySymbol = '👑'; // At home
+        dignitySymbol = '👑';
         dignityColor = '#f59e0b';
       } else if (dignity === 'exaltation') {
-        dignitySymbol = '↑'; // Empowered
+        dignitySymbol = '↑';
         dignityColor = '#10b981';
       } else if (dignity === 'detriment') {
-        dignitySymbol = '↓'; // Challenged
+        dignitySymbol = '↓';
         dignityColor = '#f97316';
       } else if (dignity === 'fall') {
-        dignitySymbol = '×'; // Weakened
+        dignitySymbol = '×';
         dignityColor = '#ef4444';
       }
       
@@ -249,6 +283,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     });
   };
 
+  /**
+   * Renders the Part of Fortune on the wheel.
+   * @returns {JSX.Element|null} The Part of Fortune SVG element, or null if no data.
+   */
   const renderPartOfFortune = () => {
     if (!chartData?.partOfFortune || typeof chartData.partOfFortune.longitude !== 'number') {
       return null;
@@ -284,6 +322,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     );
   };
 
+  /**
+   * Renders the house cusps on the wheel.
+   * @returns {JSX.Element[]|null} An array of SVG elements for the houses, or null if no data.
+   */
   const renderHouses = () => {
     if (!chartData?.houses) return null;
     
@@ -330,17 +372,19 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     });
   };
 
+  /**
+   * Renders the aspect lines between planets.
+   * @returns {JSX.Element[]|null} An array of SVG line elements for the aspects, or null if no data.
+   */
   const renderAspectLines = () => {
     if (!chartData?.aspects || !chartData?.planets) return null;
     
     const aspectColors = {
-      // Major aspects
       'conjunction': '#ef4444',
       'opposition': '#f59e0b',
       'trine': '#10b981',
       'square': '#dc2626',
       'sextile': '#3b82f6',
-      // Minor aspects
       'quincunx': '#a855f7',
       'semisextile': '#06b6d4',
       'semisquare': '#f97316',
@@ -431,7 +475,6 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {renderPlanets()}
         {renderPartOfFortune()}
         
-        {/* Center Info */}
         <text
           x={centerX}
           y={centerY - 60}
@@ -472,7 +515,6 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           👑 Chart Ruler: {chartData?.chartRuler || 'Unknown'}
         </text>
         
-        {/* Element Distribution (Right side, below Chart Patterns) */}
         {chartData?.distribution && (
           <g>
             <rect x="920" y="230" width="260" height="140" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
@@ -498,7 +540,6 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           </g>
         )}
         
-        {/* Modality Distribution (Right side, below Elements) */}
         {chartData?.distribution && (
           <g>
             <rect x="920" y="380" width="260" height="110" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
@@ -523,7 +564,6 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           </g>
         )}
         
-        {/* Aspect Legend (Bottom Left) */}
         <g>
           <rect x="20" y="640" width="160" height="150" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
           <text x="100" y="660" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
@@ -545,7 +585,6 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           ))}
         </g>
         
-        {/* Special Points Legend (Top Left) */}
         <g>
           <rect x="20" y="20" width="160" height="100" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
           <text x="100" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
@@ -557,12 +596,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           <text x="30" y="114" fontSize="10" fill="#f59e0b">⊕ Part of Fortune</text>
         </g>
         
-        {/* Retrograde Indicator (Below Aspects Legend) */}
         <text x="40" y="800" fontSize="10" fill="#ef4444">
           ℞ = Retrograde
         </text>
         
-        {/* Moon Phase (Right side, below Modalities) */}
         {chartData?.moonPhase && (
           <g>
             <rect x="920" y="500" width="260" height="80" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
@@ -578,7 +615,6 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           </g>
         )}
         
-        {/* Chart Patterns (Right side) */}
         {chartData?.chartPatterns && chartData.chartPatterns.length > 0 && (
           <g>
             <rect x="920" y="20" width="260" height="200" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
@@ -606,7 +642,6 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           </g>
         )}
         
-        {/* Planet-in-House List (Far right, next to Chart Patterns) */}
         {chartData?.planetHouses && (
           <g>
             <rect x="1190" y="20" width="190" height="300" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
@@ -629,20 +664,17 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           </g>
         )}
         
-        {/* Aspect Grid (Bottom) - Larger and easier to read */}
         {chartData?.aspects && (
           <g>
             <rect x="200" y="820" width="1000" height="160" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
             <text x="700" y="840" textAnchor="middle" fontSize="13" fill="#6366f1" fontWeight="600">
               Aspect Grid
             </text>
-            {/* Column headers */}
             {['☉', '☽', '☿', '♀', '♂', '♃', '♄', '♅', '♆', '♇'].map((symbol, idx) => (
               <text key={idx} x={270 + idx * 90} y="862" fontSize="12" fill="#6b7280" fontWeight="600" textAnchor="middle">
                 {symbol}
               </text>
             ))}
-            {/* Row headers and grid */}
             {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet1, row) => (
               <g key={planet1}>
                 <text x="240" y={886 + row * 10} fontSize="11" fill="#6b7280" fontWeight="600">
@@ -680,12 +712,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
                 })}
               </g>
             ))}
-            {/* Legend for minor aspects (Below Aspect Grid) */}
             <text x="210" y="995" fontSize="9" fill="#6b7280">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
           </g>
         )}
         
-        {/* Dignities Legend (Below Retrograde Indicator) */}
         <text x="40" y="820" fontSize="10" fill="#6b7280">
           👑=Domicile ↑=Exalted ↓=Detriment ×=Fall
         </text>

@@ -7,12 +7,44 @@ import { canAccessReading, consumeCreditsForReading, claimFreeNatalChart } from 
 import { getAuthenticatedUser } from '@/lib/auth.js';
 
 /**
- * POST /api/birth-chart
- * Create a new birth chart
+ * @swagger
+ * /api/birth-chart:
+ *   post:
+ *     summary: Create a new birth chart.
+ *     description: Calculates and saves a new birth chart for the authenticated user.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               date:
+ *                 type: string
+ *               time:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Birth chart created successfully.
+ *       400:
+ *         description: Bad request, missing parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       402:
+ *         description: Payment required, insufficient credits.
+ *       403:
+ *         description: Forbidden, access denied.
+ *       500:
+ *         description: Failed to create birth chart.
  */
 export async function POST(req) {
   try {
-    // Get authenticated user (supports both NextAuth and JWT)
     const authResult = await getAuthenticatedUser(req.cookies, authOptions);
     
     if (!authResult) {
@@ -31,7 +63,6 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
-    // Check access permissions for Natal Chart
     const accessCheck = await canAccessReading(userId, 'NATAL_CHART');
     
     if (!accessCheck.allowed) {
@@ -40,7 +71,7 @@ export async function POST(req) {
           error: 'Insufficient credits',
           details: `Natal Chart requires ${accessCheck.required} credits`,
           cost: accessCheck.required
-        }, { status: 402 }); // Payment Required
+        }, { status: 402 });
       }
       return NextResponse.json({
         error: 'Access denied',
@@ -48,10 +79,8 @@ export async function POST(req) {
       }, { status: 403 });
     }
 
-    // Calculate birth chart
     const chartData = calculateBirthChart(date, time, latitude, longitude);
 
-    // Generate AI interpretation
     let interpretation = '';
     if (process.env.OPENAI_API_KEY) {
       try {
@@ -62,7 +91,6 @@ export async function POST(req) {
       }
     }
 
-    // Consume credits for the reading (if not subscription-included)
     const creditResult = await consumeCreditsForReading(userId, 'NATAL_CHART');
     
     if (!creditResult.success) {
@@ -73,7 +101,6 @@ export async function POST(req) {
       }, { status: 402 });
     }
 
-    // Handle free natal chart for new subscribers
     if (accessCheck.reason === 'subscription_included') {
       const freeChartResult = await claimFreeNatalChart(userId);
       if (freeChartResult.success) {
@@ -81,9 +108,6 @@ export async function POST(req) {
       }
     }
 
-    // Save to both tables for compatibility
-    
-    // 1. Save to old birth_charts table
     const oldResult = await pool.query(
       `INSERT INTO birth_charts 
         (user_id, birth_date, birth_time, location, latitude, longitude, chart_data, interpretation)
@@ -92,7 +116,6 @@ export async function POST(req) {
       [userId, date, time, location, latitude, longitude, JSON.stringify(chartData), interpretation]
     );
 
-    // 2. Save to new natal_charts table if it exists
     try {
       await pool.query(
         `INSERT INTO natal_charts 
@@ -122,14 +145,14 @@ export async function POST(req) {
           location,
           latitude,
           longitude,
-          'UTC', // Default timezone
+          'UTC',
           JSON.stringify(chartData.planets),
           JSON.stringify(chartData.houses),
           JSON.stringify(chartData.aspects),
           chartData.ascendant,
           chartData.midheaven,
           interpretation,
-          true, // is_primary
+          true,
           JSON.stringify(chartData.distribution),
           JSON.stringify(chartData.partOfFortune),
           chartData.chartRuler,
@@ -160,12 +183,21 @@ export async function POST(req) {
 }
 
 /**
- * GET /api/birth-chart
- * Fetch the user's saved birth chart
+ * @swagger
+ * /api/birth-chart:
+ *   get:
+ *     summary: Fetch the user's saved birth chart.
+ *     description: Retrieves the authenticated user's primary birth chart from the database.
+ *     responses:
+ *       200:
+ *         description: Birth chart retrieved successfully.
+ *       401:
+ *         description: Unauthorized.
+ *       500:
+ *         description: Failed to fetch birth chart.
  */
 export async function GET(req) {
   try {
-    // Get authenticated user (supports both NextAuth and JWT)
     const authResult = await getAuthenticatedUser(req.cookies, authOptions);
     
     if (!authResult) {
@@ -174,13 +206,11 @@ export async function GET(req) {
     
     const { userId } = authResult;
 
-    // Try new natal_charts table first
     let result = await pool.query(
       'SELECT * FROM natal_charts WHERE user_id = $1 AND is_primary = true ORDER BY created_at DESC LIMIT 1',
       [userId]
     );
 
-    // Fallback to old birth_charts table
     if (result.rows.length === 0) {
       result = await pool.query(
         'SELECT * FROM birth_charts WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
@@ -197,10 +227,8 @@ export async function GET(req) {
 
     const savedChart = result.rows[0];
 
-    // Parse chart data
     let chartData;
     if (savedChart.natal_positions) {
-      // New format
       chartData = {
         planets: savedChart.natal_positions,
         houses: savedChart.houses,
@@ -212,7 +240,6 @@ export async function GET(req) {
         chartRuler: savedChart.chart_ruler
       };
     } else {
-      // Old format - recalculate
       const chart = savedChart.chart_data;
       chartData = typeof chart === 'string' ? JSON.parse(chart) : chart;
     }

@@ -1,11 +1,20 @@
 "use client";
 import { useState } from "react";
 
+/**
+ * A component that allows users to get a tarot reading by asking a question.
+ * It handles the form submission, loading state, and displays the reading results.
+ * @returns {JSX.Element} The TarotReader component.
+ */
 export default function TarotReader() {
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [reading, setReading] = useState(null);
 
+  /**
+   * Handles the form submission to get a tarot reading.
+   * @param {Event} e - The form submission event.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

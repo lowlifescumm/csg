@@ -1,6 +1,33 @@
 import { NextResponse } from 'next/server';
 import { getUserByEmail, verifyPassword, generateToken } from '@/lib/auth';
 
+/**
+ * @swagger
+ * /api/admin/login:
+ *   post:
+ *     summary: Authenticate an administrator.
+ *     description: Verifies an admin's credentials and returns a JWT if successful.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful.
+ *       400:
+ *         description: Bad request, missing parameters.
+ *       401:
+ *         description: Invalid admin credentials.
+ *       500:
+ *         description: Failed to login.
+ */
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
@@ -20,7 +47,6 @@ export async function POST(request) {
       );
     }
 
-    // Check if user has a password (OAuth users have password_hash = null)
     if (!user.password) {
       return NextResponse.json(
         { error: 'This account uses Google sign-in. Please sign in with Google instead.' },

@@ -4,6 +4,11 @@ import BirthChartWheel from './BirthChartWheel';
 import LowCreditsUpsellBanner from './LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from './FloatingUpgradePrompt';
 
+/**
+ * A form for users to input their birth data to generate an astrological birth chart.
+ * It handles fetching coordinates, managing credits, and displaying the resulting chart.
+ * @returns {JSX.Element} The BirthChartForm component.
+ */
 export default function BirthChartForm() {
   const [formData, setFormData] = useState({
     birthDate: '',
@@ -23,6 +28,9 @@ export default function BirthChartForm() {
     checkCredits();
   }, []);
 
+  /**
+   * Checks the user's credit balance and premium status.
+   */
   const checkCredits = async () => {
     try {
       const response = await fetch('/api/credits');
@@ -43,10 +51,12 @@ export default function BirthChartForm() {
   const [locationError, setLocationError] = useState('');
   const [showManualEntry, setShowManualEntry] = useState(false);
 
+  /**
+   * Fetches coordinates for a given location using geocoding services.
+   */
   const handleLocationSearch = async () => {
     setLocationError('');
     
-    // Try Google Maps Geocoding API first (most reliable)
     try {
       const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
       
@@ -64,9 +74,8 @@ export default function BirthChartForm() {
               longitude: location.lng
             });
             setLocationError('');
-            return; // Success! Exit early
+            return;
           } else if (data.status === 'ZERO_RESULTS') {
-            // Continue to fallback
             console.log('Google Maps: No results, trying fallback...');
           } else if (data.status === 'REQUEST_DENIED') {
             console.error('Google Maps API key issue:', data.error_message);
@@ -75,10 +84,8 @@ export default function BirthChartForm() {
       }
     } catch (error) {
       console.error('Google Maps API error:', error);
-      // Continue to fallback
     }
     
-    // Fallback to OpenStreetMap (free)
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.location)}&format=json&limit=1`,
@@ -97,18 +104,22 @@ export default function BirthChartForm() {
             longitude: parseFloat(data[0].lon)
           });
           setLocationError('');
-          return; // Success!
+          return;
         }
       }
     } catch (error) {
       console.error('OpenStreetMap error:', error);
     }
     
-    // All services failed - show manual entry
     setLocationError(`Could not find "${formData.location}". Please try:\n• A major city name (e.g., "New York, USA" or "London, UK")\n• Enter coordinates manually below`);
     setShowManualEntry(true);
   };
 
+  /**
+   * Handles manual input of coordinates.
+   * @param {string} lat - The latitude.
+   * @param {string} lon - The longitude.
+   */
   const handleManualCoordinates = (lat, lon) => {
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lon);
@@ -124,6 +135,10 @@ export default function BirthChartForm() {
     setLocationError('');
   };
 
+  /**
+   * Submits the form data to the server to generate a birth chart.
+   * @param {Event} e - The form submission event.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!coordinates) {
@@ -131,7 +146,6 @@ export default function BirthChartForm() {
       return;
     }
 
-    // Check if user has credits before making the request
     if (!isPremium || creditsRemaining === 0) {
       setShowFloatingPrompt(true);
       return;
@@ -159,7 +173,6 @@ export default function BirthChartForm() {
           birthTime: formData.birthTime,
           location: formData.location
         });
-        // Update credits if returned
         if (data.creditsRemaining !== undefined) {
           setCreditsRemaining(data.creditsRemaining);
         }
@@ -177,7 +190,6 @@ export default function BirthChartForm() {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
-      {/* Show upsell banner when credits are low */}
       {isPremium && creditsRemaining !== null && creditsRemaining < 1 && (
         <LowCreditsUpsellBanner 
           currentCredits={creditsRemaining} 
@@ -186,7 +198,6 @@ export default function BirthChartForm() {
         />
       )}
       
-      {/* Show floating prompt when triggered */}
       {showFloatingPrompt && (
         <FloatingUpgradePrompt 
           message={
@@ -366,6 +377,13 @@ Your rising sign depends on exact birth time
   );
 }
 
+/**
+ * Displays the generated birth chart and its interpretation.
+ * @param {object} props - The component props.
+ * @param {object} props.chart - The birth chart data.
+ * @param {Function} props.onReset - A function to reset the form and generate a new chart.
+ * @returns {JSX.Element} The BirthChartDisplay component.
+ */
 function BirthChartDisplay({ chart, onReset }) {
   const birthInfo = {
     date: chart.birthDate || 'Unknown',

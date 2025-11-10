@@ -3,6 +3,39 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { pool } from '@/lib/db';
 
+/**
+ * @swagger
+ * /api/admin/credits:
+ *   post:
+ *     summary: Adjust a user's credits.
+ *     description: Allows an administrator to add or remove credits from a user's account.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               amount:
+ *                 type: integer
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Credits adjusted successfully.
+ *       400:
+ *         description: Bad request, missing parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden, user is not an admin.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Failed to update credits.
+ */
 export async function POST(request) {
   try {
     const cookieStore = await cookies();
@@ -17,7 +50,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user is admin
     const { rows: userRows } = await pool.query(
       "SELECT role FROM users WHERE id=$1",
       [decoded.userId]
@@ -33,13 +65,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User ID and amount are required' }, { status: 400 });
     }
 
-    // Validate amount is a number
     const creditsToAdd = parseInt(amount, 10);
     if (isNaN(creditsToAdd)) {
       return NextResponse.json({ error: 'Amount must be a valid number' }, { status: 400 });
     }
 
-    // Get current user info for logging
     const { rows: targetUserRows } = await pool.query(
       "SELECT email, first_name, last_name FROM users WHERE id=$1",
       [userId]
@@ -51,28 +81,23 @@ export async function POST(request) {
 
     const targetUser = targetUserRows[0];
 
-    // Upsert credits - add to existing credits (not replace)
-    // First check if record exists
     const { rows: existingCredits } = await pool.query(
       "SELECT credits FROM credits WHERE user_id = $1",
       [userId]
     );
 
     if (existingCredits.length > 0) {
-      // Update existing record
       await pool.query(
         'UPDATE credits SET credits = GREATEST(0, credits + $1), updated_at = NOW() WHERE user_id = $2',
         [creditsToAdd, userId]
       );
     } else {
-      // Insert new record
       await pool.query(
         'INSERT INTO credits (user_id, credits, created_at, updated_at) VALUES ($1, GREATEST(0, $2), NOW(), NOW())',
         [userId, creditsToAdd]
       );
     }
 
-    // Get final credit balance
     const { rows: finalCredits } = await pool.query(
       "SELECT credits FROM credits WHERE user_id = $1",
       [userId]

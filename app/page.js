@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Stars, Heart, Users, BookOpen, ChevronRight, Check, Moon, Sun, Calendar } from "lucide-react";
 
+/**
+ * The home page of the application.
+ * It serves as a landing page for new users, showcasing the features and benefits of the service.
+ * @returns {JSX.Element} The HomePage component.
+ */
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
@@ -13,13 +18,15 @@ export default function HomePage() {
     checkAuth();
   }, []);
 
-  // Redirect to dashboard if user is logged in
   useEffect(() => {
     if (user) {
       router.push("/dashboard");
     }
   }, [user, router]);
 
+  /**
+   * Checks if the user is authenticated.
+   */
   const checkAuth = async () => {
     try {
       const res = await fetch("/api/auth/user");
@@ -35,6 +42,10 @@ export default function HomePage() {
     }
   };
 
+  /**
+   * Handles the email signup form submission.
+   * @param {Event} e - The form submission event.
+   */
   const handleEmailSignup = async (e) => {
     e.preventDefault();
     alert("Email signup coming soon! For now, click 'Start Your Free Reading' to create an account.");
@@ -87,7 +98,6 @@ export default function HomePage() {
             Instant, personalized tarot and astrology insights—crafted for your question and your chart.
           </p>
           
-          {/* Floating rating widget */}
           <div className="inline-block mb-6 glassmorphic rounded-full px-6 py-3 border border-purple-200 border-opacity-50">
             <div className="flex items-center gap-2">
               <span className="font-bold text-lg text-gray-800">4.9/5</span>
@@ -111,7 +121,6 @@ export default function HomePage() {
             </button>
           </div>
           
-          {/* Trust badges below CTAs */}
           <div className="flex flex-wrap justify-center gap-6 mb-16">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>🔒</span>
@@ -127,11 +136,9 @@ export default function HomePage() {
             </div>
           </div>
           
-          {/* Testimonials section in hero */}
           <div className="mt-16">
             <h3 className="text-2xl font-semibold mb-8 text-gray-800">What Our Users Experience</h3>
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {/* Testimonial 1 */}
               <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold">
@@ -152,7 +159,6 @@ export default function HomePage() {
                 </p>
               </div>
               
-              {/* Testimonial 2 */}
               <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold">
@@ -173,7 +179,6 @@ export default function HomePage() {
                 </p>
               </div>
               
-              {/* Testimonial 3 */}
               <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white font-bold">

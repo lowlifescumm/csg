@@ -1,26 +1,26 @@
 #!/usr/bin/env node
-
 /**
- * Test NextAuth route configuration
+ * @fileoverview This script tests the NextAuth route configuration by attempting to import NextAuth, GoogleProvider,
+ * and create a basic `authOptions` object and handler. It helps diagnose issues related to NextAuth.js setup and dependencies.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/test-nextauth-route.js
  */
 
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') });
 
 console.log('🔍 Testing NextAuth Route Configuration...\n');
 
-// Test if we can import the NextAuth route
 try {
   console.log('📦 Testing NextAuth imports...');
   
-  // Test if NextAuth can be imported
   const NextAuth = require('next-auth');
   console.log('   ✅ NextAuth imported successfully');
   
-  // Test if GoogleProvider can be imported
   const GoogleProvider = require('next-auth/providers/google');
   console.log('   ✅ GoogleProvider imported successfully');
   
-  // Test if we can create a basic authOptions
   const authOptions = {
     providers: [
       GoogleProvider({
@@ -33,11 +33,9 @@ try {
   
   console.log('   ✅ Basic authOptions created successfully');
   
-  // Test if we can create a handler
   const handler = NextAuth(authOptions);
   console.log('   ✅ NextAuth handler created successfully');
   
-  // Check if handler has GET and POST methods
   if (typeof handler.GET === 'function') {
     console.log('   ✅ Handler has GET method');
   } else {
@@ -57,7 +55,6 @@ try {
   console.error('Stack trace:', error.stack);
 }
 
-// Test environment variables
 console.log('\n🔍 Environment Variables Check:');
 const requiredVars = ['NEXTAUTH_URL', 'NEXTAUTH_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'];
 requiredVars.forEach(varName => {
@@ -74,7 +71,3 @@ console.log('   1. Wrong start command (fixed: now using node .next/standalone/s
 console.log('   2. Render deployment configuration');
 console.log('   3. Network/proxy issues');
 console.log('   4. Build issues');
-
-
-
-

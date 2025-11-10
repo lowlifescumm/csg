@@ -1,4 +1,11 @@
-// Check if Google OAuth columns exist in the database
+/**
+ * @fileoverview This script checks if the necessary columns for Google OAuth authentication exist in the 'users' table.
+ * It identifies any missing columns and prompts the user to run a database migration if needed.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/check-google-oauth-columns.js
+ */
 require('dotenv').config({ path: require('path').join(__dirname, '../.env.local') });
 const { Pool } = require('pg');
 
@@ -7,6 +14,9 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false }
 });
 
+/**
+ * Checks for the existence of Google OAuth-related columns in the 'users' table.
+ */
 async function checkColumns() {
   try {
     console.log('🔍 Checking for Google OAuth columns in users table...\n');
@@ -43,7 +53,6 @@ async function checkColumns() {
         console.log(`  ✓ ${row.column_name} (${row.data_type}, nullable: ${row.is_nullable})`);
       });
       
-      // Check if password_hash is nullable
       const { rows: passwordRows } = await pool.query(`
         SELECT is_nullable
         FROM information_schema.columns
@@ -72,4 +81,3 @@ async function checkColumns() {
 }
 
 checkColumns().catch(console.error);
-

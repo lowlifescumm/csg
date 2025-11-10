@@ -1,11 +1,18 @@
 #!/usr/bin/env node
-
 /**
- * List all blog posts in the database
+ * @fileoverview This script lists all blog posts currently in the database.
+ * It displays a formatted table with each post's ID, title, status, and creation date.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/list-blog-posts.js
  */
 
 import { pool } from '../lib/db.js';
 
+/**
+ * Fetches and displays a list of all blog posts from the database.
+ */
 async function listBlogPosts() {
   try {
     console.log('Fetching all blog posts...\n');
@@ -56,4 +63,3 @@ async function listBlogPosts() {
 }
 
 listBlogPosts();
-

@@ -3,6 +3,22 @@ import { cookies } from 'next/headers';
 import { verifyToken, getUserById } from '@/lib/auth';
 import { pool } from '@/lib/db';
 
+/**
+ * @swagger
+ * /api/admin/stats:
+ *   get:
+ *     summary: Get application statistics.
+ *     description: Retrieves a comprehensive set of statistics for the admin dashboard.
+ *     responses:
+ *       200:
+ *         description: Statistics retrieved successfully.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden, user is not an admin.
+ *       500:
+ *         description: Failed to fetch statistics.
+ */
 export async function GET() {
   try {
     const cookieStore = await cookies();

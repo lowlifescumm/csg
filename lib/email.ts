@@ -5,11 +5,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const domain = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000';
 
-// A single, reusable function for sending emails
+/**
+ * Sends an email using the Resend API.
+ * @param {object} params - The email parameters.
+ * @param {string} params.to - The recipient's email address.
+ * @param {string} params.subject - The email subject.
+ * @param {string} params.html - The HTML content of the email.
+ * @returns {Promise<{success: boolean, data?: any, error?: any}>} An object indicating success or failure.
+ */
 async function sendEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Cosmic Spiritual Guide <noreply@cosmicspiritguide.com>', // Must be a domain you verified with Resend
+      from: 'Cosmic Spiritual Guide <noreply@cosmicspiritguide.com>',
       to,
       subject,
       html,
@@ -29,7 +36,13 @@ async function sendEmail({ to, subject, html }: { to: string, subject: string, h
   }
 }
 
-// Function to send the password reset email
+/**
+ * Sends a password reset email to a user.
+ * @param {string} email - The user's email address.
+ * @param {string} token - The password reset token.
+ * @param {string} firstName - The user's first name.
+ * @returns {Promise<object>} The result of the sendEmail call.
+ */
 export async function sendPasswordResetEmail(email: string, token: string, firstName: string) {
   const resetUrl = `${domain}/reset-password?token=${token}`;
 
@@ -39,7 +52,7 @@ export async function sendPasswordResetEmail(email: string, token: string, first
       <a href="${resetUrl}" ...>🌟 Reset Your Cosmic Password 🌟</a>
       ...
     </div>
-  `; // (Your full, beautiful HTML from before)
+  `;
 
   return sendEmail({
     to: email,
@@ -48,7 +61,12 @@ export async function sendPasswordResetEmail(email: string, token: string, first
   });
 }
 
-// Function to send the confirmation email after a successful reset
+/**
+ * Sends a confirmation email after a successful password reset.
+ * @param {string} email - The user's email address.
+ * @param {string} firstName - The user's first name.
+ * @returns {Promise<object>} The result of the sendEmail call.
+ */
 export async function sendPasswordResetConfirmationEmail(email: string, firstName: string) {
   const html = `
     <div style="font-family: 'Segoe UI', ...">
@@ -56,7 +74,7 @@ export async function sendPasswordResetConfirmationEmail(email: string, firstNam
       <p>... The cosmic forces have successfully restored your spiritual sanctuary. ...</p>
       ...
     </div>
-  `; // (Your full, beautiful HTML from before)
+  `;
 
   return sendEmail({
     to: email,
@@ -65,7 +83,14 @@ export async function sendPasswordResetConfirmationEmail(email: string, firstNam
   });
 }
 
-// Function to send transit notification email
+/**
+ * Sends a transit notification email to a user.
+ * @param {string} email - The user's email address.
+ * @param {string} firstName - The user's first name.
+ * @param {string} subject - The email subject.
+ * @param {string} body - The main content of the email.
+ * @returns {Promise<object>} The result of the sendEmail call.
+ */
 export async function sendTransitNotificationEmail(
   email: string, 
   firstName: string, 
@@ -78,7 +103,6 @@ export async function sendTransitNotificationEmail(
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; border-radius: 16px;">
       <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
         
-        <!-- Header -->
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #667eea; font-size: 28px; margin: 0 0 10px 0;">
             ⚡ Transit Alert
@@ -88,19 +112,16 @@ export async function sendTransitNotificationEmail(
           </p>
         </div>
 
-        <!-- Greeting -->
         <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
           ${firstName ? `Hi ${firstName},` : 'Hello,'}
         </p>
 
-        <!-- Message Body -->
         <div style="background: #f9fafb; border-left: 4px solid #667eea; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
           <div style="color: #374151; font-size: 15px; line-height: 1.8; white-space: pre-line;">
             ${body}
           </div>
         </div>
 
-        <!-- Call to Action -->
         <div style="text-align: center; margin: 30px 0;">
           <a href="${dashboardUrl}" 
              style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
@@ -110,7 +131,6 @@ export async function sendTransitNotificationEmail(
           </a>
         </div>
 
-        <!-- Footer -->
         <div style="border-top: 1px solid #e5e7eb; margin-top: 30px; padding-top: 20px; text-align: center;">
           <p style="color: #9ca3af; font-size: 13px; margin: 5px 0;">
             The universe is speaking to you

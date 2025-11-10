@@ -1,5 +1,13 @@
 #!/usr/bin/env node
-// Complete Google OAuth Setup Verification
+/**
+ * @fileoverview This script provides a complete verification of the Google OAuth setup.
+ * It checks environment variables, database schema, and the location of the NextAuth configuration file.
+ * It is a comprehensive diagnostic tool to ensure that Google OAuth is configured correctly.
+ *
+ * @usage
+ * To run this script, use the following command:
+ * node scripts/verify-google-oauth-setup.js
+ */
 require('dotenv').config({ path: require('path').join(__dirname, '../.env.local') });
 const { Pool } = require('pg');
 
@@ -8,13 +16,15 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false }
 });
 
+/**
+ * Executes a series of verification checks for the Google OAuth setup.
+ */
 async function verifySetup() {
   console.log('\n🔍 GOOGLE OAUTH SETUP VERIFICATION\n');
   console.log('='.repeat(60));
   
   let allPassed = true;
   
-  // 1. Check Environment Variables
   console.log('\n📋 1. Environment Variables');
   console.log('-'.repeat(60));
   
@@ -35,7 +45,6 @@ async function verifySetup() {
     }
   });
   
-  // 2. Check Database Schema
   console.log('\n📊 2. Database Schema');
   console.log('-'.repeat(60));
   
@@ -61,7 +70,6 @@ async function verifySetup() {
       }
     });
     
-    // Check if password_hash is nullable
     const passwordRow = rows.find(r => r.column_name === 'password_hash');
     if (passwordRow) {
       if (passwordRow.is_nullable === 'YES') {
@@ -75,7 +83,6 @@ async function verifySetup() {
     allPassed = false;
   }
   
-  // 3. Check NextAuth File Location
   console.log('\n📁 3. NextAuth Configuration File');
   console.log('-'.repeat(60));
   
@@ -98,7 +105,6 @@ async function verifySetup() {
     console.log('✅ Old Pages Router NextAuth file correctly removed');
   }
   
-  // 4. Display Configuration Details
   console.log('\n🔧 4. Configuration Details');
   console.log('-'.repeat(60));
   
@@ -111,7 +117,6 @@ async function verifySetup() {
     console.log(`Google Client ID: ${process.env.GOOGLE_CLIENT_ID.substring(0, 30)}...`);
   }
   
-  // 5. Final Summary
   console.log('\n' + '='.repeat(60));
   if (allPassed) {
     console.log('\n✅ ALL CHECKS PASSED! Google OAuth is ready to use.\n');
@@ -133,8 +138,3 @@ verifySetup().catch(error => {
   console.error(error);
   process.exit(1);
 });
-
-
-
-
-

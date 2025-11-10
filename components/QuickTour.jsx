@@ -1,6 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 
+/**
+ * A component that provides a quick tour of the application for new users.
+ * It highlights key features and guides the user through the dashboard.
+ * @param {object} props - The component props.
+ * @param {Function} [props.onComplete] - A callback function to be called when the tour is completed.
+ * @returns {JSX.Element|null} The QuickTour component, or null if not visible.
+ */
 export default function QuickTour({ onComplete }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -45,13 +52,15 @@ export default function QuickTour({ onComplete }) {
   ];
 
   useEffect(() => {
-    // Show tour for new users (check localStorage)
     const hasSeenTour = localStorage.getItem('cosmic-tour-completed');
     if (!hasSeenTour) {
       setIsVisible(true);
     }
   }, []);
 
+  /**
+   * Moves to the next step in the tour.
+   */
   const nextStep = () => {
     if (currentStep < tourSteps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -60,18 +69,27 @@ export default function QuickTour({ onComplete }) {
     }
   };
 
+  /**
+   * Moves to the previous step in the tour.
+   */
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
+  /**
+   * Completes the tour and marks it as seen in local storage.
+   */
   const completeTour = () => {
     setIsVisible(false);
     localStorage.setItem('cosmic-tour-completed', 'true');
     if (onComplete) onComplete();
   };
 
+  /**
+   * Skips the tour.
+   */
   const skipTour = () => {
     completeTour();
   };
@@ -82,7 +100,6 @@ export default function QuickTour({ onComplete }) {
   const targetElement = document.querySelector(currentTourStep.target);
 
   if (!targetElement) {
-    // If target element not found, skip to next step
     if (currentStep < tourSteps.length - 1) {
       setTimeout(() => setCurrentStep(currentStep + 1), 100);
     } else {
@@ -91,9 +108,7 @@ export default function QuickTour({ onComplete }) {
     return null;
   }
 
-  // Safety check - ensure element is in DOM and visible
   if (!targetElement.isConnected || targetElement.offsetParent === null) {
-    // Element might be hidden or not in DOM yet, skip to next step
     if (currentStep < tourSteps.length - 1) {
       setTimeout(() => setCurrentStep(currentStep + 1), 100);
     } else {
@@ -105,7 +120,6 @@ export default function QuickTour({ onComplete }) {
   const rect = targetElement.getBoundingClientRect();
   const isBottom = currentTourStep.position === 'bottom';
   
-  // Additional safety check for valid rect
   if (!rect || rect.width === 0 || rect.height === 0) {
     if (currentStep < tourSteps.length - 1) {
       setTimeout(() => setCurrentStep(currentStep + 1), 100);
@@ -117,10 +131,8 @@ export default function QuickTour({ onComplete }) {
   
   return (
     <>
-      {/* Overlay */}
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
       
-      {/* Highlight */}
       <div
         className="fixed z-50 pointer-events-none"
         style={{
@@ -134,7 +146,6 @@ export default function QuickTour({ onComplete }) {
         }}
       />
       
-      {/* Tooltip */}
       <div
         className="fixed z-50 bg-white rounded-xl shadow-2xl max-w-sm p-6"
         style={{
