@@ -28,6 +28,12 @@ No artifacts are missing or corrupted as of the latest verification (2025-11-10 
 - 🔁 Overlay toggle: default to legacy unless `DASHBOARD_V3=true` or invite `?v3_invite=<token>` matches `DASHBOARD_V3_INVITE`
 - 📌 Project stack note: **Ready for Cutover Simulation** (flag gating + restored systems staged)
 
+### Pre-Migration Readiness – 2025-11-10
+- ✅ Render MCP connectivity verified (HTTP 200) — see `artifacts/connectivity_check.md`
+- ✅ Runtime Render probe (Node) returned 200 with expected payload (`render_probe.mjs`, commit `b97d14e`)
+- ✅ Environment variables aligned (`DASHBOARD_V3`, `DASHBOARD_V3_INVITE`, Render API key)
+- 🚫 Tests pending: lint/Jest/Playwright fixes tracked in `artifacts/test_results.md`
+
 ## Staging Rehearsal Status – 2025-11-10
 - **Deployment:** Not executed (Render access unavailable). Operators should deploy branch `restore-core-systems` to a green service using `render.yaml`:
   1. `git push render restore-core-systems:green-dashboard` (or deploy via Render UI).
