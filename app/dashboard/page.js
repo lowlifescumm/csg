@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useMemo } from "react";
+import { useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import nextDynamic from "next/dynamic";
 import DashboardShell from "@/components/DashboardShell";
@@ -49,7 +49,7 @@ const LegacyDashboardClient = nextDynamic(
  * Falls back to the legacy dashboard unless the DASHBOARD_V3 flag (or invite token)
  * enables the new experience.
  */
-export default function DashboardPage() {
+function DashboardPageInner() {
   const searchParams = useSearchParams();
 
   const canUseV3 = useMemo(() => {
@@ -82,5 +82,24 @@ export default function DashboardPage() {
         />
       )}
     </DashboardShell>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+          <div className="text-center animate-fade-in">
+            <div className="relative mb-6">
+              <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
+            </div>
+            <p className="text-gray-200 animate-pulse mb-4">Loading your cosmic journey...</p>
+          </div>
+        </div>
+      }
+    >
+      <DashboardPageInner />
+    </Suspense>
   );
 }
