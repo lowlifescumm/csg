@@ -324,7 +324,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
         {/* Help System */}
         <HelpSystem />
-      </div>
     </div>
   );
 }
