@@ -1,0 +1,40 @@
+﻿## 2025-11-10T23:23:16.902953
+- Created logical backup via pg_dump: artifacts/backups/csgdata_prod_20251110_231918.backup
+- Pending: Switch Render service srv-d3lab5qdbo4c73auihe0 to branch restore-core-systems (manual step required)
+
+## 2025-11-11T23:38:46.4742697Z
+- Applied artifacts/sql/dashboard_migration.sql against production (Render service csg-sj6e).
+- Command: psql postgresql://csgdata_prod_user:***@dpg-d3lgj7pr0fns73dvvulg-a.oregon-postgres.render.com:5432/csgdata_prod?sslmode=require -f artifacts/sql/dashboard_migration.sql
+- Result: Notices about existing structures; ensured indexes; UPDATE 5; INSERT 1.
+
+## 2025-11-12 Production Validation
+- Production service: csg-sj6e (commit 2cd84e0 from restore-core-systems branch)
+- Production URL: https://cosmicspiritguide.com
+- Validation script: scripts/validate-production.mjs
+
+### Endpoint Health Checks (2025-11-12)
+✅ GET /login → 200 OK
+✅ GET /api/health → 200 OK
+✅ GET /credits → 200 OK
+✅ GET /reset-password → 200 OK
+✅ GET /api/auth/user → 200 OK
+
+### Test Configuration Updates
+- Jest isolated from Playwright (testPathIgnorePatterns excludes __tests__/e2e)
+- Playwright config updated to skip webServer when PLAYWRIGHT_BASE_URL is set
+- Migration ESLint override configured (eslint.migration.config.mjs)
+- Test database setup helper created (test/setup-db.js)
+
+### Post-Migration Status
+- ✅ Production database migration applied successfully
+- ✅ All critical endpoints responding (5/5 passed)
+- ✅ Core systems restored and functional
+- ⚠️  Automated Playwright tests require TEST_DATABASE_URL for Jest API suites
+- ⚠️  Local Playwright runs blocked by Tailwind/PostCSS config (production tests work when PLAYWRIGHT_BASE_URL is set)
+
+### Next Steps
+1. Set DASHBOARD_V3=true in Render environment variables (via UI)
+2. Optionally set DASHBOARD_V3_INVITE for invite-based testing
+3. Redeploy to apply environment variable changes
+4. Monitor production logs for 72 hours
+5. Plan lint/test cleanup after stabilization period
