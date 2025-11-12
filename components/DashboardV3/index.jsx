@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard } from "lucide-react";
 import Link from "next/link";
 import HeroHeader from "./HeroHeader";
