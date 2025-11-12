@@ -235,20 +235,23 @@ export default function EnergyChart({
         </ResponsiveContainer>
       </div>
 
-      {/* Action Button */}
-      <div className="mt-6 flex justify-center">
-        <button
-          onClick={() => {
-            // Navigate to energy logging page or open modal
-            window.location.href = "/energy/log";
-          }}
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 smooth-transition flex items-center gap-2"
-          aria-label="Log your energy levels"
-        >
-          <Activity className="w-5 h-5" />
-          <span>Log Your Energy</span>
-        </button>
-      </div>
+      {/* Action Button - Temporarily disabled until energy log page is created */}
+      {/* TODO: Create /app/energy/log/page.js or implement energy logging modal */}
+      {false && (
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={() => {
+              // Navigate to energy logging page or open modal
+              window.location.href = "/energy/log";
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 smooth-transition flex items-center gap-2"
+            aria-label="Log your energy levels"
+          >
+            <Activity className="w-5 h-5" />
+            <span>Log Your Energy</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
