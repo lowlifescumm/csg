@@ -3,6 +3,7 @@ import { useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import nextDynamic from "next/dynamic";
 import DashboardShell from "@/components/DashboardShell";
+import DashboardLayoutShell from "@/components/DashboardLayoutShell";
 
 // Force client-side rendering to avoid hydration mismatches
 export const dynamic = "force-dynamic";
@@ -71,16 +72,39 @@ function DashboardPageInner() {
 
   return (
     <DashboardShell>
-      {({ user, credits, readings, streak, moonPhase, refetch }) => (
-        <DashboardV3Client
-          user={user}
-          credits={credits}
-          readings={readings}
-          streak={streak}
-          moonPhase={moonPhase}
-          refetch={refetch}
-        />
-      )}
+      {({ user, credits, readings, streak, moonPhase, refetch }) => {
+        // Calculate energy and level data for header
+        const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
+        const energy = 75; // Default, can be calculated from user activity
+        const energyChange = 12; // Default
+        const level = 5; // Default, can be calculated from XP
+        const xpCurrent = 2450; // Default, should come from user stats
+        const xpTarget = 3000; // Default
+
+        return (
+          <DashboardLayoutShell
+            user={user}
+            credits={credits}
+            streak={streak}
+            moonPhase={moonPhase}
+            energy={energy}
+            energyChange={energyChange}
+            level={level}
+            xpCurrent={xpCurrent}
+            xpTarget={xpTarget}
+            mainContent={
+              <DashboardV3Client
+                user={user}
+                credits={credits}
+                readings={readings}
+                streak={streak}
+                moonPhase={moonPhase}
+                refetch={refetch}
+              />
+            }
+          />
+        );
+      }}
     </DashboardShell>
   );
 }

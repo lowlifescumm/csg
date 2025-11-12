@@ -34,10 +34,9 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const [tarotSelectorConfig, setTarotSelectorConfig] = useState({ spreadType: "three-card", readingType: "general" });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
-      {/* Main Content */}
-      <div className="p-8 sm:p-10">
-        <div className="max-w-7xl mx-auto">
+    <div className="w-full">
+      {/* Main Content - No wrapper needed, layout shell handles it */}
+      <div className="space-y-6">
           {/* Hero Header */}
           <HeroHeader 
             user={user}
