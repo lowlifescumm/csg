@@ -232,6 +232,15 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   <span>Compatibility</span>
                 </div>
               </Link>
+              <Link
+                href="/journal"
+                className="group relative bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <Sparkles className="w-6 h-6" />
+                  <span>My Journal</span>
+                </div>
+              </Link>
             </div>
           </div>
 
