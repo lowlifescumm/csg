@@ -60,9 +60,9 @@ export async function GET(request) {
       try {
         // Try to get user's birth chart from database
         const chartResult = await pool.query(
-          `SELECT natal_positions FROM natal_charts 
-           WHERE user_id = $1 AND is_primary = true 
-           ORDER BY created_at DESC LIMIT 1`,
+          `SELECT data FROM natal_charts 
+           WHERE user_id = $1 
+           ORDER BY is_primary DESC NULLS LAST, created_at DESC LIMIT 1`,
           [authResult.userId]
         );
 
@@ -85,9 +85,17 @@ export async function GET(request) {
             }
           }
         } else {
-          const natalPositions = chartResult.rows[0].natal_positions;
-          if (natalPositions?.sun?.sign) {
-            userSign = natalPositions.sun.sign;
+          const chartData = typeof chartResult.rows[0].data === 'string'
+            ? JSON.parse(chartResult.rows[0].data)
+            : chartResult.rows[0].data;
+          
+          // Try to get sun sign from various possible data structures
+          if (chartData?.planets?.sun?.sign) {
+            userSign = chartData.planets.sun.sign;
+          } else if (chartData?.natal_positions?.sun?.sign) {
+            userSign = chartData.natal_positions.sun.sign;
+          } else if (chartData?.sun?.sign) {
+            userSign = chartData.sun.sign;
           }
         }
       } catch (err) {

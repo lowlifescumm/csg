@@ -47,8 +47,8 @@ export async function GET(request) {
       try {
         const { rows } = await pool.query(
           `SELECT chart_data FROM birth_charts 
-           WHERE user_id = $1 AND is_primary = true 
-           ORDER BY created_at DESC LIMIT 1`,
+           WHERE user_id = $1 
+           ORDER BY is_primary DESC NULLS LAST, created_at DESC LIMIT 1`,
           [userId]
         );
         
