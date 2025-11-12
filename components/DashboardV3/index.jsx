@@ -305,26 +305,26 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             </div>
           )}
         </div>
+
+        {/* Interactive Tarot Selector Modal */}
+        {showTarotSelector && (
+          <InteractiveTarotSelector
+            spreadType={tarotSelectorConfig.spreadType}
+            readingType={tarotSelectorConfig.readingType}
+            onClose={() => {
+              setShowTarotSelector(false);
+              if (refetch) refetch();
+            }}
+            onComplete={(reading) => {
+              setShowTarotSelector(false);
+              if (refetch) refetch();
+            }}
+          />
+        )}
+
+        {/* Help System */}
+        <HelpSystem />
       </div>
-
-      {/* Interactive Tarot Selector Modal */}
-      {showTarotSelector && (
-        <InteractiveTarotSelector
-          spreadType={tarotSelectorConfig.spreadType}
-          readingType={tarotSelectorConfig.readingType}
-          onClose={() => {
-            setShowTarotSelector(false);
-            if (refetch) refetch();
-          }}
-          onComplete={(reading) => {
-            setShowTarotSelector(false);
-            if (refetch) refetch();
-          }}
-        />
-      )}
-
-      {/* Help System */}
-      <HelpSystem />
     </div>
   );
 }
