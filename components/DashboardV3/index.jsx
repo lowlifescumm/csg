@@ -39,12 +39,13 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const [showTarotTypePicker, setShowTarotTypePicker] = useState(false);
   const [tarotSelectorConfig, setTarotSelectorConfig] = useState({ spreadType: "three-card", readingType: "general" });
   const [hasBirthChart, setHasBirthChart] = useState(null); // null = checking, true/false = result
-  const [showMeditations, setShowMeditations] = useState(false);
-  const [meditations, setMeditations] = useState([]);
-  const [selectedMeditation, setSelectedMeditation] = useState(null);
-  const [meditationSessionId, setMeditationSessionId] = useState(null);
-  const [showMeditationPlayer, setShowMeditationPlayer] = useState(false);
-  const [showCompactPlayer, setShowCompactPlayer] = useState(false);
+  // Meditation state temporarily hidden
+  // const [showMeditations, setShowMeditations] = useState(false);
+  // const [meditations, setMeditations] = useState([]);
+  // const [selectedMeditation, setSelectedMeditation] = useState(null);
+  // const [meditationSessionId, setMeditationSessionId] = useState(null);
+  // const [showMeditationPlayer, setShowMeditationPlayer] = useState(false);
+  // const [showCompactPlayer, setShowCompactPlayer] = useState(false);
 
   // Check if user has a birth chart
   useEffect(() => {
@@ -60,57 +61,57 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
     }
   }, [user?.id]);
 
-  // Fetch meditations when modal opens
-  useEffect(() => {
-    if (showMeditations && meditations.length === 0) {
-      fetch('/api/meditations')
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setMeditations(data.meditations || []);
-          }
-        })
-        .catch(err => {
-          console.error('Failed to fetch meditations:', err);
-        });
-    }
-  }, [showMeditations]);
+  // Meditation functions temporarily hidden
+  // useEffect(() => {
+  //   if (showMeditations && meditations.length === 0) {
+  //     fetch('/api/meditations')
+  //       .then(res => res.json())
+  //       .then(data => {
+  //         if (data.success) {
+  //           setMeditations(data.meditations || []);
+  //         }
+  //       })
+  //       .catch(err => {
+  //         console.error('Failed to fetch meditations:', err);
+  //       });
+  //   }
+  // }, [showMeditations]);
 
-  const handleStartMeditation = async (meditation) => {
-    try {
-      const res = await fetch(`/api/meditations/${meditation.id}/start`, {
-        method: 'POST',
-      });
+  // const handleStartMeditation = async (meditation) => {
+  //   try {
+  //     const res = await fetch(`/api/meditations/${meditation.id}/start`, {
+  //       method: 'POST',
+  //     });
 
-      const data = await res.json();
+  //     const data = await res.json();
 
-      if (res.ok && data.success) {
-        setSelectedMeditation(meditation);
-        setMeditationSessionId(data.sessionId);
-        setShowMeditationPlayer(true);
-        setShowMeditations(false);
-      } else if (res.status === 402) {
-        // Premium required
-        window.location.href = '/subscription';
-      } else {
-        alert(data.error || 'Failed to start meditation');
-      }
-    } catch (error) {
-      console.error('Error starting meditation:', error);
-      alert('Failed to start meditation');
-    }
-  };
+  //     if (res.ok && data.success) {
+  //       setSelectedMeditation(meditation);
+  //       setMeditationSessionId(data.sessionId);
+  //       setShowMeditationPlayer(true);
+  //       setShowMeditations(false);
+  //     } else if (res.status === 402) {
+  //       // Premium required
+  //       window.location.href = '/subscription';
+  //     } else {
+  //       alert(data.error || 'Failed to start meditation');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error starting meditation:', error);
+  //     alert('Failed to start meditation');
+  //   }
+  // };
 
-  const handleMeditationComplete = (data) => {
-    // Refresh dashboard data
-    if (refetch) refetch();
-    // Show completion message
-    alert(`Meditation complete! You earned ${data.xpAwarded} XP.`);
-    setShowMeditationPlayer(false);
-    setShowCompactPlayer(false);
-    setSelectedMeditation(null);
-    setMeditationSessionId(null);
-  };
+  // const handleMeditationComplete = (data) => {
+  //   // Refresh dashboard data
+  //   if (refetch) refetch();
+  //   // Show completion message
+  //   alert(`Meditation complete! You earned ${data.xpAwarded} XP.`);
+  //   setShowMeditationPlayer(false);
+  //   setShowCompactPlayer(false);
+  //   setSelectedMeditation(null);
+  //   setMeditationSessionId(null);
+  // };
 
   return (
     <div className="w-full">
