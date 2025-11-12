@@ -60,6 +60,64 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             moonPhase={moonPhase}
           />
 
+          {/* Quick Actions - Moved to top for better visibility */}
+          <div className="glassmorphic rounded-3xl p-6 sm:p-10 apple-shadow-lg border border-white border-opacity-40 mb-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Explore Your Cosmic Journey</h2>
+              <p className="text-purple-200 text-sm sm:text-base">Discover guidance through tarot, astrology, and planetary wisdom</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              <button
+                onClick={() => {
+                  setTarotSelectorConfig({ spreadType: "three-card", readingType: "general" });
+                  setShowTarotSelector(true);
+                }}
+                className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <Sparkles className="w-6 h-6 group-hover:animate-bounce-gentle" />
+                  <span>Tarot Reading</span>
+                </div>
+              </button>
+              <Link
+                href={hasBirthChart === true ? "/my-chart" : "/birth-chart"}
+                className="group relative bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <Star className="w-6 h-6" />
+                  <span>{hasBirthChart === true ? "My Chart" : "Birth Chart"}</span>
+                </div>
+              </Link>
+              <Link
+                href="/moon-reading"
+                className="group relative bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <Moon className="w-6 h-6" />
+                  <span>Moon Reading</span>
+                </div>
+              </Link>
+              <Link
+                href="/compatibility"
+                className="group relative bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <Heart className="w-6 h-6" />
+                  <span>Compatibility</span>
+                </div>
+              </Link>
+              <Link
+                href="/journal"
+                className="group relative bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <Sparkles className="w-6 h-6" />
+                  <span>My Journal</span>
+                </div>
+              </Link>
+            </div>
+          </div>
+
           {/* Focus Grid */}
           <FocusGrid 
             userId={user?.id}
@@ -197,64 +255,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="glassmorphic rounded-3xl p-6 sm:p-10 apple-shadow-lg border border-white border-opacity-40 mb-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Explore Your Cosmic Journey</h2>
-              <p className="text-purple-200 text-sm sm:text-base">Discover guidance through tarot, astrology, and planetary wisdom</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              <button
-                onClick={() => {
-                  setTarotSelectorConfig({ spreadType: "three-card", readingType: "general" });
-                  setShowTarotSelector(true);
-                }}
-                className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Sparkles className="w-6 h-6 group-hover:animate-bounce-gentle" />
-                  <span>Tarot Reading</span>
-                </div>
-              </button>
-              <Link
-                href={hasBirthChart === true ? "/my-chart" : "/birth-chart"}
-                className="group relative bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Star className="w-6 h-6" />
-                  <span>{hasBirthChart === true ? "My Chart" : "Birth Chart"}</span>
-                </div>
-              </Link>
-              <Link
-                href="/moon-reading"
-                className="group relative bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Moon className="w-6 h-6" />
-                  <span>Moon Reading</span>
-                </div>
-              </Link>
-              <Link
-                href="/compatibility"
-                className="group relative bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Heart className="w-6 h-6" />
-                  <span>Compatibility</span>
-                </div>
-              </Link>
-              <Link
-                href="/journal"
-                className="group relative bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Sparkles className="w-6 h-6" />
-                  <span>My Journal</span>
-                </div>
-              </Link>
             </div>
           </div>
 
