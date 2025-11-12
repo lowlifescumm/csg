@@ -59,12 +59,19 @@ export async function GET(request) {
     if (authResult) {
       try {
         // Try to get user's birth chart from database
-        const chartResult = await pool.query(
-          `SELECT data FROM natal_charts 
-           WHERE user_id = $1 
-           ORDER BY is_primary DESC NULLS LAST, created_at DESC LIMIT 1`,
-          [authResult.userId]
-        );
+        // First try natal_charts table (may not exist or may have different column name)
+        let chartResult;
+        try {
+          chartResult = await pool.query(
+            `SELECT data FROM natal_charts 
+             WHERE user_id = $1 
+             ORDER BY is_primary DESC NULLS LAST, created_at DESC LIMIT 1`,
+            [authResult.userId]
+          );
+        } catch (err) {
+          // Table or column might not exist, fall through to birth_charts
+          chartResult = { rows: [] };
+        }
 
         if (chartResult.rows.length === 0) {
           // Fallback to old birth_charts table
@@ -85,17 +92,28 @@ export async function GET(request) {
             }
           }
         } else {
-          const chartData = typeof chartResult.rows[0].data === 'string'
-            ? JSON.parse(chartResult.rows[0].data)
-            : chartResult.rows[0].data;
+          // Check if 'data' column exists, otherwise try other possible column names
+          const row = chartResult.rows[0];
+          let chartData;
           
-          // Try to get sun sign from various possible data structures
-          if (chartData?.planets?.sun?.sign) {
-            userSign = chartData.planets.sun.sign;
-          } else if (chartData?.natal_positions?.sun?.sign) {
-            userSign = chartData.natal_positions.sun.sign;
-          } else if (chartData?.sun?.sign) {
-            userSign = chartData.sun.sign;
+          if (row.data !== undefined) {
+            chartData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+          } else if (row.chart_data !== undefined) {
+            chartData = typeof row.chart_data === 'string' ? JSON.parse(row.chart_data) : row.chart_data;
+          } else {
+            // No chart data available
+            chartData = null;
+          }
+          
+          if (chartData) {
+            // Try to get sun sign from various possible data structures
+            if (chartData?.planets?.sun?.sign) {
+              userSign = chartData.planets.sun.sign;
+            } else if (chartData?.natal_positions?.sun?.sign) {
+              userSign = chartData.natal_positions.sun.sign;
+            } else if (chartData?.sun?.sign) {
+              userSign = chartData.sun.sign;
+            }
           }
         }
       } catch (err) {
