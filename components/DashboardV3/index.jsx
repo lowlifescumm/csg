@@ -15,9 +15,10 @@ import PremiumCard from "./PremiumCard";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import HelpSystem from "@/components/HelpSystem";
-import MeditationCard from "@/components/MeditationCard";
-import MeditationPlayer from "@/components/MeditationPlayer";
-import MeditationHistory from "@/components/MeditationHistory";
+// Meditation components temporarily hidden
+// import MeditationCard from "@/components/MeditationCard";
+// import MeditationPlayer from "@/components/MeditationPlayer";
+// import MeditationHistory from "@/components/MeditationHistory";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -177,7 +178,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   <span>My Journal</span>
                 </div>
               </Link>
-              <button
+              {/* Meditation button temporarily hidden */}
+              {/* <button
                 onClick={() => setShowMeditations(true)}
                 className="group relative bg-gradient-to-r from-green-500 via-teal-500 to-cyan-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
               >
@@ -185,7 +187,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   <Brain className="w-6 h-6 group-hover:animate-pulse" />
                   <span>Meditation</span>
                 </div>
-              </button>
+              </button> */}
             </div>
           </div>
 

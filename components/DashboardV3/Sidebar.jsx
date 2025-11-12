@@ -27,7 +27,8 @@ export default function Sidebar({ user }) {
     { href: "/dashboard", label: "Tarot Reading", icon: Sparkles },
     { href: "/birth-chart", label: "Birth Chart", icon: Star },
     { href: "/compatibility", label: "Compatibility", icon: Heart },
-    { href: "/coach", label: "Meditation", icon: Brain },
+    // Meditation temporarily hidden
+    // { href: "/coach", label: "Meditation", icon: Brain },
     { href: "/journal", label: "Spiritual Journal", icon: BookOpen },
     { href: "/coach", label: "Live Advisors", icon: MessageCircle },
   ];

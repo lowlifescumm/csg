@@ -10,7 +10,8 @@ const TASK_DEFINITIONS = {
   "three-card-spread": { xpReward: 10, creditReward: 0 },
   "sync-moon-phase": { xpReward: 5, creditReward: 0 },
   "check-compatibility": { xpReward: 5, creditReward: 0 },
-  "meditation-session": { xpReward: 5, creditReward: 1 }, // Occasionally
+  // Meditation task temporarily hidden
+  // "meditation-session": { xpReward: 5, creditReward: 1 }, // Occasionally
 };
 
 /**

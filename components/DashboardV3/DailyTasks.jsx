@@ -35,16 +35,17 @@ const TASK_DEFINITIONS = [
     actionUrl: "/compatibility",
     actionType: "link",
   },
-  {
-    id: "meditation-session",
-    title: "Start a meditation session",
-    description: "Center yourself with guided practice",
-    icon: Brain,
-    xpReward: 5,
-    creditReward: 1, // Occasionally
-    actionUrl: "/coach",
-    actionType: "link",
-  },
+  // Meditation task temporarily hidden
+  // {
+  //   id: "meditation-session",
+  //   title: "Start a meditation session",
+  //   description: "Center yourself with guided practice",
+  //   icon: Brain,
+  //   xpReward: 5,
+  //   creditReward: 1, // Occasionally
+  //   actionUrl: "/coach",
+  //   actionType: "link",
+  // },
 ];
 
 /**
