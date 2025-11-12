@@ -23,6 +23,12 @@
 - ✅ **Help System** - Enabled with floating help button in DashboardV3
 - ✅ **Journal Persistence** - Already fully implemented with DB storage, components wired
 
+### Database Schema Fixes (2025-11-12)
+- ✅ **is_primary columns** - Added to `birth_charts` and `natal_charts` tables
+- ✅ **Compatibility API** - Fixed missing column errors in `/api/compatibility/top`
+- ✅ **Horoscope API** - Fixed missing column errors in `/api/horoscope`
+- ✅ **Element API** - Fixed missing column errors in `/api/element/today`
+
 ---
 
 ## 🔴 High Priority - Missing Features
