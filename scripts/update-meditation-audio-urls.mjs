@@ -8,13 +8,21 @@
  *   node scripts/update-meditation-audio-urls.mjs --urls "morning-clarity=https://res.cloudinary.com/..."
  */
 
-import { pool } from '../lib/db.js';
+import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Create database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('localhost') 
+    ? false 
+    : { rejectUnauthorized: false }
+});
 
 // Map meditation titles to their IDs (from database)
 const MEDITATION_MAP = {
@@ -169,7 +177,9 @@ async function main() {
     console.error('❌ Error:', error.message);
     process.exit(1);
   } finally {
-    await pool.end();
+    if (pool) {
+      await pool.end();
+    }
   }
 }
 
