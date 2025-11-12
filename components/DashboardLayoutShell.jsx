@@ -31,101 +31,7 @@ export default function DashboardLayoutShell({
   xpTarget
 }) {
   return (
-    <>
-      <style jsx global>{`
-        .dashboard-layout-shell {
-          position: relative;
-          min-height: 100vh;
-          background: var(--bg-gradient);
-        }
-
-        .dashboard-layout-shell::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: var(--page-bg-overlay);
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: 240px 1fr 360px;
-          grid-template-rows: auto 1fr;
-          gap: 28px;
-          min-height: 100vh;
-          padding: 32px;
-          position: relative;
-          z-index: 1;
-        }
-
-        .dashboard-nav {
-          grid-column: 1;
-          grid-row: 1 / -1;
-          position: sticky;
-          top: 0;
-          align-self: start;
-          max-height: 100vh;
-          overflow-y: auto;
-        }
-
-        .dashboard-header {
-          grid-column: 2 / -1;
-          grid-row: 1;
-        }
-
-        .dashboard-main {
-          grid-column: 2;
-          grid-row: 2;
-          overflow-y: auto;
-        }
-
-        .dashboard-rail {
-          grid-column: 3;
-          grid-row: 2;
-          overflow-y: auto;
-        }
-
-        /* Responsive: < 1100px */
-        @media (max-width: 1099px) {
-          .dashboard-grid {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto auto 1fr auto;
-            gap: 24px;
-            padding: 24px;
-          }
-
-          .dashboard-nav {
-            grid-column: 1;
-            grid-row: 1;
-          }
-
-          .dashboard-header {
-            grid-column: 1;
-            grid-row: 2;
-          }
-
-          .dashboard-main {
-            grid-column: 1;
-            grid-row: 3;
-          }
-
-          .dashboard-rail {
-            grid-column: 1;
-            grid-row: 4;
-          }
-        }
-
-        /* Sidebar adjustments for mobile */
-        @media (max-width: 1099px) {
-          .dashboard-nav :global(.w-64) {
-            width: 100%;
-            min-height: auto;
-          }
-        }
-      `}</style>
-      
-      <div className="dashboard-layout-shell">
+    <div className="relative min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
         <BackgroundStars />
         
         {/* Skip to main content link for screen readers */}
@@ -139,14 +45,14 @@ export default function DashboardLayoutShell({
         </div>
         
         {/* Grid Container */}
-        <div className="dashboard-grid">
+        <div className="grid grid-cols-[240px_1fr_360px] grid-rows-[auto_1fr] gap-7 min-h-screen p-8 relative z-10 max-lg:grid-cols-1 max-lg:grid-rows-[auto_auto_1fr_auto] max-lg:gap-6 max-lg:p-6">
           {/* Column 1: Left Navigation */}
-          <aside className="dashboard-nav" aria-label="Main navigation sidebar">
+          <aside className="col-start-1 row-start-1 row-end-[-1] sticky top-0 self-start max-h-screen overflow-y-auto max-lg:col-start-1 max-lg:row-start-1 max-lg:row-end-2" aria-label="Main navigation sidebar">
             <Sidebar user={user} />
           </aside>
 
           {/* Column 2-3 Row 1: Header */}
-          <header className="dashboard-header">
+          <header className="col-start-2 col-end-[-1] row-start-1 max-lg:col-start-1 max-lg:col-end-1 max-lg:row-start-2">
             {headerContent || (
               <DashboardHeader 
                 user={user}
@@ -163,19 +69,18 @@ export default function DashboardLayoutShell({
           </header>
 
           {/* Column 2 Row 2: Main Content */}
-          <main id="dashboard-main" className="dashboard-main" aria-label="Main dashboard content">
+          <main id="dashboard-main" className="col-start-2 row-start-2 overflow-y-auto max-lg:col-start-1 max-lg:row-start-3" aria-label="Main dashboard content">
             {mainContent || children}
           </main>
 
           {/* Column 3 Row 2: Right Rail */}
           {rightRail && (
-            <aside className="dashboard-rail" aria-label="Dashboard sidebar widgets">
+            <aside className="col-start-3 row-start-2 overflow-y-auto max-lg:col-start-1 max-lg:row-start-4" aria-label="Dashboard sidebar widgets">
               {rightRail}
             </aside>
           )}
         </div>
       </div>
-    </>
   );
 }
 
