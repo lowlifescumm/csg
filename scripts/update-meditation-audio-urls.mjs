@@ -183,8 +183,9 @@ async function main() {
   }
 }
 
-// Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
-}
+// Run the script
+main().catch(error => {
+  console.error('❌ Fatal error:', error);
+  process.exit(1);
+});
 
