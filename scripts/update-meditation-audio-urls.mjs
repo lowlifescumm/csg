@@ -36,7 +36,7 @@ async function getCloudinaryUrls() {
   // Check if URLs provided via command line
   if (args.includes('--urls')) {
     const urlsIndex = args.indexOf('--urls');
-    const urlsString = args[urllsIndex + 1];
+    const urlsString = args[urlsIndex + 1];
     const urlPairs = urlsString.split(',').map(pair => {
       const [key, url] = pair.split('=');
       return { key: key.trim(), url: url.trim() };
