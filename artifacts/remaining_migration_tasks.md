@@ -18,43 +18,33 @@
 - ✅ Migration ESLint override configured
 - ✅ Test database setup helper created
 
+### UI Features Restored (2025-11-12)
+- ✅ **Interactive Tarot Selector** - Integrated into DashboardV3, wired to "Tarot Reading" button
+- ✅ **Help System** - Enabled with floating help button in DashboardV3
+- ✅ **Journal Persistence** - Already fully implemented with DB storage, components wired
+
 ---
 
 ## 🔴 High Priority - Missing Features
 
-### 1. **Interactive Tarot Card Selector** ⚠️ CRITICAL
-- **Status:** Missing from DashboardV3
-- **Component Exists:** `components/InteractiveTarotSelector.jsx`
-- **API Ready:** `/api/readings/create` exists
-- **Impact:** Core reading functionality unavailable
-- **Action Required:**
-  - Import `InteractiveTarotSelector` into DashboardV3
-  - Wire "Get Your Reading" CTA to open selector modal
-  - Connect to `/api/readings/create` endpoint
-- **Estimated Effort:** 2-4 hours
-- **Risk Level:** High
+### 1. **Interactive Tarot Card Selector** ✅ COMPLETE
+- **Status:** ✅ Integrated into DashboardV3
+- **Component:** `components/InteractiveTarotSelector.jsx`
+- **API:** `/api/readings/create` functional
+- **Implementation:** Wired to "Tarot Reading" button in Quick Actions
+- **Completed:** 2025-11-12
 
-### 2. **Help System** ⚠️ ENABLE
-- **Status:** Component exists but not imported
+### 2. **Help System** ✅ COMPLETE
+- **Status:** ✅ Enabled in DashboardV3
 - **Component:** `components/HelpSystem.jsx`
-- **Impact:** No in-app help or onboarding
-- **Action Required:**
-  - Import HelpSystem into DashboardV3 or DashboardShell
-  - Add help button/icon to dashboard header
-- **Estimated Effort:** 30 minutes
-- **Risk Level:** Medium
+- **Implementation:** Floating help button with modal
+- **Completed:** 2025-11-12
 
-### 3. **Journal Persistence** ⚠️ IMPLEMENT
-- **Status:** Stub implementation (returns mock)
-- **API:** `/api/journal` needs DB storage
-- **Impact:** "Save to Journal" doesn't persist data
-- **Action Required:**
-  - Create `journal_entries` table (if not exists)
-  - Implement POST `/api/journal` to save entries
-  - Implement GET `/api/journal` to fetch user entries
-  - Update DashboardV3 save-to-journal actions
-- **Estimated Effort:** 3-5 hours
-- **Risk Level:** Medium
+### 3. **Journal Persistence** ✅ COMPLETE
+- **Status:** ✅ Already fully implemented
+- **API:** `/api/journal` has DB storage with auto-table creation
+- **Components:** ReadingHistory and CosmicBriefing already wired
+- **Note:** Was incorrectly marked as stub - actually fully functional
 
 ### 4. **Birth Chart UI** ⚠️ RESTORE
 - **Status:** Missing form (API exists)
