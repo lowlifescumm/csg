@@ -98,42 +98,42 @@ export async function POST(request, { params }) {
     const newTotalXP = xpResult.rows[0]?.total_xp || 0;
     const newLevel = xpResult.rows[0]?.current_level || 1;
 
-    // Mark meditation task as complete
-    try {
-      const today = new Date().toISOString().split("T")[0];
-      const taskId = "meditation-session";
+    // Mark meditation task as complete - Temporarily disabled
+    // try {
+    //   const today = new Date().toISOString().split("T")[0];
+    //   const taskId = "meditation-session";
 
-      // Check if already completed today
-      const existingTask = await pool.query(
-        `SELECT id FROM user_tasks 
-         WHERE user_id = $1 AND task_id = $2 AND completed_date = $3`,
-        [userId, taskId, today]
-      );
+    //   // Check if already completed today
+    //   const existingTask = await pool.query(
+    //     `SELECT id FROM user_tasks 
+    //      WHERE user_id = $1 AND task_id = $2 AND completed_date = $3`,
+    //     [userId, taskId, today]
+    //   );
 
-      if (existingTask.rows.length === 0) {
-        // Award task XP (5 XP base)
-        const taskXP = 5;
-        await pool.query(
-          `INSERT INTO user_tasks (user_id, task_id, completed_date, xp_earned, credit_earned, streak_bonus)
-           VALUES ($1, $2, $3, $4, 0, 0)
-           ON CONFLICT (user_id, task_id, completed_date) DO NOTHING`,
-          [userId, taskId, today, taskXP]
-        );
+    //   if (existingTask.rows.length === 0) {
+    //     // Award task XP (5 XP base)
+    //     const taskXP = 5;
+    //     await pool.query(
+    //       `INSERT INTO user_tasks (user_id, task_id, completed_date, xp_earned, credit_earned, streak_bonus)
+    //        VALUES ($1, $2, $3, $4, 0, 0)
+    //        ON CONFLICT (user_id, task_id, completed_date) DO NOTHING`,
+    //       [userId, taskId, today, taskXP]
+    //     );
 
-        // Update user XP with task XP
-        await pool.query(
-          `UPDATE user_xp 
-           SET total_xp = total_xp + $1,
-               current_level = FLOOR((total_xp + $1) / 100) + 1,
-               updated_at = NOW()
-           WHERE user_id = $2`,
-          [taskXP, userId]
-        );
-      }
-    } catch (taskError) {
-      console.error("Error marking meditation task complete:", taskError);
-      // Don't fail the meditation completion if task marking fails
-    }
+    //     // Update user XP with task XP
+    //     await pool.query(
+    //       `UPDATE user_xp 
+    //        SET total_xp = total_xp + $1,
+    //            current_level = FLOOR((total_xp + $1) / 100) + 1,
+    //            updated_at = NOW()
+    //        WHERE user_id = $2`,
+    //       [taskXP, userId]
+    //     );
+    //   }
+    // } catch (taskError) {
+    //   console.error("Error marking meditation task complete:", taskError);
+    //   // Don't fail the meditation completion if task marking fails
+    // }
 
     return NextResponse.json({
       success: true,
