@@ -12,6 +12,8 @@ import GrowthBar from "./GrowthBar";
 import BestMatches from "./BestMatches";
 import ReadingHistory from "./ReadingHistory";
 import PremiumCard from "./PremiumCard";
+import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
+import HelpSystem from "@/components/HelpSystem";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -28,6 +30,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const readingCount = readings?.stats?.readingCount || 0;
   const chartCount = readings?.stats?.chartCount || 0;
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });
+  const [showTarotSelector, setShowTarotSelector] = useState(false);
+  const [tarotSelectorConfig, setTarotSelectorConfig] = useState({ spreadType: "three-card", readingType: "general" });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
@@ -189,15 +193,18 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               <p className="text-purple-200 text-sm sm:text-base">Discover guidance through tarot, astrology, and planetary wisdom</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              <Link
-                href="/dashboard#tarot-section"
+              <button
+                onClick={() => {
+                  setTarotSelectorConfig({ spreadType: "three-card", readingType: "general" });
+                  setShowTarotSelector(true);
+                }}
                 className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
               >
                 <div className="flex flex-col items-center space-y-1">
                   <Sparkles className="w-6 h-6 group-hover:animate-bounce-gentle" />
                   <span>Tarot Reading</span>
                 </div>
-              </Link>
+              </button>
               <Link
                 href="/birth-chart"
                 className="group relative bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
@@ -291,6 +298,25 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           )}
         </div>
       </div>
+
+      {/* Interactive Tarot Selector Modal */}
+      {showTarotSelector && (
+        <InteractiveTarotSelector
+          spreadType={tarotSelectorConfig.spreadType}
+          readingType={tarotSelectorConfig.readingType}
+          onClose={() => {
+            setShowTarotSelector(false);
+            if (refetch) refetch();
+          }}
+          onComplete={(reading) => {
+            setShowTarotSelector(false);
+            if (refetch) refetch();
+          }}
+        />
+      )}
+
+      {/* Help System */}
+      <HelpSystem />
     </div>
   );
 }
