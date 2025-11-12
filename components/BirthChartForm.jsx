@@ -1,10 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import BirthChartWheel from './BirthChartWheel';
 import LowCreditsUpsellBanner from './LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from './FloatingUpgradePrompt';
 
-export default function BirthChartForm() {
+export default function BirthChartForm({ updateMode = false }) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     birthDate: '',
     birthTime: '',
@@ -18,10 +20,44 @@ export default function BirthChartForm() {
   const [creditsRemaining, setCreditsRemaining] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [showFloatingPrompt, setShowFloatingPrompt] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(updateMode);
 
   useEffect(() => {
     checkCredits();
-  }, []);
+    if (updateMode) {
+      loadExistingChart();
+    }
+  }, [updateMode]);
+  
+  const loadExistingChart = async () => {
+    try {
+      setLoadingExisting(true);
+      const response = await fetch('/api/birth-chart');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.hasChart && data.birthInfo) {
+          // Pre-fill form with existing chart data
+          setFormData({
+            birthDate: data.birthInfo.date || '',
+            birthTime: data.birthInfo.time || '',
+            location: data.birthInfo.location || '',
+            manualLat: data.birthInfo.latitude?.toString() || '',
+            manualLon: data.birthInfo.longitude?.toString() || ''
+          });
+          if (data.birthInfo.latitude && data.birthInfo.longitude) {
+            setCoordinates({
+              latitude: parseFloat(data.birthInfo.latitude),
+              longitude: parseFloat(data.birthInfo.longitude)
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading existing chart:', error);
+    } finally {
+      setLoadingExisting(false);
+    }
+  };
 
   const checkCredits = async () => {
     try {
@@ -153,16 +189,12 @@ export default function BirthChartForm() {
 
       const data = await response.json();
       if (data.success) {
-        setChart({
-          ...data,
-          birthDate: formData.birthDate,
-          birthTime: formData.birthTime,
-          location: formData.location
-        });
         // Update credits if returned
         if (data.creditsRemaining !== undefined) {
           setCreditsRemaining(data.creditsRemaining);
         }
+        // Redirect to my-chart page to view the chart
+        router.push('/my-chart');
       } else if (data.requiresPayment) {
         setShowFloatingPrompt(true);
       } else {

@@ -32,6 +32,21 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });
   const [showTarotSelector, setShowTarotSelector] = useState(false);
   const [tarotSelectorConfig, setTarotSelectorConfig] = useState({ spreadType: "three-card", readingType: "general" });
+  const [hasBirthChart, setHasBirthChart] = useState(null); // null = checking, true/false = result
+
+  // Check if user has a birth chart
+  useEffect(() => {
+    if (user?.id) {
+      fetch('/api/birth-chart')
+        .then(res => res.json())
+        .then(data => {
+          setHasBirthChart(data.hasChart || false);
+        })
+        .catch(() => {
+          setHasBirthChart(false);
+        });
+    }
+  }, [user?.id]);
 
   return (
     <div className="w-full">
@@ -205,12 +220,12 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 </div>
               </button>
               <Link
-                href="/birth-chart"
+                href={hasBirthChart === true ? "/my-chart" : "/birth-chart"}
                 className="group relative bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
               >
                 <div className="flex flex-col items-center space-y-1">
                   <Star className="w-6 h-6" />
-                  <span>Birth Chart</span>
+                  <span>{hasBirthChart === true ? "My Chart" : "Birth Chart"}</span>
                 </div>
               </Link>
               <Link

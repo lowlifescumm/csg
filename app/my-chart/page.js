@@ -99,7 +99,7 @@ export default function MyChartPage() {
             Back to Dashboard
           </Link>
           
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/50">
@@ -111,12 +111,20 @@ export default function MyChartPage() {
                 </div>
               </div>
             </div>
-            <Link
-              href="/birth-chart"
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
-            >
-              Update Chart
-            </Link>
+            <div className="flex gap-3">
+              <Link
+                href="/birth-chart?update=true"
+                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg text-sm font-medium transition-all hover:shadow-lg"
+              >
+                Update Chart
+              </Link>
+              <Link
+                href="/birth-chart"
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Create New
+              </Link>
+            </div>
           </div>
 
           {birthInfo && (
