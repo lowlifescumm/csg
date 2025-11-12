@@ -26,10 +26,10 @@ export default function TarotReadingTypePicker({ onPick }) {
             setSelected(t.key);
             onPick?.(t);
           }}
-          className={`text-left glassmorphic rounded-2xl p-5 border border-white border-opacity-40 hover:shadow-2xl smooth-transition ${selected===t.key? 'ring-2 ring-purple-400' : ''}`}
+          className={`text-left glassmorphic rounded-2xl p-5 border border-white border-opacity-40 hover:shadow-2xl smooth-transition hover:bg-opacity-20 ${selected===t.key? 'ring-2 ring-purple-400 bg-opacity-20' : ''}`}
         >
           <div className="text-xl font-semibold gradient-text mb-1">{t.title}</div>
-          <div className="text-gray-600">{t.desc}</div>
+          <div className="text-purple-200 text-sm">{t.desc}</div>
         </button>
       ))}
     </div>

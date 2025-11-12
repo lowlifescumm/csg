@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard } from "lucide-react";
+import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X } from "lucide-react";
 import Link from "next/link";
 import HeroHeader from "./HeroHeader";
 import FocusGrid from "./FocusGrid";
@@ -13,6 +13,7 @@ import BestMatches from "./BestMatches";
 import ReadingHistory from "./ReadingHistory";
 import PremiumCard from "./PremiumCard";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
+import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import HelpSystem from "@/components/HelpSystem";
 
 /**
@@ -31,6 +32,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const chartCount = readings?.stats?.chartCount || 0;
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });
   const [showTarotSelector, setShowTarotSelector] = useState(false);
+  const [showTarotTypePicker, setShowTarotTypePicker] = useState(false);
   const [tarotSelectorConfig, setTarotSelectorConfig] = useState({ spreadType: "three-card", readingType: "general" });
   const [hasBirthChart, setHasBirthChart] = useState(null); // null = checking, true/false = result
 
@@ -69,8 +71,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               <button
                 onClick={() => {
-                  setTarotSelectorConfig({ spreadType: "three-card", readingType: "general" });
-                  setShowTarotSelector(true);
+                  setShowTarotTypePicker(true);
                 }}
                 className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
               >
@@ -320,6 +321,33 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             </div>
           )}
         </div>
+
+        {/* Tarot Reading Type Picker Modal */}
+        {showTarotTypePicker && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="glassmorphic rounded-3xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Choose Your Tarot Reading</h2>
+                  <p className="text-purple-200 text-sm sm:text-base">Select a reading type to begin your journey</p>
+                </div>
+                <button
+                  onClick={() => setShowTarotTypePicker(false)}
+                  className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition"
+                >
+                  <X className="w-6 h-6 text-white" />
+                </button>
+              </div>
+              <TarotReadingTypePicker
+                onPick={(type) => {
+                  setTarotSelectorConfig({ spreadType: type.spreadType, readingType: type.key });
+                  setShowTarotTypePicker(false);
+                  setShowTarotSelector(true);
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Interactive Tarot Selector Modal */}
         {showTarotSelector && (
