@@ -52,30 +52,22 @@
 - **Components:** ReadingHistory and CosmicBriefing already wired
 - **Note:** Was incorrectly marked as stub - actually fully functional
 
-### 4. **Birth Chart UI** ⚠️ RESTORE
-- **Status:** Missing form (API exists)
-- **API Ready:** `/api/birth-chart` functional
-- **Old Location:** `app__disabled/_birth_chart_disabled/page.js`
-- **Action Required:**
-  - Copy form from disabled version or create new
-  - Add Google Maps autocomplete for location
-  - Wire to `/api/birth-chart` endpoint
-- **Estimated Effort:** 4-6 hours
-- **Risk Level:** Medium
+### 4. **Birth Chart UI** ✅ COMPLETE
+- **Status:** ✅ Already exists and functional
+- **Location:** `/app/birth-chart/page.js`
+- **Component:** Uses `BirthChartForm` component with Google Maps integration
+- **Verified:** 2025-11-12
 
 ---
 
 ## 🟡 Medium Priority - Partial Features
 
-### 5. **AI Coach Page** ⚠️ RESTORE
-- **Status:** Missing UI (API exists)
-- **API Ready:** `/api/coach/daily` functional
-- **Old Location:** `app__disabled/_coach_disabled/page.js`
-- **Action Required:**
-  - Restore `/coach` page from disabled version
-  - Wire to `/api/coach/daily` endpoint
-- **Estimated Effort:** 2-3 hours
-- **Risk Level:** Medium
+### 5. **AI Coach Page** ✅ COMPLETE
+- **Status:** ✅ Already exists and functional
+- **Location:** `/app/coach/page.js`
+- **API:** Connected to `/api/coach/daily` endpoint
+- **Features:** Premium-only access with upgrade prompts
+- **Verified:** 2025-11-12
 
 ### 6. **Profile Management UI** ⚠️ VERIFY/COMPLETE
 - **Status:** Route exists (`/app/profile/page.js`) but may be incomplete
