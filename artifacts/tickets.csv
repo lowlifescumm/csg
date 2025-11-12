@@ -1,0 +1,14 @@
+Summary,Acceptance Criteria,Labels,Estimate
+Restore password reset flow (API + UI),"1) /reset-password UI renders and validates token 2) POST /api/auth/forgot-password sends email via Resend 3) POST /api/auth/reset-password updates password_hash and clears token","migration,auth,critical",5
+Rebuild credit purchase via Stripe Checkout,"1) /credits page exposes buy flow 2) POST /api/credits/purchase|/api/create-payment-intent return Stripe session 3) Stripe webhook creates paid credits and idempotently logs events","migration,monetization,stripe",8
+Reinstate compatibility report purchase flow,"1) /compatibility UI collects partner data 2) POST /api/create-compatibility-payment initiates checkout 3) Report stored and viewable post-payment","migration,feature-critical,compatibility",8
+Restore subscription management experience,"1) /subscription page lists plan + billing portal link 2) create-subscription endpoint handles success/cancel 3) Subscriber status reflected on dashboard","migration,monetization,stripe",5
+Bring back admin portal (users/blog/settings),"1) /admin routed behind role check 2) Admin users can adjust credits + roles 3) Blog CMS CRUD works with persistence","migration,admin,high",13
+Re-enable blog public pages,"1) /blog lists published posts 2) /blog/[slug] renders SEO metadata 3) Unpublished posts do not leak","migration,blog,medium",3
+Implement tarot interactive selector,"1) Dashboard CTA opens card picker 2) POST /api/readings/create saves reading 3) Reading history shows manual run","migration,tarot,medium",5
+Restore transit + forecast services,"1) /transits UI reinstated 2) Cron endpoints return 200 and populate transit tables 3) Forecast preferences API functions","migration,astro,high",8
+Add birth chart UI,"1) /birth-chart form validated with Google Maps autocomplete 2) Submission calls POST /api/birth-chart 3) Result view matches legacy output","migration,astro,medium",5
+Persist journal entries,"1) POST /api/journal writes to journal_entries 2) GET returns paginated entries 3) Dashboard Quick save available","migration,journal,medium",3
+Execute schema migration script,"1) Run artifacts/sql/dashboard_migration.sql in staging 2) Verify tables/columns exist via checklist queries 3) Document rollback snapshot","migration,dba,medium",3
+Parity regression test suite,"1) Update Playwright to cover payments/admin/blog flows 2) API unit tests cover restored endpoints 3) Smoke checklist automated in CI","migration,qa,medium",5
+

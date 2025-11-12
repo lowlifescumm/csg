@@ -1,0 +1,2837 @@
+{
+  "endpoints": [
+    {
+      "path": "/admin/credits",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Admin credit adjustments",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/admin/login",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Admin login",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/admin/make-admin",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Promote user to admin",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/admin/settings",
+      "legacy_methods": [
+        "GET",
+        "PUT"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Admin global settings",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/admin/stats",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Admin stats dashboard",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/admin/users",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Admin user management listing",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/auth/[...nextauth]",
+      "legacy_methods": [],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Legacy endpoint for /auth/[...nextauth]",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/auth/forgot-password",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Trigger password reset email",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/auth/login",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Email/password authentication entry point",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/auth/logout",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Invalidate auth token",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/auth/reset-password",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Complete password reset flow",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/auth/signup",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "User registration endpoint",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/auth/user",
+      "legacy_methods": [
+        "GET",
+        "PUT"
+      ],
+      "new_methods": [
+        "GET",
+        "PUT"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Fetch and update authenticated user profile",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/birth-chart",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Birth chart compute & fetch",
+      "parity_status": "Partial",
+      "notes": [
+        "Methods differ: legacy ['GET', 'POST'] vs new ['GET']"
+      ]
+    },
+    {
+      "path": "/blog",
+      "legacy_methods": [
+        "DELETE",
+        "GET",
+        "POST",
+        "PUT"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Blog post CRUD",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/blog/[slug]",
+      "legacy_methods": [
+        "DELETE",
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Fetch individual blog post",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/blog/categories",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "List blog categories",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/blog/cleanup",
+      "legacy_methods": [
+        "DELETE"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Blog cleanup job",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/blog/tags",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "List blog tags",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/briefing",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Fetch daily cosmic briefing summary",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/charts",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Saved chart collection",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/charts/[id]",
+      "legacy_methods": [
+        "DELETE",
+        "GET",
+        "PUT"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Specific chart management",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/coach/daily",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Daily AI coach session",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/compatibility",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Compatibility readings",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/compatibility/top",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Top compatibility matches",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/contact",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Contact form submission",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/create-compatibility-payment",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Compatibility purchase checkout",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/create-payment-intent",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Stripe one-off payment intent",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/create-subscription",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Stripe subscription checkout",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/credits",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Credit balance and stats",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/credits/purchase",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Purchase credit packs",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/cron/cleanup-tokens",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Purge expired tokens",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/cron/generate-forecasts",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Schedule forecast generation",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/cron/horoscopes",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Regenerate horoscopes",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/cron/transit-monitor",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Monitor transit jobs",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/dashboard/tiles",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Dashboard tile configuration data",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/element/today",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Daily elemental energy reading",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/energy",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Energy metrics for user/birth chart",
+      "parity_status": "Partial",
+      "notes": [
+        "Methods differ: legacy ['GET', 'POST'] vs new ['GET']"
+      ]
+    },
+    {
+      "path": "/forecasts",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Retrieve daily forecasts",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/forecasts/generate",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Generate forecast content on demand",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/forecasts/preferences",
+      "legacy_methods": [
+        "GET",
+        "PUT"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Manage forecast notification preferences",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/health",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "System health check",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/horoscope",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Daily horoscope content",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/journal",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [
+        "GET",
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "User journaling entries",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/moon-phase",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Daily moon phase details",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/readings",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Fetch saved readings",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/readings/create",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Create tarot reading from card picks",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/readings/generate",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Generate AI reading (tarot/astro)",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/rewards/claim",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Claim reward (daily bonus)",
+      "parity_status": "Partial",
+      "notes": [
+        "Methods differ: legacy ['GET', 'POST'] vs new ['POST']"
+      ]
+    },
+    {
+      "path": "/stripe",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Stripe payment session",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/stripe-webhook",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Stripe webhook handler",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/subscriptions/transit",
+      "legacy_methods": [
+        "DELETE",
+        "GET",
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Manage transit subscriptions",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/tarot",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Generate tarot reading",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/tasks",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [
+        "GET",
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Daily tasks/quests listing",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/tasks/complete",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Mark dashboard task complete",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/transits",
+      "legacy_methods": [
+        "GET"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Transit listing",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/transits/interpret",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Interpret transit readings",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/upload/image",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Image upload via Cloudinary",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/user/ai-preferences",
+      "legacy_methods": [
+        "GET",
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "AI guidance preferences",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/user/favorites",
+      "legacy_methods": [
+        "DELETE",
+        "GET",
+        "POST"
+      ],
+      "new_methods": [
+        "DELETE",
+        "GET",
+        "POST"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "Manage saved favorites",
+      "parity_status": "Complete",
+      "notes": []
+    },
+    {
+      "path": "/verify-compatibility-payment",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Verify compatibility payment result",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/verify-payment",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Verify generic payment result",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/webhooks/transit/test",
+      "legacy_methods": [
+        "POST"
+      ],
+      "new_methods": [],
+      "service": "Next.js API routes",
+      "purpose": "Test transit webhook",
+      "parity_status": "Missing",
+      "notes": [
+        "Not implemented in dashboard-v2 branch"
+      ]
+    },
+    {
+      "path": "/debug/nextauth",
+      "legacy_methods": [],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "New dashboard-only endpoint /debug/nextauth",
+      "parity_status": "Complete",
+      "notes": [
+        "Not present in legacy; treat as additive feature"
+      ]
+    },
+    {
+      "path": "/streak",
+      "legacy_methods": [],
+      "new_methods": [
+        "GET"
+      ],
+      "service": "Next.js API routes",
+      "purpose": "New dashboard-only endpoint /streak",
+      "parity_status": "Complete",
+      "notes": [
+        "Not present in legacy; treat as additive feature"
+      ]
+    }
+  ],
+  "ui_pages": [
+    {
+      "legacy_route": "/",
+      "legacy_component": "app__disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Legacy marketing landing page removed; new app starts at /login."
+    },
+    {
+      "legacy_route": "/dashboard",
+      "legacy_component": "app__disabled/_dashboard_disabled/page.js",
+      "new_route": "/dashboard",
+      "new_component": "app/dashboard/page.js (DashboardShell + DashboardV3)",
+      "status": "Partial",
+      "notes": "Core stats render but tarot selector, upsells, help system, and refresh controls were dropped."
+    },
+    {
+      "legacy_route": "/login",
+      "legacy_component": "app__disabled/_login_disabled/page.js",
+      "new_route": "/login",
+      "new_component": "app/login/page.js",
+      "status": "Partial",
+      "notes": "Login/signup retained but forgot-password/reset flows removed."
+    },
+    {
+      "legacy_route": "/birth-chart",
+      "legacy_component": "app__disabled/_birth_chart_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "API still exists but UI to capture birth data was removed."
+    },
+    {
+      "legacy_route": "/compatibility",
+      "legacy_component": "app__disabled/_compatibility_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Compatibility purchase & reporting flow removed entirely."
+    },
+    {
+      "legacy_route": "/contact",
+      "legacy_component": "app__disabled/_contact_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "No replacement contact/support entry point."
+    },
+    {
+      "legacy_route": "/credits",
+      "legacy_component": "app__disabled/_credits_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Credit purchase upsell removed; no UI for purchasing add-on packs."
+    },
+    {
+      "legacy_route": "/moon-reading",
+      "legacy_component": "app__disabled/_moon_reading_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Moon reading experience absent."
+    },
+    {
+      "legacy_route": "/my-chart",
+      "legacy_component": "app__disabled/_my_chart_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "User chart management view removed."
+    },
+    {
+      "legacy_route": "/profile",
+      "legacy_component": "app__disabled/_profile_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Profile editing UI removed despite API support."
+    },
+    {
+      "legacy_route": "/reset-password",
+      "legacy_component": "app__disabled/_reset_password_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Password reset funnel removed."
+    },
+    {
+      "legacy_route": "/subscription",
+      "legacy_component": "app__disabled/_subscription_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Subscription upgrade/management UI removed."
+    },
+    {
+      "legacy_route": "/tour-demo",
+      "legacy_component": "app__disabled/_tour_demo_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Guided tour removed; no onboarding walkthrough."
+    },
+    {
+      "legacy_route": "/transits",
+      "legacy_component": "app__disabled/_transits_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Transit tracker UI removed; API also missing."
+    },
+    {
+      "legacy_route": "/coach",
+      "legacy_component": "app__disabled/_coach_disabled/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "AI coach experience removed."
+    },
+    {
+      "legacy_route": "/admin",
+      "legacy_component": "app__disabled/admin/**/*",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Admin dashboard, blog CMS, user management all removed."
+    },
+    {
+      "legacy_route": "/blog",
+      "legacy_component": "app__disabled/blog/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Public blog listing removed."
+    },
+    {
+      "legacy_route": "/blog/[slug]",
+      "legacy_component": "app__disabled/blog/[slug]/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Blog detail pages removed."
+    },
+    {
+      "legacy_route": "/forecasts",
+      "legacy_component": "app__disabled/forecasts/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Forecast browsing UI removed."
+    },
+    {
+      "legacy_route": "/forecasts/settings",
+      "legacy_component": "app__disabled/forecasts/settings/page.js",
+      "new_route": null,
+      "new_component": null,
+      "status": "Missing",
+      "notes": "Forecast preference management removed."
+    },
+    {
+      "legacy_route": "/debug",
+      "legacy_component": "app__disabled/debug/page.js",
+      "new_route": "/debug",
+      "new_component": "app/debug/page.js",
+      "status": "Complete",
+      "notes": "Simple debug page retained."
+    }
+  ],
+  "database": {
+    "tables": [
+      {
+        "table": "blog_posts",
+        "file": "add-blog-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "title",
+            "definition": "VARCHAR(255) NOT NULL"
+          },
+          {
+            "name": "slug",
+            "definition": "VARCHAR(255) UNIQUE NOT NULL"
+          },
+          {
+            "name": "excerpt",
+            "definition": "TEXT"
+          },
+          {
+            "name": "content",
+            "definition": "TEXT NOT NULL"
+          },
+          {
+            "name": "featured_image",
+            "definition": "VARCHAR(500)"
+          },
+          {
+            "name": "author_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "name": "status",
+            "definition": "VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft'"
+          },
+          {
+            "name": "published_at",
+            "definition": "TIMESTAMP"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          },
+          {
+            "name": "meta_title",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "meta_description",
+            "definition": "TEXT"
+          },
+          {
+            "name": "tags",
+            "definition": "TEXT[]"
+          },
+          {
+            "name": "category",
+            "definition": "VARCHAR(100)"
+          },
+          {
+            "name": "reading_time",
+            "definition": "INTEGER DEFAULT 5"
+          },
+          {
+            "name": "view_count",
+            "definition": "INTEGER DEFAULT 0"
+          }
+        ]
+      },
+      {
+        "table": "blog_categories",
+        "file": "add-blog-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "name",
+            "definition": "VARCHAR(100) UNIQUE NOT NULL"
+          },
+          {
+            "name": "slug",
+            "definition": "VARCHAR(100) UNIQUE NOT NULL"
+          },
+          {
+            "name": "description",
+            "definition": "TEXT"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "blog_tags",
+        "file": "add-blog-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "name",
+            "definition": "VARCHAR(50) UNIQUE NOT NULL"
+          },
+          {
+            "name": "slug",
+            "definition": "VARCHAR(50) UNIQUE NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "blog_post_views",
+        "file": "add-blog-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "post_id",
+            "definition": "INTEGER REFERENCES blog_posts(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "ip_address",
+            "definition": "INET"
+          },
+          {
+            "name": "user_agent",
+            "definition": "TEXT"
+          },
+          {
+            "name": "viewed_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "referral_redemptions",
+        "file": "add-credits-and-referrals.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "referrer_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "referred_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "referrer_rewarded",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "referred_rewarded",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "password_reset_tokens",
+        "file": "add-password-reset-actual.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "token",
+            "definition": "VARCHAR(255) UNIQUE NOT NULL"
+          },
+          {
+            "name": "expires_at",
+            "definition": "TIMESTAMP NOT NULL"
+          },
+          {
+            "name": "used",
+            "definition": "BOOLEAN DEFAULT FALSE"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "forecast_preferences",
+        "file": "forecast-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "delivery_cadence",
+            "definition": "VARCHAR(20) DEFAULT 'daily' CHECK (delivery_cadence IN ('daily'"
+          },
+          {
+            "name": "delivery_time",
+            "definition": "TIME DEFAULT '08:00:00'"
+          },
+          {
+            "name": "timezone",
+            "definition": "VARCHAR(50) DEFAULT 'America/Los_Angeles'"
+          },
+          {
+            "name": "tone",
+            "definition": "VARCHAR(20) DEFAULT 'spiritual' CHECK (tone IN ('spiritual'"
+          },
+          {
+            "name": "default_length",
+            "definition": "VARCHAR(20) DEFAULT 'medium' CHECK (default_length IN ('short'"
+          },
+          {
+            "name": "topics",
+            "definition": "TEXT[] DEFAULT ARRAY['general']"
+          },
+          {
+            "name": "include_actions",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "include_rituals",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "ai_rewrite_enabled",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "email_enabled",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "push_enabled",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+          }
+        ]
+      },
+      {
+        "table": "forecasts",
+        "file": "forecast-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "forecast_date",
+            "definition": "DATE NOT NULL"
+          },
+          {
+            "name": "forecast_type",
+            "definition": "VARCHAR(20) DEFAULT 'daily' CHECK (forecast_type IN ('daily'"
+          },
+          {
+            "name": "length",
+            "definition": "VARCHAR(20) DEFAULT 'medium' CHECK (length IN ('short'"
+          },
+          {
+            "name": "headline",
+            "definition": "TEXT NOT NULL"
+          },
+          {
+            "name": "theme",
+            "definition": "TEXT"
+          },
+          {
+            "name": "full_text",
+            "definition": "TEXT NOT NULL"
+          },
+          {
+            "name": "tone",
+            "definition": "VARCHAR(20)"
+          },
+          {
+            "name": "transit_summary",
+            "definition": "JSONB"
+          },
+          {
+            "name": "topics",
+            "definition": "TEXT[]"
+          },
+          {
+            "name": "urgency",
+            "definition": "VARCHAR(20) DEFAULT 'normal' CHECK (urgency IN ('low'"
+          },
+          {
+            "name": "confidence_score",
+            "definition": "VARCHAR(20) DEFAULT 'medium' CHECK (confidence_score IN ('low'"
+          },
+          {
+            "name": "suggested_actions",
+            "definition": "JSONB"
+          },
+          {
+            "name": "rituals",
+            "definition": "JSONB"
+          },
+          {
+            "name": "generated_at",
+            "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "delivered_at",
+            "definition": "TIMESTAMP"
+          },
+          {
+            "name": "read_at",
+            "definition": "TIMESTAMP"
+          },
+          {
+            "name": "saved_to_journal",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "cache_key",
+            "definition": "TEXT"
+          },
+          {
+            "name": "expires_at",
+            "definition": "TIMESTAMP"
+          }
+        ]
+      },
+      {
+        "table": "forecast_templates",
+        "file": "forecast-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "planet",
+            "definition": "VARCHAR(20) NOT NULL"
+          },
+          {
+            "name": "aspect",
+            "definition": "VARCHAR(20) NOT NULL"
+          },
+          {
+            "name": "target_type",
+            "definition": "VARCHAR(20) NOT NULL"
+          },
+          {
+            "name": "target",
+            "definition": "VARCHAR(20)"
+          },
+          {
+            "name": "topic",
+            "definition": "VARCHAR(20) NOT NULL"
+          },
+          {
+            "name": "tone",
+            "definition": "VARCHAR(20) NOT NULL"
+          },
+          {
+            "name": "headline_template",
+            "definition": "TEXT NOT NULL"
+          },
+          {
+            "name": "short_template",
+            "definition": "TEXT NOT NULL"
+          },
+          {
+            "name": "medium_template",
+            "definition": "TEXT"
+          },
+          {
+            "name": "long_template",
+            "definition": "TEXT"
+          },
+          {
+            "name": "strength",
+            "definition": "VARCHAR(20) DEFAULT 'medium' CHECK (strength IN ('low'"
+          },
+          {
+            "name": "priority",
+            "definition": "INTEGER DEFAULT 5"
+          },
+          {
+            "name": "default_actions",
+            "definition": "JSONB"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+          }
+        ]
+      },
+      {
+        "table": "users",
+        "file": "init-render.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "email",
+            "definition": "VARCHAR(255) UNIQUE NOT NULL"
+          },
+          {
+            "name": "password_hash",
+            "definition": "VARCHAR(255) NOT NULL"
+          },
+          {
+            "name": "first_name",
+            "definition": "VARCHAR(100)"
+          },
+          {
+            "name": "last_name",
+            "definition": "VARCHAR(100)"
+          },
+          {
+            "name": "role",
+            "definition": "VARCHAR(20) DEFAULT 'user'"
+          },
+          {
+            "name": "stripe_customer_id",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "stripe_subscription_id",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "credits",
+        "file": "init-render.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "credits",
+            "definition": "INTEGER DEFAULT 0"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "readings",
+        "file": "init-render.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "type",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "question",
+            "definition": "TEXT"
+          },
+          {
+            "name": "result",
+            "definition": "JSONB NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "birth_charts",
+        "file": "init-render.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "birth_date",
+            "definition": "DATE NOT NULL"
+          },
+          {
+            "name": "birth_time",
+            "definition": "TIME"
+          },
+          {
+            "name": "location",
+            "definition": "VARCHAR(255) NOT NULL"
+          },
+          {
+            "name": "latitude",
+            "definition": "DECIMAL(10"
+          },
+          {
+            "name": "longitude",
+            "definition": "DECIMAL(11"
+          },
+          {
+            "name": "chart_data",
+            "definition": "JSONB NOT NULL"
+          },
+          {
+            "name": "interpretation",
+            "definition": "TEXT"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "subscriptions",
+        "file": "init-render.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "stripe_subscription_id",
+            "definition": "VARCHAR(255) UNIQUE NOT NULL"
+          },
+          {
+            "name": "status",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "horoscopes",
+        "file": "init-render.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "sign",
+            "definition": "VARCHAR(20) NOT NULL"
+          },
+          {
+            "name": "date",
+            "definition": "DATE NOT NULL"
+          },
+          {
+            "name": "content",
+            "definition": "TEXT NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "users",
+        "file": "init.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "email",
+            "definition": "VARCHAR(255) UNIQUE NOT NULL"
+          },
+          {
+            "name": "password_hash",
+            "definition": "VARCHAR(255) NOT NULL"
+          },
+          {
+            "name": "first_name",
+            "definition": "VARCHAR(100)"
+          },
+          {
+            "name": "last_name",
+            "definition": "VARCHAR(100)"
+          },
+          {
+            "name": "role",
+            "definition": "VARCHAR(20) DEFAULT 'user'"
+          },
+          {
+            "name": "stripe_customer_id",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "stripe_subscription_id",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "credits",
+        "file": "init.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "credits",
+            "definition": "INTEGER DEFAULT 0"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "readings",
+        "file": "init.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "type",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "question",
+            "definition": "TEXT"
+          },
+          {
+            "name": "result",
+            "definition": "JSONB NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "birth_charts",
+        "file": "init.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "birth_date",
+            "definition": "DATE NOT NULL"
+          },
+          {
+            "name": "birth_time",
+            "definition": "TIME"
+          },
+          {
+            "name": "location",
+            "definition": "VARCHAR(255) NOT NULL"
+          },
+          {
+            "name": "latitude",
+            "definition": "DECIMAL(10"
+          },
+          {
+            "name": "longitude",
+            "definition": "DECIMAL(11"
+          },
+          {
+            "name": "chart_data",
+            "definition": "JSONB NOT NULL"
+          },
+          {
+            "name": "interpretation",
+            "definition": "TEXT"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "subscriptions",
+        "file": "init.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "stripe_subscription_id",
+            "definition": "VARCHAR(255) UNIQUE NOT NULL"
+          },
+          {
+            "name": "status",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "horoscopes",
+        "file": "init.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "sign",
+            "definition": "VARCHAR(20) NOT NULL"
+          },
+          {
+            "name": "date",
+            "definition": "DATE NOT NULL"
+          },
+          {
+            "name": "content",
+            "definition": "TEXT NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "password_reset_tokens",
+        "file": "init.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "token",
+            "definition": "VARCHAR(255) UNIQUE NOT NULL"
+          },
+          {
+            "name": "expires_at",
+            "definition": "TIMESTAMP NOT NULL"
+          },
+          {
+            "name": "used",
+            "definition": "BOOLEAN DEFAULT FALSE"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "natal_charts",
+        "file": "transit-tracker-schema-fixed.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "birth_date",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+          },
+          {
+            "name": "birth_time",
+            "definition": "TIME NOT NULL"
+          },
+          {
+            "name": "timezone",
+            "definition": "VARCHAR(100) NOT NULL"
+          },
+          {
+            "name": "latitude",
+            "definition": "DECIMAL(10"
+          },
+          {
+            "name": "longitude",
+            "definition": "DECIMAL(10"
+          },
+          {
+            "name": "location_name",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "natal_positions",
+            "definition": "JSONB NOT NULL"
+          },
+          {
+            "name": "houses",
+            "definition": "JSONB"
+          },
+          {
+            "name": "ascendant",
+            "definition": "JSONB"
+          },
+          {
+            "name": "midheaven",
+            "definition": "JSONB"
+          },
+          {
+            "name": "chart_name",
+            "definition": "VARCHAR(255) DEFAULT 'Birth Chart'"
+          },
+          {
+            "name": "is_primary",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "is_encrypted",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "transits",
+        "file": "transit-tracker-schema-fixed.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "natal_chart_id",
+            "definition": "INTEGER NOT NULL REFERENCES natal_charts(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "transiting_body",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "natal_point",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "aspect",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "start_time",
+            "definition": "TIMESTAMP WITH TIME ZONE"
+          },
+          {
+            "name": "exact_time",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+          },
+          {
+            "name": "end_time",
+            "definition": "TIMESTAMP WITH TIME ZONE"
+          },
+          {
+            "name": "orb",
+            "definition": "DECIMAL(5"
+          },
+          {
+            "name": "strength_score",
+            "definition": "INTEGER"
+          },
+          {
+            "name": "status",
+            "definition": "VARCHAR(20) DEFAULT 'upcoming'"
+          },
+          {
+            "name": "is_retrograde",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "interpretation",
+            "definition": "JSONB"
+          },
+          {
+            "name": "affected_house",
+            "definition": "INTEGER"
+          },
+          {
+            "name": "house_meaning",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "CHECK",
+            "definition": "(status IN ('upcoming'"
+          },
+          {
+            "name": "CHECK",
+            "definition": "(strength_score >= 0 AND strength_score <= 100)"
+          },
+          {
+            "name": "CHECK",
+            "definition": "(affected_house >= 1 AND affected_house <= 12 OR affected_house IS NULL)"
+          }
+        ]
+      },
+      {
+        "table": "transit_subscriptions",
+        "file": "transit-tracker-schema-fixed.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "natal_chart_id",
+            "definition": "INTEGER NOT NULL REFERENCES natal_charts(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "transiting_bodies",
+            "definition": "TEXT[]"
+          },
+          {
+            "name": "natal_points",
+            "definition": "TEXT[]"
+          },
+          {
+            "name": "aspects",
+            "definition": "TEXT[]"
+          },
+          {
+            "name": "min_strength",
+            "definition": "INTEGER DEFAULT 50"
+          },
+          {
+            "name": "notify_email",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "notify_push",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "notify_webhook",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "webhook_url",
+            "definition": "VARCHAR(500)"
+          },
+          {
+            "name": "is_active",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "last_check",
+            "definition": "TIMESTAMP WITH TIME ZONE"
+          },
+          {
+            "name": "next_check",
+            "definition": "TIMESTAMP WITH TIME ZONE"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "transit_notifications",
+        "file": "transit-tracker-schema-fixed.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "transit_id",
+            "definition": "INTEGER NOT NULL REFERENCES transits(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "subscription_id",
+            "definition": "INTEGER REFERENCES transit_subscriptions(id) ON DELETE SET NULL"
+          },
+          {
+            "name": "notification_type",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "event_type",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "sent_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "delivered",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "delivery_status",
+            "definition": "VARCHAR(100)"
+          },
+          {
+            "name": "error_message",
+            "definition": "TEXT"
+          },
+          {
+            "name": "payload",
+            "definition": "JSONB"
+          },
+          {
+            "name": "notification_hash",
+            "definition": "VARCHAR(64)"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "ephemeris_cache",
+        "file": "transit-tracker-schema-fixed.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "calculation_time",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL UNIQUE"
+          },
+          {
+            "name": "positions",
+            "definition": "JSONB NOT NULL"
+          },
+          {
+            "name": "source",
+            "definition": "VARCHAR(100) DEFAULT 'astronomy-engine'"
+          },
+          {
+            "name": "version",
+            "definition": "VARCHAR(50)"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "transit_computation_log",
+        "file": "transit-tracker-schema-fixed.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "SERIAL PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "definition": "INTEGER REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "name": "computation_type",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "window_start",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+          },
+          {
+            "name": "window_end",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+          },
+          {
+            "name": "transits_found",
+            "definition": "INTEGER DEFAULT 0"
+          },
+          {
+            "name": "computation_time_ms",
+            "definition": "INTEGER"
+          },
+          {
+            "name": "status",
+            "definition": "VARCHAR(50) DEFAULT 'completed'"
+          },
+          {
+            "name": "error_message",
+            "definition": "TEXT"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "natal_charts",
+        "file": "transit-tracker-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+          },
+          {
+            "name": "user_id",
+            "definition": "UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "birth_date",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+          },
+          {
+            "name": "birth_time",
+            "definition": "TIME NOT NULL"
+          },
+          {
+            "name": "timezone",
+            "definition": "VARCHAR(100) NOT NULL"
+          },
+          {
+            "name": "latitude",
+            "definition": "DECIMAL(10"
+          },
+          {
+            "name": "longitude",
+            "definition": "DECIMAL(10"
+          },
+          {
+            "name": "location_name",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "natal_positions",
+            "definition": "JSONB NOT NULL"
+          },
+          {
+            "name": "houses",
+            "definition": "JSONB"
+          },
+          {
+            "name": "ascendant",
+            "definition": "JSONB"
+          },
+          {
+            "name": "midheaven",
+            "definition": "JSONB"
+          },
+          {
+            "name": "chart_name",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "is_primary",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "is_encrypted",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "transits",
+        "file": "transit-tracker-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+          },
+          {
+            "name": "user_id",
+            "definition": "UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "natal_chart_id",
+            "definition": "UUID NOT NULL REFERENCES natal_charts(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "transiting_body",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "natal_point",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "aspect",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "start_time",
+            "definition": "TIMESTAMP WITH TIME ZONE"
+          },
+          {
+            "name": "exact_time",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+          },
+          {
+            "name": "end_time",
+            "definition": "TIMESTAMP WITH TIME ZONE"
+          },
+          {
+            "name": "orb",
+            "definition": "DECIMAL(5"
+          },
+          {
+            "name": "strength_score",
+            "definition": "INTEGER"
+          },
+          {
+            "name": "status",
+            "definition": "VARCHAR(20) DEFAULT 'upcoming'"
+          },
+          {
+            "name": "is_retrograde",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "interpretation",
+            "definition": "JSONB"
+          },
+          {
+            "name": "affected_house",
+            "definition": "INTEGER"
+          },
+          {
+            "name": "house_meaning",
+            "definition": "VARCHAR(255)"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "CHECK",
+            "definition": "(status IN ('upcoming'"
+          },
+          {
+            "name": "CHECK",
+            "definition": "(strength_score >= 0 AND strength_score <= 100)"
+          },
+          {
+            "name": "CHECK",
+            "definition": "(affected_house >= 1 AND affected_house <= 12)"
+          }
+        ]
+      },
+      {
+        "table": "transit_subscriptions",
+        "file": "transit-tracker-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+          },
+          {
+            "name": "user_id",
+            "definition": "UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "natal_chart_id",
+            "definition": "UUID NOT NULL REFERENCES natal_charts(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "transiting_bodies",
+            "definition": "TEXT[]"
+          },
+          {
+            "name": "natal_points",
+            "definition": "TEXT[]"
+          },
+          {
+            "name": "aspects",
+            "definition": "TEXT[]"
+          },
+          {
+            "name": "min_strength",
+            "definition": "INTEGER DEFAULT 50"
+          },
+          {
+            "name": "notify_email",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "notify_push",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "notify_webhook",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "webhook_url",
+            "definition": "VARCHAR(500)"
+          },
+          {
+            "name": "is_active",
+            "definition": "BOOLEAN DEFAULT true"
+          },
+          {
+            "name": "last_check",
+            "definition": "TIMESTAMP WITH TIME ZONE"
+          },
+          {
+            "name": "next_check",
+            "definition": "TIMESTAMP WITH TIME ZONE"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "updated_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "transit_notifications",
+        "file": "transit-tracker-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+          },
+          {
+            "name": "user_id",
+            "definition": "UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "transit_id",
+            "definition": "UUID NOT NULL REFERENCES transits(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "subscription_id",
+            "definition": "UUID REFERENCES transit_subscriptions(id) ON DELETE SET NULL"
+          },
+          {
+            "name": "notification_type",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "event_type",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "sent_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          },
+          {
+            "name": "delivered",
+            "definition": "BOOLEAN DEFAULT false"
+          },
+          {
+            "name": "delivery_status",
+            "definition": "VARCHAR(100)"
+          },
+          {
+            "name": "error_message",
+            "definition": "TEXT"
+          },
+          {
+            "name": "payload",
+            "definition": "JSONB"
+          },
+          {
+            "name": "notification_hash",
+            "definition": "VARCHAR(64) UNIQUE"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "ephemeris_cache",
+        "file": "transit-tracker-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+          },
+          {
+            "name": "calculation_time",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL UNIQUE"
+          },
+          {
+            "name": "positions",
+            "definition": "JSONB NOT NULL"
+          },
+          {
+            "name": "source",
+            "definition": "VARCHAR(100) DEFAULT 'astronomy-engine'"
+          },
+          {
+            "name": "version",
+            "definition": "VARCHAR(50)"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      },
+      {
+        "table": "transit_computation_log",
+        "file": "transit-tracker-schema.sql",
+        "columns": [
+          {
+            "name": "id",
+            "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+          },
+          {
+            "name": "user_id",
+            "definition": "UUID REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "name": "computation_type",
+            "definition": "VARCHAR(50) NOT NULL"
+          },
+          {
+            "name": "window_start",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+          },
+          {
+            "name": "window_end",
+            "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+          },
+          {
+            "name": "transits_found",
+            "definition": "INTEGER DEFAULT 0"
+          },
+          {
+            "name": "computation_time_ms",
+            "definition": "INTEGER"
+          },
+          {
+            "name": "status",
+            "definition": "VARCHAR(50) DEFAULT 'completed'"
+          },
+          {
+            "name": "error_message",
+            "definition": "TEXT"
+          },
+          {
+            "name": "created_at",
+            "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+          }
+        ]
+      }
+    ],
+    "migrations": [
+      "add-blog-schema.sql",
+      "add-credits-and-referrals.sql",
+      "add-password-reset-actual.sql",
+      "forecast-schema.sql",
+      "init-render.sql",
+      "init.sql",
+      "transit-tracker-schema-fixed.sql",
+      "transit-tracker-schema.sql"
+    ],
+    "cron_jobs": [
+      {
+        "name": "transit-monitor",
+        "schedule": "0 * * * *",
+        "target": "/api/cron/transit-monitor",
+        "status": "Missing endpoint",
+        "notes": "Endpoint removed; cron currently 404s."
+      },
+      {
+        "name": "generate-forecasts",
+        "schedule": "0 6 * * *",
+        "target": "/api/cron/generate-forecasts",
+        "status": "Missing endpoint",
+        "notes": "Endpoint removed; forecasts no longer generated."
+      }
+    ]
+  },
+  "integrations": [
+    {
+      "name": "PostgreSQL",
+      "purpose": "Primary application database",
+      "config_locations": [
+        "env.template",
+        "render.yaml",
+        "lib/db.js"
+      ],
+      "environment_variables": [
+        "DATABASE_URL"
+      ],
+      "status": "Configured"
+    },
+    {
+      "name": "NextAuth (Google OAuth)",
+      "purpose": "Google-based authentication for dashboard",
+      "config_locations": [
+        "app/api/auth/[...nextauth]/route.js",
+        "components/ClientProviders.jsx"
+      ],
+      "environment_variables": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXTAUTH_SECRET",
+        "NEXTAUTH_URL"
+      ],
+      "status": "Requires secrets in new environment"
+    },
+    {
+      "name": "JWT Auth",
+      "purpose": "Email/password authentication and API auth cookies",
+      "config_locations": [
+        "lib/auth.js",
+        "app/api/auth/login/route.js"
+      ],
+      "environment_variables": [
+        "JWT_SECRET"
+      ],
+      "status": "Configured"
+    },
+    {
+      "name": "Stripe",
+      "purpose": "Subscriptions and credit purchases",
+      "config_locations": [
+        "app__disabled/api/create-payment-intent/route.js",
+        "app__disabled/api/stripe/route.js",
+        "tests (__tests__/unit/billing-redirect.test.js)"
+      ],
+      "environment_variables": [
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+      ],
+      "status": "Endpoints missing in new dashboard"
+    },
+    {
+      "name": "OpenAI",
+      "purpose": "Tarot and astrology reading generation",
+      "config_locations": [
+        "lib/openai.js",
+        "app/api/readings/generate/route.js"
+      ],
+      "environment_variables": [
+        "OPENAI_API_KEY"
+      ],
+      "status": "Configured; optional fallback when missing"
+    },
+    {
+      "name": "Pinecone",
+      "purpose": "Vector storage for AI reading context",
+      "config_locations": [
+        "lib/pinecone.js",
+        "lib/credits.js"
+      ],
+      "environment_variables": [
+        "PINECONE_API_KEY",
+        "PINECONE_INDEX",
+        "PINECONE_DIM",
+        "PINECONE_METRIC"
+      ],
+      "status": "Configured but unused without tarot create endpoint"
+    },
+    {
+      "name": "Resend",
+      "purpose": "Transactional email (password reset, notifications)",
+      "config_locations": [
+        "lib/email.ts",
+        "add-password-reset-actual.sql"
+      ],
+      "environment_variables": [
+        "RESEND_API_KEY"
+      ],
+      "status": "API stubs exist; password reset flow missing"
+    },
+    {
+      "name": "Cloudinary",
+      "purpose": "Asset storage for uploads/blog",
+      "config_locations": [
+        "lib/cloudinary.js",
+        "app__disabled/api/upload/image/route.js"
+      ],
+      "environment_variables": [
+        "CLOUDINARY_URL",
+        "CLOUDINARY_CLOUD_NAME",
+        "CLOUDINARY_API_KEY",
+        "CLOUDINARY_API_SECRET"
+      ],
+      "status": "Integration removed in new dashboard"
+    },
+    {
+      "name": "Google Maps",
+      "purpose": "Birth chart location autocomplete",
+      "config_locations": [
+        "components/BirthChartForm.jsx"
+      ],
+      "environment_variables": [
+        "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
+      ],
+      "status": "No front-end surface in new dashboard"
+    }
+  ],
+  "branch_changes": [
+    {
+      "path": "components/DashboardV3/*",
+      "purpose": "Introduces new dashboard UI scaffold",
+      "functional_delta": "Adds luxury-themed widgets but omits legacy interactions (tarot selector, upsells)."
+    },
+    {
+      "path": "app/api/*",
+      "purpose": "Replaces mock data with production APIs for dashboard basics",
+      "functional_delta": "Only subset of legacy APIs restored (readings, credits, energy); monetization/admin routes removed."
+    },
+    {
+      "path": "__tests__/*",
+      "purpose": "Expanded automated coverage for auth/credits/readings",
+      "functional_delta": "Tests assume availability of new dashboard endpoints; legacy suite for payments/blog missing."
+    },
+    {
+      "path": "components/ui/*",
+      "purpose": "Adds shared UI primitives (Modal, Toast)",
+      "functional_delta": "No parity issues; ensure consistent styling between dashboards."
+    },
+    {
+      "path": "lib/credits.js",
+      "purpose": "Enhances credit management with referral support and daily refresh",
+      "functional_delta": "Requires credits table columns (credit_type, expires_at, source) that may not exist yet."
+    },
+    {
+      "path": "playwright.config.js",
+      "purpose": "Adjusts Playwright setup for new dashboard tests",
+      "functional_delta": "Smoke tests focus on new dashboard flows only."
+    },
+    {
+      "path": "QA_TESTING_GUIDE.md + TESTING_DASHBOARD_V2.md",
+      "purpose": "Documents new QA process",
+      "functional_delta": "Legacy QA checklists for payments/admin removed; must be reintroduced."
+    }
+  ]
+}

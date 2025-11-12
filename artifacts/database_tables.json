@@ -1,0 +1,1602 @@
+[
+  {
+    "table": "blog_posts",
+    "file": "add-blog-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "title",
+        "definition": "VARCHAR(255) NOT NULL"
+      },
+      {
+        "name": "slug",
+        "definition": "VARCHAR(255) UNIQUE NOT NULL"
+      },
+      {
+        "name": "excerpt",
+        "definition": "TEXT"
+      },
+      {
+        "name": "content",
+        "definition": "TEXT NOT NULL"
+      },
+      {
+        "name": "featured_image",
+        "definition": "VARCHAR(500)"
+      },
+      {
+        "name": "author_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "status",
+        "definition": "VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft'"
+      },
+      {
+        "name": "published_at",
+        "definition": "TIMESTAMP"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      },
+      {
+        "name": "meta_title",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "meta_description",
+        "definition": "TEXT"
+      },
+      {
+        "name": "tags",
+        "definition": "TEXT[]"
+      },
+      {
+        "name": "category",
+        "definition": "VARCHAR(100)"
+      },
+      {
+        "name": "reading_time",
+        "definition": "INTEGER DEFAULT 5"
+      },
+      {
+        "name": "view_count",
+        "definition": "INTEGER DEFAULT 0"
+      }
+    ]
+  },
+  {
+    "table": "blog_categories",
+    "file": "add-blog-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "name",
+        "definition": "VARCHAR(100) UNIQUE NOT NULL"
+      },
+      {
+        "name": "slug",
+        "definition": "VARCHAR(100) UNIQUE NOT NULL"
+      },
+      {
+        "name": "description",
+        "definition": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "blog_tags",
+    "file": "add-blog-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "name",
+        "definition": "VARCHAR(50) UNIQUE NOT NULL"
+      },
+      {
+        "name": "slug",
+        "definition": "VARCHAR(50) UNIQUE NOT NULL"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "blog_post_views",
+    "file": "add-blog-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "post_id",
+        "definition": "INTEGER REFERENCES blog_posts(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "ip_address",
+        "definition": "INET"
+      },
+      {
+        "name": "user_agent",
+        "definition": "TEXT"
+      },
+      {
+        "name": "viewed_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "referral_redemptions",
+    "file": "add-credits-and-referrals.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "referrer_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "referred_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "referrer_rewarded",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "referred_rewarded",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "password_reset_tokens",
+    "file": "add-password-reset-actual.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "token",
+        "definition": "VARCHAR(255) UNIQUE NOT NULL"
+      },
+      {
+        "name": "expires_at",
+        "definition": "TIMESTAMP NOT NULL"
+      },
+      {
+        "name": "used",
+        "definition": "BOOLEAN DEFAULT FALSE"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "forecast_preferences",
+    "file": "forecast-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "delivery_cadence",
+        "definition": "VARCHAR(20) DEFAULT 'daily' CHECK (delivery_cadence IN ('daily'"
+      },
+      {
+        "name": "delivery_time",
+        "definition": "TIME DEFAULT '08:00:00'"
+      },
+      {
+        "name": "timezone",
+        "definition": "VARCHAR(50) DEFAULT 'America/Los_Angeles'"
+      },
+      {
+        "name": "tone",
+        "definition": "VARCHAR(20) DEFAULT 'spiritual' CHECK (tone IN ('spiritual'"
+      },
+      {
+        "name": "default_length",
+        "definition": "VARCHAR(20) DEFAULT 'medium' CHECK (default_length IN ('short'"
+      },
+      {
+        "name": "topics",
+        "definition": "TEXT[] DEFAULT ARRAY['general']"
+      },
+      {
+        "name": "include_actions",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "include_rituals",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "ai_rewrite_enabled",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "email_enabled",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "push_enabled",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      }
+    ]
+  },
+  {
+    "table": "forecasts",
+    "file": "forecast-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "forecast_date",
+        "definition": "DATE NOT NULL"
+      },
+      {
+        "name": "forecast_type",
+        "definition": "VARCHAR(20) DEFAULT 'daily' CHECK (forecast_type IN ('daily'"
+      },
+      {
+        "name": "length",
+        "definition": "VARCHAR(20) DEFAULT 'medium' CHECK (length IN ('short'"
+      },
+      {
+        "name": "headline",
+        "definition": "TEXT NOT NULL"
+      },
+      {
+        "name": "theme",
+        "definition": "TEXT"
+      },
+      {
+        "name": "full_text",
+        "definition": "TEXT NOT NULL"
+      },
+      {
+        "name": "tone",
+        "definition": "VARCHAR(20)"
+      },
+      {
+        "name": "transit_summary",
+        "definition": "JSONB"
+      },
+      {
+        "name": "topics",
+        "definition": "TEXT[]"
+      },
+      {
+        "name": "urgency",
+        "definition": "VARCHAR(20) DEFAULT 'normal' CHECK (urgency IN ('low'"
+      },
+      {
+        "name": "confidence_score",
+        "definition": "VARCHAR(20) DEFAULT 'medium' CHECK (confidence_score IN ('low'"
+      },
+      {
+        "name": "suggested_actions",
+        "definition": "JSONB"
+      },
+      {
+        "name": "rituals",
+        "definition": "JSONB"
+      },
+      {
+        "name": "generated_at",
+        "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "delivered_at",
+        "definition": "TIMESTAMP"
+      },
+      {
+        "name": "read_at",
+        "definition": "TIMESTAMP"
+      },
+      {
+        "name": "saved_to_journal",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "cache_key",
+        "definition": "TEXT"
+      },
+      {
+        "name": "expires_at",
+        "definition": "TIMESTAMP"
+      }
+    ]
+  },
+  {
+    "table": "forecast_templates",
+    "file": "forecast-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "planet",
+        "definition": "VARCHAR(20) NOT NULL"
+      },
+      {
+        "name": "aspect",
+        "definition": "VARCHAR(20) NOT NULL"
+      },
+      {
+        "name": "target_type",
+        "definition": "VARCHAR(20) NOT NULL"
+      },
+      {
+        "name": "target",
+        "definition": "VARCHAR(20)"
+      },
+      {
+        "name": "topic",
+        "definition": "VARCHAR(20) NOT NULL"
+      },
+      {
+        "name": "tone",
+        "definition": "VARCHAR(20) NOT NULL"
+      },
+      {
+        "name": "headline_template",
+        "definition": "TEXT NOT NULL"
+      },
+      {
+        "name": "short_template",
+        "definition": "TEXT NOT NULL"
+      },
+      {
+        "name": "medium_template",
+        "definition": "TEXT"
+      },
+      {
+        "name": "long_template",
+        "definition": "TEXT"
+      },
+      {
+        "name": "strength",
+        "definition": "VARCHAR(20) DEFAULT 'medium' CHECK (strength IN ('low'"
+      },
+      {
+        "name": "priority",
+        "definition": "INTEGER DEFAULT 5"
+      },
+      {
+        "name": "default_actions",
+        "definition": "JSONB"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      }
+    ]
+  },
+  {
+    "table": "users",
+    "file": "init-render.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "email",
+        "definition": "VARCHAR(255) UNIQUE NOT NULL"
+      },
+      {
+        "name": "password_hash",
+        "definition": "VARCHAR(255) NOT NULL"
+      },
+      {
+        "name": "first_name",
+        "definition": "VARCHAR(100)"
+      },
+      {
+        "name": "last_name",
+        "definition": "VARCHAR(100)"
+      },
+      {
+        "name": "role",
+        "definition": "VARCHAR(20) DEFAULT 'user'"
+      },
+      {
+        "name": "stripe_customer_id",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "stripe_subscription_id",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "credits",
+    "file": "init-render.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "credits",
+        "definition": "INTEGER DEFAULT 0"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "readings",
+    "file": "init-render.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "type",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "question",
+        "definition": "TEXT"
+      },
+      {
+        "name": "result",
+        "definition": "JSONB NOT NULL"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "birth_charts",
+    "file": "init-render.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "birth_date",
+        "definition": "DATE NOT NULL"
+      },
+      {
+        "name": "birth_time",
+        "definition": "TIME"
+      },
+      {
+        "name": "location",
+        "definition": "VARCHAR(255) NOT NULL"
+      },
+      {
+        "name": "latitude",
+        "definition": "DECIMAL(10"
+      },
+      {
+        "name": "longitude",
+        "definition": "DECIMAL(11"
+      },
+      {
+        "name": "chart_data",
+        "definition": "JSONB NOT NULL"
+      },
+      {
+        "name": "interpretation",
+        "definition": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "subscriptions",
+    "file": "init-render.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "stripe_subscription_id",
+        "definition": "VARCHAR(255) UNIQUE NOT NULL"
+      },
+      {
+        "name": "status",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "horoscopes",
+    "file": "init-render.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "sign",
+        "definition": "VARCHAR(20) NOT NULL"
+      },
+      {
+        "name": "date",
+        "definition": "DATE NOT NULL"
+      },
+      {
+        "name": "content",
+        "definition": "TEXT NOT NULL"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "users",
+    "file": "init.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "email",
+        "definition": "VARCHAR(255) UNIQUE NOT NULL"
+      },
+      {
+        "name": "password_hash",
+        "definition": "VARCHAR(255) NOT NULL"
+      },
+      {
+        "name": "first_name",
+        "definition": "VARCHAR(100)"
+      },
+      {
+        "name": "last_name",
+        "definition": "VARCHAR(100)"
+      },
+      {
+        "name": "role",
+        "definition": "VARCHAR(20) DEFAULT 'user'"
+      },
+      {
+        "name": "stripe_customer_id",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "stripe_subscription_id",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "credits",
+    "file": "init.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "credits",
+        "definition": "INTEGER DEFAULT 0"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "readings",
+    "file": "init.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "type",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "question",
+        "definition": "TEXT"
+      },
+      {
+        "name": "result",
+        "definition": "JSONB NOT NULL"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "birth_charts",
+    "file": "init.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "birth_date",
+        "definition": "DATE NOT NULL"
+      },
+      {
+        "name": "birth_time",
+        "definition": "TIME"
+      },
+      {
+        "name": "location",
+        "definition": "VARCHAR(255) NOT NULL"
+      },
+      {
+        "name": "latitude",
+        "definition": "DECIMAL(10"
+      },
+      {
+        "name": "longitude",
+        "definition": "DECIMAL(11"
+      },
+      {
+        "name": "chart_data",
+        "definition": "JSONB NOT NULL"
+      },
+      {
+        "name": "interpretation",
+        "definition": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "subscriptions",
+    "file": "init.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "stripe_subscription_id",
+        "definition": "VARCHAR(255) UNIQUE NOT NULL"
+      },
+      {
+        "name": "status",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "horoscopes",
+    "file": "init.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "sign",
+        "definition": "VARCHAR(20) NOT NULL"
+      },
+      {
+        "name": "date",
+        "definition": "DATE NOT NULL"
+      },
+      {
+        "name": "content",
+        "definition": "TEXT NOT NULL"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "password_reset_tokens",
+    "file": "init.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "token",
+        "definition": "VARCHAR(255) UNIQUE NOT NULL"
+      },
+      {
+        "name": "expires_at",
+        "definition": "TIMESTAMP NOT NULL"
+      },
+      {
+        "name": "used",
+        "definition": "BOOLEAN DEFAULT FALSE"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "natal_charts",
+    "file": "transit-tracker-schema-fixed.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "birth_date",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+      },
+      {
+        "name": "birth_time",
+        "definition": "TIME NOT NULL"
+      },
+      {
+        "name": "timezone",
+        "definition": "VARCHAR(100) NOT NULL"
+      },
+      {
+        "name": "latitude",
+        "definition": "DECIMAL(10"
+      },
+      {
+        "name": "longitude",
+        "definition": "DECIMAL(10"
+      },
+      {
+        "name": "location_name",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "natal_positions",
+        "definition": "JSONB NOT NULL"
+      },
+      {
+        "name": "houses",
+        "definition": "JSONB"
+      },
+      {
+        "name": "ascendant",
+        "definition": "JSONB"
+      },
+      {
+        "name": "midheaven",
+        "definition": "JSONB"
+      },
+      {
+        "name": "chart_name",
+        "definition": "VARCHAR(255) DEFAULT 'Birth Chart'"
+      },
+      {
+        "name": "is_primary",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "is_encrypted",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "transits",
+    "file": "transit-tracker-schema-fixed.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "natal_chart_id",
+        "definition": "INTEGER NOT NULL REFERENCES natal_charts(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "transiting_body",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "natal_point",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "aspect",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "start_time",
+        "definition": "TIMESTAMP WITH TIME ZONE"
+      },
+      {
+        "name": "exact_time",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+      },
+      {
+        "name": "end_time",
+        "definition": "TIMESTAMP WITH TIME ZONE"
+      },
+      {
+        "name": "orb",
+        "definition": "DECIMAL(5"
+      },
+      {
+        "name": "strength_score",
+        "definition": "INTEGER"
+      },
+      {
+        "name": "status",
+        "definition": "VARCHAR(20) DEFAULT 'upcoming'"
+      },
+      {
+        "name": "is_retrograde",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "interpretation",
+        "definition": "JSONB"
+      },
+      {
+        "name": "affected_house",
+        "definition": "INTEGER"
+      },
+      {
+        "name": "house_meaning",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "CHECK",
+        "definition": "(status IN ('upcoming'"
+      },
+      {
+        "name": "CHECK",
+        "definition": "(strength_score >= 0 AND strength_score <= 100)"
+      },
+      {
+        "name": "CHECK",
+        "definition": "(affected_house >= 1 AND affected_house <= 12 OR affected_house IS NULL)"
+      }
+    ]
+  },
+  {
+    "table": "transit_subscriptions",
+    "file": "transit-tracker-schema-fixed.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "natal_chart_id",
+        "definition": "INTEGER NOT NULL REFERENCES natal_charts(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "transiting_bodies",
+        "definition": "TEXT[]"
+      },
+      {
+        "name": "natal_points",
+        "definition": "TEXT[]"
+      },
+      {
+        "name": "aspects",
+        "definition": "TEXT[]"
+      },
+      {
+        "name": "min_strength",
+        "definition": "INTEGER DEFAULT 50"
+      },
+      {
+        "name": "notify_email",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "notify_push",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "notify_webhook",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "webhook_url",
+        "definition": "VARCHAR(500)"
+      },
+      {
+        "name": "is_active",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "last_check",
+        "definition": "TIMESTAMP WITH TIME ZONE"
+      },
+      {
+        "name": "next_check",
+        "definition": "TIMESTAMP WITH TIME ZONE"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "transit_notifications",
+    "file": "transit-tracker-schema-fixed.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "transit_id",
+        "definition": "INTEGER NOT NULL REFERENCES transits(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "subscription_id",
+        "definition": "INTEGER REFERENCES transit_subscriptions(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "notification_type",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "event_type",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "sent_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "delivered",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "delivery_status",
+        "definition": "VARCHAR(100)"
+      },
+      {
+        "name": "error_message",
+        "definition": "TEXT"
+      },
+      {
+        "name": "payload",
+        "definition": "JSONB"
+      },
+      {
+        "name": "notification_hash",
+        "definition": "VARCHAR(64)"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "ephemeris_cache",
+    "file": "transit-tracker-schema-fixed.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "calculation_time",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL UNIQUE"
+      },
+      {
+        "name": "positions",
+        "definition": "JSONB NOT NULL"
+      },
+      {
+        "name": "source",
+        "definition": "VARCHAR(100) DEFAULT 'astronomy-engine'"
+      },
+      {
+        "name": "version",
+        "definition": "VARCHAR(50)"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "transit_computation_log",
+    "file": "transit-tracker-schema-fixed.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "SERIAL PRIMARY KEY"
+      },
+      {
+        "name": "user_id",
+        "definition": "INTEGER REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "computation_type",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "window_start",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+      },
+      {
+        "name": "window_end",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+      },
+      {
+        "name": "transits_found",
+        "definition": "INTEGER DEFAULT 0"
+      },
+      {
+        "name": "computation_time_ms",
+        "definition": "INTEGER"
+      },
+      {
+        "name": "status",
+        "definition": "VARCHAR(50) DEFAULT 'completed'"
+      },
+      {
+        "name": "error_message",
+        "definition": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "natal_charts",
+    "file": "transit-tracker-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+      },
+      {
+        "name": "user_id",
+        "definition": "UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "birth_date",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+      },
+      {
+        "name": "birth_time",
+        "definition": "TIME NOT NULL"
+      },
+      {
+        "name": "timezone",
+        "definition": "VARCHAR(100) NOT NULL"
+      },
+      {
+        "name": "latitude",
+        "definition": "DECIMAL(10"
+      },
+      {
+        "name": "longitude",
+        "definition": "DECIMAL(10"
+      },
+      {
+        "name": "location_name",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "natal_positions",
+        "definition": "JSONB NOT NULL"
+      },
+      {
+        "name": "houses",
+        "definition": "JSONB"
+      },
+      {
+        "name": "ascendant",
+        "definition": "JSONB"
+      },
+      {
+        "name": "midheaven",
+        "definition": "JSONB"
+      },
+      {
+        "name": "chart_name",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "is_primary",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "is_encrypted",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "transits",
+    "file": "transit-tracker-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+      },
+      {
+        "name": "user_id",
+        "definition": "UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "natal_chart_id",
+        "definition": "UUID NOT NULL REFERENCES natal_charts(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "transiting_body",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "natal_point",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "aspect",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "start_time",
+        "definition": "TIMESTAMP WITH TIME ZONE"
+      },
+      {
+        "name": "exact_time",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+      },
+      {
+        "name": "end_time",
+        "definition": "TIMESTAMP WITH TIME ZONE"
+      },
+      {
+        "name": "orb",
+        "definition": "DECIMAL(5"
+      },
+      {
+        "name": "strength_score",
+        "definition": "INTEGER"
+      },
+      {
+        "name": "status",
+        "definition": "VARCHAR(20) DEFAULT 'upcoming'"
+      },
+      {
+        "name": "is_retrograde",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "interpretation",
+        "definition": "JSONB"
+      },
+      {
+        "name": "affected_house",
+        "definition": "INTEGER"
+      },
+      {
+        "name": "house_meaning",
+        "definition": "VARCHAR(255)"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "CHECK",
+        "definition": "(status IN ('upcoming'"
+      },
+      {
+        "name": "CHECK",
+        "definition": "(strength_score >= 0 AND strength_score <= 100)"
+      },
+      {
+        "name": "CHECK",
+        "definition": "(affected_house >= 1 AND affected_house <= 12)"
+      }
+    ]
+  },
+  {
+    "table": "transit_subscriptions",
+    "file": "transit-tracker-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+      },
+      {
+        "name": "user_id",
+        "definition": "UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "natal_chart_id",
+        "definition": "UUID NOT NULL REFERENCES natal_charts(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "transiting_bodies",
+        "definition": "TEXT[]"
+      },
+      {
+        "name": "natal_points",
+        "definition": "TEXT[]"
+      },
+      {
+        "name": "aspects",
+        "definition": "TEXT[]"
+      },
+      {
+        "name": "min_strength",
+        "definition": "INTEGER DEFAULT 50"
+      },
+      {
+        "name": "notify_email",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "notify_push",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "notify_webhook",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "webhook_url",
+        "definition": "VARCHAR(500)"
+      },
+      {
+        "name": "is_active",
+        "definition": "BOOLEAN DEFAULT true"
+      },
+      {
+        "name": "last_check",
+        "definition": "TIMESTAMP WITH TIME ZONE"
+      },
+      {
+        "name": "next_check",
+        "definition": "TIMESTAMP WITH TIME ZONE"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "updated_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "transit_notifications",
+    "file": "transit-tracker-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+      },
+      {
+        "name": "user_id",
+        "definition": "UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "transit_id",
+        "definition": "UUID NOT NULL REFERENCES transits(id) ON DELETE CASCADE"
+      },
+      {
+        "name": "subscription_id",
+        "definition": "UUID REFERENCES transit_subscriptions(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "notification_type",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "event_type",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "sent_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      },
+      {
+        "name": "delivered",
+        "definition": "BOOLEAN DEFAULT false"
+      },
+      {
+        "name": "delivery_status",
+        "definition": "VARCHAR(100)"
+      },
+      {
+        "name": "error_message",
+        "definition": "TEXT"
+      },
+      {
+        "name": "payload",
+        "definition": "JSONB"
+      },
+      {
+        "name": "notification_hash",
+        "definition": "VARCHAR(64) UNIQUE"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "ephemeris_cache",
+    "file": "transit-tracker-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+      },
+      {
+        "name": "calculation_time",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL UNIQUE"
+      },
+      {
+        "name": "positions",
+        "definition": "JSONB NOT NULL"
+      },
+      {
+        "name": "source",
+        "definition": "VARCHAR(100) DEFAULT 'astronomy-engine'"
+      },
+      {
+        "name": "version",
+        "definition": "VARCHAR(50)"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  },
+  {
+    "table": "transit_computation_log",
+    "file": "transit-tracker-schema.sql",
+    "columns": [
+      {
+        "name": "id",
+        "definition": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+      },
+      {
+        "name": "user_id",
+        "definition": "UUID REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "name": "computation_type",
+        "definition": "VARCHAR(50) NOT NULL"
+      },
+      {
+        "name": "window_start",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+      },
+      {
+        "name": "window_end",
+        "definition": "TIMESTAMP WITH TIME ZONE NOT NULL"
+      },
+      {
+        "name": "transits_found",
+        "definition": "INTEGER DEFAULT 0"
+      },
+      {
+        "name": "computation_time_ms",
+        "definition": "INTEGER"
+      },
+      {
+        "name": "status",
+        "definition": "VARCHAR(50) DEFAULT 'completed'"
+      },
+      {
+        "name": "error_message",
+        "definition": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "definition": "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"
+      }
+    ]
+  }
+]

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X } from "lucide-react";
+import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain } from "lucide-react";
 import Link from "next/link";
 import HeroHeader from "./HeroHeader";
 import FocusGrid from "./FocusGrid";
@@ -15,6 +15,9 @@ import PremiumCard from "./PremiumCard";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import HelpSystem from "@/components/HelpSystem";
+import MeditationCard from "@/components/MeditationCard";
+import MeditationPlayer from "@/components/MeditationPlayer";
+import MeditationHistory from "@/components/MeditationHistory";
 
 /**
  * DashboardV3 - New dashboard component with cosmic brand styling
@@ -35,6 +38,12 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const [showTarotTypePicker, setShowTarotTypePicker] = useState(false);
   const [tarotSelectorConfig, setTarotSelectorConfig] = useState({ spreadType: "three-card", readingType: "general" });
   const [hasBirthChart, setHasBirthChart] = useState(null); // null = checking, true/false = result
+  const [showMeditations, setShowMeditations] = useState(false);
+  const [meditations, setMeditations] = useState([]);
+  const [selectedMeditation, setSelectedMeditation] = useState(null);
+  const [meditationSessionId, setMeditationSessionId] = useState(null);
+  const [showMeditationPlayer, setShowMeditationPlayer] = useState(false);
+  const [showCompactPlayer, setShowCompactPlayer] = useState(false);
 
   // Check if user has a birth chart
   useEffect(() => {
@@ -49,6 +58,58 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
         });
     }
   }, [user?.id]);
+
+  // Fetch meditations when modal opens
+  useEffect(() => {
+    if (showMeditations && meditations.length === 0) {
+      fetch('/api/meditations')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setMeditations(data.meditations || []);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch meditations:', err);
+        });
+    }
+  }, [showMeditations]);
+
+  const handleStartMeditation = async (meditation) => {
+    try {
+      const res = await fetch(`/api/meditations/${meditation.id}/start`, {
+        method: 'POST',
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setSelectedMeditation(meditation);
+        setMeditationSessionId(data.sessionId);
+        setShowMeditationPlayer(true);
+        setShowMeditations(false);
+      } else if (res.status === 402) {
+        // Premium required
+        window.location.href = '/subscription';
+      } else {
+        alert(data.error || 'Failed to start meditation');
+      }
+    } catch (error) {
+      console.error('Error starting meditation:', error);
+      alert('Failed to start meditation');
+    }
+  };
+
+  const handleMeditationComplete = (data) => {
+    // Refresh dashboard data
+    if (refetch) refetch();
+    // Show completion message
+    alert(`Meditation complete! You earned ${data.xpAwarded} XP.`);
+    setShowMeditationPlayer(false);
+    setShowCompactPlayer(false);
+    setSelectedMeditation(null);
+    setMeditationSessionId(null);
+  };
 
   return (
     <div className="w-full">
@@ -116,6 +177,15 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   <span>My Journal</span>
                 </div>
               </Link>
+              <button
+                onClick={() => setShowMeditations(true)}
+                className="group relative bg-gradient-to-r from-green-500 via-teal-500 to-cyan-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
+              >
+                <div className="flex flex-col items-center space-y-1">
+                  <Brain className="w-6 h-6 group-hover:animate-pulse" />
+                  <span>Meditation</span>
+                </div>
+              </button>
             </div>
           </div>
 
@@ -362,6 +432,70 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               setShowTarotSelector(false);
               if (refetch) refetch();
             }}
+          />
+        )}
+
+        {/* Meditations Modal */}
+        {showMeditations && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="glassmorphic rounded-3xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Choose Your Meditation</h2>
+                  <p className="text-purple-200 text-sm sm:text-base">Select a guided meditation to begin</p>
+                </div>
+                <button
+                  onClick={() => setShowMeditations(false)}
+                  className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition"
+                  aria-label="Close meditations"
+                >
+                  <X className="w-6 h-6 text-white" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {meditations.map((meditation) => (
+                  <MeditationCard
+                    key={meditation.id}
+                    meditation={meditation}
+                    isPremium={isPremium}
+                    onStart={handleStartMeditation}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Meditation Player Modal */}
+        {showMeditationPlayer && selectedMeditation && meditationSessionId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="max-w-3xl w-full">
+              <MeditationPlayer
+                meditation={selectedMeditation}
+                sessionId={meditationSessionId}
+                onComplete={handleMeditationComplete}
+                onClose={() => {
+                  setShowMeditationPlayer(false);
+                  setShowCompactPlayer(true);
+                }}
+                compact={false}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Compact Floating Player */}
+        {showCompactPlayer && selectedMeditation && meditationSessionId && (
+          <MeditationPlayer
+            meditation={selectedMeditation}
+            sessionId={meditationSessionId}
+            onComplete={handleMeditationComplete}
+            onClose={() => {
+              setShowCompactPlayer(false);
+              setSelectedMeditation(null);
+              setMeditationSessionId(null);
+            }}
+            compact={true}
           />
         )}
 
