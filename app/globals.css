@@ -237,15 +237,15 @@
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .glassmorphic {
-    @apply bg-gray-900 bg-opacity-20;
+    background-color: rgba(17, 24, 39, 0.2);
   }
   
   .glassmorphic-strong {
-    @apply bg-gray-900 bg-opacity-40;
+    background-color: rgba(17, 24, 39, 0.4);
   }
   
   .glassmorphic-light {
-    @apply bg-gray-900 bg-opacity-10;
+    background-color: rgba(17, 24, 39, 0.1);
   }
 }
 
@@ -263,11 +263,11 @@
 /* High Contrast Mode */
 @media (prefers-contrast: high) {
   .glassmorphic {
-    @apply bg-white bg-opacity-90;
+    background-color: rgba(255, 255, 255, 0.9);
   }
   
   .gradient-text {
-    @apply text-purple-900;
+    color: #581c87;
   }
 }
 
@@ -276,7 +276,7 @@
   .smooth-transition,
   .smooth-transition-fast,
   .smooth-transition-slow {
-    @apply transition-none;
+    transition: none;
   }
   
   @keyframes shimmer {
