@@ -438,8 +438,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           />
         )}
 
-        {/* Meditations Modal */}
-        {showMeditations && (
+        {/* Meditations Modal - Temporarily hidden */}
+        {/* {showMeditations && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="glassmorphic rounded-3xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40">
               <div className="flex items-center justify-between mb-6">
@@ -467,10 +467,10 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
-        {/* Meditation Player Modal */}
-        {showMeditationPlayer && selectedMeditation && meditationSessionId && (
+        {/* Meditation Player Modal - Temporarily hidden */}
+        {/* {showMeditationPlayer && selectedMeditation && meditationSessionId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="max-w-3xl w-full">
               <MeditationPlayer
@@ -485,10 +485,10 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               />
             </div>
           </div>
-        )}
+        )} */}
 
-        {/* Compact Floating Player */}
-        {showCompactPlayer && selectedMeditation && meditationSessionId && (
+        {/* Compact Floating Player - Temporarily hidden */}
+        {/* {showCompactPlayer && selectedMeditation && meditationSessionId && (
           <MeditationPlayer
             meditation={selectedMeditation}
             sessionId={meditationSessionId}
@@ -500,7 +500,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             }}
             compact={true}
           />
-        )}
+        )} */}
 
         {/* Help System */}
         <HelpSystem />
