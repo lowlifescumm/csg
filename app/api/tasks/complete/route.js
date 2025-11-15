@@ -129,21 +129,46 @@ export async function POST(request) {
       [userId, taskId, today, xpEarned, creditEarned, streakBonus]
     );
 
-    // Update user XP
+    // Update user XP - ensure table exists first
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS user_xp (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+          total_xp INTEGER DEFAULT 0,
+          current_level INTEGER DEFAULT 1,
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+      await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_user_xp_user_id ON user_xp(user_id)
+      `);
+    } catch (createError) {
+      console.log("XP table creation (if needed):", createError.message);
+    }
+
+    // Update user XP - use COALESCE to handle NULL values properly
     const xpResult = await pool.query(
       `INSERT INTO user_xp (user_id, total_xp, current_level)
        VALUES ($1, $2, 1)
        ON CONFLICT (user_id) 
        DO UPDATE SET 
-         total_xp = user_xp.total_xp + $2,
-         current_level = FLOOR((user_xp.total_xp + $2) / 100) + 1,
+         total_xp = COALESCE(user_xp.total_xp, 0) + $2,
+         current_level = FLOOR((COALESCE(user_xp.total_xp, 0) + $2) / 100) + 1,
          updated_at = NOW()
        RETURNING total_xp, current_level`,
       [userId, xpEarned]
     );
 
+    if (!xpResult.rows || xpResult.rows.length === 0) {
+      console.error("XP update failed: No rows returned");
+      throw new Error("Failed to update XP - no rows returned");
+    }
+
     const newTotalXP = xpResult.rows[0].total_xp;
     const newLevel = xpResult.rows[0].current_level;
+    
+    console.log(`[Task Complete] User ${userId} earned ${xpEarned} XP. New total: ${newTotalXP}, New level: ${newLevel}`);
 
     // Award credits if applicable (occasionally for meditation)
     let actualCreditEarned = 0;
