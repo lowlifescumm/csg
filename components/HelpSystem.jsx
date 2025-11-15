@@ -11,7 +11,7 @@ export default function HelpSystem() {
       content: (
         <div className="space-y-4">
           <div>
-            <h4 className="font-semibold text-gray-900 mb-2">Welcome to Cosmic Spiritual Guide!</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">Welcome to Cosmic Spirit Guide!</h4>
             <p className="text-gray-600 text-sm">
               Your journey into spiritual guidance begins here. This dashboard is your central hub for all cosmic insights.
             </p>

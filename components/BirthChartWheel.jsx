@@ -45,6 +45,20 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
   // Format date nicely
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
+    // Parse date string explicitly to avoid timezone issues
+    // Handle both ISO format (1980-03-09) and other formats
+    if (typeof dateStr === 'string' && dateStr.includes('-')) {
+      const dateParts = dateStr.split('-');
+      const year = parseInt(dateParts[0], 10);
+      const month = parseInt(dateParts[1], 10) - 1;
+      const day = parseInt(dateParts[2], 10);
+      const date = new Date(year, month, day);
+      return date.toLocaleDateString('en-US', { 
+        month: 'long', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    }
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { 
       month: 'long', 

@@ -80,7 +80,7 @@ export default function Header() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
               <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <div className="flex flex-col"><span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent leading-tight">Cosmic Spiritual Guide</span></div>
+            <div className="flex flex-col"><span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent leading-tight">Cosmic Spirit Guide</span></div>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-1">
