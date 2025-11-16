@@ -3,6 +3,8 @@ import Script from "next/script";
 import AuthProviderWrapper from "@/components/AuthProviderWrapper";
 import Header from "@/components/Header";
 import ToastContainerWrapper from "@/components/ui/ToastContainerWrapper";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import ClientErrorCatcher from "@/components/ClientErrorCatcher";
 
 export default function RootLayout({ children }) {
   return (
@@ -48,9 +50,11 @@ export default function RootLayout({ children }) {
           <div className="pt-[80px]"></div>
           
           <main id="main-content" className="flex-1">
-            <div className="w-full">
-              {children}
-            </div>
+            <ErrorBoundary>
+              <div className="w-full">
+                {children}
+              </div>
+            </ErrorBoundary>
           </main>
           
           <footer className="glassmorphic border-t border-white border-opacity-20 py-6 mt-8">
@@ -76,6 +80,9 @@ export default function RootLayout({ children }) {
           
           {/* Toast Notifications */}
           <ToastContainerWrapper />
+
+          {/* Client error catcher banner (non-blocking) */}
+          <ClientErrorCatcher />
         </AuthProviderWrapper>
       </body>
     </html>

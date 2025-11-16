@@ -38,18 +38,29 @@ export default function LoginPage() {
         throw new Error('Authentication system not ready');
       }
 
-      const result = await signIn("google", { 
+      // First attempt: controlled login without redirect to catch errors
+      const result = await signIn("google", {
         callbackUrl: "/dashboard",
-        redirect: false 
+        redirect: false
       });
 
       if (result?.error) {
-        setError("Failed to sign in with Google. Please try again.");
-        setGoogleLoading(false);
+        // Fallback: try default redirect-based flow handled by NextAuth
+        const redirectAttempt = await signIn("google", {
+          callbackUrl: "/dashboard"
+        });
+        // If NextAuth handles redirect, we won't get here. If we do, show error:
+        if (!redirectAttempt) {
+          setError("Failed to sign in with Google. Please try again.");
+          setGoogleLoading(false);
+        }
       } else if (result?.ok) {
         // Success - NextAuth will handle redirect
         router.push("/dashboard");
         router.refresh();
+      } else {
+        // Last-resort fallback: direct navigation to provider route
+        window.location.href = "/api/auth/signin/google?callbackUrl=%2Fdashboard";
       }
     } catch (err) {
       console.error("Google sign-in error:", err);
