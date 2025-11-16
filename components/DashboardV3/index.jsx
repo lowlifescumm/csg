@@ -61,6 +61,30 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
     }
   }, [user?.id]);
 
+  // Initialize level/XP immediately so GrowthBar reflects current progress even before DailyTasks loads
+  useEffect(() => {
+    let cancelled = false;
+    async function initXP() {
+      try {
+        const res = await fetch("/api/tasks");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data?.success) return;
+        const totalXP = data.stats?.totalXP || 0;
+        const level = Math.floor(totalXP / 100) + 1;
+        if (!cancelled) {
+          setLevelData({
+            level,
+            xpCurrent: totalXP,
+            xpTarget: level * 100,
+          });
+        }
+      } catch {}
+    }
+    initXP();
+    return () => { cancelled = true; };
+  }, []);
+
   // Meditation functions temporarily hidden
   // useEffect(() => {
   //   if (showMeditations && meditations.length === 0) {
@@ -213,8 +237,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           {/* Growth Bar */}
           <GrowthBar 
             level={levelData.level}
-            xpCurrent={levelData.xpCurrent % 100}
-            xpTarget={100}
+            xpCurrent={levelData.xpTarget ? (levelData.xpCurrent % levelData.xpTarget) : (levelData.xpCurrent % 100)}
+            xpTarget={levelData.xpTarget || 100}
             userId={user?.id}
             onLevelUp={(data) => {
               // Update level data when level is claimed
@@ -222,7 +246,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               setLevelData({
                 level: newLevel,
                 xpCurrent: levelData.xpCurrent,
-                xpTarget: 100,
+                xpTarget: newLevel * 100,
               });
               if (refetch) refetch();
             }}
