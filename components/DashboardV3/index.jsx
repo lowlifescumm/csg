@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain } from "lucide-react";
+import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain, Briefcase, ChevronRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import HeroHeader from "./HeroHeader";
 import FocusGrid from "./FocusGrid";
@@ -15,6 +15,7 @@ import PremiumCard from "./PremiumCard";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import HelpSystem from "@/components/HelpSystem";
+import DailyHoroscope from "@/components/DailyHoroscope";
 // Meditation components temporarily hidden
 // import MeditationCard from "@/components/MeditationCard";
 // import MeditationPlayer from "@/components/MeditationPlayer";
@@ -137,10 +138,26 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //   setMeditationSessionId(null);
   // };
 
+  // Get user's sun sign for Daily Horoscope
+  const [userSign, setUserSign] = useState(null);
+  
+  useEffect(() => {
+    if (user?.id) {
+      fetch('/api/birth-chart')
+        .then(res => res.json())
+        .then(data => {
+          if (data.chart?.planets?.sun?.sign) {
+            setUserSign(data.chart.planets.sun.sign);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.id]);
+
   return (
     <div className="w-full">
       {/* Main Content - No wrapper needed, layout shell handles it */}
-      <div className="space-y-6">
+      <div className="space-y-8">
           {/* Hero Header */}
           <HeroHeader 
             user={user}
@@ -149,90 +166,241 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             moonPhase={moonPhase}
           />
 
-          {/* Quick Actions - Moved to top for better visibility */}
-          <div className="glassmorphic rounded-3xl p-6 sm:p-10 apple-shadow-lg border border-white border-opacity-40 mb-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Explore Your Cosmic Journey</h2>
-              <p className="text-purple-200 text-sm sm:text-base">Discover guidance through tarot, astrology, and planetary wisdom</p>
+          {/* Why Us - Value Proposition */}
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold gradient-text mb-3">Why Choose Cosmic Spiritual Guide?</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 apple-shadow-lg">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">Precision</h3>
+                <p className="text-purple-200 text-sm">NASA-quality astrological calculations powered by advanced astronomy algorithms</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-4 apple-shadow-lg">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">Clarity</h3>
+                <p className="text-purple-200 text-sm">AI-powered interpretations that make complex astrological insights accessible and actionable</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 apple-shadow-lg">
+                  <Star className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">Free Daily Credits</h3>
+                <p className="text-purple-200 text-sm">3 credits refresh every day - explore tarot readings without spending a dime</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section A: Daily Guidance (Quick/Free Zone) */}
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40">
+            <div className="mb-6">
+              <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Daily Guidance</h2>
+              <p className="text-purple-200 text-sm sm:text-base">Quick access to your daily cosmic insights - perfect for starting your day</p>
+            </div>
+
+            {/* Daily Horoscope */}
+            <div className="mb-6">
+              <DailyHoroscope userSign={userSign} />
+            </div>
+
+            {/* Quick Tarot Buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <button
+                onClick={() => {
+                  setTarotSelectorConfig({ spreadType: "daily", readingType: "daily" });
+                  setShowTarotSelector(true);
+                }}
+                className="group bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3"
+              >
+                <Sparkles className="w-5 h-5 group-hover:animate-bounce-gentle" />
+                <span>Daily Tarot</span>
+              </button>
+              <button
+                onClick={() => {
+                  setTarotSelectorConfig({ spreadType: "daily-love", readingType: "daily-love" });
+                  setShowTarotSelector(true);
+                }}
+                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3"
+              >
+                <Heart className="w-5 h-5" />
+                <span>Love Tarot</span>
+              </button>
+              <button
+                onClick={() => {
+                  setTarotSelectorConfig({ spreadType: "career", readingType: "career" });
+                  setShowTarotSelector(true);
+                }}
+                className="group bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3"
+              >
+                <Briefcase className="w-5 h-5" />
+                <span>Career Tarot</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section B: Deep Dive Insights (Pay-per-use Zone) */}
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40">
+            <div className="mb-6">
+              <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Deep Dive Insights</h2>
+              <p className="text-purple-200 text-sm sm:text-base">Comprehensive readings and analyses to deepen your spiritual understanding</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {/* Birth Chart */}
+              <Link
+                href={hasBirthChart === true ? "/my-chart" : "/birth-chart"}
+                className="group bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+              >
+                <Star className="w-8 h-8" />
+                <span>{hasBirthChart === true ? "My Birth Chart" : "Create Birth Chart"}</span>
+              </Link>
+
+              {/* Compatibility Report */}
+              <Link
+                href="/compatibility"
+                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+              >
+                <Heart className="w-8 h-8" />
+                <span>Compatibility Report</span>
+              </Link>
+
+              {/* Moon Reading */}
+              <Link
+                href="/moon-reading"
+                className="group bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+              >
+                <Moon className="w-8 h-8" />
+                <span>Moon Reading</span>
+              </Link>
+
+              {/* Breakup Tarot */}
+              <button
+                onClick={() => {
+                  setTarotSelectorConfig({ spreadType: "breakup", readingType: "breakup" });
+                  setShowTarotSelector(true);
+                }}
+                className="group bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+              >
+                <Heart className="w-8 h-8" />
+                <span>Breakup Tarot</span>
+              </button>
+
+              {/* Past Present Future */}
+              <button
+                onClick={() => {
+                  setTarotSelectorConfig({ spreadType: "ppf", readingType: "ppf" });
+                  setShowTarotSelector(true);
+                }}
+                className="group bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+              >
+                <Sparkles className="w-8 h-8" />
+                <span>Past Present Future</span>
+              </button>
+
+              {/* All Tarot Types Button */}
               <button
                 onClick={() => {
                   setShowTarotTypePicker(true);
                 }}
-                className="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
+                className="group bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 border-2 border-white border-opacity-30"
               >
-                <div className="flex flex-col items-center space-y-1">
-                  <Sparkles className="w-6 h-6 group-hover:animate-bounce-gentle" />
-                  <span>Tarot Reading</span>
-                </div>
+                <Sparkles className="w-8 h-8" />
+                <span>More Tarot Types</span>
+                <span className="text-xs opacity-80">View All</span>
               </button>
-              <Link
-                href={hasBirthChart === true ? "/my-chart" : "/birth-chart"}
-                className="group relative bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Star className="w-6 h-6" />
-                  <span>{hasBirthChart === true ? "My Chart" : "Birth Chart"}</span>
-                </div>
-              </Link>
-              <Link
-                href="/moon-reading"
-                className="group relative bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Moon className="w-6 h-6" />
-                  <span>Moon Reading</span>
-                </div>
-              </Link>
-              <Link
-                href="/compatibility"
-                className="group relative bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Heart className="w-6 h-6" />
-                  <span>Compatibility</span>
-                </div>
-              </Link>
-              <Link
-                href="/journal"
-                className="group relative bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Sparkles className="w-6 h-6" />
-                  <span>My Journal</span>
-                </div>
-              </Link>
-              {/* Meditation button temporarily hidden */}
-              {/* <button
-                onClick={() => setShowMeditations(true)}
-                className="group relative bg-gradient-to-r from-green-500 via-teal-500 to-cyan-500 text-white px-6 py-4 sm:px-8 sm:py-5 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[60px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <Brain className="w-6 h-6 group-hover:animate-pulse" />
-                  <span>Meditation</span>
-                </div>
-              </button> */}
             </div>
           </div>
 
-          {/* Focus Grid */}
-          <FocusGrid 
-            userId={user?.id}
-            onReadingComplete={(reading) => {
-              // Refresh readings after completion
-              if (refetch) refetch();
-            }}
-          />
+          {/* Section C: Cosmic Intelligence (Premium Dashboard) */}
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border-2 border-yellow-400/50 bg-gradient-to-br from-yellow-500/10 via-orange-500/10 to-pink-500/10 relative overflow-hidden">
+            {/* Premium Badge */}
+            <div className="absolute top-4 right-4">
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-purple-900 text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+                <Crown className="w-4 h-4" />
+                PREMIUM
+              </div>
+            </div>
 
-          {/* Cosmic Briefing */}
-          <CosmicBriefing 
-            userId={user?.id}
-            onReadingComplete={(reading) => {
-              // Refresh readings after completion
-              if (refetch) refetch();
-            }}
-          />
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-semibold gradient-text">Cosmic Intelligence</h2>
+                  <p className="text-purple-200 text-sm sm:text-base">Advanced planetary analysis and AI-powered insights</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Transit Dashboard */}
+              <Link
+                href="/transits"
+                className="group bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white p-8 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center">
+                      <Zap className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-1">Transit Dashboard</h3>
+                      <p className="text-white/80 text-sm">Real-time planetary transits</p>
+                    </div>
+                  </div>
+                  <p className="text-white/90 mb-4">
+                    Track active planetary transits affecting your birth chart with AI-powered interpretations and personalized guidance.
+                  </p>
+                  <div className="flex items-center gap-2 text-yellow-300">
+                    <span className="text-sm font-semibold">View Dashboard</span>
+                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+
+              {/* AI Interpretations Info */}
+              <div className="bg-white/10 rounded-2xl p-8 border border-white/20">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-1">AI Interpretations</h3>
+                    <p className="text-purple-200 text-sm">Powered by GPT-4o-mini</p>
+                  </div>
+                </div>
+                <p className="text-white/90 mb-4">
+                  Get detailed, personalized interpretations of your readings, transits, and astrological insights enhanced by advanced AI.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1 bg-purple-500/30 text-purple-200 text-xs font-semibold rounded-full">Priority Processing</span>
+                  <span className="px-3 py-1 bg-pink-500/30 text-pink-200 text-xs font-semibold rounded-full">Enhanced Detail</span>
+                  <span className="px-3 py-1 bg-orange-500/30 text-orange-200 text-xs font-semibold rounded-full">Personalized</span>
+                </div>
+              </div>
+            </div>
+
+            {!isPremium && (
+              <div className="mt-6 p-4 bg-yellow-500/20 border border-yellow-400/50 rounded-xl">
+                <p className="text-yellow-200 text-sm text-center mb-3">
+                  <strong>Premium Feature:</strong> Unlock unlimited access to Transit Dashboard and priority AI interpretations
+                </p>
+                <Link
+                  href="/subscription"
+                  className="block w-full text-center px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition"
+                >
+                  Upgrade to Premium
+                </Link>
+              </div>
+            )}
+          </div>
 
           {/* Growth Bar */}
           <GrowthBar 
