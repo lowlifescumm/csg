@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard } from "lucide-react";
+import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard, Coins } from "lucide-react";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -107,6 +107,13 @@ export default function Header() {
             {user ? (
               <>
                 <Link
+                  href="/pricing"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
+                >
+                  <Coins className="w-4 h-4" />
+                  <span>Get Credits</span>
+                </Link>
+                <Link
                   href="/subscription"
                   className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
                 >
@@ -182,6 +189,14 @@ export default function Header() {
               })}
               {user ? (
                 <>
+                  <Link
+                    href="/pricing"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                  >
+                    <Coins className="w-5 h-5" />
+                    <span>Get Credits</span>
+                  </Link>
                   <Link
                     href="/subscription"
                     onClick={() => setMobileMenuOpen(false)}

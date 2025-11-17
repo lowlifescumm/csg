@@ -79,6 +79,26 @@ export default function CompatibilityCalculator() {
       return;
     }
 
+    // Check if user has a birth chart first (required dependency)
+    try {
+      const chartResponse = await fetch('/api/birth-chart');
+      const chartData = await chartResponse.json();
+      
+      if (!chartData.hasChart) {
+        setError('Please create your free birth chart first. Compatibility reports require your birth chart data.');
+        // Optionally redirect to birth chart creation
+        setTimeout(() => {
+          if (confirm('You need to create your birth chart first. Would you like to create it now? (It\'s free!)')) {
+            window.location.href = '/birth-chart';
+          }
+        }, 100);
+        return;
+      }
+    } catch (err) {
+      console.error('Error checking birth chart:', err);
+      // Continue anyway, but log the error
+    }
+
     setLoading(true);
     setError('');
 

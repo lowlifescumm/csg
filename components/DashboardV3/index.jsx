@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain, Briefcase, ChevronRight, CheckCircle } from "lucide-react";
+import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain, Briefcase, ChevronRight, CheckCircle, Lock } from "lucide-react";
 import Link from "next/link";
 import HeroHeader from "./HeroHeader";
 import FocusGrid from "./FocusGrid";
@@ -9,6 +9,7 @@ import DailyTasks from "./DailyTasks";
 import EnergyChart from "./EnergyChart";
 import CrystalsWidget from "./CrystalsWidget";
 import GrowthBar from "./GrowthBar";
+import CompactDailyStreak from "./CompactDailyStreak";
 import BestMatches from "./BestMatches";
 import ReadingHistory from "./ReadingHistory";
 import PremiumCard from "./PremiumCard";
@@ -215,31 +216,39 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   setTarotSelectorConfig({ spreadType: "daily", readingType: "daily" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3"
+                className="group bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3 relative"
               >
                 <Sparkles className="w-5 h-5 group-hover:animate-bounce-gentle" />
                 <span>Daily Tarot</span>
+                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
               <button
                 onClick={() => {
                   setTarotSelectorConfig({ spreadType: "daily-love", readingType: "daily-love" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3"
+                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3 relative"
               >
                 <Heart className="w-5 h-5" />
                 <span>Love Tarot</span>
+                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
               <button
                 onClick={() => {
                   setTarotSelectorConfig({ spreadType: "career", readingType: "career" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3"
+                className="group bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3 relative"
               >
                 <Briefcase className="w-5 h-5" />
                 <span>Career Tarot</span>
+                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
+            </div>
+
+            {/* Compact Daily Streak Widget */}
+            <div className="mt-6">
+              <CompactDailyStreak userId={user?.id} streak={streak} />
             </div>
           </div>
 
@@ -254,28 +263,36 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               {/* Birth Chart */}
               <Link
                 href={hasBirthChart === true ? "/my-chart" : "/birth-chart"}
-                className="group bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+                className="group bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Star className="w-8 h-8" />
-                <span>{hasBirthChart === true ? "My Birth Chart" : "Create Birth Chart"}</span>
+                <span>{hasBirthChart === true ? "My Birth Chart" : "Create Chart (Free)"}</span>
+                {hasBirthChart === false && (
+                  <span className="absolute top-2 right-2 bg-green-500/80 text-xs px-2 py-1 rounded-full">Free</span>
+                )}
+                {hasBirthChart === true && (
+                  <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">View</span>
+                )}
               </Link>
 
               {/* Compatibility Report */}
               <Link
                 href="/compatibility"
-                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Heart className="w-8 h-8" />
                 <span>Compatibility Report</span>
+                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">5 Credits</span>
               </Link>
 
               {/* Moon Reading */}
               <Link
                 href="/moon-reading"
-                className="group bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+                className="group bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Moon className="w-8 h-8" />
                 <span>Moon Reading</span>
+                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">2 Credits</span>
               </Link>
 
               {/* Breakup Tarot */}
@@ -284,10 +301,11 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   setTarotSelectorConfig({ spreadType: "breakup", readingType: "breakup" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+                className="group bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Heart className="w-8 h-8" />
                 <span>Breakup Tarot</span>
+                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
 
               {/* Past Present Future */}
@@ -296,10 +314,11 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   setTarotSelectorConfig({ spreadType: "ppf", readingType: "ppf" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3"
+                className="group bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Sparkles className="w-8 h-8" />
                 <span>Past Present Future</span>
+                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">2 Credits</span>
               </button>
 
               {/* All Tarot Types Button */}
@@ -341,17 +360,24 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Transit Dashboard */}
               <Link
-                href="/transits"
+                href={isPremium ? "/transits" : "/subscription"}
                 className="group bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white p-8 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative z-10">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center">
-                      <Zap className="w-8 h-8" />
+                      {!isPremium ? (
+                        <Lock className="w-8 h-8" />
+                      ) : (
+                        <Zap className="w-8 h-8" />
+                      )}
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold mb-1">Transit Dashboard</h3>
+                      <h3 className="text-2xl font-bold mb-1 flex items-center gap-2">
+                        Transit Dashboard
+                        {!isPremium && <span className="text-sm bg-yellow-400/30 px-2 py-1 rounded-full">Premium</span>}
+                      </h3>
                       <p className="text-white/80 text-sm">Real-time planetary transits</p>
                     </div>
                   </div>
@@ -359,7 +385,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                     Track active planetary transits affecting your birth chart with AI-powered interpretations and personalized guidance.
                   </p>
                   <div className="flex items-center gap-2 text-yellow-300">
-                    <span className="text-sm font-semibold">View Dashboard</span>
+                    <span className="text-sm font-semibold">{isPremium ? "View Dashboard" : "Upgrade to Access"}</span>
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -402,38 +428,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             )}
           </div>
 
-          {/* Growth Bar */}
-          <GrowthBar 
-            level={levelData.level}
-            xpCurrent={levelData.xpTarget ? (levelData.xpCurrent % levelData.xpTarget) : (levelData.xpCurrent % 100)}
-            xpTarget={levelData.xpTarget || 100}
-            userId={user?.id}
-            onLevelUp={(data) => {
-              // Update level data when level is claimed
-              const newLevel = data.level || levelData.level + 1;
-              setLevelData({
-                level: newLevel,
-                xpCurrent: levelData.xpCurrent,
-                xpTarget: newLevel * 100,
-              });
-              if (refetch) refetch();
-            }}
-          />
-
-          {/* Daily Tasks */}
-          <DailyTasks 
-            userId={user?.id}
-            streak={streak}
-            onStatsUpdate={(stats) => {
-              // Update level data when tasks complete
-              const level = Math.floor((stats.totalXP || 0) / 100) + 1;
-              setLevelData({
-                level,
-                xpCurrent: stats.totalXP || 0,
-                xpTarget: level * 100,
-              });
-            }}
-          />
+          {/* Compact Daily Streak - Replaces GrowthBar + DailyTasks for space saving */}
+          {/* Note: Full DailyTasks component removed from main view, can be accessed via CompactDailyStreak if needed */}
 
           {/* Energy Chart */}
           <EnergyChart 

@@ -167,12 +167,7 @@ export default function BirthChartForm({ updateMode = false }) {
       return;
     }
 
-    // Check if user has credits before making the request
-    if (!isPremium || creditsRemaining === 0) {
-      setShowFloatingPrompt(true);
-      return;
-    }
-
+    // Birth chart creation is now FREE - no credit check needed
     setLoading(true);
     try {
       const response = await fetch('/api/birth-chart', {
@@ -183,7 +178,8 @@ export default function BirthChartForm({ updateMode = false }) {
           time: formData.birthTime,
           location: formData.location,
           latitude: coordinates.latitude,
-          longitude: coordinates.longitude
+          longitude: coordinates.longitude,
+          generateInterpretation: false // Don't generate interpretation on creation (free)
         })
       });
 
@@ -386,9 +382,9 @@ Your rising sign depends on exact birth time
               disabled={loading || !coordinates}
               className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-lg"
             >
-              {loading ? 'Calculating Your Chart...' : 'Generate Birth Chart'}
+              {loading ? 'Creating Your Chart...' : 'Create Chart (Free)'}
             </button>
-            <p className="text-center text-sm text-gray-500">Premium feature - requires active subscription</p>
+            <p className="text-center text-sm text-purple-300">✓ Chart creation is free! View your chart wheel instantly. Unlock full interpretation for 3 credits.</p>
           </div>
         </form>
       ) : (

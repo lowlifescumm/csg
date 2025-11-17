@@ -22,7 +22,7 @@ export async function POST(req) {
     const { userId } = authResult;
 
     const body = await req.json();
-    const { date, time, location, latitude, longitude } = body;
+    const { date, time, location, latitude, longitude, generateInterpretation } = body;
 
     if (!date || !time || !location || latitude === undefined || longitude === undefined) {
       return NextResponse.json({ 
@@ -31,53 +31,58 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
-    // Check access permissions for Natal Chart
-    const accessCheck = await canAccessReading(userId, 'NATAL_CHART');
-    
-    if (!accessCheck.allowed) {
-      if (accessCheck.reason === 'insufficient_credits') {
-        return NextResponse.json({
-          error: 'Insufficient credits',
-          details: `Natal Chart requires ${accessCheck.required} credits`,
-          cost: accessCheck.required
-        }, { status: 402 }); // Payment Required
-      }
-      return NextResponse.json({
-        error: 'Access denied',
-        details: accessCheck.reason
-      }, { status: 403 });
-    }
-
-    // Calculate birth chart
+    // Calculate birth chart - NOW FREE (no credit check)
     const chartData = calculateBirthChart(date, time, latitude, longitude);
 
-    // Generate AI interpretation
+    // Generate AI interpretation ONLY if requested and user has credits
     let interpretation = '';
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        interpretation = await interpretBirthChart(chartData);
-      } catch (error) {
-        console.error('Failed to generate interpretation:', error);
-        interpretation = 'Interpretation generation failed. Your chart data is still saved.';
+    if (generateInterpretation) {
+      // Check access permissions for interpretation generation
+      const accessCheck = await canAccessReading(userId, 'NATAL_CHART');
+      
+      if (!accessCheck.allowed) {
+        if (accessCheck.reason === 'insufficient_credits') {
+          return NextResponse.json({
+            error: 'Insufficient credits',
+            details: `Interpretation requires ${accessCheck.required} credits`,
+            cost: accessCheck.required,
+            chart: chartData // Return chart data even if interpretation fails
+          }, { status: 402 }); // Payment Required
+        }
+        return NextResponse.json({
+          error: 'Access denied',
+          details: accessCheck.reason
+        }, { status: 403 });
       }
-    }
 
-    // Consume credits for the reading (if not subscription-included)
-    const creditResult = await consumeCreditsForReading(userId, 'NATAL_CHART');
-    
-    if (!creditResult.success) {
-      return NextResponse.json({
-        error: 'Credit processing failed',
-        details: creditResult.message,
-        cost: creditResult.cost
-      }, { status: 402 });
-    }
+      // Generate AI interpretation
+      if (process.env.OPENAI_API_KEY) {
+        try {
+          interpretation = await interpretBirthChart(chartData);
+        } catch (error) {
+          console.error('Failed to generate interpretation:', error);
+          interpretation = 'Interpretation generation failed. Your chart data is still saved.';
+        }
+      }
 
-    // Handle free natal chart for new subscribers
-    if (accessCheck.reason === 'subscription_included') {
-      const freeChartResult = await claimFreeNatalChart(userId);
-      if (freeChartResult.success) {
-        console.log(`[Birth Chart] Free natal chart claimed for user ${userId}`);
+      // Consume credits for the interpretation (if not subscription-included)
+      const creditResult = await consumeCreditsForReading(userId, 'NATAL_CHART');
+      
+      if (!creditResult.success) {
+        return NextResponse.json({
+          error: 'Credit processing failed',
+          details: creditResult.message,
+          cost: creditResult.cost,
+          chart: chartData // Return chart data even if credit processing fails
+        }, { status: 402 });
+      }
+
+      // Handle free natal chart for new subscribers
+      if (accessCheck.reason === 'subscription_included') {
+        const freeChartResult = await claimFreeNatalChart(userId);
+        if (freeChartResult.success) {
+          console.log(`[Birth Chart] Free natal chart claimed for user ${userId}`);
+        }
       }
     }
 
@@ -146,8 +151,9 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       chart: chartData,
-      interpretation,
-      chartId: oldResult.rows[0].id
+      interpretation: interpretation || null, // null if not generated
+      chartId: oldResult.rows[0].id,
+      hasInterpretation: !!interpretation
     });
 
   } catch (error) {

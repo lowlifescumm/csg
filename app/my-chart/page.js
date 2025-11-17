@@ -276,7 +276,7 @@ export default function MyChartPage() {
         </div>
 
         {/* Interpretation */}
-        {interpretation && (
+        {interpretation ? (
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
             <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
               <span>🔮</span> Your Natal Chart Interpretation
@@ -285,6 +285,61 @@ export default function MyChartPage() {
               <div className="text-purple-100 leading-relaxed whitespace-pre-line">
                 {interpretation}
               </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 relative overflow-hidden">
+            <div className="absolute inset-0 backdrop-blur-sm bg-black/50"></div>
+            <div className="relative z-10">
+              <h2 className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
+                <span>🔮</span> Your Natal Chart Interpretation
+              </h2>
+              <div className="prose prose-invert prose-lg max-w-none mb-6 blur-sm select-none pointer-events-none">
+                <div className="text-purple-100 leading-relaxed whitespace-pre-line">
+                  {`Your birth chart reveals a fascinating cosmic blueprint. The positions of the planets at the moment of your birth create a unique astrological signature that shapes your personality, life path, and potential.
+
+The Sun's placement indicates your core identity and ego expression, while the Moon reveals your emotional nature and inner needs. Your Rising sign (Ascendant) shows how you present yourself to the world and the mask you wear in social situations.
+
+Each planet's position in your chart tells a different story: Mercury influences how you think and communicate, Venus shapes your relationships and values, Mars drives your actions and desires, and Jupiter brings expansion and growth opportunities.
+
+The aspects between planets create dynamic relationships that add depth and complexity to your personality. Major aspects like conjunctions, oppositions, and trines reveal important themes and challenges in your life.
+
+Your chart's elemental distribution shows whether you're primarily Fire (passionate and action-oriented), Earth (practical and grounded), Air (intellectual and communicative), or Water (emotional and intuitive).
+
+This interpretation provides deep insights into your personality traits, strengths, challenges, and life purpose based on ancient astrological wisdom combined with modern psychological understanding.`}
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const response = await fetch('/api/birth-chart/interpretation', {
+                      method: 'POST'
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                      setInterpretation(data.interpretation);
+                    } else if (response.status === 402) {
+                      alert(`Insufficient credits. Interpretation requires ${data.cost || 3} credits.`);
+                      window.location.href = '/pricing';
+                    } else {
+                      alert(data.error || 'Failed to generate interpretation');
+                    }
+                  } catch (error) {
+                    alert('Failed to generate interpretation');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-4 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-lg"
+              >
+                <Sparkles className="w-5 h-5" />
+                {loading ? 'Generating Interpretation...' : 'Unlock Full Analysis (3 Credits)'}
+              </button>
+              <p className="text-center text-purple-300 text-sm mt-3">
+                Or <Link href="/subscription" className="text-yellow-400 hover:underline">upgrade to Premium</Link> to get interpretation included
+              </p>
             </div>
           </div>
         )}
