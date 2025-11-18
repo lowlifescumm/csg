@@ -149,7 +149,7 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
   if (!powerMove) return null;
 
   return (
-    <div className="space-y-6 w-full max-w-full overflow-hidden">
+    <div className="w-full max-w-full overflow-hidden mt-0">
       {/* Share Card (for image generation) - Hidden but accessible to html2canvas */}
       <div
         ref={shareCardRef}
