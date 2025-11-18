@@ -66,12 +66,12 @@ export default function MarkdownRenderer({ text, className = "" }) {
       }));
 
       return (
-        <p key={pIndex} className={`break-words whitespace-normal w-full max-w-full min-w-0 overflow-hidden ${pIndex > 0 ? "mt-4" : ""}`}>
+        <p key={pIndex} className={`break-words whitespace-normal ${pIndex > 0 ? "mt-4" : ""}`}>
           {processedParts.map((part, i) => {
             if (part.type === 'bold') {
-              return <strong key={i} className="font-semibold break-words whitespace-normal">{part.content}</strong>;
+              return <strong key={i} className="font-semibold break-words">{part.content}</strong>;
             }
-            return <span key={i} className="break-words whitespace-normal">{part.content}</span>;
+            return <span key={i} className="break-words">{part.content}</span>;
           })}
         </p>
       );

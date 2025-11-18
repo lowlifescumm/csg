@@ -220,13 +220,13 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
           </div>
 
           {/* Power Move Preview */}
-          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 mb-6 overflow-hidden w-full max-w-full">
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 mb-6 overflow-hidden">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-300 flex-shrink-0" />
               Your Power Move
             </h3>
-            <div className="w-full max-w-full min-w-0 break-words overflow-hidden">
-              <MarkdownRenderer text={powerMove} className="text-purple-100 leading-relaxed break-words w-full max-w-full" />
+            <div className="w-full max-w-full break-words">
+              <MarkdownRenderer text={powerMove} className="text-purple-100 leading-relaxed break-words" />
             </div>
           </div>
 
