@@ -5,6 +5,7 @@ import { ALL_CARDS } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
 import FocusModal from "@/components/FocusModal";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import ShareCard from "@/components/ShareCard";
 
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general" }) {
   const [selectedCards, setSelectedCards] = useState([]);
@@ -182,6 +183,16 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
             <h3 className="font-semibold text-gray-900 mb-3">Interpretation</h3>
             <MarkdownRenderer text={reading.interpretation} className="text-gray-700 leading-relaxed" />
           </div>
+
+          {/* Share Card */}
+          <ShareCard 
+            interpretation={reading.interpretation} 
+            readingId={reading.id}
+            onShareComplete={(credits) => {
+              // Optionally show a toast notification
+              console.log(`${credits} credits awarded for sharing!`);
+            }}
+          />
 
           <button
             onClick={handleNewReading}
