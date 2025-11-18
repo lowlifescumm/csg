@@ -171,32 +171,8 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-pink-500 opacity-10 rounded-full blur-3xl" />
 
         {/* Content */}
-        <div className="relative z-10 flex-1 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">Cosmic Spirit Guide</h2>
-                <p className="text-purple-200 text-sm">Your Personal Power Move</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 flex items-center">
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8 border border-white border-opacity-20">
-              <h3 className="text-3xl font-bold text-white mb-6 flex items-center gap-3 break-words">
-                <Star className="w-8 h-8 text-yellow-300 flex-shrink-0" />
-                Your Power Move
-              </h3>
-              <div className="text-white text-xl leading-relaxed w-full max-w-full break-words whitespace-normal">
-                <MarkdownRenderer text={powerMove} className="text-white break-words" />
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center text-purple-200 text-sm mt-4">
+        <div className="relative z-10 flex-1 flex flex-col justify-center items-center">
+          <div className="text-center text-purple-200 text-sm">
             Get your reading at cosmicspiritguide.com
           </div>
         </div>
