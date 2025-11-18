@@ -243,7 +243,11 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           )}
         </div>
 
-        <div className={`grid grid-cols-${positions.length === 1 ? '1' : (positions.length === 2 ? '2' : '3')} gap-4 md:gap-8 mb-8`}>
+        <div className={`grid gap-4 md:gap-8 mb-8 ${
+            positions.length === 1 ? 'grid-cols-1' : 
+            positions.length === 2 ? 'grid-cols-2' : 
+            'grid-cols-3'
+          }`}>
           {Array.from({ length: spread.card_count }).map((_, index) => {
             const isSelected = selectedCards.includes(index);
             const selectionOrder = selectedCards.indexOf(index);

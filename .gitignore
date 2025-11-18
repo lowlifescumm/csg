@@ -65,3 +65,29 @@ jspm_packages/
 .DS_Store
 Thumbs.db
 app.log
+
+# ========================================
+# Unused Files - Kept locally, not in git
+# ========================================
+
+# Disabled/backup application files
+app__disabled/
+
+# Backup files
+*.bak
+*_backup.js
+*.backup
+
+# Database backups
+artifacts/backups/
+
+# Old migration/config files
+eslint.migration.config.mjs
+fix_static_assets.patch
+
+# Documentation (optional - remove these lines if you want docs tracked)
+*.md
+!README.md
+docs/
+meditations/
+artifacts/
