@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { BookOpen, Calendar, Filter, Sparkles, Star, Eye, RotateCcw, Loader2, X, Heart } from "lucide-react";
 import Link from "next/link";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 /**
  * Get reading type icon
@@ -542,9 +543,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
               {selectedReading.result?.interpretation && (
                 <div className="bg-white bg-opacity-10 rounded-xl p-6 border border-white border-opacity-20">
                   <h4 className="text-lg font-semibold text-white mb-3">Interpretation</h4>
-                  <p className="text-purple-200 leading-relaxed whitespace-pre-line">
-                    {selectedReading.result.interpretation}
-                  </p>
+                  <MarkdownRenderer text={selectedReading.result.interpretation} className="text-purple-200 leading-relaxed" />
                 </div>
               )}
             </div>

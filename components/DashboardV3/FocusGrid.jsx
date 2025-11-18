@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Heart, Briefcase, Sparkles, Brain, Star, Users, Loader2, X } from "lucide-react";
 import Link from "next/link";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 // Default tile configuration
 const defaultTiles = [
@@ -329,9 +330,7 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
             {readingResult.reading.interpretation && (
               <div className="bg-white bg-opacity-10 rounded-xl p-6 border border-white border-opacity-20 mb-6">
                 <h4 className="text-lg font-semibold text-white mb-4">Interpretation</h4>
-                <div className="text-white text-opacity-90 whitespace-pre-line leading-relaxed">
-                  {readingResult.reading.interpretation}
-                </div>
+                <MarkdownRenderer text={readingResult.reading.interpretation} className="text-white text-opacity-90 leading-relaxed" />
               </div>
             )}
 

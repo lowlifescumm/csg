@@ -4,6 +4,7 @@ import { X, Sparkles } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
 import FocusModal from "@/components/FocusModal";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general" }) {
   const [selectedCards, setSelectedCards] = useState([]);
@@ -12,7 +13,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   const [showReading, setShowReading] = useState(false);
   const [reading, setReading] = useState(null);
   const [question, setQuestion] = useState("");
-  const [showQuestionInput, setShowQuestionInput] = useState(false);
   const [showFocusModal, setShowFocusModal] = useState(false);
   const [error, setError] = useState("");
   const [flashMismatch, setFlashMismatch] = useState(false);
@@ -41,7 +41,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   useEffect(() => {
     // On mount and when spread changes, clear selections and prepare exactly N cards
     setSelectedCards([]);
-    setShowQuestionInput(false);
     setError("");
     const shuffled = [...ALL_CARDS].sort(() => Math.random() - 0.5);
     setAvailableCards(shuffled.slice(0, spread.card_count));
@@ -55,11 +54,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     const newSelectedCards = [...selectedCards, index];
     setSelectedCards(newSelectedCards);
     
-    // If all cards are selected, show question input for spreads that allow or require questions
-    const count = spread.card_count;
-    if (newSelectedCards.length === count && !showQuestionInput && (spread.ui?.require_question || spread.allow_question)) {
-      setShowQuestionInput(true);
-    }
+    // Question input is now handled by Focus Modal - no need to show legacy input
   };
 
   const handleGetReading = () => {
@@ -137,7 +132,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setShowReading(false);
     setReading(null);
     setQuestion("");
-    setShowQuestionInput(false);
     setError("");
     
     // Shuffle and pick new cards
@@ -186,7 +180,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
 
           <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-6 border border-purple-100">
             <h3 className="font-semibold text-gray-900 mb-3">Interpretation</h3>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">{reading.interpretation}</p>
+            <MarkdownRenderer text={reading.interpretation} className="text-gray-700 leading-relaxed" />
           </div>
 
           <button
@@ -218,28 +212,10 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           <p className="text-gray-600 mb-2">
             {selectedCards.length === 0 && "Click on each card to reveal your destiny"}
             {selectedCards.length > 0 && selectedCards.length < positions.length && `${selectedCards.length} of ${positions.length} cards selected`}
-            {selectedCards.length === positions.length && !showQuestionInput && "All cards selected!"}
+            {selectedCards.length === positions.length && "All cards selected!"}
           </p>
           {error && (
             <p className="text-red-600 text-sm mb-2">{error}</p>
-          )}
-          {showQuestionInput && (
-            <div className="mt-4 max-w-md mx-auto">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {spread.ui?.require_question ? 'Your Question (Required)' : 'Your Question (Optional)'}
-              </label>
-              <input
-                type="text"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder={spread.ui?.require_question ? "What guidance do you seek?" : "What guidance do you seek? (Optional)"}
-                className="w-full p-4 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none bg-white bg-opacity-70"
-                disabled={loading}
-              />
-              {spread.ui?.require_question && (
-                <p className="text-xs text-gray-500 mt-1">Please enter your question to proceed</p>
-              )}
-            </div>
           )}
         </div>
 
