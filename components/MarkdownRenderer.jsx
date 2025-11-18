@@ -66,12 +66,12 @@ export default function MarkdownRenderer({ text, className = "" }) {
       }));
 
       return (
-        <p key={pIndex} className={pIndex > 0 ? "mt-4" : ""}>
+        <p key={pIndex} className={`break-words whitespace-normal ${pIndex > 0 ? "mt-4" : ""}`}>
           {processedParts.map((part, i) => {
             if (part.type === 'bold') {
-              return <strong key={i} className="font-semibold">{part.content}</strong>;
+              return <strong key={i} className="font-semibold break-words">{part.content}</strong>;
             }
-            return <span key={i}>{part.content}</span>;
+            return <span key={i} className="break-words">{part.content}</span>;
           })}
         </p>
       );
@@ -80,5 +80,5 @@ export default function MarkdownRenderer({ text, className = "" }) {
 
   if (!text) return null;
 
-  return <div className={className}>{rendered}</div>;
+  return <div className={`${className} break-words w-full max-w-full whitespace-normal`}>{rendered}</div>;
 }

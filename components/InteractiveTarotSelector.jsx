@@ -143,7 +143,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   if (showReading && reading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-        <div className="glassmorphic rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40">
+        <div className="glassmorphic rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden apple-shadow-lg border border-white border-opacity-40">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold gradient-text">Your Tarot Reading</h2>
             <button
@@ -179,9 +179,11 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
             ))}
           </div>
 
-          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-6 border border-purple-100">
-            <h3 className="font-semibold text-gray-900 mb-3">Interpretation</h3>
-            <MarkdownRenderer text={reading.interpretation} className="text-gray-700 leading-relaxed" />
+          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-6 border border-purple-100 overflow-hidden w-full max-w-full">
+            <h3 className="font-semibold text-gray-900 mb-3 break-words">Interpretation</h3>
+            <div className="w-full max-w-full break-words">
+              <MarkdownRenderer text={reading.interpretation} className="text-gray-700 leading-relaxed break-words" />
+            </div>
           </div>
 
           {/* Share Card */}

@@ -149,7 +149,7 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
   if (!powerMove) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-hidden">
       {/* Share Card (for image generation) - Hidden but accessible to html2canvas */}
       <div
         ref={shareCardRef}
@@ -186,12 +186,12 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
 
           <div className="flex-1 flex items-center">
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8 border border-white border-opacity-20">
-              <h3 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-                <Star className="w-8 h-8 text-yellow-300" />
+              <h3 className="text-3xl font-bold text-white mb-6 flex items-center gap-3 break-words">
+                <Star className="w-8 h-8 text-yellow-300 flex-shrink-0" />
                 Your Power Move
               </h3>
-              <div className="text-white text-xl leading-relaxed">
-                <MarkdownRenderer text={powerMove} className="text-white" />
+              <div className="text-white text-xl leading-relaxed w-full max-w-full break-words whitespace-normal">
+                <MarkdownRenderer text={powerMove} className="text-white break-words" />
               </div>
             </div>
           </div>
@@ -203,29 +203,31 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
       </div>
 
       {/* Visible Share Card (shown to users) */}
-      <div className="bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900 rounded-3xl p-8 border border-white border-opacity-20 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900 rounded-3xl p-8 border border-white border-opacity-20 relative overflow-hidden w-full max-w-full">
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 opacity-10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500 opacity-10 rounded-full blur-3xl" />
 
-        <div className="relative z-10">
+        <div className="relative z-10 w-full max-w-full">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">Share Your Insight!</h2>
-              <p className="text-purple-200 text-sm">Share & Get 3 Bonus Credits!</p>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-2xl font-bold text-white break-words">Share Your Insight!</h2>
+              <p className="text-purple-200 text-sm break-words">Share & Get 3 Bonus Credits!</p>
             </div>
           </div>
 
           {/* Power Move Preview */}
-          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 mb-6">
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 mb-6 overflow-hidden">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-300" />
+              <Star className="w-5 h-5 text-yellow-300 flex-shrink-0" />
               Your Power Move
             </h3>
-            <MarkdownRenderer text={powerMove} className="text-purple-100 leading-relaxed" />
+            <div className="w-full max-w-full break-words">
+              <MarkdownRenderer text={powerMove} className="text-purple-100 leading-relaxed break-words" />
+            </div>
           </div>
 
           {/* Share Buttons */}
