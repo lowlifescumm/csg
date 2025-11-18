@@ -153,16 +153,18 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
       {/* Share Card (for image generation) - Hidden but accessible to html2canvas */}
       <div
         ref={shareCardRef}
-        className="hidden md:block"
+        className="hidden"
         style={{
           width: "1200px",
           height: "630px",
           background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #7c3aed 100%)",
           padding: "60px",
-          display: "flex",
+          display: "none",
           flexDirection: "column",
           justifyContent: "space-between",
-          position: "relative",
+          position: "absolute",
+          left: "-9999px",
+          top: "-9999px",
           overflow: "hidden",
         }}
       >
