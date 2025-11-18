@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { X, Sparkles } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
+import FocusModal from "@/components/FocusModal";
 
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general" }) {
   const [selectedCards, setSelectedCards] = useState([]);
@@ -12,6 +13,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   const [reading, setReading] = useState(null);
   const [question, setQuestion] = useState("");
   const [showQuestionInput, setShowQuestionInput] = useState(false);
+  const [showFocusModal, setShowFocusModal] = useState(false);
   const [error, setError] = useState("");
   const [flashMismatch, setFlashMismatch] = useState(false);
   
@@ -60,7 +62,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     }
   };
 
-  const handleGetReading = async () => {
+  const handleGetReading = () => {
     const required = spread.ui?.required_selection_count ?? spread.card_count;
     const selected = selectedCards.length;
     if (selected !== required) {
@@ -72,7 +74,20 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       }, 1500);
       return;
     }
-    if (spread.ui?.require_question && !question.trim()) {
+
+    // Open Focus Modal instead of calling API directly
+    setShowFocusModal(true);
+  };
+
+  const handleFocusSubmit = async (userIntent) => {
+    // Close the focus modal
+    setShowFocusModal(false);
+    
+    // Update question state with user's intent
+    setQuestion(userIntent);
+    
+    // If question was required but not provided, show error
+    if (spread.ui?.require_question && !userIntent.trim()) {
       setError("Please enter your question before submitting.");
       return;
     }
@@ -91,7 +106,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          question,
+          question: userIntent, // Use the intent from focus modal
           spreadType,
           readingType,
           specificCards: selectedCardsData,
@@ -105,7 +120,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         setReading(data.reading);
         setShowReading(true);
       } else {
-        // Tarot is free, but handle other errors
+        // Handle errors
         alert(data.error || "Something went wrong");
       }
     } catch (error) {
@@ -186,6 +201,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   }
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
       <div className="glassmorphic rounded-3xl p-8 max-w-4xl w-full apple-shadow-lg border border-white border-opacity-40">
         <div className="flex items-center justify-between mb-6">
@@ -298,7 +314,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         {selectedCards.length === spread.card_count && (
           <button
             onClick={handleGetReading}
-            disabled={loading || (spread.ui?.require_question ? !question.trim() : false)}
+            disabled={loading}
             className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
@@ -310,10 +326,18 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
                 Consulting the cards...
               </span>
             ) : (
-              "Get Your Reading"
+              "Start Reading"
             )}
           </button>
         )}
+
+        {/* Focus Modal */}
+        <FocusModal
+          isOpen={showFocusModal}
+          onClose={() => setShowFocusModal(false)}
+          onSubmit={handleFocusSubmit}
+          readingType={readingType}
+        />
 
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500">
@@ -322,5 +346,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         </div>
       </div>
     </div>
+    </>
   );
 }
