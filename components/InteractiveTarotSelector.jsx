@@ -179,14 +179,13 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
             ))}
           </div>
 
-          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-6 border border-purple-100 overflow-hidden w-full max-w-full">
+          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-6 border border-purple-100 overflow-hidden w-full max-w-full mb-0">
             <h3 className="font-semibold text-gray-900 mb-3 break-words">Interpretation</h3>
             <div className="w-full max-w-full break-words">
               <MarkdownRenderer text={reading.interpretation} className="text-gray-700 leading-relaxed break-words" />
             </div>
           </div>
 
-          {/* Share Card */}
           <ShareCard 
             interpretation={reading.interpretation} 
             readingId={reading.id}
