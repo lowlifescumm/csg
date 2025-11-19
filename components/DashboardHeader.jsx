@@ -46,12 +46,17 @@ export default function DashboardHeader({
   };
 
   const getMoonPhaseText = () => {
-    if (!moonPhase) return "Loading...";
-    return moonPhase.phaseName || "Waxing Crescent";
+    if (!moonPhase || typeof moonPhase !== 'object') return "Loading...";
+    return moonPhase.phaseName || moonPhase.phase || "Waxing Crescent";
   };
 
-  const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
-  const userName = user?.firstName || user?.email?.split("@")[0] || "there";
+  // Safely extract values, ensuring we never render objects
+  const totalCredits = credits && typeof credits === 'object' 
+    ? (credits?.stats?.totalAvailable ?? credits?.credits ?? 0)
+    : (typeof credits === 'number' ? credits : 0);
+  const userName = user && typeof user === 'object'
+    ? (user?.firstName || user?.email?.split("@")[0] || "there")
+    : "there";
   const spiritualGrowthPercentage = Math.min(100, (xpCurrent / xpTarget) * 100);
 
   return (

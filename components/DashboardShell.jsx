@@ -132,12 +132,18 @@ export default function DashboardShell({ children }) {
   }
 
   // Pass all data to children via render prop pattern
+  // Ensure we never pass empty objects - convert to null if needed
+  const safeCredits = credits && typeof credits === 'object' && Object.keys(credits).length > 0 ? credits : null;
+  const safeReadings = readings && typeof readings === 'object' && Object.keys(readings).length > 0 ? readings : null;
+  const safeStreak = streak && typeof streak === 'object' && Object.keys(streak).length > 0 ? streak : null;
+  const safeMoonPhase = moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 ? moonPhase : null;
+  
   return children({
-    user,
-    credits,
-    readings,
-    streak,
-    moonPhase,
+    user: user || null,
+    credits: safeCredits,
+    readings: safeReadings,
+    streak: safeStreak,
+    moonPhase: safeMoonPhase,
     refetch: fetchDashboardData,
   });
 }

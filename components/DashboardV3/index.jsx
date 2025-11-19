@@ -32,10 +32,16 @@ import DailyHoroscope from "@/components/DailyHoroscope";
  * - Component-based architecture for easy feature toggling
  */
 export default function DashboardV3({ user, credits, readings, streak, moonPhase, refetch }) {
-  const isPremium = user?.stripe_subscription_id || credits?.isPremium;
-  const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
-  const readingCount = readings?.stats?.readingCount || 0;
-  const chartCount = readings?.stats?.chartCount || 0;
+  // Safely extract values, ensuring we never render objects directly
+  const safeCredits = credits && typeof credits === 'object' ? credits : null;
+  const safeReadings = readings && typeof readings === 'object' ? readings : null;
+  const safeStreak = streak && typeof streak === 'object' ? streak : null;
+  const safeMoonPhase = moonPhase && typeof moonPhase === 'object' ? moonPhase : null;
+  
+  const isPremium = user?.stripe_subscription_id || safeCredits?.isPremium;
+  const totalCredits = safeCredits?.stats?.totalAvailable || safeCredits?.credits || 0;
+  const readingCount = safeReadings?.stats?.readingCount || 0;
+  const chartCount = safeReadings?.stats?.chartCount || 0;
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });
   const [showTarotSelector, setShowTarotSelector] = useState(false);
   const [showTarotTypePicker, setShowTarotTypePicker] = useState(false);
@@ -160,11 +166,11 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
       {/* Main Content - No wrapper needed, layout shell handles it */}
       <div className="space-y-8">
           {/* Hero Header */}
-          <HeroHeader 
+          <HeroHeader
             user={user}
-            credits={credits}
-            streak={streak}
-            moonPhase={moonPhase}
+            credits={safeCredits}
+            streak={safeStreak}
+            moonPhase={safeMoonPhase}
           />
 
           {/* Why Us - Value Proposition */}
@@ -248,7 +254,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
             {/* Compact Daily Streak Widget */}
             <div className="mt-6">
-              <CompactDailyStreak userId={user?.id} streak={streak} />
+              <CompactDailyStreak userId={user?.id} streak={safeStreak} />
             </div>
           </div>
 
@@ -438,7 +444,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
           {/* Crystals Widget */}
           <CrystalsWidget 
-            moonPhase={moonPhase}
+            moonPhase={safeMoonPhase}
           />
 
           {/* Best Matches */}
