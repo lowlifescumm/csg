@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { pool } from '@/lib/db';
+import { addCreditsDirectly, refundCredits, getCreditBalance } from '@/lib/credit-engine.js';
 
 export async function POST(request) {
   try {
@@ -51,32 +52,52 @@ export async function POST(request) {
 
     const targetUser = targetUserRows[0];
 
-    // Upsert credits - add to existing credits (not replace)
-    // First check if record exists
-    const { rows: existingCredits } = await pool.query(
-      "SELECT credits FROM credits WHERE user_id = $1",
-      [userId]
-    );
-
-    if (existingCredits.length > 0) {
-      // Update existing record
-      await pool.query(
-        'UPDATE credits SET credits = GREATEST(0, credits + $1), updated_at = NOW() WHERE user_id = $2',
-        [creditsToAdd, userId]
-      );
+    // Use new credit engine for credit adjustments
+    let result;
+    if (creditsToAdd > 0) {
+      // Add credits directly via admin adjustment
+      result = await addCreditsDirectly(userId, creditsToAdd, 'admin_adjustment', {
+        admin_adjustment: true,
+        adjusted_by: decoded.userId,
+        reason: reason || 'Manual admin adjustment',
+        timestamp: new Date().toISOString()
+      });
+      
+      if (!result.success) {
+        return NextResponse.json({ 
+          error: 'Failed to add credits',
+          details: result.error 
+        }, { status: 500 });
+      }
+    } else if (creditsToAdd < 0) {
+      // Remove credits - create negative ledger entry
+      const removeAmount = Math.abs(creditsToAdd);
+      result = await addCreditsDirectly(userId, -removeAmount, 'admin_adjustment', {
+        admin_adjustment: true,
+        adjusted_by: decoded.userId,
+        reason: reason || 'Manual admin adjustment (removal)',
+        timestamp: new Date().toISOString()
+      });
+      
+      if (!result.success) {
+        return NextResponse.json({ 
+          error: 'Failed to adjust credits',
+          details: result.error 
+        }, { status: 500 });
+      }
     } else {
-      // Insert new record
-      await pool.query(
-        'INSERT INTO credits (user_id, credits, created_at, updated_at) VALUES ($1, GREATEST(0, $2), NOW(), NOW())',
-        [userId, creditsToAdd]
-      );
+      // No change
+      const balance = await getCreditBalance(userId);
+      return NextResponse.json({ 
+        success: true,
+        message: 'No change requested',
+        creditsChange: 0,
+        currentBalance: balance.balance
+      });
     }
 
-    // Get final credit balance
-    const { rows: finalCredits } = await pool.query(
-      "SELECT credits FROM credits WHERE user_id = $1",
-      [userId]
-    );
+    // Get final credit balance from new engine
+    const balance = await getCreditBalance(userId);
 
     console.log(`[Admin Credits] Admin ${decoded.userId} adjusted credits for user ${userId} (${targetUser.email}): ${creditsToAdd > 0 ? '+' : ''}${creditsToAdd}. Reason: ${reason || 'Manual adjustment'}`);
 
@@ -84,7 +105,8 @@ export async function POST(request) {
       success: true,
       message: `Credits ${creditsToAdd > 0 ? 'added' : 'adjusted'} successfully`,
       creditsChange: creditsToAdd,
-      newBalance: finalCredits[0]?.credits || 0
+      newBalance: balance.balance,
+      ledger_id: result.ledger_id || result.purchase_id
     });
   } catch (error) {
     console.error('Update credits error:', error);
