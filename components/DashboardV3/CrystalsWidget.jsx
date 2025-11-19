@@ -122,9 +122,12 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
   const [favoriting, setFavoriting] = useState(false);
   const [favoriteStatus, setFavoriteStatus] = useState({});
 
+  // Safely extract moonPhase, ensuring we never render objects
+  const safeMoonPhase = moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 ? moonPhase : null;
+
   useEffect(() => {
     fetchElementData();
-  }, [moonPhase, userSign]);
+  }, [safeMoonPhase, userSign]);
 
   const fetchElementData = async () => {
     try {
@@ -138,12 +141,12 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
     } catch (err) {
       console.log("Could not fetch element data, computing from moon phase:", err);
       // Compute from moon phase if available
-      if (moonPhase?.zodiacSign) {
-        const element = getElementFromSign(moonPhase.zodiacSign);
+      if (safeMoonPhase?.zodiacSign) {
+        const element = getElementFromSign(safeMoonPhase.zodiacSign);
         setElementData({
           success: true,
           element,
-          sign: moonPhase.zodiacSign,
+          sign: safeMoonPhase.zodiacSign,
           explanation: ELEMENT_EXPLANATIONS[element] || "",
         });
       } else if (userSign) {
