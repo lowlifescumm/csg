@@ -44,14 +44,24 @@ export default function DashboardShell({ children }) {
       const creditsRes = await fetch("/api/credits");
       if (creditsRes.ok) {
         const creditsData = await creditsRes.json();
-        setCredits(creditsData);
+        // Ensure we never set empty objects - convert to null if needed
+        if (creditsData && typeof creditsData === 'object' && Object.keys(creditsData).length === 0) {
+          setCredits(null);
+        } else {
+          setCredits(creditsData);
+        }
       }
 
       // Fetch readings
       const readingsRes = await fetch("/api/readings");
       if (readingsRes.ok) {
         const readingsData = await readingsRes.json();
-        setReadings(readingsData);
+        // Ensure we never set empty objects - convert to null if needed
+        if (readingsData && typeof readingsData === 'object' && Object.keys(readingsData).length === 0) {
+          setReadings(null);
+        } else {
+          setReadings(readingsData);
+        }
       }
 
       // Fetch streak (optional - gracefully handles if endpoint doesn't exist)
@@ -59,7 +69,12 @@ export default function DashboardShell({ children }) {
         const streakRes = await fetch("/api/streak");
         if (streakRes.ok) {
           const streakData = await streakRes.json();
-          setStreak(streakData);
+          // Ensure we never set empty objects - convert to null if needed
+          if (streakData && typeof streakData === 'object' && Object.keys(streakData).length === 0) {
+            setStreak(null);
+          } else {
+            setStreak(streakData);
+          }
         }
       } catch (streakError) {
         // Streak endpoint is optional, continue if it fails
