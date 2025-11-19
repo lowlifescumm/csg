@@ -14,6 +14,7 @@ import { generateAllTransitInterpretations } from '@/lib/transit-interpretation'
 import { getUserTransits, updateTransitStatuses } from '@/lib/transit-engine.js';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
+import { formatCreditError } from '@/lib/credit-error-handler.js';
 
 export async function GET(req) {
   try {
@@ -43,11 +44,8 @@ export async function GET(req) {
 
     const creditResult = await consumeCreditsForReading(userId, 'TRANSIT_TRACKING');
     if (!creditResult.success) {
-      return NextResponse.json({
-        error: 'Credit processing failed',
-        details: creditResult.message,
-        cost: creditResult.cost,
-      }, { status: 402 });
+      const errorResponse = formatCreditError(creditResult);
+      return NextResponse.json(errorResponse, { status: errorResponse.status });
     }
 
     let chartResult = await pool.query(

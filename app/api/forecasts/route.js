@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getUserForecasts } from '@/lib/forecast-engine.js';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
+import { formatCreditError } from '@/lib/credit-error-handler.js';
 
 /**
  * GET /api/forecasts
@@ -44,11 +45,8 @@ export async function GET(req) {
 
     const creditResult = await consumeCreditsForReading(userId, readingType);
     if (!creditResult.success) {
-      return NextResponse.json({
-        error: 'Credit processing failed',
-        details: creditResult.message,
-        cost: creditResult.cost,
-      }, { status: 402 });
+      const errorResponse = formatCreditError(creditResult);
+      return NextResponse.json(errorResponse, { status: errorResponse.status });
     }
 
     let forecasts = await getUserForecasts(userId, daysBack);

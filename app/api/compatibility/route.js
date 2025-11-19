@@ -7,6 +7,7 @@ import { calculateBirthChart } from '@/lib/astrology';
 import { pool } from '@/lib/db';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
+import { formatCreditError } from '@/lib/credit-error-handler.js';
 
 
 export async function POST(request) {
@@ -77,11 +78,8 @@ export async function POST(request) {
     const creditResult = await consumeCreditsForReading(userId, 'COMPATIBILITY_REPORT');
     
     if (!creditResult.success) {
-      return NextResponse.json({
-        error: 'Credit processing failed',
-        details: creditResult.message,
-        cost: creditResult.cost
-      }, { status: 402 });
+      const errorResponse = formatCreditError(creditResult);
+      return NextResponse.json(errorResponse, { status: errorResponse.status });
     }
 
     const insertResult = await pool.query(

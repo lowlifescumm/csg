@@ -6,6 +6,7 @@ import spreads from "@/lib/tarot-spreads.json";
 import { generateTarotReading } from "@/lib/openai";
 import { saveReading } from "@/lib/db";
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
+import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { zodiacSigns } from "@/lib/zodiac-data";
 
 export const runtime = "nodejs";
@@ -96,11 +97,8 @@ export async function POST(request) {
         const creditResult = await consumeCreditsForReading(userId, readingTypeKey);
         
         if (!creditResult.success) {
-          return NextResponse.json({
-            error: 'Credit processing failed',
-            details: creditResult.message,
-            cost: creditResult.cost
-          }, { status: 402 });
+          const errorResponse = formatCreditError(creditResult);
+          return NextResponse.json(errorResponse, { status: errorResponse.status });
         }
 
         // Save reading
@@ -194,11 +192,8 @@ export async function POST(request) {
         const creditResult = await consumeCreditsForReading(userId, readingTypeKey);
         
         if (!creditResult.success) {
-          return NextResponse.json({
-            error: 'Credit processing failed',
-            details: creditResult.message,
-            cost: creditResult.cost
-          }, { status: 402 });
+          const errorResponse = formatCreditError(creditResult);
+          return NextResponse.json(errorResponse, { status: errorResponse.status });
         }
 
         // Save reading

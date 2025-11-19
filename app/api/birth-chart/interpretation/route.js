@@ -3,6 +3,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/lib/db.js';
 import { interpretBirthChart } from '@/lib/astrology.js';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
+import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { getAuthenticatedUser } from '@/lib/auth.js';
 
 /**
@@ -103,11 +104,8 @@ export async function POST(req) {
     const creditResult = await consumeCreditsForReading(userId, 'NATAL_CHART');
     
     if (!creditResult.success) {
-      return NextResponse.json({
-        error: 'Credit processing failed',
-        details: creditResult.message,
-        cost: creditResult.cost
-      }, { status: 402 });
+      const errorResponse = formatCreditError(creditResult);
+      return NextResponse.json(errorResponse, { status: errorResponse.status });
     }
 
     // Update interpretation in database

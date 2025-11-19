@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/lib/db.js';
 import { calculateBirthChart, interpretBirthChart } from '@/lib/astrology.js';
 import { canAccessReading, consumeCreditsForReading, claimFreeNatalChart } from '@/lib/access-control.js';
+import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { getAuthenticatedUser } from '@/lib/auth.js';
 
 /**
@@ -69,12 +70,11 @@ export async function POST(req) {
       const creditResult = await consumeCreditsForReading(userId, 'NATAL_CHART');
       
       if (!creditResult.success) {
+        const errorResponse = formatCreditError(creditResult);
         return NextResponse.json({
-          error: 'Credit processing failed',
-          details: creditResult.message,
-          cost: creditResult.cost,
+          ...errorResponse,
           chart: chartData // Return chart data even if credit processing fails
-        }, { status: 402 });
+        }, { status: errorResponse.status });
       }
 
       // Handle free natal chart for new subscribers
