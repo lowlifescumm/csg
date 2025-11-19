@@ -25,6 +25,35 @@ export default function DashboardShell({ children }) {
     fetchDashboardData();
   }, []);
 
+  // Utility function to recursively clean empty objects
+  const cleanEmptyObjects = (obj) => {
+    if (obj === null || obj === undefined) return null;
+    if (typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(cleanEmptyObjects);
+    
+    const keys = Object.keys(obj);
+    if (keys.length === 0) return null;
+    
+    const cleaned = {};
+    for (const key of keys) {
+      const value = obj[key];
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const cleanedValue = cleanEmptyObjects(value);
+        if (cleanedValue !== null) {
+          cleaned[key] = cleanedValue;
+        } else {
+          cleaned[key] = null;
+        }
+      } else if (Array.isArray(value)) {
+        cleaned[key] = value.map(cleanEmptyObjects);
+      } else {
+        cleaned[key] = value;
+      }
+    }
+    
+    return cleaned;
+  };
+
   const fetchDashboardData = async () => {
     try {
       setError(null);
@@ -44,28 +73,16 @@ export default function DashboardShell({ children }) {
       const creditsRes = await fetch("/api/credits");
       if (creditsRes.ok) {
         const creditsData = await creditsRes.json();
-        // Ensure we never set empty objects - convert nested empty objects to null
-        if (creditsData && typeof creditsData === 'object') {
-          // If credits property exists and is an empty object, convert to null
-          if (creditsData.credits && typeof creditsData.credits === 'object' && Object.keys(creditsData.credits).length === 0) {
-            creditsData.credits = null;
-          }
-          setCredits(creditsData);
-        } else {
-          setCredits(null);
-        }
+        const cleanedCredits = cleanEmptyObjects(creditsData);
+        setCredits(cleanedCredits);
       }
 
       // Fetch readings
       const readingsRes = await fetch("/api/readings");
       if (readingsRes.ok) {
         const readingsData = await readingsRes.json();
-        // Ensure we never set empty objects - convert to null if needed
-        if (readingsData && typeof readingsData === 'object' && Object.keys(readingsData).length === 0) {
-          setReadings(null);
-        } else {
-          setReadings(readingsData);
-        }
+        const cleanedReadings = cleanEmptyObjects(readingsData);
+        setReadings(cleanedReadings);
       }
 
       // Fetch streak (optional - gracefully handles if endpoint doesn't exist)
@@ -73,12 +90,8 @@ export default function DashboardShell({ children }) {
         const streakRes = await fetch("/api/streak");
         if (streakRes.ok) {
           const streakData = await streakRes.json();
-          // Ensure we never set empty objects - convert to null if needed
-          if (streakData && typeof streakData === 'object' && Object.keys(streakData).length === 0) {
-            setStreak(null);
-          } else {
-            setStreak(streakData);
-          }
+          const cleanedStreak = cleanEmptyObjects(streakData);
+          setStreak(cleanedStreak);
         }
       } catch (streakError) {
         // Streak endpoint is optional, continue if it fails
@@ -91,7 +104,8 @@ export default function DashboardShell({ children }) {
         if (moonRes.ok) {
           const moonData = await moonRes.json();
           if (moonData.success && moonData.data) {
-            setMoonPhase(moonData.data);
+            const cleanedMoonPhase = cleanEmptyObjects(moonData.data);
+            setMoonPhase(cleanedMoonPhase);
           }
         }
       } catch (moonError) {
