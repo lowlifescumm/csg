@@ -29,15 +29,18 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
 
   // Fetch moon phase if not provided
   useEffect(() => {
-    if (!propMoonPhase) {
+    const validMoonPhase = propMoonPhase && typeof propMoonPhase === 'object' && Object.keys(propMoonPhase).length > 0;
+    if (!validMoonPhase) {
       fetch("/api/moon-phase")
         .then(res => res.json())
         .then(data => {
-          if (data.success && data.data) {
+          if (data.success && data.data && typeof data.data === 'object' && Object.keys(data.data).length > 0) {
             setMoonPhase(data.data);
           }
         })
         .catch(err => console.error("Failed to fetch moon phase:", err));
+    } else {
+      setMoonPhase(propMoonPhase);
     }
   }, [propMoonPhase]);
 
@@ -49,9 +52,14 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
     return "Good evening";
   };
 
-  const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
+  // Safely extract values, ensuring we never render objects
+  const safeCredits = credits && typeof credits === 'object' && Object.keys(credits).length > 0 ? credits : null;
+  const safeStreak = streak && typeof streak === 'object' && Object.keys(streak).length > 0 ? streak : null;
+  const safeMoonPhase = moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 ? moonPhase : null;
+  
+  const totalCredits = safeCredits?.stats?.totalAvailable || safeCredits?.credits || 0;
   const hasZeroCredits = totalCredits === 0;
-  const currentStreak = streak?.currentStreak || 0;
+  const currentStreak = safeStreak?.currentStreak || 0;
 
   const handlePurchaseClick = (pack) => {
     setSelectedPack(pack);
@@ -97,11 +105,11 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
 
           {/* Middle: Moon Phase Widget */}
           <div className="flex items-center gap-3 px-4">
-            {moonPhase ? (
+            {safeMoonPhase ? (
               <div className="flex items-center gap-3 bg-white bg-opacity-10 rounded-xl px-4 py-2 border border-white border-opacity-20">
-                <div className="text-3xl">{moonPhase.phaseEmoji || "🌙"}</div>
+                <div className="text-3xl">{safeMoonPhase.phaseEmoji || "🌙"}</div>
                 <div>
-                  <div className="text-sm font-semibold text-white">{moonPhase.phaseName || "Loading..."}</div>
+                  <div className="text-sm font-semibold text-white">{safeMoonPhase.phaseName || "Loading..."}</div>
                   <div className="text-xs text-purple-200">Moon Phase</div>
                 </div>
               </div>
@@ -159,11 +167,11 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
           </div>
 
           {/* Moon Phase */}
-          {moonPhase ? (
+          {safeMoonPhase ? (
             <div className="flex items-center gap-3 bg-white bg-opacity-10 rounded-xl px-4 py-3 border border-white border-opacity-20">
-              <div className="text-2xl">{moonPhase.phaseEmoji || "🌙"}</div>
+              <div className="text-2xl">{safeMoonPhase.phaseEmoji || "🌙"}</div>
               <div>
-                <div className="text-sm font-semibold text-white">{moonPhase.phaseName || "Loading..."}</div>
+                <div className="text-sm font-semibold text-white">{safeMoonPhase.phaseName || "Loading..."}</div>
                 <div className="text-xs text-purple-200">Moon Phase</div>
               </div>
             </div>

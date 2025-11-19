@@ -8,6 +8,9 @@ import { Trophy, Zap, Flame } from "lucide-react";
  */
 export default function CompactDailyStreak({ userId, streak }) {
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100, totalXP: 0 });
+  
+  // Safely extract streak value, ensuring we never render objects
+  const safeStreak = streak && typeof streak === 'object' && Object.keys(streak).length > 0 ? streak : null;
 
   useEffect(() => {
     if (!userId) return;
@@ -38,7 +41,7 @@ export default function CompactDailyStreak({ userId, streak }) {
   }, [userId]);
 
   const progressPercent = levelData.xpTarget > 0 ? Math.min((levelData.xpCurrent / levelData.xpTarget) * 100, 100) : 0;
-  const currentStreak = streak?.currentStreak || 0;
+  const currentStreak = safeStreak?.currentStreak || 0;
 
   return (
     <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow-lg border border-white border-opacity-40">
