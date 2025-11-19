@@ -27,13 +27,18 @@ export default function DashboardHeader({ user, moonPhase, streak, credits }) {
     return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
 
+  // Safely extract values, ensuring we never render objects
+  const safeCredits = credits && typeof credits === 'object' && Object.keys(credits).length > 0 ? credits : null;
+  const safeStreak = streak && typeof streak === 'object' && Object.keys(streak).length > 0 ? streak : null;
+  const safeMoonPhase = moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 ? moonPhase : null;
+
   const getMoonPhaseText = () => {
-    if (!moonPhase) return "Loading...";
-    return moonPhase.phaseName || "Waxing Crescent";
+    if (!safeMoonPhase) return "Loading...";
+    return safeMoonPhase.phaseName || safeMoonPhase.phase || "Waxing Crescent";
   };
 
-  const currentStreak = streak?.currentStreak || 0;
-  const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
+  const currentStreak = safeStreak?.currentStreak || 0;
+  const totalCredits = safeCredits?.stats?.totalAvailable || safeCredits?.credits || 0;
 
   return (
     <div className="flex items-center justify-between mb-6">
@@ -47,10 +52,10 @@ export default function DashboardHeader({ user, moonPhase, streak, credits }) {
         {mounted && currentDate && (
           <div className="flex items-center gap-4 text-purple-200 text-sm">
             <span>{formatDate(currentDate)}</span>
-            {moonPhase && (
+            {safeMoonPhase && (
               <span className="flex items-center gap-1">
                 <Moon className="w-4 h-4" />
-                {moonPhase.phaseNumber || "319"} {getMoonPhaseText()}
+                {safeMoonPhase.phaseNumber || "319"} {getMoonPhaseText()}
               </span>
             )}
           </div>

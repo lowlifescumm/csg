@@ -102,7 +102,7 @@ export default function DashboardHeader({
           {mounted && currentDate && (
             <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--muted-text)' }}>
               <span>{formatDate(currentDate)}</span>
-              {moonPhase && (
+              {moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 && (
                 <span className="flex items-center gap-1.5">
                   <span className="text-lg" aria-label={`Moon phase: ${getMoonPhaseText()}`}>{moonPhase.phaseEmoji || "🌙"}</span>
                   <span>{moonPhase.phaseNumber || "319"} {getMoonPhaseText()}</span>

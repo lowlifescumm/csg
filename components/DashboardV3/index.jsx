@@ -497,7 +497,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               </div>
             </div>
 
-            {streak && streak.currentStreak > 0 && (
+            {safeStreak && safeStreak.currentStreak > 0 && (
               <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
@@ -505,7 +505,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs sm:text-sm text-purple-200 font-medium">Streak</p>
-                    <p className="text-xl sm:text-2xl font-semibold text-white truncate">{streak.currentStreak} days</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-white truncate">{safeStreak.currentStreak} days</p>
                   </div>
                 </div>
               </div>
