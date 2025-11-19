@@ -40,10 +40,13 @@ export const authOptions = {
       try {
         console.log('[NextAuth] signIn callback triggered for:', user.email);
 
+        // Normalize email to lowercase to prevent case-sensitivity issues
+        const normalizedEmail = user.email.toLowerCase().trim();
+        
         // Check if user exists in database
         const { rows: existingUsers } = await pool.query(
-          "SELECT * FROM users WHERE email = $1",
-          [user.email]
+          "SELECT * FROM users WHERE LOWER(email) = $1",
+          [normalizedEmail]
         );
 
         console.log('[NextAuth] Found existing users:', existingUsers.length);
@@ -66,7 +69,7 @@ export const authOptions = {
                updated_at = NOW()
              RETURNING id, email, created_at`,
             [
-              user.email,
+              normalizedEmail,
               firstName,
               lastName,
               profile.sub, // Google user ID
@@ -98,8 +101,8 @@ export const authOptions = {
              SET google_id = COALESCE(google_id, $1),
                  avatar_url = COALESCE(avatar_url, $2),
                  updated_at = NOW()
-             WHERE email = $3`,
-            [profile.sub, user.image || profile.picture, user.email]
+             WHERE LOWER(email) = $3`,
+            [profile.sub, user.image || profile.picture, normalizedEmail]
           );
         }
 
@@ -123,10 +126,13 @@ export const authOptions = {
         if (account && user) {
           console.log('[NextAuth] jwt callback - initial sign in for:', user.email);
 
+          // Normalize email to lowercase
+          const normalizedEmail = user.email.toLowerCase().trim();
+          
           // Get user from database
           const { rows } = await pool.query(
-            "SELECT id, email, first_name, last_name, role, stripe_subscription_id FROM users WHERE email = $1",
-            [user.email]
+            "SELECT id, email, first_name, last_name, role, stripe_subscription_id FROM users WHERE LOWER(email) = $1",
+            [normalizedEmail]
           );
 
           if (rows.length > 0) {

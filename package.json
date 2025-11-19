@@ -11,6 +11,8 @@
     "transit:setup": "node scripts/setup-transit-tracker.js",
     "forecasts:generate": "node scripts/generate-daily-forecasts.js",
     "migrate:credit-model": "node scripts/run-credit-model-migration.js",
+    "normalize:emails": "node scripts/normalize-user-emails.js",
+    "test:auth": "node scripts/test-auth-system.js",
     "test": "jest",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --project=dashboard-smoke",

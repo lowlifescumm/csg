@@ -11,10 +11,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
+    // Normalize email to lowercase to prevent case-sensitivity issues
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Check if user exists
     const { rows: userRows } = await pool.query(
-      "SELECT id, email, first_name, last_name, role FROM users WHERE email = $1",
-      [email]
+      "SELECT id, email, first_name, last_name, role FROM users WHERE LOWER(email) = $1",
+      [normalizedEmail]
     );
     
     if (userRows.length === 0) {

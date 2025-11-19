@@ -13,8 +13,11 @@ export async function POST(request) {
       );
     }
 
+    // Normalize email to lowercase to prevent case-sensitivity issues
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Check if user exists
-    const user = await getUserByEmail(email);
+    const user = await getUserByEmail(normalizedEmail);
     if (!user) {
       // Don't reveal if user exists or not for security
       return NextResponse.json({

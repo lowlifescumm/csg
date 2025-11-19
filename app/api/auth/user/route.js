@@ -83,9 +83,12 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
+    // Normalize email to lowercase to prevent case-sensitivity issues
+    const normalizedEmail = email.toLowerCase().trim();
+
     const { updateUser, getUserByEmail } = await import('@/lib/auth');
     
-    const existingUser = await getUserByEmail(email);
+    const existingUser = await getUserByEmail(normalizedEmail);
     if (existingUser && existingUser.id !== decoded.userId) {
       return NextResponse.json(
         { error: 'Email already in use' },
@@ -96,7 +99,7 @@ export async function PUT(request) {
     const updatedUser = await updateUser(decoded.userId, {
       firstName,
       lastName,
-      email,
+      email: normalizedEmail,
     });
 
     return NextResponse.json({
