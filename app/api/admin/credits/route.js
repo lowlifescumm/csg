@@ -53,40 +53,8 @@ export async function POST(request) {
     const targetUser = targetUserRows[0];
 
     // Use new credit engine for credit adjustments
-    let result;
-    if (creditsToAdd > 0) {
-      // Add credits directly via admin adjustment
-      result = await addCreditsDirectly(userId, creditsToAdd, 'admin_adjustment', {
-        admin_adjustment: true,
-        adjusted_by: decoded.userId,
-        reason: reason || 'Manual admin adjustment',
-        timestamp: new Date().toISOString()
-      });
-      
-      if (!result.success) {
-        return NextResponse.json({ 
-          error: 'Failed to add credits',
-          details: result.error 
-        }, { status: 500 });
-      }
-    } else if (creditsToAdd < 0) {
-      // Remove credits - create negative ledger entry
-      const removeAmount = Math.abs(creditsToAdd);
-      result = await addCreditsDirectly(userId, -removeAmount, 'admin_adjustment', {
-        admin_adjustment: true,
-        adjusted_by: decoded.userId,
-        reason: reason || 'Manual admin adjustment (removal)',
-        timestamp: new Date().toISOString()
-      });
-      
-      if (!result.success) {
-        return NextResponse.json({ 
-          error: 'Failed to adjust credits',
-          details: result.error 
-        }, { status: 500 });
-      }
-    } else {
-      // No change
+    if (creditsToAdd === 0) {
+      // No change requested
       const balance = await getCreditBalance(userId);
       return NextResponse.json({ 
         success: true,
@@ -94,6 +62,22 @@ export async function POST(request) {
         creditsChange: 0,
         currentBalance: balance.balance
       });
+    }
+    
+    // Add or remove credits directly via admin adjustment
+    // Positive amount = add, negative amount = remove
+    const result = await addCreditsDirectly(userId, creditsToAdd, 'admin_adjustment', {
+      admin_adjustment: true,
+      adjusted_by: decoded.userId,
+      reason: reason || 'Manual admin adjustment',
+      timestamp: new Date().toISOString()
+    });
+    
+    if (!result.success) {
+      return NextResponse.json({ 
+        error: 'Failed to adjust credits',
+        details: result.error 
+      }, { status: 500 });
     }
 
     // Get final credit balance from new engine
@@ -103,10 +87,10 @@ export async function POST(request) {
 
     return NextResponse.json({ 
       success: true,
-      message: `Credits ${creditsToAdd > 0 ? 'added' : 'adjusted'} successfully`,
+      message: `Credits ${creditsToAdd > 0 ? 'added' : 'removed'} successfully`,
       creditsChange: creditsToAdd,
       newBalance: balance.balance,
-      ledger_id: result.ledger_id || result.purchase_id
+      ledger_id: result.ledger_id
     });
   } catch (error) {
     console.error('Update credits error:', error);
