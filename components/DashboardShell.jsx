@@ -44,11 +44,15 @@ export default function DashboardShell({ children }) {
       const creditsRes = await fetch("/api/credits");
       if (creditsRes.ok) {
         const creditsData = await creditsRes.json();
-        // Ensure we never set empty objects - convert to null if needed
-        if (creditsData && typeof creditsData === 'object' && Object.keys(creditsData).length === 0) {
-          setCredits(null);
-        } else {
+        // Ensure we never set empty objects - convert nested empty objects to null
+        if (creditsData && typeof creditsData === 'object') {
+          // If credits property exists and is an empty object, convert to null
+          if (creditsData.credits && typeof creditsData.credits === 'object' && Object.keys(creditsData.credits).length === 0) {
+            creditsData.credits = null;
+          }
           setCredits(creditsData);
+        } else {
+          setCredits(null);
         }
       }
 
