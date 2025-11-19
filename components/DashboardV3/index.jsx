@@ -174,31 +174,31 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           />
 
           {/* Why Us - Value Proposition */}
-          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold gradient-text mb-3">Why Choose Cosmic Spiritual Guide?</h2>
+          <div className="glassmorphic rounded-3xl p-4 sm:p-6 md:p-8 apple-shadow-lg border border-white border-opacity-40 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10">
+            <div className="text-center mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text mb-3">Why Choose Cosmic Spiritual Guide?</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 apple-shadow-lg">
-                  <CheckCircle className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-3 sm:mb-4 apple-shadow-lg">
+                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Precision</h3>
-                <p className="text-purple-200 text-sm">NASA-quality astrological calculations powered by advanced astronomy algorithms</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Precision</h3>
+                <p className="text-purple-200 text-sm sm:text-base leading-relaxed">NASA-quality astrological calculations powered by advanced astronomy algorithms</p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-4 apple-shadow-lg">
-                  <Sparkles className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-3 sm:mb-4 apple-shadow-lg">
+                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Clarity</h3>
-                <p className="text-purple-200 text-sm">AI-powered interpretations that make complex astrological insights accessible and actionable</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Clarity</h3>
+                <p className="text-purple-200 text-sm sm:text-base leading-relaxed">AI-powered interpretations that make complex astrological insights accessible and actionable</p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 apple-shadow-lg">
-                  <Star className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-3 sm:mb-4 apple-shadow-lg">
+                  <Star className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Free Daily Credits</h3>
-                <p className="text-purple-200 text-sm">3 credits refresh every day - explore tarot readings without spending a dime</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Free Daily Credits</h3>
+                <p className="text-purple-200 text-sm sm:text-base leading-relaxed">3 credits refresh every day - explore tarot readings without spending a dime</p>
               </div>
             </div>
           </div>

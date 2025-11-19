@@ -83,27 +83,27 @@ export default function Header() {
             <div className="flex flex-col"><span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent leading-tight">Cosmic Spirit Guide</span></div>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             {filteredNav.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-3 lg:px-4 py-2 rounded-lg font-medium text-xs lg:text-sm transition-all duration-200 ${
                     isActive(item.href)
                       ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
                   }`}
                 >
                   {Icon ? <Icon className="w-4 h-4" /> : null}
-                  <span>{item.name}</span>
+                  <span className="whitespace-nowrap">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-2 lg:space-x-3">
             {user ? (
               <>
                 <Link
@@ -155,7 +155,7 @@ export default function Header() {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
@@ -167,7 +167,7 @@ export default function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200/50 animate-fade-in">
+          <div className="lg:hidden py-4 border-t border-gray-200/50 animate-fade-in max-h-[calc(100vh-80px)] overflow-y-auto">
             <nav className="flex flex-col space-y-2">
               {filteredNav.map((item) => {
                 const Icon = item.icon;

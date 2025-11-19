@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useEffect } from "react";
 import { 
   LayoutDashboard, 
   Sparkles, 
@@ -13,9 +14,16 @@ import {
   LogOut 
 } from "lucide-react";
 
-export default function Sidebar({ user }) {
+export default function Sidebar({ user, onLinkClick }) {
   const pathname = usePathname();
   const userName = user?.firstName || user?.email?.split("@")[0] || "there";
+
+  // Close mobile sidebar when pathname changes
+  useEffect(() => {
+    if (onLinkClick && typeof window !== 'undefined' && window.innerWidth < 768) {
+      onLinkClick();
+    }
+  }, [pathname, onLinkClick]);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -58,6 +66,11 @@ export default function Sidebar({ user }) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => {
+                if (onLinkClick && typeof window !== 'undefined' && window.innerWidth < 768) {
+                  onLinkClick();
+                }
+              }}
               className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl smooth-transition text-sm sm:text-base ${
                 active
                   ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
@@ -75,6 +88,11 @@ export default function Sidebar({ user }) {
       <div className="mt-auto pt-4 sm:pt-6 border-t border-white border-opacity-20 space-y-1 sm:space-y-2">
         <Link
           href="/profile"
+          onClick={() => {
+            if (onLinkClick && typeof window !== 'undefined' && window.innerWidth < 768) {
+              onLinkClick();
+            }
+          }}
           className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl smooth-transition text-sm sm:text-base ${
             pathname === "/profile"
               ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
@@ -85,7 +103,12 @@ export default function Sidebar({ user }) {
           <span className="font-medium truncate">Settings</span>
         </Link>
         <button
-          onClick={handleLogout}
+          onClick={() => {
+            if (onLinkClick && typeof window !== 'undefined' && window.innerWidth < 768) {
+              onLinkClick();
+            }
+            handleLogout();
+          }}
           className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-purple-200 hover:bg-white hover:bg-opacity-10 smooth-transition text-sm sm:text-base"
         >
           <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
