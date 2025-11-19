@@ -90,22 +90,22 @@ export default function DashboardHeader({
         }
       `}</style>
 
-      <div className="flex items-center justify-between gap-6 mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6 mb-6">
         {/* Left: Greeting Block */}
-        <div className="flex-1">
-          <div className="flex items-baseline gap-3 mb-2">
-            <h1 className="text-[28px] sm:text-[36px] font-bold text-white">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-[28px] lg:text-[36px] font-bold text-white break-words">
               {getGreeting()}, {userName}
             </h1>
-            <span className="text-[28px] sm:text-[36px] font-bold text-white">{totalCredits}</span>
+            <span className="text-xl sm:text-2xl md:text-[28px] lg:text-[36px] font-bold text-white">{totalCredits}</span>
           </div>
           {mounted && currentDate && (
-            <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--muted-text)' }}>
-              <span>{formatDate(currentDate)}</span>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm" style={{ color: 'var(--muted-text)' }}>
+              <span className="break-words">{formatDate(currentDate)}</span>
               {moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <span className="text-lg" aria-label={`Moon phase: ${getMoonPhaseText()}`}>{moonPhase.phaseEmoji || "🌙"}</span>
-                  <span>{moonPhase.phaseNumber || "319"} {getMoonPhaseText()}</span>
+                  <span className="text-base sm:text-lg" aria-label={`Moon phase: ${getMoonPhaseText()}`}>{moonPhase.phaseEmoji || "🌙"}</span>
+                  <span className="break-words">{moonPhase.phaseNumber || "319"} {getMoonPhaseText()}</span>
                 </span>
               )}
             </div>
@@ -113,9 +113,9 @@ export default function DashboardHeader({
         </div>
 
         {/* Right: Horizontal Stack of 4 Stat Cards */}
-        <div className="flex items-center gap-4 flex-1 justify-end flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 justify-end flex-wrap w-full md:w-auto">
           {/* Energy Level Card */}
-          <Card size="sm" className="header-stat-card flex-shrink-0" style={{ width: '200px' }}>
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
             <div className="flex items-center gap-2 mb-2">
               <Sun className="w-4 h-4 text-yellow-400" aria-hidden="true" />
               <h4 className="text-white font-semibold text-xs">Energy</h4>
@@ -148,7 +148,7 @@ export default function DashboardHeader({
           </Card>
 
           {/* Love Reading Card */}
-          <Card size="sm" className="header-stat-card flex-shrink-0" style={{ width: '200px' }}>
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
                 <Heart className="w-4 h-4 text-pink-400" aria-hidden="true" />
@@ -171,7 +171,7 @@ export default function DashboardHeader({
           </Card>
 
           {/* Spiritual Growth Card */}
-          <Card size="sm" className="header-stat-card flex-shrink-0" style={{ width: '200px' }}>
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
             <div className="flex items-center gap-1.5 mb-2">
               <span className="text-sm">🕉️</span>
               <h4 className="text-white font-semibold text-xs">Growth</h4>
@@ -201,7 +201,7 @@ export default function DashboardHeader({
           </Card>
 
           {/* Daily Bonus Card */}
-          <Card size="sm" className="header-stat-card flex-shrink-0 relative" style={{ width: '200px' }}>
+          <Card size="sm" className="header-stat-card flex-shrink-0 relative w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
             <span className="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-yellow-500 text-purple-900">
               NEW
             </span>

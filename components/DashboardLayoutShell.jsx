@@ -45,14 +45,14 @@ export default function DashboardLayoutShell({
         </div>
         
         {/* Grid Container */}
-        <div className="grid grid-cols-[240px_1fr_360px] grid-rows-[auto_1fr] gap-7 min-h-screen p-8 relative z-10 max-lg:grid-cols-1 max-lg:grid-rows-[auto_auto_1fr_auto] max-lg:gap-6 max-lg:p-6">
+        <div className="grid grid-cols-[240px_1fr_360px] grid-rows-[auto_1fr] gap-7 min-h-screen p-4 sm:p-6 lg:p-8 relative z-10 max-md:grid-cols-1 max-md:grid-rows-[auto_auto_1fr_auto] max-md:gap-4">
           {/* Column 1: Left Navigation */}
-          <aside className="col-start-1 row-start-1 row-end-[-1] sticky top-0 self-start max-h-screen overflow-y-auto max-lg:col-start-1 max-lg:row-start-1 max-lg:row-end-2" aria-label="Main navigation sidebar">
+          <aside className="col-start-1 row-start-1 row-end-[-1] sticky top-0 self-start max-h-screen overflow-y-auto max-md:col-start-1 max-md:row-start-1 max-md:row-end-2 max-md:sticky max-md:top-0 max-md:z-20" aria-label="Main navigation sidebar">
             <Sidebar user={user} />
           </aside>
 
           {/* Column 2-3 Row 1: Header */}
-          <header className="col-start-2 col-end-[-1] row-start-1 max-lg:col-start-1 max-lg:col-end-1 max-lg:row-start-2">
+          <header className="col-start-2 col-end-[-1] row-start-1 max-md:col-start-1 max-md:col-end-1 max-md:row-start-2">
             {headerContent || (
               <DashboardHeader 
                 user={user}
@@ -69,13 +69,13 @@ export default function DashboardLayoutShell({
           </header>
 
           {/* Column 2 Row 2: Main Content */}
-          <main id="dashboard-main" className="col-start-2 row-start-2 overflow-y-auto max-lg:col-start-1 max-lg:row-start-3" aria-label="Main dashboard content">
+          <main id="dashboard-main" className="col-start-2 row-start-2 overflow-y-auto max-md:col-start-1 max-md:row-start-3" aria-label="Main dashboard content">
             {mainContent || children}
           </main>
 
           {/* Column 3 Row 2: Right Rail */}
           {rightRail && (
-            <aside className="col-start-3 row-start-2 overflow-y-auto max-lg:col-start-1 max-lg:row-start-4" aria-label="Dashboard sidebar widgets">
+            <aside className="col-start-3 row-start-2 overflow-y-auto max-md:col-start-1 max-md:row-start-4" aria-label="Dashboard sidebar widgets">
               {rightRail}
             </aside>
           )}

@@ -591,18 +591,19 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
         {/* Tarot Reading Type Picker Modal */}
         {showTarotTypePicker && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-            <div className="glassmorphic rounded-3xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Choose Your Tarot Reading</h2>
-                  <p className="text-purple-200 text-sm sm:text-base">Select a reading type to begin your journey</p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto">
+            <div className="glassmorphic rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-5xl w-full max-h-[95vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40 my-4">
+              <div className="flex items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold gradient-text mb-1 sm:mb-2">Choose Your Tarot Reading</h2>
+                  <p className="text-purple-200 text-xs sm:text-sm md:text-base">Select a reading type to begin your journey</p>
                 </div>
                 <button
                   onClick={() => setShowTarotTypePicker(false)}
-                  className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition"
+                  className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition flex-shrink-0"
+                  aria-label="Close modal"
                 >
-                  <X className="w-6 h-6 text-white" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </button>
               </div>
               <TarotReadingTypePicker

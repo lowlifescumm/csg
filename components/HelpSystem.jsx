@@ -110,7 +110,7 @@ export default function HelpSystem() {
       {/* Help Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl smooth-transition hover:scale-110 z-40"
+        className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl smooth-transition hover:scale-110 z-40 touch-button"
         aria-label="Open help system"
       >
         <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,25 +120,26 @@ export default function HelpSystem() {
 
       {/* Help Modal */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[95vh] overflow-hidden my-4">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-semibold text-gray-900">Help & Guidance</h2>
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Help & Guidance</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-gray-600 smooth-transition"
+                className="text-gray-400 hover:text-gray-600 smooth-transition flex-shrink-0"
+                aria-label="Close help modal"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {/* Content */}
-            <div className="flex h-96">
+            <div className="flex flex-col sm:flex-row h-auto sm:h-96 max-h-[calc(95vh-80px)]">
               {/* Sidebar */}
-              <div className="w-1/3 bg-gray-50 p-4 border-r border-gray-200">
+              <div className="w-full sm:w-1/3 bg-gray-50 p-3 sm:p-4 border-b sm:border-b-0 sm:border-r border-gray-200">
                 <nav className="space-y-2">
                   {Object.entries(helpSections).map(([key, section]) => (
                     <button

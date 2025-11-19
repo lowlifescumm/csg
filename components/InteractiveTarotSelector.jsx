@@ -208,33 +208,34 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
 
   return (
     <>
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="glassmorphic rounded-3xl p-8 max-w-4xl w-full apple-shadow-lg border border-white border-opacity-40">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold gradient-text">Select Your Cards</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto">
+      <div className="glassmorphic rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-4xl w-full max-h-[95vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40 my-4">
+        <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+          <h2 className="text-xl sm:text-2xl font-semibold gradient-text">Select Your Cards</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition"
+            className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition flex-shrink-0"
+            aria-label="Close modal"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        <div className="text-center mb-8">
-          <p className="text-gray-600 mb-2">
+        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+          <p className="text-sm sm:text-base text-gray-600 mb-2">
             {selectedCards.length === 0 && "Click on each card to reveal your destiny"}
             {selectedCards.length > 0 && selectedCards.length < positions.length && `${selectedCards.length} of ${positions.length} cards selected`}
             {selectedCards.length === positions.length && "All cards selected!"}
           </p>
           {error && (
-            <p className="text-red-600 text-sm mb-2">{error}</p>
+            <p className="text-red-600 text-xs sm:text-sm mb-2">{error}</p>
           )}
         </div>
 
-        <div className={`grid gap-4 md:gap-8 mb-8 ${
+        <div className={`grid gap-3 sm:gap-4 md:gap-8 mb-4 sm:mb-6 md:mb-8 ${
             positions.length === 1 ? 'grid-cols-1' : 
-            positions.length === 2 ? 'grid-cols-2' : 
-            'grid-cols-3'
+            positions.length === 2 ? 'grid-cols-1 sm:grid-cols-2' : 
+            'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
           }`}>
           {Array.from({ length: spread.card_count }).map((_, index) => {
             const isSelected = selectedCards.includes(index);
@@ -246,7 +247,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
                   onClick={() => handleCardClick(index)}
                   disabled={selectedCards.length === spread.card_count}
                   className={`
-                    relative w-full max-w-[200px] aspect-[2/3] rounded-xl overflow-hidden
+                    relative w-full max-w-[150px] sm:max-w-[180px] md:max-w-[200px] aspect-[2/3] rounded-xl overflow-hidden mx-auto
                     smooth-transition transform
                     ${!isSelected ? 'hover:scale-105 cursor-pointer hover:shadow-2xl' : 'scale-105'}
                     ${isSelected ? 'ring-4 ring-purple-400 ring-opacity-60' : ''}

@@ -46,8 +46,8 @@ export default function RootLayout({ children }) {
         
           <Header />
           
-          {/* Add padding to account for fixed header */}
-          <div className="pt-[80px]"></div>
+          {/* Add padding to account for fixed header - responsive */}
+          <div className="pt-16 sm:pt-20 md:pt-[80px]"></div>
           
           <main id="main-content" className="flex-1">
             <ErrorBoundary>
@@ -60,17 +60,17 @@ export default function RootLayout({ children }) {
           <footer className="glassmorphic border-t border-white border-opacity-20 py-6 mt-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600">
                   Powered by AI • Tarot • Horoscopes • Birth Charts
                 </p>
-                <div className="mt-4 flex justify-center space-x-6">
-                  <a href="/privacy" className="text-sm text-gray-500 hover:text-gray-700 smooth-transition">
+                <div className="mt-4 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6">
+                  <a href="/privacy" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 smooth-transition">
                     Privacy Policy
                   </a>
-                  <a href="/terms" className="text-sm text-gray-500 hover:text-gray-700 smooth-transition">
+                  <a href="/terms" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 smooth-transition">
                     Terms of Service
                   </a>
-                  <a href="/contact" className="text-sm text-gray-500 hover:text-gray-700 smooth-transition">
+                  <a href="/contact" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 smooth-transition">
                     Contact
                   </a>
                 </div>
