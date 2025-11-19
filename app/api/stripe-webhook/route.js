@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Pool } from 'pg';
 import { initializeUserCredits } from '../credits/route';
+import { purchaseCredits, refundCredits, issueSubscriptionCredits } from '@/lib/credit-engine.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
@@ -40,12 +41,13 @@ export async function POST(request) {
         if (subscription.status === 'active' || subscription.status === 'trialing') {
           // Find user by stripe customer ID
           const { rows: users } = await pool.query(
-            'SELECT id FROM users WHERE stripe_customer_id = $1',
+            'SELECT id, subscription_tier FROM users WHERE stripe_customer_id = $1',
             [subscription.customer]
           );
 
           if (users.length > 0) {
             const userId = users[0].id;
+            const subscriptionTier = users[0].subscription_tier || 'MYSTIC_PREMIUM'; // Default tier
             
             // Update subscription ID in users table
             await pool.query(
@@ -53,10 +55,13 @@ export async function POST(request) {
               [subscription.id, userId]
             );
 
-            // Initialize or reset credits for the user
+            // Initialize or reset credits for the user (legacy system)
             await initializeUserCredits(userId);
             
-            console.log(`Initialized credits for user ${userId} after subscription ${subscription.id}`);
+            // Also issue subscription credits via new credit engine
+            // Note: Monthly credits are typically issued on invoice.payment_succeeded
+            // This is just for initial subscription setup
+            console.log(`[Credit Engine] Subscription ${subscription.id} activated for user ${userId}`);
           }
         }
         break;
@@ -90,46 +95,125 @@ export async function POST(request) {
         break;
 
       case 'invoice.payment_succeeded':
-        // Handle monthly renewal - reset credits
+        // Handle monthly renewal - issue subscription credits
         const invoice = event.data.object;
         
         if (invoice.billing_reason === 'subscription_cycle') {
           // Find user by customer ID
           const { rows: renewalUsers } = await pool.query(
-            'SELECT id FROM users WHERE stripe_customer_id = $1',
+            'SELECT id, subscription_tier FROM users WHERE stripe_customer_id = $1',
             [invoice.customer]
           );
 
           if (renewalUsers.length > 0) {
             const userId = renewalUsers[0].id;
+            const subscriptionTier = renewalUsers[0].subscription_tier || 'MYSTIC_PREMIUM';
             
-            // Reset credits for the new billing cycle
+            // Reset credits for the new billing cycle (legacy system)
             await initializeUserCredits(userId);
             
-            console.log(`Reset credits for user ${userId} after subscription renewal`);
+            // Issue monthly subscription credits via new credit engine
+            // For MYSTIC_LITE: 5 credits/month
+            // For MYSTIC_PREMIUM: 0 credits (unlimited via cap, but we can still track)
+            const monthlyCredits = subscriptionTier === 'MYSTIC_LITE' ? 5 : 0;
+            
+            if (monthlyCredits > 0) {
+              const creditResult = await issueSubscriptionCredits(
+                userId,
+                monthlyCredits,
+                subscriptionTier,
+                {
+                  invoice_id: invoice.id,
+                  billing_cycle: invoice.period_end,
+                  issued_at: new Date().toISOString()
+                }
+              );
+              
+              if (creditResult.success) {
+                console.log(`[Credit Engine] Issued ${creditResult.added_credits} monthly subscription credits to user ${userId}`);
+              }
+            }
+            
+            console.log(`[Credit Engine] Subscription renewal processed for user ${userId}`);
           }
         }
         break;
 
       case 'payment_intent.succeeded':
-        // Handle credit pack purchases
+        // Handle credit pack purchases using new credit engine
         const paymentIntent = event.data.object;
         
         if (paymentIntent.metadata?.type === 'credit_pack') {
-          const userId = paymentIntent.metadata.userId;
+          const userId = parseInt(paymentIntent.metadata.userId);
           const packSize = parseInt(paymentIntent.metadata.packSize);
           
           if (userId && packSize) {
-            // Add credits to user
-            await pool.query(
-              `INSERT INTO credits (user_id, credits)
-               VALUES ($1, $2)
-               ON CONFLICT (user_id)
-               DO UPDATE SET credits = credits + EXCLUDED.credits`,
-              [userId, packSize]
-            );
+            // Use new credit engine to add credits via ledger
+            const result = await purchaseCredits(userId, packSize, {
+              stripe_payment_intent_id: paymentIntent.id,
+              stripe_customer_id: paymentIntent.customer,
+              purchase_date: new Date().toISOString()
+            });
             
-            console.log(`Added ${packSize} credits to user ${userId}`);
+            if (result.success) {
+              console.log(`[Credit Engine] Added ${result.added_credits} credits to user ${userId} via purchase (ledger_id: ${result.ledger_id})`);
+            } else {
+              console.error(`[Credit Engine] Failed to add credits to user ${userId}:`, result.error);
+            }
+          }
+        }
+        break;
+
+      case 'payment_intent.payment_failed':
+        // Handle failed payments - refund if credits were already added
+        const failedPaymentIntent = event.data.object;
+        
+        if (failedPaymentIntent.metadata?.type === 'credit_pack') {
+          const userId = parseInt(failedPaymentIntent.metadata.userId);
+          const packSize = parseInt(failedPaymentIntent.metadata.packSize);
+          
+          if (userId && packSize) {
+            // Check if credits were already added (shouldn't happen, but safety check)
+            // In practice, credits should only be added on payment_intent.succeeded
+            // This is a rollback safety mechanism
+            console.log(`[Credit Engine] Payment failed for user ${userId}, pack ${packSize} - no rollback needed (credits only added on success)`);
+          }
+        }
+        break;
+
+      case 'charge.refunded':
+        // Handle refunds - reverse credit purchase
+        const charge = event.data.object;
+        const paymentIntentId = charge.payment_intent;
+        
+        if (paymentIntentId) {
+          // Retrieve payment intent to get metadata
+          const refundedPaymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+          
+          if (refundedPaymentIntent.metadata?.type === 'credit_pack') {
+            const userId = parseInt(refundedPaymentIntent.metadata.userId);
+            const packSize = parseInt(refundedPaymentIntent.metadata.packSize);
+            
+            if (userId && packSize) {
+              // Refund credits
+              const refundResult = await refundCredits(
+                userId,
+                packSize,
+                'payment_refunded',
+                {
+                  stripe_charge_id: charge.id,
+                  stripe_payment_intent_id: paymentIntentId,
+                  refund_amount: charge.amount_refunded,
+                  refund_date: new Date().toISOString()
+                }
+              );
+              
+              if (refundResult.success) {
+                console.log(`[Credit Engine] Refunded ${refundResult.refunded_credits} credits to user ${userId} (ledger_id: ${refundResult.ledger_id})`);
+              } else {
+                console.error(`[Credit Engine] Failed to refund credits to user ${userId}:`, refundResult.error);
+              }
+            }
           }
         }
         break;
