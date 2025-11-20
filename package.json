@@ -12,6 +12,7 @@
     "forecasts:generate": "node scripts/generate-daily-forecasts.js",
     "migrate:credit-model": "node scripts/run-credit-model-migration.js",
     "migrate:credit-ledger": "node scripts/run-credit-ledger-migration.js",
+    "migrate:old-credits": "node scripts/migrate-old-credits-to-ledger.js",
     "normalize:emails": "node scripts/normalize-user-emails.js",
     "test:auth": "node scripts/test-auth-system.js",
     "test": "jest",
