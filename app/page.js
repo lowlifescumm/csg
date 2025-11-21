@@ -456,12 +456,12 @@ export default function HomePage() {
           <div className="space-y-4 sm:space-y-6">
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer">How accurate are the readings?</summary>
-              <p className="mt-4 text-gray-600">Our readings combine traditional tarot and astrology wisdom with AI to provide personalized, meaningful insights. While we can't predict the future, we help you see patterns and possibilities clearly.</p>
+              <p className="mt-4 text-gray-600">Our readings combine traditional tarot and astrology wisdom with AI to provide personalized, meaningful insights. While we can&apos;t predict the future, we help you see patterns and possibilities clearly.</p>
             </details>
 
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer">Do I need my exact birth time?</summary>
-              <p className="mt-4 text-gray-600">For the most accurate birth chart, yes! But if you don't know it, you can still get valuable insights from your sun and moon signs.</p>
+              <p className="mt-4 text-gray-600">For the most accurate birth chart, yes! But if you don&apos;t know it, you can still get valuable insights from your sun and moon signs.</p>
             </details>
 
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
@@ -471,7 +471,7 @@ export default function HomePage() {
 
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer">Can I ask about love, career, or timing?</summary>
-              <p className="mt-4 text-gray-600">Yes! Our readings cover all areas of life—love, career, finances, timing, and personal growth. Ask anything that's on your mind.</p>
+              <p className="mt-4 text-gray-600">Yes! Our readings cover all areas of life—love, career, finances, timing, and personal growth. Ask anything that&apos;s on your mind.</p>
             </details>
           </div>
         </div>
@@ -512,7 +512,7 @@ export default function HomePage() {
       <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 px-4">Your clarity is one reading away</h2>
-          <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-purple-200 px-4">Join thousands who've found their path through the stars</p>
+          <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-purple-200 px-4">Join thousands who&apos;ve found their path through the stars</p>
           <button 
             onClick={() => router.push("/login")}
             className="bg-white text-purple-900 px-6 sm:px-10 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg smooth-transition hover:shadow-2xl hover:scale-105 w-full sm:w-auto"

@@ -62,7 +62,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h1 className="text-3xl sm:text-4xl font-semibold gradient-text mb-2">Contact Us</h1>
-                <p className="text-purple-200">We'd love to hear from you. Send us a message!</p>
+                <p className="text-purple-200">We&apos;d love to hear from you. Send us a message!</p>
               </div>
             </div>
           </div>
@@ -76,7 +76,7 @@ export default function ContactPage() {
                 </div>
                 <h2 className="text-2xl font-semibold text-white mb-2">Message Sent!</h2>
                 <p className="text-purple-200 mb-6">
-                  Thank you for reaching out. We'll get back to you as soon as possible.
+                  Thank you for reaching out. We&apos;ll get back to you as soon as possible.
                 </p>
                 <Link
                   href="/dashboard"

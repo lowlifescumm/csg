@@ -282,7 +282,7 @@ export default function TransitDashboard() {
           <div className="relative">
             <div className="flex items-end justify-between mb-6">
               <div>
-                <div className="text-sm font-medium text-purple-300 mb-2 tracking-wide uppercase">Today's Energy</div>
+                <div className="text-sm font-medium text-purple-300 mb-2 tracking-wide uppercase">Today&apos;s Energy</div>
                 <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
                   {currentIntensity}/10
                 </h2>

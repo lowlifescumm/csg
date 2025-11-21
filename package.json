@@ -6,7 +6,7 @@
     "dev": "next dev -H 0.0.0.0 -p 5000",
     "build": "next build && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public",
     "start": "node .next/standalone/server.js",
-    "lint": "eslint --config eslint.config.mjs --max-warnings=0 .",
+    "lint": "eslint --config eslint.config.mjs --max-warnings=0 --ignore-pattern \".next/**\" --ignore-pattern \"app__disabled/**\" .",
     "pinecone:init": "node scripts/pinecone-init.js",
     "transit:setup": "node scripts/setup-transit-tracker.js",
     "forecasts:generate": "node scripts/generate-daily-forecasts.js",

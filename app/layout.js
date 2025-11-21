@@ -1,14 +1,17 @@
 import "./globals.css";
 import Script from "next/script";
+import { Inter } from "next/font/google";
 import AuthProviderWrapper from "@/components/AuthProviderWrapper";
 import Header from "@/components/Header";
 import ToastContainerWrapper from "@/components/ui/ToastContainerWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ClientErrorCatcher from "@/components/ClientErrorCatcher";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className={`${inter.className} scroll-smooth`}>
       <head>
         <title>Cosmic Spiritual Guide - Tarot & Astrology Insights</title>
         <meta name="description" content="Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance. Birth charts, compatibility reports, and daily horoscopes." />
@@ -18,10 +21,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Cosmic Spiritual Guide" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-        <script src="https://cdn.tailwindcss.com"></script>
+        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
         <AuthProviderWrapper>
