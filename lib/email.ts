@@ -1,13 +1,22 @@
 // lib/email.ts
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 const domain = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000';
 
 // A single, reusable function for sending emails
 async function sendEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
   try {
+    if (!resend) {
+      console.error("[Email] RESEND_API_KEY is not set. Email cannot be sent.", {
+        to,
+        subject,
+      });
+      return { success: false, error: new Error("Email service not configured") };
+    }
+
     const { data, error } = await resend.emails.send({
       from: 'Cosmic Spiritual Guide <noreply@cosmicspiritguide.com>', // Must be a domain you verified with Resend
       to,
@@ -61,6 +70,83 @@ export async function sendPasswordResetConfirmationEmail(email: string, firstNam
   return sendEmail({
     to: email,
     subject: '🔮 Your Spiritual Sanctuary Has Been Restored',
+    html,
+  });
+}
+
+// Function to send a newsletter / lead magnet email with a download link
+export async function sendNewsletterLeadMagnetEmail(
+  email: string,
+  firstName?: string,
+  downloadUrl?: string
+) {
+  const safeName = firstName || 'Spiritual Seeker';
+  const link = downloadUrl || 'https://drive.google.com/file/d/15jFmzSH2aj6h4Kl7lPNazFZ9j3gLY5j-/view?usp=sharing';
+
+  const html = `
+    <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 640px; margin: 0 auto; background: radial-gradient(circle at top, #0f172a 0, #020617 55%, #000 100%); padding: 32px 20px;">
+      <div style="background: rgba(15,23,42,0.96); border-radius: 18px; padding: 28px 24px; border: 1px solid rgba(148,163,184,0.5); box-shadow: 0 24px 60px rgba(15,23,42,0.85);">
+        <div style="text-align:center; margin-bottom: 24px;">
+          <div style="display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:18px; background:linear-gradient(135deg,#a855f7,#ec4899); box-shadow:0 12px 30px rgba(168,85,247,0.6);">
+            <span style="font-size:28px;">✨</span>
+          </div>
+          <h1 style="color:#e5e7eb; font-size:26px; margin:18px 0 4px; letter-spacing:0.02em;">
+            Your Cosmic Gift Has Arrived
+          </h1>
+          <p style="color:#9ca3af; font-size:14px; margin:0;">
+            Thank you for joining the Cosmic Spirit Guide newsletter
+          </p>
+        </div>
+
+        <p style="color:#e5e7eb; font-size:15px; line-height:1.7; margin-bottom:18px;">
+          Hi ${safeName},
+        </p>
+
+        <p style="color:#cbd5f5; font-size:14px; line-height:1.8; margin-bottom:18px;">
+          As promised, here is your exclusive download from <strong>Cosmic Spirit Guide</strong>. 
+          This guide is designed to help you deepen your spiritual practice and receive clearer messages from the universe.
+        </p>
+
+        <div style="margin:24px 0; text-align:center;">
+          <a href="${link}" target="_blank" rel="noopener noreferrer"
+            style="display:inline-block; padding:14px 28px; border-radius:999px; border:1px solid rgba(248,250,252,0.35);
+                   background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899); color:#f9fafb; text-decoration:none;
+                   font-weight:600; font-size:14px; letter-spacing:0.03em; text-transform:uppercase;
+                   box-shadow:0 18px 40px rgba(129,140,248,0.7);">
+            📥 Download Your Cosmic Guide
+          </a>
+          <p style="color:#9ca3af; font-size:12px; margin-top:10px;">
+            If the button doesn’t work, copy and paste this link into your browser:<br/>
+            <span style="color:#e5e7eb; word-break:break-all;">${link}</span>
+          </p>
+        </div>
+
+        <div style="margin-top:16px; padding:16px 14px; border-radius:14px; background:rgba(15,23,42,0.9); border:1px solid rgba(79,70,229,0.6);">
+          <p style="color:#e5e7eb; font-size:13px; margin:0 0 4px;">
+            🌙 What to expect next
+          </p>
+          <ul style="color:#9ca3af; font-size:12px; line-height:1.7; padding-left:18px; margin:4px 0;">
+            <li>Occasional emails with soulful guidance & practical rituals</li>
+            <li>Early access to new tools, readings, and spiritual resources</li>
+            <li>No spam, ever — only aligned, high-quality insights</li>
+          </ul>
+        </div>
+
+        <p style="color:#6b7280; font-size:11px; margin-top:24px; text-align:center;">
+          You’re receiving this because you subscribed to the Cosmic Spirit Guide newsletter.<br/>
+          If this wasn’t you, you can safely ignore this email.
+        </p>
+
+        <p style="color:#4b5563; font-size:11px; margin-top:10px; text-align:center;">
+          Cosmic Spirit Guide &copy; ${new Date().getFullYear()}
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: "✨ Your Cosmic Spirit Guide Download",
     html,
   });
 }

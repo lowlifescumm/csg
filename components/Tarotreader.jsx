@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 export default function TarotReader() {
   const [question, setQuestion] = useState("");
@@ -146,7 +147,7 @@ export default function TarotReader() {
                 </svg>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 mb-3 text-xl">Interpretation</h3>
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{reading.interpretation}</p>
+                  <MarkdownRenderer text={reading.interpretation} className="text-gray-700 leading-relaxed" />
                 </div>
               </div>
             </div>

@@ -12,7 +12,10 @@ export async function POST(request) {
       );
     }
 
-    const user = await getUserByEmail(email);
+    // Normalize email to lowercase to prevent case-sensitivity issues
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await getUserByEmail(normalizedEmail);
     if (!user || user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Invalid admin credentials' },

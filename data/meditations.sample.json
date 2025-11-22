@@ -1,0 +1,80 @@
+[
+  {
+    "id": 1,
+    "title": "Morning Clarity",
+    "description": "Start your day with a clear and focused mind",
+    "duration_seconds": 180,
+    "narrator": "Sarah Moon",
+    "premium": false,
+    "narration_audio_url": "https://example.com/audio/morning-clarity.mp3",
+    "transcript": "Welcome to Morning Clarity. Find a comfortable position and close your eyes. Take three deep breaths, inhaling through your nose and exhaling through your mouth. Feel your body begin to relax. As you breathe, let go of any thoughts or worries. Focus only on this moment, right here, right now. Your mind is clear, your body is calm. You are ready to begin your day with intention and clarity.",
+    "tags": ["morning", "focus", "clarity"]
+  },
+  {
+    "id": 2,
+    "title": "Deep Sleep",
+    "description": "Drift into peaceful, restorative sleep",
+    "duration_seconds": 600,
+    "narrator": "Michael Zen",
+    "premium": false,
+    "narration_audio_url": "https://example.com/audio/deep-sleep.mp3",
+    "transcript": "Welcome to Deep Sleep. Lie down comfortably and let your body relax completely. Close your eyes and take a deep breath. As you exhale, release all tension from your body. Starting from your toes, feel each part of your body relaxing. Your feet, your legs, your torso, your arms, your neck, your head. Everything is soft and heavy. You are drifting into a deep, peaceful sleep. Let go of the day. Let go of all thoughts. Just rest. Just sleep.",
+    "tags": ["sleep", "relaxation", "night"]
+  },
+  {
+    "id": 3,
+    "title": "Anxiety Relief",
+    "description": "Calm your mind and release tension",
+    "duration_seconds": 300,
+    "narrator": "Sarah Moon",
+    "premium": false,
+    "narration_audio_url": "https://example.com/audio/anxiety-relief.mp3",
+    "transcript": "Welcome to Anxiety Relief. Notice any tension in your body and begin to release it. Take a deep breath in, and as you exhale, let go of worry. You are safe. You are here. This moment is all that matters. Breathe in calm, breathe out anxiety. With each breath, you feel more peaceful. Your mind is quieting. Your body is relaxing. You are okay. Everything is okay.",
+    "tags": ["anxiety", "calm", "stress"]
+  },
+  {
+    "id": 4,
+    "title": "Energy Boost",
+    "description": "Recharge your body and mind",
+    "duration_seconds": 240,
+    "narrator": "Michael Zen",
+    "premium": false,
+    "narration_audio_url": "https://example.com/audio/energy-boost.mp3",
+    "transcript": "Welcome to Energy Boost. Sit upright and feel your spine lengthen. Take a deep breath and feel energy flowing into your body. Visualize a bright light entering through the top of your head, filling you with vitality. Feel this energy spreading through your entire body. You are strong. You are energized. You are ready to take on whatever comes your way. Open your eyes feeling refreshed and powerful.",
+    "tags": ["energy", "motivation", "daytime"]
+  },
+  {
+    "id": 5,
+    "title": "Loving Kindness",
+    "description": "Cultivate compassion for yourself and others",
+    "duration_seconds": 360,
+    "narrator": "Sarah Moon",
+    "premium": true,
+    "narration_audio_url": "https://example.com/audio/loving-kindness.mp3",
+    "transcript": "Welcome to Loving Kindness. This is a premium meditation. Begin by bringing to mind someone you love. Feel the warmth of that love in your heart. Now, extend that same love to yourself. You deserve kindness and compassion. Now, extend this love to someone neutral, then to someone difficult, and finally to all beings everywhere. May all beings be happy. May all beings be free from suffering. May all beings live with ease.",
+    "tags": ["love", "compassion", "premium"]
+  },
+  {
+    "id": 6,
+    "title": "Chakra Balance",
+    "description": "Align your energy centers for harmony",
+    "duration_seconds": 420,
+    "narrator": "Michael Zen",
+    "premium": true,
+    "narration_audio_url": "https://example.com/audio/chakra-balance.mp3",
+    "transcript": "Welcome to Chakra Balance. This is a premium meditation. Visualize a red light at the base of your spine - your root chakra. Feel it grounding you to the earth. Now, an orange light in your lower abdomen - your sacral chakra. A yellow light in your solar plexus - your power center. A green light in your heart - love and compassion. A blue light in your throat - communication. An indigo light in your third eye - intuition. Finally, a violet light at the crown - connection to the divine. All your chakras are balanced and aligned.",
+    "tags": ["chakra", "energy", "premium"]
+  },
+  {
+    "id": 7,
+    "title": "Quick Reset",
+    "description": "A brief pause to center yourself",
+    "duration_seconds": 120,
+    "narrator": "Sarah Moon",
+    "premium": false,
+    "narration_audio_url": "https://example.com/audio/quick-reset.mp3",
+    "transcript": "Welcome to Quick Reset. Take a moment to pause and breathe. Inhale deeply, exhale slowly. Feel your body relax. Let go of stress. Let go of tension. You are centered. You are calm. You are ready to continue with clarity and peace.",
+    "tags": ["quick", "reset", "breath"]
+  }
+]
+

@@ -127,7 +127,7 @@ export default function ForecastsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xl font-semibold text-white mb-2">
-                    Generate Today's Forecast
+                    Generate Today&apos;s Forecast
                   </h3>
                   <p className="text-purple-200">
                     Get your personalized guidance for today based on current transits
@@ -183,7 +183,7 @@ export default function ForecastsPage() {
               disabled={generating}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-8 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg shadow-purple-500/50"
             >
-              Generate Today's Forecast
+              Generate Today&apos;s Forecast
             </button>
           </div>
         ) : (

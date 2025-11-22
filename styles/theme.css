@@ -1,0 +1,73 @@
+/**
+ * Dashboard Theme Variables
+ * 
+ * CSS variables for the cosmic dashboard design system.
+ * These variables are available globally and can be used in components.
+ * 
+ * Usage Examples:
+ * 
+ * CSS:
+ *   background: var(--bg-gradient);
+ *   background: var(--page-bg-overlay);
+ *   background-color: var(--card-bg);
+ *   border-image: var(--card-border);
+ *   color: var(--text);
+ *   color: var(--muted-text);
+ *   border-radius: var(--radius-lg);
+ *   box-shadow: var(--shadow-soft);
+ *   backdrop-filter: var(--glass-blur);
+ * 
+ * Tailwind Classes:
+ *   bg-gradient-bg
+ *   bg-page-overlay
+ *   bg-card-bg
+ *   text-text
+ *   text-text-muted
+ *   rounded-lg (maps to --radius-lg)
+ *   rounded-md (maps to --radius-md)
+ *   shadow-soft
+ *   shadow-focus-ring
+ *   backdrop-blur-glass
+ *   bg-accent-1, bg-accent-2, bg-accent-3, bg-accent-4
+ *   p-unit, p-unit-2, etc. (spacing based on --spacing-unit)
+ */
+
+:root {
+  /* Background Gradients */
+  --bg-gradient: linear-gradient(180deg, #2b0f3a 0%, #2a0b3c 40%, #35114a 100%);
+  
+  --page-bg-overlay: radial-gradient(1200px 800px at 80% 10%, rgba(255, 255, 255, 0.03), transparent 15%), 
+                      radial-gradient(800px 600px at 10% 80%, rgba(255, 255, 255, 0.02), transparent 12%);
+
+  /* Card Styling */
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-border: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  
+  /* Glass Effect */
+  --glass-blur: blur(8px);
+
+  /* Accent Colors */
+  --accent-1: #ff5db4;
+  --accent-2: #ff7a59;
+  --accent-3: #a86bff;
+  --accent-4: #ffb86b;
+
+  /* Text Colors */
+  /* Improved contrast: 0.62 -> 0.75 for better accessibility (4.5:1 ratio) */
+  --muted-text: rgba(255, 255, 255, 0.75);
+  --text: #ffffff;
+
+  /* Border Radius */
+  --radius-lg: 18px;
+  --radius-md: 12px;
+
+  /* Shadows */
+  --shadow-soft: 0 6px 24px rgba(0, 0, 0, 0.45);
+
+  /* Focus States */
+  --focus-ring: 0 0 0 4px rgba(168, 107, 255, 0.12);
+
+  /* Spacing Unit */
+  --spacing-unit: 8px;
+}
+

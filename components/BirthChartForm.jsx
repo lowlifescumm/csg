@@ -1,10 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import BirthChartWheel from './BirthChartWheel';
 import LowCreditsUpsellBanner from './LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from './FloatingUpgradePrompt';
 
-export default function BirthChartForm() {
+export default function BirthChartForm({ updateMode = false }) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     birthDate: '',
     birthTime: '',
@@ -18,10 +20,44 @@ export default function BirthChartForm() {
   const [creditsRemaining, setCreditsRemaining] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [showFloatingPrompt, setShowFloatingPrompt] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(updateMode);
 
   useEffect(() => {
     checkCredits();
-  }, []);
+    if (updateMode) {
+      loadExistingChart();
+    }
+  }, [updateMode]);
+  
+  const loadExistingChart = async () => {
+    try {
+      setLoadingExisting(true);
+      const response = await fetch('/api/birth-chart');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.hasChart && data.birthInfo) {
+          // Pre-fill form with existing chart data
+          setFormData({
+            birthDate: data.birthInfo.date || '',
+            birthTime: data.birthInfo.time || '',
+            location: data.birthInfo.location || '',
+            manualLat: data.birthInfo.latitude?.toString() || '',
+            manualLon: data.birthInfo.longitude?.toString() || ''
+          });
+          if (data.birthInfo.latitude && data.birthInfo.longitude) {
+            setCoordinates({
+              latitude: parseFloat(data.birthInfo.latitude),
+              longitude: parseFloat(data.birthInfo.longitude)
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading existing chart:', error);
+    } finally {
+      setLoadingExisting(false);
+    }
+  };
 
   const checkCredits = async () => {
     try {
@@ -131,12 +167,7 @@ export default function BirthChartForm() {
       return;
     }
 
-    // Check if user has credits before making the request
-    if (!isPremium || creditsRemaining === 0) {
-      setShowFloatingPrompt(true);
-      return;
-    }
-
+    // Birth chart creation is now FREE - no credit check needed
     setLoading(true);
     try {
       const response = await fetch('/api/birth-chart', {
@@ -147,22 +178,19 @@ export default function BirthChartForm() {
           time: formData.birthTime,
           location: formData.location,
           latitude: coordinates.latitude,
-          longitude: coordinates.longitude
+          longitude: coordinates.longitude,
+          generateInterpretation: false // Don't generate interpretation on creation (free)
         })
       });
 
       const data = await response.json();
       if (data.success) {
-        setChart({
-          ...data,
-          birthDate: formData.birthDate,
-          birthTime: formData.birthTime,
-          location: formData.location
-        });
         // Update credits if returned
         if (data.creditsRemaining !== undefined) {
           setCreditsRemaining(data.creditsRemaining);
         }
+        // Redirect to my-chart page to view the chart
+        router.push('/my-chart');
       } else if (data.requiresPayment) {
         setShowFloatingPrompt(true);
       } else {
@@ -354,9 +382,9 @@ Your rising sign depends on exact birth time
               disabled={loading || !coordinates}
               className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-lg"
             >
-              {loading ? 'Calculating Your Chart...' : 'Generate Birth Chart'}
+              {loading ? 'Creating Your Chart...' : 'Create Chart (Free)'}
             </button>
-            <p className="text-center text-sm text-gray-500">Premium feature - requires active subscription</p>
+            <p className="text-center text-sm text-purple-300">✓ Chart creation is free! View your chart wheel instantly. Unlock full interpretation for 3 credits.</p>
           </div>
         </form>
       ) : (

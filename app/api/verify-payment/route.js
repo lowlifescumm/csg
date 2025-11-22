@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import Stripe from 'stripe';
 import { verifyToken } from '@/lib/auth';
 import { getUserById } from '@/lib/db';
@@ -10,24 +11,23 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes("localhost")
-    ? false
-    : { rejectUnauthorized: false },
+  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
 });
 
 const ONE_TIME_READING_PRICE = 999;
 
-export async function POST(req) {
+export async function POST(request) {
   try {
-    const { paymentIntentId } = await req.json();
-    const token = req.cookies.get('auth_token')?.value;
+    const { paymentIntentId } = await request.json();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
 
     if (!paymentIntentId) {
       return NextResponse.json({ error: 'Payment intent ID required' }, { status: 400 });
     }
 
     const decoded = verifyToken(token);
-    
+
     if (!decoded) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -40,7 +40,7 @@ export async function POST(req) {
 
     const { rows: existingPurchase } = await pool.query(
       'SELECT id FROM moon_reading_purchases WHERE payment_intent_id = $1',
-      [paymentIntentId]
+      [paymentIntentId],
     );
 
     if (existingPurchase.length > 0) {
@@ -64,15 +64,12 @@ export async function POST(req) {
     await pool.query(
       `INSERT INTO moon_reading_purchases (user_id, payment_intent_id, amount, status, created_at) 
        VALUES ($1, $2, $3, $4, NOW())`,
-      [user.id, paymentIntent.id, paymentIntent.amount, paymentIntent.status]
+      [user.id, paymentIntent.id, paymentIntent.amount, paymentIntent.status],
     );
 
     return NextResponse.json({ success: true, status: 'succeeded' });
   } catch (error) {
     console.error('Payment verification error:', error);
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

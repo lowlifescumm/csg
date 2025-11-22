@@ -13,7 +13,7 @@ const { pool } = require('../../lib/db');
 
 describe('Credits Management Unit Tests', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   describe('getUserCredits', () => {
@@ -88,13 +88,14 @@ describe('Credits Management Unit Tests', () => {
     test('should deduct credits from paid first', async () => {
       pool.query
         .mockResolvedValueOnce({
+          // First call: SELECT query
           rows: [
             { id: 1, credits: 100, credit_type: 'paid' },
             { id: 2, credits: 50, credit_type: 'free' },
           ],
         })
-        .mockResolvedValueOnce() // Update query
-        .mockResolvedValueOnce(); // Cleanup query
+        .mockResolvedValueOnce({ rows: [] }) // Second call: UPDATE query
+        .mockResolvedValueOnce({ rows: [] }); // Third call: DELETE query
 
       const result = await deductCredits(1, 50, true);
 
@@ -119,5 +120,8 @@ describe('Credits Management Unit Tests', () => {
     });
   });
 });
+
+
+
 
 

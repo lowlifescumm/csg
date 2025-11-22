@@ -7,6 +7,7 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
+  setupFiles: ['<rootDir>/test/setup-db.js'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'node', // Changed from jsdom to node for API tests
   moduleNameMapper: {
@@ -16,6 +17,12 @@ const customJestConfig = {
     '**/__tests__/**/*.test.js',
     '**/__tests__/**/*.test.jsx',
     '**/__tests__/**/*.spec.js',
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/__tests__/e2e/',
+    '/__tests__/a11y/',
+    '/playwright/',
   ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx}',

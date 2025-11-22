@@ -103,7 +103,7 @@ export default function TransitDashboard() {
 
           <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
             <div className="text-center mb-6">
-              <div className="text-6xl font-bold text-white mb-2">$9.99</div>
+              <div className="text-6xl font-bold text-white mb-2">$29.99</div>
               <div className="text-purple-200">per month</div>
             </div>
 
@@ -282,7 +282,7 @@ export default function TransitDashboard() {
           <div className="relative">
             <div className="flex items-end justify-between mb-6">
               <div>
-                <div className="text-sm font-medium text-purple-300 mb-2 tracking-wide uppercase">Today's Energy</div>
+                <div className="text-sm font-medium text-purple-300 mb-2 tracking-wide uppercase">Today&apos;s Energy</div>
                 <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
                   {currentIntensity}/10
                 </h2>

@@ -9,7 +9,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    const user = await getUserByEmail(email);
+    // Normalize email to lowercase to prevent case-sensitivity issues
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await getUserByEmail(normalizedEmail);
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
@@ -43,14 +46,12 @@ export async function POST(request) {
       },
     });
 
-    response.cookies.set({
-      name: 'auth_token',
-      value: token,
+    response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',   // change to 'none' if cross-site and using HTTPS
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
-      path: '/',         // ensure cookie is sent for all routes
+      path: '/',
     });
 
     return response;

@@ -13,7 +13,27 @@ export async function POST(request) {
       );
     }
 
-    const existingUser = await getUserByEmail(email);
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password must be at least 6 characters long' },
+        { status: 400 }
+      );
+    }
+
+    // Normalize email to lowercase to prevent case-sensitivity issues
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const existingUser = await getUserByEmail(normalizedEmail);
     if (existingUser) {
       return NextResponse.json(
         { error: 'Email already registered' },
@@ -21,7 +41,7 @@ export async function POST(request) {
       );
     }
 
-    const user = await createUser({ email, password, firstName, lastName });
+    const user = await createUser({ email: normalizedEmail, password, firstName, lastName });
     
     // Initialize signup credits (3 free credits)
     try {

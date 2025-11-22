@@ -51,18 +51,18 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
       <header className="sticky top-0 z-50 glassmorphic border-b border-white border-opacity-20">
-        <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Cosmic Spiritual Guide" className="w-10 h-10 object-contain" />
-            <span className="text-xl font-semibold gradient-text">Cosmic Spiritual Guide</span>
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <img src="/logo.png" alt="Cosmic Spiritual Guide" className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0" />
+            <span className="text-base sm:text-lg md:text-xl font-semibold gradient-text truncate">Cosmic Spiritual Guide</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.push("/login")} className="text-gray-700 hover:text-purple-600 smooth-transition">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            <button onClick={() => router.push("/login")} className="text-sm sm:text-base text-gray-700 hover:text-purple-600 smooth-transition px-2 sm:px-0">
               Log In
             </button>
             <button 
               onClick={() => router.push("/login")}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-xl font-semibold smooth-transition hover:shadow-xl hover:scale-105"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl text-sm sm:text-base font-semibold smooth-transition hover:shadow-xl hover:scale-105 whitespace-nowrap"
             >
               Start Free Reading
             </button>
@@ -70,67 +70,67 @@ export default function HomePage() {
         </nav>
       </header>
 
-      <section className="relative overflow-hidden py-20 px-6">
+      <section className="relative overflow-hidden py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full filter blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-500 rounded-full filter blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-20 left-10 w-48 sm:w-72 h-48 sm:h-72 bg-purple-500 rounded-full filter blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-pink-500 rounded-full filter blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
         </div>
         
         <div className="max-w-6xl mx-auto text-center relative z-10">
-          <div className="inline-block float-animation mb-6">
-            <Sparkles className="w-16 h-16 text-purple-600 mx-auto" />
+          <div className="inline-block float-animation mb-4 sm:mb-6">
+            <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-purple-600 mx-auto" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 gradient-text">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 gradient-text px-2">
             Discover Your Cosmic Path
           </h1>
-          <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700 mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
             Instant, personalized tarot and astrology insights—crafted for your question and your chart.
           </p>
           
           {/* Floating rating widget */}
-          <div className="inline-block mb-6 glassmorphic rounded-full px-6 py-3 border border-purple-200 border-opacity-50">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-lg text-gray-800">4.9/5</span>
-              <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
-              <span className="text-sm text-gray-600 ml-2">Based on 2,847 reviews</span>
+          <div className="inline-block mb-4 sm:mb-6 glassmorphic rounded-full px-4 sm:px-6 py-2 sm:py-3 border border-purple-200 border-opacity-50">
+            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+              <span className="font-bold text-base sm:text-lg text-gray-800">4.9/5</span>
+              <span className="text-yellow-400 text-sm sm:text-base">⭐⭐⭐⭐⭐</span>
+              <span className="text-xs sm:text-sm text-gray-600">Based on 2,847 reviews</span>
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-4 sm:mb-6 px-4">
             <button 
               onClick={() => router.push("/login")}
-              className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 py-4 rounded-2xl font-semibold text-lg smooth-transition hover:shadow-2xl hover:scale-105"
+              className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-base sm:text-lg smooth-transition hover:shadow-2xl hover:scale-105 w-full sm:w-auto"
             >
               Start Your Free Reading
             </button>
             <button 
               onClick={() => document.getElementById('services').scrollIntoView({behavior: 'smooth'})}
-              className="glassmorphic border border-purple-300 text-purple-700 px-8 py-4 rounded-2xl font-semibold text-lg smooth-transition hover:shadow-xl hover:scale-105"
+              className="glassmorphic border border-purple-300 text-purple-700 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-base sm:text-lg smooth-transition hover:shadow-xl hover:scale-105 w-full sm:w-auto"
             >
               Explore Services
             </button>
           </div>
           
           {/* Trust badges below CTAs */}
-          <div className="flex flex-wrap justify-center gap-6 mb-16">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 sm:mb-16 px-4">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
               <span>🔒</span>
               <span>SSL Secured</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
               <span>⭐</span>
               <span>10,000+ Happy Users</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
               <span>✅</span>
               <span>Accuracy Guaranteed</span>
             </div>
           </div>
           
           {/* Testimonials section in hero */}
-          <div className="mt-16">
-            <h3 className="text-2xl font-semibold mb-8 text-gray-800">What Our Users Experience</h3>
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="mt-8 sm:mt-12 md:mt-16">
+            <h3 className="text-xl sm:text-2xl font-semibold mb-6 sm:mb-8 text-gray-800 px-4">What Our Users Experience</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto px-4">
               {/* Testimonial 1 */}
               <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
                 <div className="flex items-center gap-3 mb-4">
@@ -198,73 +198,73 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="services" className="py-20 px-6">
+      <section id="services" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold gradient-text mb-4">What We Offer</h2>
-            <p className="text-gray-600 text-lg">Human-calibrated interpretations. No fluff.</p>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">What We Offer</h2>
+            <p className="text-gray-600 text-base sm:text-lg px-4">Human-calibrated interpretations. No fluff.</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="glassmorphic rounded-3xl p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
-                <Sparkles className="w-8 h-8 text-white" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+            <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
+              <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-semibold mb-4">AI-Enhanced Tarot Readings</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">AI-Enhanced Tarot Readings</h3>
+              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
                 Straight answers with compassionate guidance for love, career, and life decisions.
               </p>
               <button 
                 onClick={() => router.push("/login")}
-                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition"
+                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition text-sm sm:text-base"
               >
-                Get Started <ChevronRight className="w-5 h-5" />
+                Get Started <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="glassmorphic rounded-3xl p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
-                <Stars className="w-8 h-8 text-white" />
+            <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
+              <div className="bg-gradient-to-br from-blue-500 to-purple-500 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
+                <Stars className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-semibold mb-4">Birth Chart Reports</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Birth Chart Reports</h3>
+              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
                 Understand your strengths, lessons, and timing through your natal blueprint.
               </p>
               <button 
                 onClick={() => router.push("/login")}
-                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition"
+                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition text-sm sm:text-base"
               >
-                Get My Chart <ChevronRight className="w-5 h-5" />
+                Get My Chart <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="glassmorphic rounded-3xl p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="bg-gradient-to-br from-pink-500 to-purple-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
-                <Heart className="w-8 h-8 text-white" />
+            <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
+              <div className="bg-gradient-to-br from-pink-500 to-purple-500 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
+                <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-semibold mb-4">Compatibility Readings</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Compatibility Readings</h3>
+              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
                 See how your energies align and where growth is possible.
               </p>
               <button 
                 onClick={() => router.push("/login")}
-                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition"
+                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition text-sm sm:text-base"
               >
-                Check Compatibility <ChevronRight className="w-5 h-5" />
+                Check Compatibility <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-gradient-to-br from-purple-100 to-pink-100">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-purple-100 to-pink-100">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold gradient-text mb-4">How It Works</h2>
-            <p className="text-gray-600 text-lg">Get clarity in three simple steps</p>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">How It Works</h2>
+            <p className="text-gray-600 text-base sm:text-lg px-4">Get clarity in three simple steps</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
             <div className="text-center">
               <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
                 1
@@ -290,10 +290,10 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 sm:mt-12 px-4">
             <button 
               onClick={() => router.push("/login")}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg smooth-transition hover:shadow-2xl hover:scale-105"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-base sm:text-lg smooth-transition hover:shadow-2xl hover:scale-105 w-full sm:w-auto"
             >
               Get My Reading
             </button>
@@ -301,13 +301,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold gradient-text mb-4">Why Trust Us</h2>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">Why Trust Us</h2>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             <div className="text-center">
               <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Check className="w-8 h-8 text-purple-600" />
@@ -347,13 +347,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-gradient-to-br from-blue-50 to-purple-50">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold gradient-text mb-4">What People Say</h2>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">What People Say</h2>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -393,14 +393,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold gradient-text mb-4">Featured Articles</h2>
-            <p className="text-gray-600">Deepen your spiritual knowledge</p>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">Featured Articles</h2>
+            <p className="text-gray-600 text-sm sm:text-base px-4">Deepen your spiritual knowledge</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             <div className="glassmorphic rounded-2xl overflow-hidden apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
               <div className="h-48 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
                 <Moon className="w-20 h-20 text-white" />
@@ -447,21 +447,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-gradient-to-br from-purple-100 to-pink-100">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-purple-100 to-pink-100">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold gradient-text mb-4">Common Questions</h2>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">Common Questions</h2>
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer">How accurate are the readings?</summary>
-              <p className="mt-4 text-gray-600">Our readings combine traditional tarot and astrology wisdom with AI to provide personalized, meaningful insights. While we can't predict the future, we help you see patterns and possibilities clearly.</p>
+              <p className="mt-4 text-gray-600">Our readings combine traditional tarot and astrology wisdom with AI to provide personalized, meaningful insights. While we can&apos;t predict the future, we help you see patterns and possibilities clearly.</p>
             </details>
 
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer">Do I need my exact birth time?</summary>
-              <p className="mt-4 text-gray-600">For the most accurate birth chart, yes! But if you don't know it, you can still get valuable insights from your sun and moon signs.</p>
+              <p className="mt-4 text-gray-600">For the most accurate birth chart, yes! But if you don&apos;t know it, you can still get valuable insights from your sun and moon signs.</p>
             </details>
 
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
@@ -471,20 +471,20 @@ export default function HomePage() {
 
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer">Can I ask about love, career, or timing?</summary>
-              <p className="mt-4 text-gray-600">Yes! Our readings cover all areas of life—love, career, finances, timing, and personal growth. Ask anything that's on your mind.</p>
+              <p className="mt-4 text-gray-600">Yes! Our readings cover all areas of life—love, career, finances, timing, and personal growth. Ask anything that&apos;s on your mind.</p>
             </details>
           </div>
         </div>
       </section>
 
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
-          <div className="glassmorphic rounded-3xl p-12 text-center apple-shadow-lg border border-white border-opacity-40">
-            <Sparkles className="w-16 h-16 text-purple-600 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold mb-4">Free 3-Card Daily Reading</h2>
-            <p className="text-gray-600 mb-8">Get personalized daily insight delivered to your inbox every morning</p>
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 md:p-12 text-center apple-shadow-lg border border-white border-opacity-40">
+            <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-purple-600 mx-auto mb-4 sm:mb-6" />
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Free 3-Card Daily Reading</h2>
+            <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">Get personalized daily insight delivered to your inbox every morning</p>
             
-            <form onSubmit={handleEmailSignup} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <form onSubmit={handleEmailSignup} className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto">
               <label htmlFor="dailyEmail" className="sr-only">Email address for daily insights</label>
               <input
                 id="dailyEmail"
@@ -509,22 +509,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Your clarity is one reading away</h2>
-          <p className="text-xl mb-8 text-purple-200">Join thousands who've found their path through the stars</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 px-4">Your clarity is one reading away</h2>
+          <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-purple-200 px-4">Join thousands who&apos;ve found their path through the stars</p>
           <button 
             onClick={() => router.push("/login")}
-            className="bg-white text-purple-900 px-10 py-4 rounded-2xl font-bold text-lg smooth-transition hover:shadow-2xl hover:scale-105"
+            className="bg-white text-purple-900 px-6 sm:px-10 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg smooth-transition hover:shadow-2xl hover:scale-105 w-full sm:w-auto"
           >
             Start Your Free Reading
           </button>
         </div>
       </section>
 
-      <footer className="bg-gray-900 text-gray-300 py-12 px-6">
+      <footer className="bg-gray-900 text-gray-300 py-8 sm:py-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img src="/logo.png" alt="Logo" className="w-8 h-8" />

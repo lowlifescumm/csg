@@ -1,206 +1,265 @@
-# Testing Guide
+# Test Suite Documentation
 
-This directory contains comprehensive tests for the Cosmic Spiritual Guide application.
+Comprehensive automated tests for core application flows using Jest + React Testing Library (unit tests) and Playwright (E2E tests).
 
 ## Test Structure
 
 ```
 __tests__/
-├── api/              # API endpoint tests (Jest)
-├── e2e/              # End-to-end tests (Playwright)
-├── unit/             # Unit tests (Jest)
-└── README.md         # This file
-```
-
-## Prerequisites
-
-Install dependencies:
-```bash
-npm install
-```
-
-Install Playwright browsers:
-```bash
-npx playwright install
+├── unit/                    # Unit tests (Jest + React Testing Library)
+│   ├── streak.test.js
+│   ├── credit-deduction.test.js
+│   ├── reading-generation.test.js
+│   └── billing-redirect.test.js
+├── e2e/                     # E2E tests (Playwright)
+│   ├── streak-tracking.spec.js
+│   ├── credit-deduction.spec.js
+│   ├── reading-generation.spec.js
+│   └── billing-redirect.spec.js
+└── fixtures/                # Test fixtures and sample data
+    └── test-data.js
 ```
 
 ## Running Tests
 
-### All Tests
-```bash
-npm test
-```
-
-### E2E Tests
-```bash
-npm run test:e2e           # Run in headless mode
-npm run test:e2e:headed    # Run with browser visible
-npm run test:e2e:ui        # Run with Playwright UI
-```
-
-### API Tests
-```bash
-npm run test:api
-```
-
 ### Unit Tests
+
 ```bash
+# Run all unit tests
 npm run test:unit
-```
 
-### Watch Mode (Unit/API Tests)
-```bash
-npm test -- --watch
-```
-
-## Test Coverage
-
-### User Onboarding
-- ✅ Tour display for new users
-- ✅ Tour completion flow
-- ✅ Tour skip functionality
-- ✅ Returning user behavior
-
-### Credit Management
-- ✅ Initial credits assignment
-- ✅ Credit deduction after readings
-- ✅ Database logging
-- ✅ Edge cases (insufficient credits)
-- ✅ Credit display on dashboard
-
-### Authentication
-- ✅ Login flow
-- ✅ Signup flow
-- ✅ Invalid credential handling
-- ✅ Google OAuth button display
-- ✅ Login loop prevention
-- ✅ Forgot password navigation
-
-### Edge Cases
-- ✅ Insufficient credits handling
-- ✅ Duplicate email prevention
-- ✅ Missing required fields
-- ✅ Invalid tokens
-- ✅ Empty form submissions
-
-## Environment Setup
-
-Tests use the following environment variables:
-- `TEST_DATABASE_URL` - Optional, defaults to `DATABASE_URL`
-- `TEST_URL` - E2E test base URL, defaults to `http://localhost:5000`
-
-## Continuous Integration
-
-Tests should be run before deployment:
-1. API tests verify backend logic
-2. Unit tests check individual functions
-3. E2E tests validate user flows
-
-## Writing New Tests
-
-### E2E Test Example
-```javascript
-test('should perform a specific action', async ({ page }) => {
-  await page.goto('/dashboard');
-  await page.click('button:has-text("Action")');
-  await expect(page.locator('.result')).toBeVisible();
-});
-```
-
-### API Test Example
-```javascript
-test('should return correct response', async () => {
-  const response = await fetch('http://localhost:5000/api/endpoint');
-  expect(response.status).toBe(200);
-  const data = await response.json();
-  expect(data.success).toBe(true);
-});
-```
-
-### Unit Test Example
-```javascript
-test('should calculate correctly', () => {
-  const result = calculateSomething(5, 10);
-  expect(result).toBe(15);
-});
-```
-
-## Debugging Tests
-
-### E2E Tests
-```bash
-# Run with debug output
-DEBUG=pw:* npm run test:e2e
-
-# Pause execution
-await page.pause();
-
-# Take screenshot
-await page.screenshot({ path: 'debug.png' });
-```
-
-### API/Unit Tests
-```bash
 # Run specific test file
-npm test -- credits.test.js
-
-# Run with verbose output
-npm test -- --verbose
+npm test __tests__/unit/streak.test.js
 
 # Run with coverage
 npm test -- --coverage
+
+# Run in watch mode
+npm test -- --watch
+```
+
+### E2E Tests
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run with UI mode (interactive)
+npm run test:e2e:ui
+
+# Run in headed mode (see browser)
+npm run test:e2e:headed
+
+# Run specific test file
+npx playwright test __tests__/e2e/streak-tracking.spec.js
+```
+
+### API Tests
+
+```bash
+# Run API tests
+npm run test:api
+```
+
+## Test Suites
+
+### 1. Streak Tracking (`streak.test.js`, `streak-tracking.spec.js`)
+
+**Unit Tests:**
+- Daily login streak increment on first login
+- Consecutive day streak increment
+- Streak reset when login gap > 1 day
+- Same-day login prevention (no duplicate increment)
+- Streak API endpoint responses
+
+**E2E Tests:**
+- Streak display in dashboard
+- Streak increment on login
+- Streak API integration
+- Error handling for streak API failures
+
+### 2. Credit Deduction (`credit-deduction.test.js`, `credit-deduction.spec.js`)
+
+**Unit Tests:**
+- Basic tarot reading (1 credit deduction)
+- Premium tarot reading (2 credit deduction)
+- Insufficient credits handling
+- Credit deduction failure handling
+- Credit balance updates
+- Negative balance prevention
+
+**E2E Tests:**
+- Credit display in UI
+- Credit deduction after reading generation
+- Insufficient credits error display
+- Credit balance updates
+
+### 3. Reading Generation (`reading-generation.test.js`, `reading-generation.spec.js`)
+
+**Unit Tests:**
+- Successful reading generation
+- Reading generation with question
+- OpenAI API failure fallback
+- Database save failure handling
+- Network timeout handling
+- Reading validation (question required, card count)
+
+**E2E Tests:**
+- Reading generation success flow
+- Reading result modal display
+- API failure error handling
+- Loading state display
+- Modal close functionality
+- Network timeout handling
+
+### 4. Billing Redirect (`billing-redirect.test.js`, `billing-redirect.spec.js`)
+
+**Unit Tests:**
+- Upgrade button click handling
+- Stripe checkout session creation
+- Existing customer handling
+- New customer creation
+- Stripe API error handling
+- Checkout URL redirect
+
+**E2E Tests:**
+- Upgrade button visibility
+- Checkout modal opening
+- Stripe checkout redirect
+- PremiumCard display for non-premium users
+- Subscription API error handling
+- Loading state during checkout
+
+## Test Fixtures
+
+Located in `__tests__/fixtures/test-data.js`:
+
+- **testUsers**: Sample user data (regular, premium, admin)
+- **testCredits**: Sample credit data (initial, low, empty)
+- **testStreaks**: Sample streak data (new, active, broken)
+- **testReadings**: Sample reading data (tarot basic, premium)
+- **testStripeSessions**: Sample Stripe session data
+- **mockApiResponses**: Standard API response formats
+
+## Mocking
+
+### Database
+
+All unit tests mock the database pool:
+
+```javascript
+jest.mock('@/lib/db', () => {
+  const mockPool = {
+    query: jest.fn(),
+  };
+  return { pool: mockPool };
+});
+```
+
+### External APIs
+
+- **Stripe**: Mocked in billing tests
+- **OpenAI**: Mocked in reading generation tests
+- **Authentication**: Mocked `getAuthenticatedUser`
+
+### API Routes (E2E)
+
+E2E tests use Playwright's `page.route()` to mock API responses:
+
+```javascript
+await page.route('**/api/readings/generate', (route) => {
+  route.fulfill({
+    status: 200,
+    body: JSON.stringify({ success: true, reading: {...} }),
+  });
+});
+```
+
+## Test Data Attributes
+
+For E2E tests, components should use `data-testid` attributes:
+
+- `data-testid="streak-counter"` - Streak display
+- `data-testid="credits-display"` - Credits display
+- `data-testid="reading-modal"` - Reading result modal
+- `data-testid="upgrade-button"` - Upgrade button
+
+## Writing New Tests
+
+### Unit Test Template
+
+```javascript
+describe('Feature Name', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should do something', async () => {
+    // Arrange
+    // Act
+    // Assert
+  });
+});
+```
+
+### E2E Test Template
+
+```javascript
+test.describe('Feature Name', () => {
+  test.beforeEach(async ({ page }) => {
+    // Setup (login, etc.)
+  });
+
+  test('should do something', async ({ page }) => {
+    // Interact with page
+    // Assert results
+  });
+});
+```
+
+## CI/CD Integration
+
+Tests are configured to run in CI environments:
+
+- **Jest**: Runs in Node.js environment
+- **Playwright**: Runs with `--headed=false` in CI
+- **Coverage**: Generates coverage reports for CI
+
+## Coverage Goals
+
+- **Branches**: 70%
+- **Functions**: 70%
+- **Lines**: 70%
+- **Statements**: 70%
+
+## Troubleshooting
+
+### Unit Tests Fail
+
+1. Check if mocks are properly set up
+2. Verify database query mocks return expected structure
+3. Ensure async/await is used correctly
+
+### E2E Tests Fail
+
+1. Ensure dev server is running (`npm run dev`)
+2. Check browser console for errors
+3. Verify test selectors are correct
+4. Check if API routes are properly mocked
+
+### Playwright Installation
+
+If Playwright browsers are missing:
+
+```bash
+npx playwright install
 ```
 
 ## Best Practices
 
 1. **Isolation**: Each test should be independent
-2. **Cleanup**: Always clean up test data after tests
-3. **Descriptive Names**: Use clear test descriptions
-4. **Arrange-Act-Assert**: Follow AAA pattern
-5. **Mock External Services**: Don't call real APIs in unit tests
-6. **Test Edge Cases**: Cover error conditions and boundary cases
-
-## Troubleshooting
-
-### Tests Timing Out
-- Increase timeout in test file: `test.setTimeout(60000)`
-- Check if dev server is running for E2E tests
-
-### Database Connection Issues
-- Verify `DATABASE_URL` is set correctly
-- Ensure test database is accessible
-- Check SSL configuration if using remote DB
-
-### Playwright Installation Issues
-```bash
-# Reinstall browsers
-npx playwright install --force
-```
-
-## CI/CD Integration
-
-Add to your CI pipeline:
-```yaml
-- name: Run Tests
-  run: |
-    npm install
-    npm run test:api
-    npm run test:unit
-    npm run test:e2e
-```
-
-## Coverage Goals
-
-- Unit Tests: 80%+ coverage
-- API Tests: All endpoints covered
-- E2E Tests: Critical user flows covered
-
-## Contributing
-
-When adding new features:
-1. Write tests first (TDD approach)
-2. Ensure tests pass locally
-3. Update this README if adding new test categories
-4. Run full test suite before committing
-
-
+2. **Cleanup**: Clear mocks between tests
+3. **Realistic Data**: Use fixtures for consistent test data
+4. **Error Cases**: Test both success and failure paths
+5. **Accessibility**: Use semantic selectors (roles, labels) when possible
+6. **Performance**: Keep E2E tests focused on critical flows

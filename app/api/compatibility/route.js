@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { generateCompatibilityReport } from '@/lib/compatibility';
@@ -6,6 +7,7 @@ import { calculateBirthChart } from '@/lib/astrology';
 import { pool } from '@/lib/db';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
+import { formatCreditError } from '@/lib/credit-error-handler.js';
 
 
 export async function POST(request) {
@@ -32,7 +34,8 @@ export async function POST(request) {
     }
 
     // Get authenticated user (supports both NextAuth and JWT)
-    const authResult = await getAuthenticatedUser(request.cookies, authOptions);
+    const cookieStore = await cookies();
+    const authResult = await getAuthenticatedUser(cookieStore, authOptions);
     
     if (!authResult) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -75,11 +78,8 @@ export async function POST(request) {
     const creditResult = await consumeCreditsForReading(userId, 'COMPATIBILITY_REPORT');
     
     if (!creditResult.success) {
-      return NextResponse.json({
-        error: 'Credit processing failed',
-        details: creditResult.message,
-        cost: creditResult.cost
-      }, { status: 402 });
+      const errorResponse = formatCreditError(creditResult);
+      return NextResponse.json(errorResponse, { status: errorResponse.status });
     }
 
     const insertResult = await pool.query(
@@ -121,7 +121,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     
     // Get authenticated user (supports both NextAuth and JWT)
-    const authResult = await getAuthenticatedUser(request.cookies, authOptions);
+    const cookieStore = await cookies();
+    const authResult = await getAuthenticatedUser(cookieStore, authOptions);
     
     if (!authResult) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });

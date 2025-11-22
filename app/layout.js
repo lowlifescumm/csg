@@ -1,11 +1,17 @@
 import "./globals.css";
 import Script from "next/script";
-import NextAuthProvider from "@/components/SessionProvider";
+import { Inter } from "next/font/google";
+import AuthProviderWrapper from "@/components/AuthProviderWrapper";
 import Header from "@/components/Header";
+import ToastContainerWrapper from "@/components/ui/ToastContainerWrapper";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import ClientErrorCatcher from "@/components/ClientErrorCatcher";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className={`${inter.className} scroll-smooth`}>
       <head>
         <title>Cosmic Spiritual Guide - Tarot & Astrology Insights</title>
         <meta name="description" content="Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance. Birth charts, compatibility reports, and daily horoscopes." />
@@ -15,13 +21,10 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Cosmic Spiritual Guide" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-        <script src="https://cdn.tailwindcss.com"></script>
+        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-        <NextAuthProvider>
+        <AuthProviderWrapper>
           {/* Google Analytics */}
           <Script
             src="https://www.googletagmanager.com/gtag/js?id=G-T0J78R09VN"
@@ -43,36 +46,44 @@ export default function RootLayout({ children }) {
         
           <Header />
           
-          {/* Add padding to account for fixed header */}
-          <div className="pt-[80px]"></div>
+          {/* Add padding to account for fixed header - responsive */}
+          <div className="pt-16 sm:pt-20 md:pt-[80px]"></div>
           
           <main id="main-content" className="flex-1">
-            <div className="w-full">
-              {children}
-            </div>
+            <ErrorBoundary>
+              <div className="w-full">
+                {children}
+              </div>
+            </ErrorBoundary>
           </main>
           
           <footer className="glassmorphic border-t border-white border-opacity-20 py-6 mt-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600">
                   Powered by AI • Tarot • Horoscopes • Birth Charts
                 </p>
-                <div className="mt-4 flex justify-center space-x-6">
-                  <a href="/privacy" className="text-sm text-gray-500 hover:text-gray-700 smooth-transition">
+                <div className="mt-4 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6">
+                  <a href="/privacy" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 smooth-transition">
                     Privacy Policy
                   </a>
-                  <a href="/terms" className="text-sm text-gray-500 hover:text-gray-700 smooth-transition">
+                  <a href="/terms" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 smooth-transition">
                     Terms of Service
                   </a>
-                  <a href="/contact" className="text-sm text-gray-500 hover:text-gray-700 smooth-transition">
+                  <a href="/contact" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 smooth-transition">
                     Contact
                   </a>
                 </div>
               </div>
             </div>
           </footer>
-        </NextAuthProvider>
+          
+          {/* Toast Notifications */}
+          <ToastContainerWrapper />
+
+          {/* Client error catcher banner (non-blocking) */}
+          <ClientErrorCatcher />
+        </AuthProviderWrapper>
       </body>
     </html>
   )

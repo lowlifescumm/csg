@@ -32,8 +32,8 @@ const FloatingUpgradePrompt = ({ message = "Out of credits! Upgrade for unlimite
   return (
     <div 
       className={`
-        fixed bottom-8 right-8 z-50 
-        max-w-sm w-full mx-4
+        fixed bottom-4 sm:bottom-8 right-4 sm:right-8 z-50 
+        max-w-sm w-[calc(100%-2rem)] sm:w-full sm:mx-4
         transform transition-all duration-300 ease-out
         ${isAnimating ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-full opacity-0 scale-95'}
       `}
@@ -93,9 +93,9 @@ const FloatingUpgradePrompt = ({ message = "Out of credits! Upgrade for unlimite
 
         @media (max-width: 640px) {
           .fixed {
-            bottom: 20px;
-            right: 20px;
-            left: 20px;
+            bottom: 16px;
+            right: 16px;
+            left: 16px;
             max-width: none;
           }
         }

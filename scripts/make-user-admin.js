@@ -14,10 +14,13 @@ async function makeUserAdmin(email) {
   try {
     console.log(`🔍 Looking up user: ${email}`);
     
+    // Normalize email to lowercase
+    const normalizedEmail = email.toLowerCase().trim();
+    
     // Check if user exists
     const { rows: userRows } = await pool.query(
-      "SELECT id, email, first_name, last_name, role FROM users WHERE email = $1",
-      [email]
+      "SELECT id, email, first_name, last_name, role FROM users WHERE LOWER(email) = $1",
+      [normalizedEmail]
     );
     
     if (userRows.length === 0) {
@@ -31,7 +34,7 @@ async function makeUserAdmin(email) {
         INSERT INTO users (email, password_hash, first_name, last_name, role)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING id, email, first_name, last_name, role
-      `, [email, hashedPassword, 'Ethan', 'Fitzhenry', 'admin']);
+      `, [normalizedEmail, hashedPassword, 'Ethan', 'Fitzhenry', 'admin']);
       
       const newUser = newUserRows[0];
       console.log(`✅ Created new admin user:`);

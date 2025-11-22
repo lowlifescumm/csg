@@ -1,52 +1,40 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 import { pool } from '@/lib/db.js';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { getForecastPreferences } from '@/lib/forecast-engine.js';
 
-/**
- * GET /api/forecasts/preferences
- * Get user's forecast preferences
- */
-export async function GET(req) {
+export async function GET() {
   try {
-    const token = req.cookies.get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authResult = await getAuthenticatedUser(cookieStore, authOptions);
 
-    if (!token) {
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-
-    const prefs = await getForecastPreferences(userId);
-
+    const prefs = await getForecastPreferences(authResult.userId);
     return NextResponse.json({ preferences: prefs });
   } catch (error) {
-    console.error('Error fetching preferences:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch preferences',
-      details: error.message,
-    }, { status: 500 });
+    console.error('Error fetching forecast preferences:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch preferences', details: error.message },
+      { status: 500 },
+    );
   }
 }
 
-/**
- * PUT /api/forecasts/preferences
- * Update user's forecast preferences
- */
 export async function PUT(req) {
   try {
-    const token = req.cookies.get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authResult = await getAuthenticatedUser(cookieStore, authOptions);
 
-    if (!token) {
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-
     const body = await req.json();
-
     const {
       delivery_cadence,
       delivery_time,
@@ -61,14 +49,13 @@ export async function PUT(req) {
       push_enabled,
     } = body;
 
-    // Build update query
     const fields = [];
-    const values = [userId];
+    const values = [authResult.userId];
     let paramCount = 1;
 
     const addField = (name, value) => {
       if (value !== undefined && value !== null) {
-        paramCount++;
+        paramCount += 1;
         fields.push(`${name} = $${paramCount}`);
         values.push(value);
       }
@@ -95,10 +82,10 @@ export async function PUT(req) {
     const result = await pool.query(
       `INSERT INTO forecast_preferences (user_id)
        VALUES ($1)
-       ON CONFLICT (user_id) 
+       ON CONFLICT (user_id)
        DO UPDATE SET ${fields.join(', ')}
        RETURNING *`,
-      values
+      values,
     );
 
     return NextResponse.json({
@@ -106,13 +93,11 @@ export async function PUT(req) {
       preferences: result.rows[0],
     });
   } catch (error) {
-    console.error('Error updating preferences:', error);
-    return NextResponse.json({ 
-      error: 'Failed to update preferences',
-      details: error.message,
-    }, { status: 500 });
+    console.error('Error updating forecast preferences:', error);
+    return NextResponse.json(
+      { error: 'Failed to update preferences', details: error.message },
+      { status: 500 },
+    );
   }
 }
-
-
 

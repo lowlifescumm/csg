@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -15,14 +15,56 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted before using NextAuth functions (important for mobile)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleGoogleSignIn = async () => {
+    // Wait for component to mount and SessionProvider to be ready
+    if (!mounted) {
+      setError("Please wait, initializing...");
+      return;
+    }
+
     setGoogleLoading(true);
     setError("");
+    
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      // Check if signIn function is available
+      if (typeof signIn !== 'function') {
+        throw new Error('Authentication system not ready');
+      }
+
+      // First attempt: controlled login without redirect to catch errors
+      const result = await signIn("google", {
+        callbackUrl: "/dashboard",
+        redirect: false
+      });
+
+      if (result?.error) {
+        // Fallback: try default redirect-based flow handled by NextAuth
+        const redirectAttempt = await signIn("google", {
+          callbackUrl: "/dashboard"
+        });
+        // If NextAuth handles redirect, we won't get here. If we do, show error:
+        if (!redirectAttempt) {
+          setError("Failed to sign in with Google. Please try again.");
+          setGoogleLoading(false);
+        }
+      } else if (result?.ok) {
+        // Success - NextAuth will handle redirect
+        router.push("/dashboard");
+        router.refresh();
+      } else {
+        // Last-resort fallback: direct navigation to provider route
+        window.location.href = "/api/auth/signin/google?callbackUrl=%2Fdashboard";
+      }
     } catch (err) {
-      setError("Failed to sign in with Google");
+      console.error("Google sign-in error:", err);
+      setError("Failed to sign in with Google. Please try again or use email/password.");
       setGoogleLoading(false);
     }
   };
@@ -43,17 +85,38 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
+        // Clear any existing errors
+        setError("");
+        // Small delay to ensure cookie is set (especially important on mobile)
+        await new Promise(resolve => setTimeout(resolve, 100));
         router.push("/dashboard");
         router.refresh();
       } else {
         setError(data.error || "Something went wrong");
       }
     } catch (err) {
-      setError("Failed to connect to server");
+      console.error("Login/signup error:", err);
+      setError("Failed to connect to server. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  // Don't render until mounted (prevents hydration mismatches on mobile)
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center p-6">
+        <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 w-full max-w-md">
+          <div className="text-center">
+            <div className="inline-block float-animation">
+              <img src="/logo.png" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-4 object-contain" />
+            </div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center p-6">

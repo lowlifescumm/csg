@@ -8,6 +8,7 @@ import { saveReading, getReadingById, pool } from "@/lib/db";
 import { generateTarotReading, generateTarotSummary, createEmbedding } from "@/lib/openai";
 import { getPinecone } from "@/lib/pinecone";
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
+import { formatCreditError } from '@/lib/credit-error-handler.js';
 
 export const runtime = "nodejs";
 
@@ -67,11 +68,8 @@ export async function POST(request) {
     const creditResult = await consumeCreditsForReading(userId, readingTypeKey);
     
     if (!creditResult.success) {
-      return NextResponse.json({
-        error: 'Credit processing failed',
-        details: creditResult.message,
-        cost: creditResult.cost
-      }, { status: 402 });
+      const errorResponse = formatCreditError(creditResult);
+      return NextResponse.json(errorResponse, { status: errorResponse.status });
     }
 
     // Validate question requirement

@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { X, Sparkles } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
+import FocusModal from "@/components/FocusModal";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
+import ShareCard from "@/components/ShareCard";
 
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general" }) {
   const [selectedCards, setSelectedCards] = useState([]);
@@ -11,7 +14,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   const [showReading, setShowReading] = useState(false);
   const [reading, setReading] = useState(null);
   const [question, setQuestion] = useState("");
-  const [showQuestionInput, setShowQuestionInput] = useState(false);
+  const [showFocusModal, setShowFocusModal] = useState(false);
   const [error, setError] = useState("");
   const [flashMismatch, setFlashMismatch] = useState(false);
   
@@ -39,7 +42,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   useEffect(() => {
     // On mount and when spread changes, clear selections and prepare exactly N cards
     setSelectedCards([]);
-    setShowQuestionInput(false);
     setError("");
     const shuffled = [...ALL_CARDS].sort(() => Math.random() - 0.5);
     setAvailableCards(shuffled.slice(0, spread.card_count));
@@ -53,14 +55,10 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     const newSelectedCards = [...selectedCards, index];
     setSelectedCards(newSelectedCards);
     
-    // If all cards are selected, show question input for spreads that allow or require questions
-    const count = spread.card_count;
-    if (newSelectedCards.length === count && !showQuestionInput && (spread.ui?.require_question || spread.allow_question)) {
-      setShowQuestionInput(true);
-    }
+    // Question input is now handled by Focus Modal - no need to show legacy input
   };
 
-  const handleGetReading = async () => {
+  const handleGetReading = () => {
     const required = spread.ui?.required_selection_count ?? spread.card_count;
     const selected = selectedCards.length;
     if (selected !== required) {
@@ -72,7 +70,20 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       }, 1500);
       return;
     }
-    if (spread.ui?.require_question && !question.trim()) {
+
+    // Open Focus Modal instead of calling API directly
+    setShowFocusModal(true);
+  };
+
+  const handleFocusSubmit = async (userIntent) => {
+    // Close the focus modal
+    setShowFocusModal(false);
+    
+    // Update question state with user's intent
+    setQuestion(userIntent);
+    
+    // If question was required but not provided, show error
+    if (spread.ui?.require_question && !userIntent.trim()) {
       setError("Please enter your question before submitting.");
       return;
     }
@@ -91,7 +102,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          question,
+          question: userIntent, // Use the intent from focus modal
           spreadType,
           readingType,
           specificCards: selectedCardsData,
@@ -105,7 +116,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         setReading(data.reading);
         setShowReading(true);
       } else {
-        // Tarot is free, but handle other errors
+        // Handle errors
         alert(data.error || "Something went wrong");
       }
     } catch (error) {
@@ -122,7 +133,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setShowReading(false);
     setReading(null);
     setQuestion("");
-    setShowQuestionInput(false);
     setError("");
     
     // Shuffle and pick new cards
@@ -133,7 +143,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   if (showReading && reading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-        <div className="glassmorphic rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40">
+        <div className="glassmorphic rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden apple-shadow-lg border border-white border-opacity-40">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold gradient-text">Your Tarot Reading</h2>
             <button
@@ -169,10 +179,21 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
             ))}
           </div>
 
-          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-6 border border-purple-100">
-            <h3 className="font-semibold text-gray-900 mb-3">Interpretation</h3>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">{reading.interpretation}</p>
+          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-6 border border-purple-100 overflow-hidden w-full max-w-full mb-0">
+            <h3 className="font-semibold text-gray-900 mb-3 break-words">Interpretation</h3>
+            <div className="w-full max-w-full break-words">
+              <MarkdownRenderer text={reading.interpretation} className="text-gray-700 leading-relaxed break-words" />
+            </div>
           </div>
+
+          <ShareCard 
+            interpretation={reading.interpretation} 
+            readingId={reading.id}
+            onShareComplete={(credits) => {
+              // Optionally show a toast notification
+              console.log(`${credits} credits awarded for sharing!`);
+            }}
+          />
 
           <button
             onClick={handleNewReading}
@@ -186,48 +207,36 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="glassmorphic rounded-3xl p-8 max-w-4xl w-full apple-shadow-lg border border-white border-opacity-40">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold gradient-text">Select Your Cards</h2>
+    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto">
+      <div className="glassmorphic rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-4xl w-full max-h-[95vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40 my-4">
+        <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+          <h2 className="text-xl sm:text-2xl font-semibold gradient-text">Select Your Cards</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition"
+            className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition flex-shrink-0"
+            aria-label="Close modal"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        <div className="text-center mb-8">
-          <p className="text-gray-600 mb-2">
+        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+          <p className="text-sm sm:text-base text-gray-600 mb-2">
             {selectedCards.length === 0 && "Click on each card to reveal your destiny"}
             {selectedCards.length > 0 && selectedCards.length < positions.length && `${selectedCards.length} of ${positions.length} cards selected`}
-            {selectedCards.length === positions.length && !showQuestionInput && "All cards selected!"}
+            {selectedCards.length === positions.length && "All cards selected!"}
           </p>
           {error && (
-            <p className="text-red-600 text-sm mb-2">{error}</p>
-          )}
-          {showQuestionInput && (
-            <div className="mt-4 max-w-md mx-auto">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {spread.ui?.require_question ? 'Your Question (Required)' : 'Your Question (Optional)'}
-              </label>
-              <input
-                type="text"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder={spread.ui?.require_question ? "What guidance do you seek?" : "What guidance do you seek? (Optional)"}
-                className="w-full p-4 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none bg-white bg-opacity-70"
-                disabled={loading}
-              />
-              {spread.ui?.require_question && (
-                <p className="text-xs text-gray-500 mt-1">Please enter your question to proceed</p>
-              )}
-            </div>
+            <p className="text-red-600 text-xs sm:text-sm mb-2">{error}</p>
           )}
         </div>
 
-        <div className={`grid grid-cols-${positions.length === 1 ? '1' : (positions.length === 2 ? '2' : '3')} gap-4 md:gap-8 mb-8`}>
+        <div className={`grid gap-3 sm:gap-4 md:gap-8 mb-4 sm:mb-6 md:mb-8 ${
+            positions.length === 1 ? 'grid-cols-1' : 
+            positions.length === 2 ? 'grid-cols-1 sm:grid-cols-2' : 
+            'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+          }`}>
           {Array.from({ length: spread.card_count }).map((_, index) => {
             const isSelected = selectedCards.includes(index);
             const selectionOrder = selectedCards.indexOf(index);
@@ -238,7 +247,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
                   onClick={() => handleCardClick(index)}
                   disabled={selectedCards.length === spread.card_count}
                   className={`
-                    relative w-full max-w-[200px] aspect-[2/3] rounded-xl overflow-hidden
+                    relative w-full max-w-[150px] sm:max-w-[180px] md:max-w-[200px] aspect-[2/3] rounded-xl overflow-hidden mx-auto
                     smooth-transition transform
                     ${!isSelected ? 'hover:scale-105 cursor-pointer hover:shadow-2xl' : 'scale-105'}
                     ${isSelected ? 'ring-4 ring-purple-400 ring-opacity-60' : ''}
@@ -298,7 +307,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         {selectedCards.length === spread.card_count && (
           <button
             onClick={handleGetReading}
-            disabled={loading || (spread.ui?.require_question ? !question.trim() : false)}
+            disabled={loading}
             className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
@@ -310,10 +319,18 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
                 Consulting the cards...
               </span>
             ) : (
-              "Get Your Reading"
+              "Start Reading"
             )}
           </button>
         )}
+
+        {/* Focus Modal */}
+        <FocusModal
+          isOpen={showFocusModal}
+          onClose={() => setShowFocusModal(false)}
+          onSubmit={handleFocusSubmit}
+          readingType={readingType}
+        />
 
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500">
@@ -322,5 +339,6 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         </div>
       </div>
     </div>
+    </>
   );
 }

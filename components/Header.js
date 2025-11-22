@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard } from "lucide-react";
+import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard, Coins } from "lucide-react";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -80,32 +80,39 @@ export default function Header() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
               <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <div className="flex flex-col"><span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent leading-tight">Cosmic Spiritual Guide</span></div>
+            <div className="flex flex-col"><span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent leading-tight">Cosmic Spirit Guide</span></div>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             {filteredNav.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-3 lg:px-4 py-2 rounded-lg font-medium text-xs lg:text-sm transition-all duration-200 ${
                     isActive(item.href)
                       ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
                   }`}
                 >
                   {Icon ? <Icon className="w-4 h-4" /> : null}
-                  <span>{item.name}</span>
+                  <span className="whitespace-nowrap">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-2 lg:space-x-3">
             {user ? (
               <>
+                <Link
+                  href="/pricing"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
+                >
+                  <Coins className="w-4 h-4" />
+                  <span>Get Credits</span>
+                </Link>
                 <Link
                   href="/subscription"
                   className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
@@ -148,7 +155,7 @@ export default function Header() {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
@@ -160,7 +167,7 @@ export default function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200/50 animate-fade-in">
+          <div className="lg:hidden py-4 border-t border-gray-200/50 animate-fade-in max-h-[calc(100vh-80px)] overflow-y-auto">
             <nav className="flex flex-col space-y-2">
               {filteredNav.map((item) => {
                 const Icon = item.icon;
@@ -182,6 +189,14 @@ export default function Header() {
               })}
               {user ? (
                 <>
+                  <Link
+                    href="/pricing"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                  >
+                    <Coins className="w-5 h-5" />
+                    <span>Get Credits</span>
+                  </Link>
                   <Link
                     href="/subscription"
                     onClick={() => setMobileMenuOpen(false)}

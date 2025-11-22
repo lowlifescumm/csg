@@ -70,3 +70,11 @@ cronJobs:
     command: |
       curl ${NEXT_PUBLIC_BASE_URL}/api/cron/generate-forecasts \
         -H "Authorization: Bearer ${CRON_SECRET}"
+  
+  - name: issue-free-daily-credits
+    schedule: "0 0 * * *"  # Daily at midnight
+    service: cosmic-spiritual-guide
+    command: |
+      curl -X POST ${NEXT_PUBLIC_BASE_URL}/api/credits/issue-free-daily \
+        -H "Authorization: Bearer ${CRON_SECRET}" \
+        -H "Content-Type: application/json"

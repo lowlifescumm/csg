@@ -8,7 +8,7 @@ export default function QuickTour({ onComplete }) {
   const tourSteps = [
     {
       target: "[data-tour='welcome']",
-      title: "Welcome to Cosmic Spiritual Guide!",
+      title: "Welcome to Cosmic Spirit Guide!",
       content: "This is your personal dashboard where you can access all your spiritual guidance tools.",
       position: "bottom"
     },

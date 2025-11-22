@@ -219,7 +219,7 @@ export async function GET(request) {
       
       return NextResponse.json({ 
         isPremium: false,
-        credits: {},
+        credits: null,
         history: [],
         stats: {
           totalAvailable: 0,
