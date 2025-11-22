@@ -47,12 +47,14 @@ export async function POST(request) {
 
           if (users.length > 0) {
             const userId = users[0].id;
-            const subscriptionTier = users[0].subscription_tier || 'MYSTIC_PREMIUM'; // Default tier
             
-            // Update subscription ID in users table
+            // Get tier from subscription metadata (set during checkout)
+            const tierId = subscription.metadata?.tier_id || subscription.metadata?.tier || 'MYSTIC_LITE';
+            
+            // Update subscription ID and tier in users table
             await pool.query(
-              'UPDATE users SET stripe_subscription_id = $1 WHERE id = $2',
-              [subscription.id, userId]
+              'UPDATE users SET stripe_subscription_id = $1, subscription_tier = $2 WHERE id = $3',
+              [subscription.id, tierId, userId]
             );
 
             // Initialize or reset credits for the user (legacy system)
@@ -61,7 +63,7 @@ export async function POST(request) {
             // Also issue subscription credits via new credit engine
             // Note: Monthly credits are typically issued on invoice.payment_succeeded
             // This is just for initial subscription setup
-            console.log(`[Credit Engine] Subscription ${subscription.id} activated for user ${userId}`);
+            console.log(`[Credit Engine] Subscription ${subscription.id} activated for user ${userId} with tier ${tierId}`);
           }
         }
         break;

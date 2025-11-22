@@ -3,10 +3,63 @@ import { cookies } from 'next/headers';
 import Stripe from 'stripe';
 import { verifyToken } from '@/lib/auth';
 import { getUserById, updateUserStripeInfo } from '@/lib/db';
+import { SUBSCRIPTION_TIERS, getSubscriptionTierById } from '@/lib/pricing';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 });
+
+/**
+ * Get Stripe price ID for subscription tier
+ * First checks environment variables, then searches Stripe by metadata
+ */
+async function getStripePriceId(tierId) {
+  // Check environment variables first (set after running setup script)
+  const envPriceId = process.env[`STRIPE_PRICE_ID_${tierId}`];
+  if (envPriceId) {
+    return envPriceId;
+  }
+
+  // Search Stripe for product with matching tier metadata
+  try {
+    const tier = getSubscriptionTierById(tierId);
+    if (!tier) {
+      throw new Error(`Unknown subscription tier: ${tierId}`);
+    }
+
+    // List products matching our subscription tier
+    const products = await stripe.products.list({
+      limit: 100,
+      active: true,
+      metadata: {
+        subscription_tier: tierId,
+      },
+    });
+
+    if (products.data.length === 0) {
+      throw new Error(`No Stripe product found for tier: ${tierId}. Please run the setup script first.`);
+    }
+
+    const product = products.data[0];
+    
+    // Get prices for this product
+    const prices = await stripe.prices.list({
+      product: product.id,
+      active: true,
+      type: 'recurring',
+    });
+
+    if (prices.data.length === 0) {
+      throw new Error(`No Stripe price found for product: ${product.name}`);
+    }
+
+    // Return the first recurring price
+    return prices.data[0].id;
+  } catch (error) {
+    console.error(`[Stripe] Error finding price for tier ${tierId}:`, error);
+    throw error;
+  }
+}
 
 export async function POST(request) {
   try {
@@ -24,6 +77,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Get tier from request body (defaults to MYSTIC_LITE)
+    const body = await request.json().catch(() => ({}));
+    const tierId = body.tier || 'MYSTIC_LITE';
+    const tier = getSubscriptionTierById(tierId);
+
+    if (!tier) {
+      return NextResponse.json({ error: `Invalid subscription tier: ${tierId}` }, { status: 400 });
+    }
+
     let customerId = user.stripe_customer_id;
 
     if (!customerId) {
@@ -38,6 +100,9 @@ export async function POST(request) {
       await updateUserStripeInfo(user.id, customerId, null);
     }
 
+    // Get Stripe price ID for this tier
+    const priceId = await getStripePriceId(tierId);
+
     const hostHeader = request.headers.get('host');
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (hostHeader ? `https://${hostHeader}` : 'http://localhost:5000');
 
@@ -47,30 +112,32 @@ export async function POST(request) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'Cosmic Spiritual Guide - Premium Subscription',
-              description:
-                'Monthly credits: 4 moon readings, 2 compatibility reports, 2 birth charts + unlimited tarot & transits',
-            },
-            unit_amount: 2999,
-            recurring: {
-              interval: 'month',
-            },
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
-      success_url: `${baseUrl}/subscription?success=true`,
+      subscription_data: {
+        metadata: {
+          tier_id: tierId,
+          tier_name: tier.name,
+          credits_per_month: tier.creditsPerMonth.toString(),
+          rollover_days: tier.rolloverDays.toString(),
+          report_discount_percent: tier.reportDiscountPercent.toString(),
+        },
+      },
+      success_url: `${baseUrl}/subscription?success=true&tier=${tierId}`,
       cancel_url: `${baseUrl}/subscription?canceled=true`,
       metadata: {
         userId: user.id.toString(),
+        tier_id: tierId,
       },
     });
 
     return NextResponse.json({
       checkoutUrl: session.url,
+      tier: tierId,
+      tierName: tier.name,
+      price: tier.priceInCents / 100,
     });
   } catch (error) {
     console.error('Subscription error:', error);
