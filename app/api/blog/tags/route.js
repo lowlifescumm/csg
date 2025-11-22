@@ -23,14 +23,21 @@ export async function GET() {
     `);
 
     // Get all unique tags from blog posts and insert them into blog_tags if they don't exist
+    // Use a subquery to avoid conflicts on both name and slug
     await pool.query(`
       INSERT INTO blog_tags (name, slug)
       SELECT DISTINCT 
-        unnest(tags) as name,
-        lower(replace(unnest(tags), ' ', '-')) as slug
-      FROM blog_posts 
-      WHERE tags IS NOT NULL AND array_length(tags, 1) > 0
-      ON CONFLICT (name) DO NOTHING
+        tag_name as name,
+        lower(replace(tag_name, ' ', '-')) as slug
+      FROM (
+        SELECT unnest(tags) as tag_name
+        FROM blog_posts 
+        WHERE tags IS NOT NULL AND array_length(tags, 1) > 0
+      ) AS unique_tags
+      WHERE NOT EXISTS (
+        SELECT 1 FROM blog_tags 
+        WHERE name = unique_tags.tag_name OR slug = lower(replace(unique_tags.tag_name, ' ', '-'))
+      )
     `);
 
     const query = `
