@@ -109,7 +109,7 @@ export async function POST(request) {
 
           if (renewalUsers.length > 0) {
             const userId = renewalUsers[0].id;
-            const subscriptionTier = renewalUsers[0].subscription_tier || 'MYSTIC_PREMIUM';
+            const subscriptionTier = renewalUsers[0].subscription_tier || 'MYSTIC_LITE';
             
             // Reset credits for the new billing cycle (legacy system)
             await initializeUserCredits(userId);
