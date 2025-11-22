@@ -30,9 +30,50 @@ export async function POST(request) {
     const executed = [];
 
     try {
-      // Execute each statement separately
-      const statements = migrationSQL.split(';').filter(s => s.trim());
+      // Split SQL statements properly, handling dollar-quoted strings
+      // Dollar-quoted strings use $$ markers and can contain semicolons
+      const statements = [];
+      let currentStatement = '';
+      let inDollarQuote = false;
+      let dollarQuoteTag = '';
+      const lines = migrationSQL.split('\n');
 
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        currentStatement += line + '\n';
+
+        // Check for dollar quote start/end
+        const dollarQuoteMatch = line.match(/\$([^$]*)\$/g);
+        if (dollarQuoteMatch) {
+          for (const match of dollarQuoteMatch) {
+            if (!inDollarQuote) {
+              // Starting a dollar quote
+              inDollarQuote = true;
+              dollarQuoteTag = match;
+            } else if (match === dollarQuoteTag) {
+              // Ending the dollar quote
+              inDollarQuote = false;
+              dollarQuoteTag = '';
+            }
+          }
+        }
+
+        // Only split on semicolon if not inside a dollar-quoted string
+        if (!inDollarQuote && line.trim().endsWith(';')) {
+          const statement = currentStatement.trim();
+          if (statement) {
+            statements.push(statement);
+          }
+          currentStatement = '';
+        }
+      }
+
+      // Add any remaining statement
+      if (currentStatement.trim()) {
+        statements.push(currentStatement.trim());
+      }
+
+      // Execute each statement
       for (const statement of statements) {
         if (statement.trim()) {
           try {
