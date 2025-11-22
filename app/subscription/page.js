@@ -128,7 +128,7 @@ export default function SubscriptionPage() {
                   disabled={processing}
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 >
-                  {processing ? 'Processing...' : 'Subscribe to Lite'}
+                  {processing ? 'Processing...' : `Subscribe Now - $19.99/month`}
                 </button>
               </div>
 
@@ -176,113 +176,12 @@ export default function SubscriptionPage() {
                   disabled={processing}
                   className="w-full bg-gradient-to-r from-yellow-500 via-orange-500 to-pink-500 text-white font-bold py-3 rounded-xl hover:from-yellow-600 hover:via-orange-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 >
-                  {processing ? 'Processing...' : 'Subscribe to Premium'}
+                  {processing ? 'Processing...' : `Subscribe Now - $39.99/month`}
                 </button>
               </div>
             </div>
             
-            <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white border-opacity-20 mb-8">
-              <div className="text-center mb-8">
-                <div className="text-lg text-purple-200 mb-2">All plans include:</div>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg mb-1">
-                      ⚡ Unlimited Transit Dashboard
-                    </h3>
-                    <p className="text-purple-200">Track active planetary transits affecting your birth chart with AI-powered interpretations</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg mb-1">
-                      🌙 4 Moon Reading Credits/Month
-                    </h3>
-                    <p className="text-purple-200">Get personalized lunar guidance for all major moon phases</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg mb-1">
-                      💕 2 Compatibility Report Credits/Month
-                    </h3>
-                    <p className="text-purple-200">Analyze relationships with detailed astrological compatibility insights</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg mb-1">
-                      ⭐ Unlimited Birth Charts
-                    </h3>
-                    <p className="text-purple-200">Create detailed natal charts with downloadable visualizations</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg mb-1">
-                      🔮 Unlimited Tarot Readings
-                    </h3>
-                    <p className="text-purple-200">No credit limits - read as much as you want</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg mb-1">
-                      ⭐ Priority AI Interpretations
-                    </h3>
-                    <p className="text-purple-200">Enhanced personalized guidance powered by GPT-4o-mini</p>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleSubscribe}
-                disabled={processing}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-5 rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg flex items-center justify-center gap-2"
-              >
-                {processing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-5 h-5" />
-                    Subscribe Now
-                  </>
-                )}
-              </button>
-
-              <p className="text-center text-purple-300 text-sm mt-4">
-                Secure payment powered by Stripe • Cancel anytime
-              </p>
-            </div>
-
-            <div className="text-center">
+            <div className="text-center mt-8">
               <Link
                 href="/dashboard"
                 className="text-purple-300 hover:text-white transition-colors"

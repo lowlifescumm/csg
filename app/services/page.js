@@ -291,7 +291,7 @@ export default function ServicesPage() {
                   href="/subscription"
                   className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition"
                 >
-                  Subscribe Now
+                  Subscribe Now - {formatPrice(tier.priceInCents)}/mo
                 </Link>
               </div>
             ))}
