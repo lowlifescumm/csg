@@ -403,6 +403,19 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         viewBox="0 0 1400 1000"
         className="max-w-full h-auto border-2 border-purple-200 rounded-2xl bg-white"
       >
+        {/* Site Branding */}
+        <text
+          x={centerX}
+          y="35"
+          textAnchor="middle"
+          fontSize="16"
+          fill="#8b5cf6"
+          fontWeight="600"
+          fontFamily="system-ui, -apple-system, sans-serif"
+        >
+          www.cosmicspiritguide.com
+        </text>
+        
         <circle
           cx={centerX}
           cy={centerY}
