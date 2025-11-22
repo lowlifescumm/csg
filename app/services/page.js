@@ -252,7 +252,10 @@ export default function ServicesPage() {
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">Monthly Subscriptions</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            {Object.values(SUBSCRIPTION_TIERS).filter(tier => tier.name).map((tier) => (
+            {[
+              SUBSCRIPTION_TIERS.MYSTIC_LITE,
+              SUBSCRIPTION_TIERS.MYSTIC_PREMIUM
+            ].map((tier) => (
               <div key={tier.id} className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20 relative">
                 {tier.name === 'Mystic Premium' && (
                   <div className="absolute top-4 right-4">
@@ -323,8 +326,14 @@ export default function ServicesPage() {
                 <div className="mb-4">
                   <p className="text-sm text-green-400">Turnaround: {report.turnaround}</p>
                 </div>
-                <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition">
-                  Purchase Report
+                <button 
+                  onClick={() => {
+                    // TODO: Implement premium report purchase flow
+                    alert(`${report.name}\nPrice: ${formatPrice(report.priceInCents)}\n${report.description}\n\nTurnaround: ${report.turnaround}\n\nThis feature will be available soon!`);
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition"
+                >
+                  Purchase - {formatPrice(report.priceInCents)}
                 </button>
               </div>
             ))}
