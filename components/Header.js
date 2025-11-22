@@ -59,6 +59,7 @@ export default function Header() {
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
+    { name: "Services", href: "/services", icon: Sparkles },
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, auth: true },
     { name: "Blog", href: "/blog", icon: BookOpen },
     { name: "Forecasts", href: "/forecasts", icon: Sparkles, auth: true },
