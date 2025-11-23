@@ -69,17 +69,44 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Report HTML not available' }, { status: 404 });
     }
     
-    // Return HTML with proper headers for download
-    const format = request.nextUrl?.searchParams?.get('format') || 'html';
+    // Return PDF or HTML with proper headers for download
+    const format = request.nextUrl?.searchParams?.get('format') || 'pdf';
     const filename = `cosmic-report-${result.reading_type}-${resultId}.${format === 'pdf' ? 'pdf' : 'html'}`;
     
     if (format === 'pdf') {
-      // For now, return HTML with print-to-PDF styling
-      // In production, you'd use Puppeteer or similar to generate actual PDF
+      // Check if PDF URL exists in result
+      if (result.pdf_url) {
+        // Redirect to Cloudinary PDF URL
+        return NextResponse.redirect(result.pdf_url);
+      }
+      
+      // Generate PDF on-demand if not stored
+      try {
+        const { generatePDF } = await import('@/lib/pdf-generator.js');
+        const reportType = result.reading_type;
+        const reportData = {
+          name: contentJson.name || contentJson.user_name,
+          ...contentJson,
+        };
+        
+        const pdfResult = await generatePDF(reportType, reportData, {
+          content: contentJson.content,
+          sections: contentJson.sections,
+        });
+        
+        if (pdfResult.pdfUrl) {
+          // Redirect to generated PDF
+          return NextResponse.redirect(pdfResult.pdfUrl);
+        }
+      } catch (error) {
+        console.error('[ReportDownload] PDF generation error:', error);
+      }
+      
+      // Fallback: return HTML
       return new NextResponse(html, {
         headers: {
           'Content-Type': 'text/html',
-          'Content-Disposition': `attachment; filename="${filename}"`,
+          'Content-Disposition': `attachment; filename="${filename.replace('.pdf', '.html')}"`,
         },
       });
     } else {

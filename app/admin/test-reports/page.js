@@ -160,28 +160,51 @@ export default function TestReportsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const downloadPDF = () => {
-    if (!result?.html) return;
+  const downloadPDF = async () => {
+    if (!result?.pdfUrl && !result?.html) return;
 
-    // Open HTML in new window and trigger print dialog for PDF save
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(result.html);
-      printWindow.document.close();
+    try {
+      // If PDF URL exists, download directly
+      if (result.pdfUrl) {
+        const link = document.createElement('a');
+        link.href = result.pdfUrl;
+        link.download = `test-report-${result.reportType}-${new Date().toISOString()}.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
       
-      // Wait for content to load, then trigger print dialog
-      printWindow.onload = () => {
-        setTimeout(() => {
-          printWindow.print();
-        }, 500);
-      };
+      // Otherwise, trigger PDF generation via API
+      const response = await fetch(`/api/admin/test-report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          report_type: result.reportType,
+          generate_pdf: true,
+          regenerate: true,
+        }),
+      });
       
-      // Fallback if onload doesn't fire
-      setTimeout(() => {
-        if (printWindow.document.readyState === 'complete') {
-          printWindow.print();
-        }
-      }, 1000);
+      const data = await response.json();
+      
+      if (response.ok && data.pdfUrl) {
+        const link = document.createElement('a');
+        link.href = data.pdfUrl;
+        link.download = `test-report-${result.reportType}-${new Date().toISOString()}.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert('PDF generation failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('PDF download error:', err);
+      alert('Failed to download PDF. Please try again.');
     }
   };
 
