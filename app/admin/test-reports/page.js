@@ -163,32 +163,26 @@ export default function TestReportsPage() {
   const downloadPDF = () => {
     if (!result?.html) return;
 
-    // Create a blob with HTML content
-    const blob = new Blob([result.html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    
-    // Open in new window for print-to-PDF, or download directly
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `test-report-${result.reportType}-${new Date().toISOString()}.pdf`;
-    a.target = "_blank";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    // Also open in new window so user can use browser's print-to-PDF
-    setTimeout(() => {
-      const printWindow = window.open();
-      if (printWindow) {
-        printWindow.document.write(result.html);
-        printWindow.document.close();
-        // Auto-trigger print dialog for PDF save
+    // Open HTML in new window and trigger print dialog for PDF save
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(result.html);
+      printWindow.document.close();
+      
+      // Wait for content to load, then trigger print dialog
+      printWindow.onload = () => {
         setTimeout(() => {
           printWindow.print();
         }, 500);
-      }
-    }, 100);
+      };
+      
+      // Fallback if onload doesn't fire
+      setTimeout(() => {
+        if (printWindow.document.readyState === 'complete') {
+          printWindow.print();
+        }
+      }, 1000);
+    }
   };
 
   return (
