@@ -1,26 +1,50 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Download, FileText, Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 /**
  * ReportViewer Component
- * Displays report results with download functionality
+ * Displays report results with auto-download and download functionality
  */
-export default function ReportViewer({ jobId, resultId, reportType }) {
+export default function ReportViewer({ jobId, resultId, reportType, autoDownload = true }) {
   const [job, setJob] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
+  const [autoDownloaded, setAutoDownloaded] = useState(false);
+  const hasAutoDownloaded = useRef(false);
 
   useEffect(() => {
     if (jobId) {
       fetchJobStatus();
+      // Poll for job completion if still processing
+      const interval = setInterval(() => {
+        if (job && job.state !== 'succeeded' && job.state !== 'failed') {
+          fetchJobStatus();
+        } else {
+          clearInterval(interval);
+        }
+      }, 2000); // Poll every 2 seconds
+      
+      return () => clearInterval(interval);
     } else if (resultId) {
       fetchResult();
     }
   }, [jobId, resultId]);
+
+  // Auto-download when result becomes available
+  useEffect(() => {
+    if (result && result.id && autoDownload && !hasAutoDownloaded.current) {
+      // Small delay to ensure UI is ready
+      setTimeout(() => {
+        handleDownload('pdf', true);
+        hasAutoDownloaded.current = true;
+        setAutoDownloaded(true);
+      }, 500);
+    }
+  }, [result, autoDownload]);
 
   const fetchJobStatus = async () => {
     try {
@@ -58,7 +82,7 @@ export default function ReportViewer({ jobId, resultId, reportType }) {
     }
   };
 
-  const handleDownload = async (format = 'html') => {
+  const handleDownload = async (format = 'html', silent = false) => {
     if (!result?.id) return;
     
     setDownloading(true);
@@ -74,14 +98,21 @@ export default function ReportViewer({ jobId, resultId, reportType }) {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `cosmic-report-${reportType || 'reading'}-${result.id}.${format === 'pdf' ? 'pdf' : 'html'}`;
+      link.download = `cosmic-report-${reportType || result.reading_type || 'reading'}-${result.id}.${format === 'pdf' ? 'pdf' : 'html'}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
+      
+      if (!silent) {
+        // Show success message for manual downloads
+        console.log('Download started');
+      }
     } catch (err) {
       console.error('Download error:', err);
-      alert('Failed to download report. Please try again.');
+      if (!silent) {
+        alert('Failed to download report. Please try again.');
+      }
     } finally {
       setDownloading(false);
     }
@@ -145,6 +176,12 @@ export default function ReportViewer({ jobId, resultId, reportType }) {
               Completed {new Date(result.completed_at).toLocaleDateString()}
             </p>
           )}
+          {autoDownloaded && (
+            <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+              <CheckCircle className="w-4 h-4" />
+              PDF downloaded automatically
+            </p>
+          )}
         </div>
         
         <div className="flex gap-2">
@@ -172,7 +209,7 @@ export default function ReportViewer({ jobId, resultId, reportType }) {
                 ) : (
                   <FileText className="w-4 h-4" />
                 )}
-                Download PDF
+                {autoDownloaded ? 'Download PDF Again' : 'Download PDF'}
               </button>
             </>
           )}
