@@ -30,7 +30,7 @@ export async function POST(request) {
     // }
 
     const body = await request.json();
-    const { report_type, data, generate_html = true } = body;
+    const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
 
     if (!report_type) {
       return NextResponse.json({ error: 'report_type is required' }, { status: 400 });
@@ -57,10 +57,10 @@ export async function POST(request) {
       // Regular reports
       result = await generateReportContent(report_type, sampleData, progressCallback);
       
-      if (generate_html) {
-        const html = await generatePDF(report_type, sampleData, result);
-        result.html = html.html;
-        result.pdfUrl = html.pdfUrl;
+      if (generate_html || generate_pdf) {
+        const pdfResult = await generatePDF(report_type, sampleData, result);
+        result.html = pdfResult.html;
+        result.pdfUrl = pdfResult.pdfUrl;
       }
     }
 

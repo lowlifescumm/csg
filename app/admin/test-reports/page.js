@@ -112,6 +112,7 @@ export default function TestReportsPage() {
         body: JSON.stringify({
           report_type: reportType,
           generate_html: true,
+          generate_pdf: true,
         }),
       });
 
