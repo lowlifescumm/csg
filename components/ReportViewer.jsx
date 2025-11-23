@@ -19,20 +19,26 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
   useEffect(() => {
     if (jobId) {
       fetchJobStatus();
-      // Poll for job completion if still processing
-      const interval = setInterval(() => {
-        if (job && job.state !== 'succeeded' && job.state !== 'failed') {
-          fetchJobStatus();
-        } else {
-          clearInterval(interval);
-        }
-      }, 2000); // Poll every 2 seconds
-      
-      return () => clearInterval(interval);
     } else if (resultId) {
       fetchResult();
     }
   }, [jobId, resultId]);
+
+  // Poll for job completion
+  useEffect(() => {
+    if (!jobId || !job) return;
+    
+    if (job.state === 'succeeded' || job.state === 'failed') {
+      return; // Stop polling if job is done
+    }
+    
+    // Poll every 2 seconds while job is processing
+    const interval = setInterval(() => {
+      fetchJobStatus();
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [jobId, job?.state]);
 
   // Auto-download when result becomes available
   useEffect(() => {
