@@ -123,6 +123,19 @@ export default function TestReportsPage() {
           reportType,
           ...data,
         });
+        
+        // Auto-download PDF if available
+        if (data.pdfUrl) {
+          setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = data.pdfUrl;
+            link.download = `test-report-${reportType}-${new Date().toISOString()}.pdf`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }, 500);
+        }
       } else {
         setError(data.error || "Failed to generate report");
       }
