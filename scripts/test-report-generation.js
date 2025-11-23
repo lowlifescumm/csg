@@ -16,15 +16,22 @@
  *   node scripts/test-report-generation.js premium-master
  */
 
-require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') });
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+import { createRequire } from 'module';
 
-// Use dynamic imports for ES modules
-async function loadModules() {
-  const { generateReportContent, generatePDF, generatePremiumReport } = await import('../lib/pdf-generator.js');
-  const { getPromptByType } = await import('../lib/report-prompts.js');
-  const { generateText } = await import('../lib/openai.js');
-  return { generateReportContent, generatePDF, generatePremiumReport, getPromptByType, generateText };
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
+
+// Load environment variables
+dotenv.config({ path: resolve(__dirname, '../.env.local') });
+
+// Import ES modules
+import { generateReportContent, generatePDF, generatePremiumReport } from '../lib/pdf-generator.js';
+import { getPromptByType } from '../lib/report-prompts.js';
+import { generateText } from '../lib/openai.js';
 
 // Sample test data
 const SAMPLE_DATA = {
@@ -212,9 +219,6 @@ async function testReport(reportType) {
   console.log(`\n🔮 Testing ${reportType} report generation...\n`);
 
   try {
-    // Load ES modules
-    const { generateReportContent, generatePDF, generatePremiumReport } = await loadModules();
-    
     const progressCallback = (percent, message) => {
       process.stdout.write(`\r   [${percent}%] ${message}`);
     };
@@ -255,22 +259,20 @@ async function testReport(reportType) {
       console.log(`   Sections: ${result.sections.length}`);
 
       // Generate HTML preview
-      const { generatePDF } = await loadModules();
       const html = await generatePDF(mappedType, data, result);
       console.log(`   HTML length: ${html.html.length} characters`);
     }
 
     // Save to file for review
     const fs = require('fs');
-    const path = require('path');
-    const outputDir = path.join(__dirname, '../test-reports');
+    const outputDir = resolve(__dirname, '../test-reports');
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${reportType}-${timestamp}.txt`;
-    const filepath = path.join(outputDir, filename);
+    const filepath = resolve(outputDir, filename);
 
     const content = result.content || result.sections.map(s => `${s.title}\n\n${s.content}`).join('\n\n---\n\n');
     fs.writeFileSync(filepath, content, 'utf8');

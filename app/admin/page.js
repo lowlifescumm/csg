@@ -183,6 +183,17 @@ export default function AdminDashboard() {
                 <p className="text-sm opacity-90">Configure site options</p>
               </div>
             </button>
+            
+            <button
+              onClick={() => router.push('/admin/test-reports')}
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:from-indigo-600 hover:to-purple-600 smooth-transition hover:scale-[1.02] apple-shadow"
+            >
+              <FileText className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">Test Reports</p>
+                <p className="text-sm opacity-90">Generate and verify report quality</p>
+              </div>
+            </button>
           </div>
         </div>
 

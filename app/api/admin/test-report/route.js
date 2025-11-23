@@ -17,11 +17,17 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request) {
   try {
-    // Authenticate user
+    // Authenticate user - allow admin or authenticated users for testing
     const authResult = await getAuthenticatedUser(request.cookies, authOptions);
-    if (!authResult || authResult.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 401 });
+    if (!authResult) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
+    // For production, restrict to admin only. For testing, you might want to allow your own account
+    // Uncomment the line below to restrict to admin only:
+    // if (authResult.role !== 'admin') {
+    //   return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
+    // }
 
     const body = await request.json();
     const { report_type, data, generate_html = true } = body;
