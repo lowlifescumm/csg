@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Download, FileText, Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 /**
@@ -90,41 +90,6 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
     }
   };
 
-  const handleDownload = async (format = 'html', silent = false) => {
-    if (!result?.id) return;
-    
-    setDownloading(true);
-    try {
-      const url = `/api/reports/${result.id}/download${format === 'pdf' ? '?format=pdf' : ''}`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error('Failed to download report');
-      }
-      
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `cosmic-report-${reportType || result.reading_type || 'reading'}-${result.id}.${format === 'pdf' ? 'pdf' : 'html'}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
-      
-      if (!silent) {
-        // Show success message for manual downloads
-        console.log('Download started');
-      }
-    } catch (err) {
-      console.error('Download error:', err);
-      if (!silent) {
-        alert('Failed to download report. Please try again.');
-      }
-    } finally {
-      setDownloading(false);
-    }
-  };
 
   if (loading) {
     return (
