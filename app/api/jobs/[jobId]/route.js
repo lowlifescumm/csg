@@ -66,6 +66,8 @@ export async function GET(request, { params }) {
         status: result.status,
         content_json: result.content_json,
         pdf_url: result.pdf_url,
+        download_url: result.id ? `/api/reports/${result.id}/download` : null,
+        html_url: result.id ? `/api/reports/${result.id}/download?format=html` : null,
         progress_percent: result.progress_percent,
         progress_message: result.progress_message,
         error_message: result.error_message,

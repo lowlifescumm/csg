@@ -1,0 +1,234 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { Download, FileText, Loader2, CheckCircle, XCircle } from 'lucide-react';
+
+/**
+ * ReportViewer Component
+ * Displays report results with download functionality
+ */
+export default function ReportViewer({ jobId, resultId, reportType }) {
+  const [job, setJob] = useState(null);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    if (jobId) {
+      fetchJobStatus();
+    } else if (resultId) {
+      fetchResult();
+    }
+  }, [jobId, resultId]);
+
+  const fetchJobStatus = async () => {
+    try {
+      const res = await fetch(`/api/jobs/${jobId}`);
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch job status');
+      }
+      
+      setJob(data.job);
+      setResult(data.result);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchResult = async () => {
+    try {
+      // Fetch result directly if we have resultId
+      const res = await fetch(`/api/jobs/${resultId}`);
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch result');
+      }
+      
+      setResult(data.result);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async (format = 'html') => {
+    if (!result?.id) return;
+    
+    setDownloading(true);
+    try {
+      const url = `/api/reports/${result.id}/download${format === 'pdf' ? '?format=pdf' : ''}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Failed to download report');
+      }
+      
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `cosmic-report-${reportType || 'reading'}-${result.id}.${format === 'pdf' ? 'pdf' : 'html'}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error('Download error:', err);
+      alert('Failed to download report. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+        <span className="ml-2 text-gray-600">Loading report...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-red-800">
+          <XCircle className="w-5 h-5" />
+          <span>{error}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (job && job.state !== 'succeeded' && !result) {
+    return (
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-blue-800">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span>
+            {job.progress_message || `Processing... ${job.progress_percent || 0}%`}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!result) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <p className="text-gray-600">No report available yet.</p>
+      </div>
+    );
+  }
+
+  const contentJson = typeof result.content_json === 'string' 
+    ? JSON.parse(result.content_json) 
+    : result.content_json;
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      {/* Header with download buttons */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {getReportTitle(reportType || result.reading_type)}
+          </h2>
+          {result.completed_at && (
+            <p className="text-sm text-gray-500 mt-1">
+              Completed {new Date(result.completed_at).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+        
+        <div className="flex gap-2">
+          {(result.download_url || result.id) && (
+            <>
+              <button
+                onClick={() => handleDownload('html')}
+                disabled={downloading}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {downloading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Download HTML
+              </button>
+              <button
+                onClick={() => handleDownload('pdf')}
+                disabled={downloading}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {downloading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4" />
+                )}
+                Download PDF
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Report Content Preview */}
+      <div className="prose max-w-none">
+        {contentJson.sections && Array.isArray(contentJson.sections) ? (
+          <div className="space-y-6">
+            {contentJson.sections.map((section, idx) => (
+              <div key={idx} className="border-l-4 border-purple-500 pl-4">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  {section.title || section.type || `Section ${idx + 1}`}
+                </h3>
+                <div className="text-gray-700 whitespace-pre-wrap">
+                  {section.content?.content || section.content || ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : contentJson.content ? (
+          <div className="text-gray-700 whitespace-pre-wrap">
+            {contentJson.content}
+          </div>
+        ) : (
+          <p className="text-gray-500 italic">Report content is being processed...</p>
+        )}
+      </div>
+
+      {/* Status Badge */}
+      <div className="mt-6 pt-4 border-t">
+        <div className="flex items-center gap-2 text-sm">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          <span className="text-gray-600">
+            Status: {result.status || 'completed'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getReportTitle(reportType) {
+  const titles = {
+    'tarot': 'Tarot Reading',
+    'moon_reading': 'Moon Phase Reading',
+    'birth_chart': 'Birth Chart Analysis',
+    'compatibility': 'Compatibility Report',
+    'transit_forecast_short': 'Short-Term Forecast',
+    'transit_forecast_extended': 'Extended Forecast',
+    'ESSENTIAL': 'Essential Report',
+    'ADVANCED': 'Advanced Report',
+    'MASTER': 'Master Report',
+  };
+  
+  return titles[reportType] || 'Spiritual Reading';
+}
+
