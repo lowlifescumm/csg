@@ -160,6 +160,37 @@ export default function TestReportsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const downloadPDF = () => {
+    if (!result?.html) return;
+
+    // Create a blob with HTML content
+    const blob = new Blob([result.html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    
+    // Open in new window for print-to-PDF, or download directly
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `test-report-${result.reportType}-${new Date().toISOString()}.pdf`;
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Also open in new window so user can use browser's print-to-PDF
+    setTimeout(() => {
+      const printWindow = window.open();
+      if (printWindow) {
+        printWindow.document.write(result.html);
+        printWindow.document.close();
+        // Auto-trigger print dialog for PDF save
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
       {/* Header */}
@@ -264,7 +295,7 @@ export default function TestReportsPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setViewingContent(!viewingContent)}
                   className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition"
@@ -280,13 +311,22 @@ export default function TestReportsPage() {
                   Download TXT
                 </button>
                 {result.html && (
-                  <button
-                    onClick={downloadHTML}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download HTML
-                  </button>
+                  <>
+                    <button
+                      onClick={downloadHTML}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download HTML
+                    </button>
+                    <button
+                      onClick={downloadPDF}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Download PDF
+                    </button>
+                  </>
                 )}
               </div>
             </div>
