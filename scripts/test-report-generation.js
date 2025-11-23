@@ -17,9 +17,14 @@
  */
 
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') });
-const { generateReportContent, generatePDF, generatePremiumReport } = require('../lib/pdf-generator.js');
-const { getPromptByType } = require('../lib/report-prompts.js');
-const { generateText } = require('../lib/openai.js');
+
+// Use dynamic imports for ES modules
+async function loadModules() {
+  const { generateReportContent, generatePDF, generatePremiumReport } = await import('../lib/pdf-generator.js');
+  const { getPromptByType } = await import('../lib/report-prompts.js');
+  const { generateText } = await import('../lib/openai.js');
+  return { generateReportContent, generatePDF, generatePremiumReport, getPromptByType, generateText };
+}
 
 // Sample test data
 const SAMPLE_DATA = {
@@ -207,6 +212,9 @@ async function testReport(reportType) {
   console.log(`\n🔮 Testing ${reportType} report generation...\n`);
 
   try {
+    // Load ES modules
+    const { generateReportContent, generatePDF, generatePremiumReport } = await loadModules();
+    
     const progressCallback = (percent, message) => {
       process.stdout.write(`\r   [${percent}%] ${message}`);
     };
@@ -247,6 +255,7 @@ async function testReport(reportType) {
       console.log(`   Sections: ${result.sections.length}`);
 
       // Generate HTML preview
+      const { generatePDF } = await loadModules();
       const html = await generatePDF(mappedType, data, result);
       console.log(`   HTML length: ${html.html.length} characters`);
     }
