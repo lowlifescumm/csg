@@ -44,13 +44,15 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
   useEffect(() => {
     if (result && result.id && autoDownload && !hasAutoDownloaded.current) {
       // Small delay to ensure UI is ready
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         handleDownload('pdf', true);
         hasAutoDownloaded.current = true;
         setAutoDownloaded(true);
       }, 500);
+      
+      return () => clearTimeout(timer);
     }
-  }, [result, autoDownload]);
+  }, [result?.id, autoDownload]);
 
   const fetchJobStatus = async () => {
     try {
