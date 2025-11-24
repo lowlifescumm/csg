@@ -120,7 +120,62 @@ export async function GET(req) {
       ascendant: natalChart.ascendant,
     };
 
-    // Use transits with exact dates
+    // Calculate premium data points for transits
+    const { calculateTransitsToHouseCusps, calculateProgressedChart, calculateExactTime } = await import('@/lib/transit-engine.js');
+    
+    // Calculate transits to house cusps
+    const cuspTransits = await calculateTransitsToHouseCusps({
+      natal_positions: natalChart.natal_positions,
+      houses: natalChart.houses
+    }).catch(() => []);
+    
+    // Calculate progressed chart (need birth date from natal chart)
+    const birthDate = natalChart.birth_date || new Date();
+    const progressedChart = calculateProgressedChart(
+      {
+        planets: natalChart.natal_positions,
+        houses: natalChart.houses
+      },
+      birthDate
+    );
+    
+    const activeTransits = calculateActiveTransits(userBirthChart);
+    
+    // Add exact dates to active transits (premium data point)
+    function formatDate(date) {
+      if (!date) return null;
+      const d = new Date(date);
+      const months = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+      return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    }
+    
+    const transitsWithExactDates = await Promise.all(
+      activeTransits.map(async (transit) => {
+        if (transit.aspect === 'conjunction' && transit.orb < 5) {
+          try {
+            const transitBody = transit.transitPlanet.charAt(0).toUpperCase() + transit.transitPlanet.slice(1);
+            const natalLong = userBirthChart.planets[transit.natalPlanet].longitude;
+            const exactDate = await calculateExactTime(
+              transitBody,
+              natalLong,
+              0, // Conjunction
+              new Date(),
+              90
+            );
+            return {
+              ...transit,
+              exactDate: exactDate,
+              exactDateFormatted: exactDate ? formatDate(exactDate) : null
+            };
+          } catch (error) {
+            return transit;
+          }
+        }
+        return transit;
+      })
+    );
+    
     const enrichedTransits = transitsWithExactDates.map((transit) => {
       const aspectNature = getAspectNature(transit.aspect);
       const affectedArea = getAffectedArea(transit.natalPlanet, transit.affectedHouse);
@@ -149,8 +204,8 @@ export async function GET(req) {
     });
 
     const currentPositions = getCurrentPlanetaryPositions();
-    const avgIntensity = activeTransits.length > 0
-      ? Math.round(activeTransits.reduce((sum, t) => sum + t.intensity, 0) / activeTransits.length)
+    const avgIntensity = transitsWithExactDates.length > 0
+      ? Math.round(transitsWithExactDates.reduce((sum, t) => sum + (t.intensity || 0), 0) / transitsWithExactDates.length)
       : 0;
 
     return NextResponse.json({
