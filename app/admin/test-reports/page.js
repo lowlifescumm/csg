@@ -90,12 +90,199 @@ const REPORT_TYPES = [
   },
 ];
 
+const SAMPLE_DATA = {
+  tarot: {
+    name: "Test User",
+    card_spread: [
+      { card: "The High Priestess", position: "Present", orientation: "Upright" },
+      { card: "The Tower", position: "Challenge", orientation: "Reversed" },
+      { card: "The Star", position: "Future", orientation: "Upright" },
+    ],
+  },
+  moon_reading: {
+    name: "Test User",
+    moon_phase: "Waxing Crescent",
+    phase_energy: "Growth and intention setting",
+    sun_sign: "Gemini",
+    moon_sign: "Pisces",
+  },
+  birth_chart: {
+    name: "Test User",
+    birth_date: "1980-03-09",
+    birth_time: "16:21",
+    location: "Santa Cruz, CA",
+    latitude: 36.9741,
+    longitude: -122.0308,
+    sun: "Gemini",
+    moon: "Pisces",
+    rising: "Sagittarius",
+    planets: {},
+    houses: {},
+    aspects: [],
+  },
+  compatibility: {
+    user: {
+      name: "Person One",
+      birth_date: "1990-05-21",
+      birth_time: "09:45",
+      location: "New York, NY",
+    },
+    partner: {
+      name: "Person Two",
+      birth_date: "1992-11-12",
+      birth_time: "18:30",
+      location: "Los Angeles, CA",
+    },
+    aspects: [],
+    compatibility_score: 82,
+  },
+  transit_forecast_short: {
+    name: "Test User",
+    date_range: "Feb 4–Feb 18, 2025",
+    transits: [
+      { aspect: "Mars trine Sun", date: "Feb 6", description: "Energy boost" },
+      { aspect: "Mercury square Saturn", date: "Feb 9", description: "Communication challenges" },
+    ],
+  },
+  transit_forecast_extended: {
+    name: "Test User",
+    date_range: "Feb 1–Apr 30, 2025",
+    transits: [
+      { aspect: "Mars trine Sun", date: "Feb 6" },
+      { aspect: "Saturn return begins", date: "Mar 15" },
+    ],
+  },
+  ESSENTIAL: {
+    name: "Test User",
+    tarot_data: {
+      name: "Test User",
+      card_spread: [{ card: "The High Priestess", position: "Present", orientation: "Upright" }],
+    },
+    moon_data: {
+      name: "Test User",
+      moon_phase: "Waxing Crescent",
+      phase_energy: "Growth",
+      sun_sign: "Gemini",
+      moon_sign: "Pisces",
+    },
+    transit_data: {
+      name: "Test User",
+      date_range: "Feb 4–Feb 18, 2025",
+      transits: [{ aspect: "Mars trine Sun", date: "Feb 6" }],
+    },
+  },
+  ADVANCED: {
+    name: "Test User",
+    birth_chart_data: {
+      name: "Test User",
+      birth_date: "1980-03-09",
+      birth_time: "16:21",
+      location: "Santa Cruz, CA",
+      latitude: 36.9741,
+      longitude: -122.0308,
+      sun: "Gemini",
+      moon: "Pisces",
+      rising: "Sagittarius",
+      planets: {},
+      houses: {},
+      aspects: [],
+    },
+    compatibility_data: {
+      user: {
+        name: "Person One",
+        birth_date: "1990-05-21",
+        birth_time: "09:45",
+        location: "New York, NY",
+      },
+      partner: {
+        name: "Person Two",
+        birth_date: "1992-11-12",
+        birth_time: "18:30",
+        location: "Los Angeles, CA",
+      },
+      aspects: [],
+      compatibility_score: 82,
+    },
+    transit_data: {
+      name: "Test User",
+      date_range: "Feb 1–Apr 30, 2025",
+      transits: [],
+    },
+  },
+  MASTER: {
+    name: "Test User",
+    birth_chart_data: {
+      name: "Test User",
+      birth_date: "1980-03-09",
+      birth_time: "16:21",
+      location: "Santa Cruz, CA",
+      latitude: 36.9741,
+      longitude: -122.0308,
+      sun: "Gemini",
+      moon: "Pisces",
+      rising: "Sagittarius",
+      planets: {},
+      houses: {},
+      aspects: [],
+    },
+    compatibility_data: {
+      user: {
+        name: "Person One",
+        birth_date: "1990-05-21",
+        birth_time: "09:45",
+        location: "New York, NY",
+      },
+      partner: {
+        name: "Person Two",
+        birth_date: "1992-11-12",
+        birth_time: "18:30",
+        location: "Los Angeles, CA",
+      },
+      aspects: [],
+      compatibility_score: 82,
+    },
+    transit_data: {
+      name: "Test User",
+      date_range: "Feb 1–Apr 30, 2025",
+      transits: [],
+    },
+    destiny_data: {
+      cycle_name: "Saturn Return",
+      start_date: "2024-07-01",
+      end_date: "2026-02-14",
+      themes: ["Responsibility", "Transformation"],
+    },
+    matrix_data: {
+      pair: {
+        user: { sun: "Gemini" },
+        partner: { sun: "Scorpio" },
+      },
+      matrix_scores: {
+        emotional: 78,
+        communication: 64,
+        spiritual: 85,
+        stability: 71,
+        physical: 88,
+      },
+    },
+    karmic_data: {
+      placements: {},
+      aspects: [],
+      nodes: { north_node: "Aries", south_node: "Libra" },
+    },
+  },
+};
+
 export default function TestReportsPage() {
   const router = useRouter();
   const [testing, setTesting] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [viewingContent, setViewingContent] = useState(false);
+  const [customDataInputs, setCustomDataInputs] = useState({});
+  const [customDataMap, setCustomDataMap] = useState({});
+  const [editingReport, setEditingReport] = useState(null);
+  const [customDataError, setCustomDataError] = useState(null);
 
   const handleTestReport = async (reportType) => {
     setTesting(reportType);
@@ -104,6 +291,11 @@ export default function TestReportsPage() {
     setViewingContent(false);
 
     try {
+      let parsedCustomData = null;
+      if (customDataMap[reportType]) {
+        parsedCustomData = customDataMap[reportType];
+      }
+
       const response = await fetch("/api/admin/test-report", {
         method: "POST",
         headers: {
@@ -113,6 +305,7 @@ export default function TestReportsPage() {
           report_type: reportType,
           generate_html: true,
           generate_pdf: true,
+          ...(parsedCustomData ? { data: parsedCustomData } : {}),
         }),
       });
 
@@ -222,6 +415,50 @@ export default function TestReportsPage() {
     }
   };
 
+  const openCustomDataEditor = (reportId) => {
+    if (!customDataInputs[reportId]) {
+      const sample = SAMPLE_DATA[reportId] || SAMPLE_DATA[reportId?.toUpperCase()] || {};
+      setCustomDataInputs((prev) => ({
+        ...prev,
+        [reportId]: JSON.stringify(sample, null, 2),
+      }));
+    }
+    setCustomDataError(null);
+    setEditingReport(reportId);
+  };
+
+  const handleSaveCustomData = () => {
+    if (!editingReport) return;
+    try {
+      const parsed = JSON.parse(customDataInputs[editingReport] || "{}");
+      setCustomDataMap((prev) => ({
+        ...prev,
+        [editingReport]: parsed,
+      }));
+      setCustomDataError(null);
+      setEditingReport(null);
+    } catch (err) {
+      setCustomDataError(err.message);
+    }
+  };
+
+  const handleRemoveCustomData = (reportId) => {
+    setCustomDataMap((prev) => {
+      const updated = { ...prev };
+      delete updated[reportId];
+      return updated;
+    });
+    setCustomDataInputs((prev) => {
+      const updated = { ...prev };
+      delete updated[reportId];
+      return updated;
+    });
+    if (editingReport === reportId) {
+      setEditingReport(null);
+      setCustomDataError(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
       {/* Header */}
@@ -252,12 +489,11 @@ export default function TestReportsPage() {
             {REPORT_TYPES.filter((r) => !r.premium).map((report) => {
               const Icon = report.icon;
               const isTesting = testing === report.id;
+              const hasCustomData = Boolean(customDataMap[report.id]);
               return (
-                <button
+                <div
                   key={report.id}
-                  onClick={() => handleTestReport(report.id)}
-                  disabled={isTesting || testing !== null}
-                  className={`relative bg-gradient-to-r ${report.color} text-white rounded-xl p-6 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-left group`}
+                  className={`relative bg-gradient-to-r ${report.color} text-white rounded-xl p-6 hover:shadow-lg transition-all text-left group`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <Icon className="w-8 h-8" />
@@ -267,7 +503,28 @@ export default function TestReportsPage() {
                   </div>
                   <h3 className="font-semibold text-lg mb-1">{report.name}</h3>
                   <p className="text-sm text-white/80">{report.description}</p>
-                </button>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleTestReport(report.id)}
+                      disabled={isTesting || testing !== null}
+                      className="px-4 py-2 bg-white/20 rounded-lg text-sm font-medium hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isTesting ? "Generating..." : "Generate Report"}
+                    </button>
+                    <button
+                      onClick={() => openCustomDataEditor(report.id)}
+                      disabled={testing !== null && testing !== report.id}
+                      className="px-4 py-2 bg-white/10 rounded-lg text-sm font-medium hover:bg-white/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {hasCustomData ? "Edit Data" : "Customize Data"}
+                    </button>
+                    {hasCustomData && (
+                      <span className="inline-flex items-center px-2 py-1 text-xs bg-white/20 rounded-full">
+                        Custom data set
+                      </span>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -280,12 +537,11 @@ export default function TestReportsPage() {
             {REPORT_TYPES.filter((r) => r.premium).map((report) => {
               const Icon = report.icon;
               const isTesting = testing === report.id;
+              const hasCustomData = Boolean(customDataMap[report.id]);
               return (
-                <button
+                <div
                   key={report.id}
-                  onClick={() => handleTestReport(report.id)}
-                  disabled={isTesting || testing !== null}
-                  className={`relative bg-gradient-to-r ${report.color} text-white rounded-xl p-6 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-left group border-2 border-yellow-400/50`}
+                  className={`relative bg-gradient-to-r ${report.color} text-white rounded-xl p-6 hover:shadow-lg transition-all text-left group border-2 border-yellow-400/50`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <Icon className="w-8 h-8" />
@@ -295,7 +551,28 @@ export default function TestReportsPage() {
                   </div>
                   <h3 className="font-semibold text-lg mb-1">{report.name}</h3>
                   <p className="text-sm text-white/80">{report.description}</p>
-                </button>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleTestReport(report.id)}
+                      disabled={isTesting || testing !== null}
+                      className="px-4 py-2 bg-white/20 rounded-lg text-sm font-medium hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isTesting ? "Generating..." : "Generate Report"}
+                    </button>
+                    <button
+                      onClick={() => openCustomDataEditor(report.id)}
+                      disabled={testing !== null && testing !== report.id}
+                      className="px-4 py-2 bg-white/10 rounded-lg text-sm font-medium hover:bg-white/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {hasCustomData ? "Edit Data" : "Customize Data"}
+                    </button>
+                    {hasCustomData && (
+                      <span className="inline-flex items-center px-2 py-1 text-xs bg-white/20 rounded-full">
+                        Custom data set
+                      </span>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -404,6 +681,71 @@ export default function TestReportsPage() {
           </div>
         )}
 
+        {/* Custom Data Editor */}
+        {editingReport && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Customize Data – {reportIdToName(editingReport)}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Paste or modify the JSON payload that will be sent to the generator.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setEditingReport(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  JSON Input
+                </label>
+                <textarea
+                  value={customDataInputs[editingReport] || ""}
+                  onChange={(e) =>
+                    setCustomDataInputs((prev) => ({
+                      ...prev,
+                      [editingReport]: e.target.value,
+                    }))
+                  }
+                  className="w-full h-72 border border-gray-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="{ ... }"
+                />
+                {customDataError && (
+                  <p className="mt-2 text-sm text-red-600">{customDataError}</p>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-3 justify-between items-center">
+                <button
+                  onClick={() => handleRemoveCustomData(editingReport)}
+                  className="text-sm text-red-600 hover:text-red-700"
+                >
+                  Remove custom data
+                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditingReport(null)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveCustomData}
+                    className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
+                  >
+                    Save & Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Instructions */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-2">Quality Checklist</h3>
@@ -433,5 +775,10 @@ export default function TestReportsPage() {
       </div>
     </div>
   );
+}
+
+function reportIdToName(reportId) {
+  const match = REPORT_TYPES.find((report) => report.id === reportId);
+  return match ? match.name : reportId;
 }
 
