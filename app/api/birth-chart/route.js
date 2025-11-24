@@ -228,24 +228,59 @@ export async function GET(req) {
 
     const savedChart = result.rows[0];
 
-    // Parse chart data
+    // Parse chart data (include premium data points)
     let chartData;
     if (savedChart.natal_positions) {
-      // New format
+      // New format - extract premium data from natal_positions._premium_data
+      const natalPositions = typeof savedChart.natal_positions === 'string' 
+        ? JSON.parse(savedChart.natal_positions) 
+        : savedChart.natal_positions;
+      
+      const premiumData = natalPositions._premium_data || {};
+      
+      // Extract planets (excluding _premium_data)
+      const planets = { ...natalPositions };
+      delete planets._premium_data;
+      
+      const houses = typeof savedChart.houses === 'string' 
+        ? JSON.parse(savedChart.houses) 
+        : savedChart.houses;
+      
+      const aspects = typeof savedChart.aspects === 'string' 
+        ? JSON.parse(savedChart.aspects) 
+        : savedChart.aspects;
+      
       chartData = {
-        planets: savedChart.natal_positions,
-        houses: savedChart.houses,
-        aspects: savedChart.aspects,
+        planets,
+        houses: houses || {},
+        aspects: aspects?.all || aspects || [],
         ascendant: savedChart.ascendant,
         midheaven: savedChart.midheaven,
-        distribution: savedChart.distribution,
-        partOfFortune: savedChart.part_of_fortune,
-        chartRuler: savedChart.chart_ruler
+        distribution: savedChart.distribution ? (typeof savedChart.distribution === 'string' ? JSON.parse(savedChart.distribution) : savedChart.distribution) : null,
+        partOfFortune: savedChart.part_of_fortune ? (typeof savedChart.part_of_fortune === 'string' ? JSON.parse(savedChart.part_of_fortune) : savedChart.part_of_fortune) : null,
+        chartRuler: savedChart.chart_ruler,
+        // Include premium data points
+        planetSignHouseCombinations: premiumData.planetSignHouseCombinations || [],
+        houseCuspsDetailed: premiumData.houseCuspsDetailed || houses?._cusps_detailed || [],
+        chartRulerLocation: premiumData.chartRulerLocation || null,
+        majorAspects: premiumData.majorAspects || aspects?.major || [],
+        midpoints: premiumData.midpoints || []
       };
     } else {
-      // Old format - recalculate
+      // Old format - recalculate (will include premium data points)
       const chart = savedChart.chart_data;
       chartData = typeof chart === 'string' ? JSON.parse(chart) : chart;
+      
+      // If old format doesn't have premium data, recalculate
+      if (!chartData.planetSignHouseCombinations) {
+        const { calculateBirthChart } = await import('@/lib/astrology.js');
+        chartData = calculateBirthChart(
+          savedChart.birth_date,
+          savedChart.birth_time,
+          savedChart.latitude,
+          savedChart.longitude
+        );
+      }
     }
 
     return NextResponse.json({

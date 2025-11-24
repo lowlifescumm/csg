@@ -235,30 +235,56 @@ export async function GET(req) {
       [userId]
     );
 
-    // Format response
-    const charts = rows.map(row => ({
-      id: row.id,
-      chartName: row.chart_name,
-      isPrimary: row.is_primary,
-      birthInfo: {
-        date: row.birth_date,
-        time: row.birth_time,
-        timezone: row.timezone,
-        location: {
-          name: row.location_name,
-          latitude: row.latitude,
-          longitude: row.longitude
-        }
-      },
-      chartData: {
-        planets: row.natal_positions,
-        houses: row.houses,
-        ascendant: row.ascendant,
-        midheaven: row.midheaven
-      },
-      createdAt: row.created_at,
-      updatedAt: row.updated_at
-    }));
+    // Format response (include premium data points)
+    const charts = rows.map(row => {
+      const natalPositions = typeof row.natal_positions === 'string' 
+        ? JSON.parse(row.natal_positions) 
+        : row.natal_positions;
+      
+      const premiumData = natalPositions._premium_data || {};
+      
+      // Extract planets (excluding _premium_data)
+      const planets = { ...natalPositions };
+      delete planets._premium_data;
+      
+      const houses = typeof row.houses === 'string' 
+        ? JSON.parse(row.houses) 
+        : row.houses;
+      
+      const aspects = typeof row.aspects === 'string' 
+        ? JSON.parse(row.aspects) 
+        : row.aspects;
+      
+      return {
+        id: row.id,
+        chartName: row.chart_name,
+        isPrimary: row.is_primary,
+        birthInfo: {
+          date: row.birth_date,
+          time: row.birth_time,
+          timezone: row.timezone,
+          location: {
+            name: row.location_name,
+            latitude: row.latitude,
+            longitude: row.longitude
+          }
+        },
+        chartData: {
+          planets,
+          houses: houses || {},
+          ascendant: row.ascendant,
+          midheaven: row.midheaven,
+          // Include premium data points
+          planetSignHouseCombinations: premiumData.planetSignHouseCombinations || [],
+          houseCuspsDetailed: premiumData.houseCuspsDetailed || houses?._cusps_detailed || [],
+          chartRulerLocation: premiumData.chartRulerLocation || null,
+          majorAspects: premiumData.majorAspects || aspects?.major || [],
+          midpoints: premiumData.midpoints || []
+        },
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
+    });
 
     return NextResponse.json({
       success: true,
