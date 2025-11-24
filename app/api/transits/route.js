@@ -120,8 +120,8 @@ export async function GET(req) {
       ascendant: natalChart.ascendant,
     };
 
-    const activeTransits = calculateActiveTransits(userBirthChart);
-    const enrichedTransits = activeTransits.map((transit) => {
+    // Use transits with exact dates
+    const enrichedTransits = transitsWithExactDates.map((transit) => {
       const aspectNature = getAspectNature(transit.aspect);
       const affectedArea = getAffectedArea(transit.natalPlanet, transit.affectedHouse);
       const color = getTransitColor(transit.intensity, aspectNature);
