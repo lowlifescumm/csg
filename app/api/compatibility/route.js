@@ -89,11 +89,31 @@ export async function POST(request) {
        RETURNING id`,
       [
         userId,
-        JSON.stringify(chart1),
-        JSON.stringify(chart2),
+        JSON.stringify({
+          ...chart1,
+          // Include premium data points in chart1_data
+          _premium_data: {
+            synastryAspects: result.synastryAspects || [],
+            houseOverlays: result.houseOverlays || [],
+            compositeChart: result.compositeChart || null
+          }
+        }),
+        JSON.stringify({
+          ...chart2,
+          // Include premium data points reference in chart2_data
+          _premium_data_ref: true
+        }),
         person1Name || 'Person 1',
         person2Name || 'Person 2',
-        JSON.stringify(result.scores),
+        JSON.stringify({
+          ...result.scores,
+          // Include premium data in scores JSONB
+          _premium_data: {
+            synastryAspects: result.synastryAspects || [],
+            houseOverlays: result.houseOverlays || [],
+            compositeChart: result.compositeChart || null
+          }
+        }),
         result.report
       ]
     );
@@ -104,7 +124,11 @@ export async function POST(request) {
       success: true,
       scores: result.scores,
       report: result.report,
-      insights: result.insights
+      insights: result.insights,
+      // Include premium data points in response
+      synastryAspects: result.synastryAspects,
+      houseOverlays: result.houseOverlays,
+      compositeChart: result.compositeChart
     });
 
   } catch (error) {
