@@ -27,20 +27,22 @@ async function getStripePriceId(tierId) {
       throw new Error(`Unknown subscription tier: ${tierId}`);
     }
 
-    // List products matching our subscription tier
+    // List all active products (Stripe doesn't support metadata filtering in list())
     const products = await stripe.products.list({
       limit: 100,
       active: true,
-      metadata: {
-        subscription_tier: tierId,
-      },
     });
 
-    if (products.data.length === 0) {
+    // Filter products by metadata to find the matching tier
+    const matchingProduct = products.data.find(
+      (p) => p.metadata && p.metadata.subscription_tier === tierId
+    );
+
+    if (!matchingProduct) {
       throw new Error(`No Stripe product found for tier: ${tierId}. Please run the setup script first.`);
     }
 
-    const product = products.data[0];
+    const product = matchingProduct;
     
     // Get prices for this product
     const prices = await stripe.prices.list({
