@@ -88,7 +88,7 @@ export async function POST(req) {
 
     // Save to both tables for compatibility
     
-    // 1. Save to old birth_charts table
+    // 1. Save to old birth_charts table (includes all premium data points in chart_data JSON)
     const oldResult = await pool.query(
       `INSERT INTO birth_charts 
         (user_id, birth_date, birth_time, location, latitude, longitude, chart_data, interpretation)
@@ -96,9 +96,13 @@ export async function POST(req) {
        RETURNING id`,
       [userId, date, time, location, latitude, longitude, JSON.stringify(chartData), interpretation]
     );
+    // Note: chartData now includes: planetSignHouseCombinations, houseCuspsDetailed, 
+    // chartRulerLocation, majorAspects, midpoints - all stored in chart_data JSON
 
     // 2. Save to new natal_charts table if it exists
     try {
+      // Save premium data points to natal_charts table
+      // Store premium data in a JSONB column or add new columns
       await pool.query(
         `INSERT INTO natal_charts 
           (user_id, name, birth_date, birth_time, location, latitude, longitude, timezone,
@@ -128,9 +132,26 @@ export async function POST(req) {
           latitude,
           longitude,
           'UTC', // Default timezone
-          JSON.stringify(chartData.planets),
-          JSON.stringify(chartData.houses),
-          JSON.stringify(chartData.aspects),
+          JSON.stringify({
+            ...chartData.planets,
+            // Include premium data points in natal_positions JSONB
+            _premium_data: {
+              planetSignHouseCombinations: chartData.planetSignHouseCombinations || [],
+              houseCuspsDetailed: chartData.houseCuspsDetailed || [],
+              chartRulerLocation: chartData.chartRulerLocation || null,
+              majorAspects: chartData.majorAspects || [],
+              midpoints: chartData.midpoints || []
+            }
+          }),
+          JSON.stringify({
+            ...chartData.houses,
+            // Include house cusps detailed in houses JSONB
+            _cusps_detailed: chartData.houseCuspsDetailed || []
+          }),
+          JSON.stringify({
+            all: chartData.aspects || [],
+            major: chartData.majorAspects || []
+          }),
           chartData.ascendant,
           chartData.midheaven,
           interpretation,
@@ -141,7 +162,11 @@ export async function POST(req) {
           JSON.stringify(chartData.dignities || {}),
           JSON.stringify(chartData.moonPhase || {}),
           JSON.stringify(chartData.chartPatterns || []),
-          JSON.stringify(chartData.planetHouses || {})
+          JSON.stringify({
+            ...chartData.planetHouses || {},
+            // Include planet-sign-house combinations
+            _combinations: chartData.planetSignHouseCombinations || []
+          })
         ]
       );
     } catch (error) {

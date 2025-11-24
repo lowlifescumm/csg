@@ -94,7 +94,7 @@ export async function POST(req) {
     const [hours, minutes] = birthTime.split(':').map(Number);
     const birthDateTime = new Date(year, month - 1, day, hours, minutes, 0);
 
-    // Convert natal positions to database format
+    // Convert natal positions to database format (include premium data points)
     const natalPositions = {};
     for (const [planet, data] of Object.entries(chartData.planets)) {
       natalPositions[planet] = {
@@ -104,6 +104,15 @@ export async function POST(req) {
         name: planet.charAt(0).toUpperCase() + planet.slice(1)
       };
     }
+    
+    // Add premium data points to natal_positions JSONB
+    natalPositions._premium_data = {
+      planetSignHouseCombinations: chartData.planetSignHouseCombinations || [],
+      houseCuspsDetailed: chartData.houseCuspsDetailed || [],
+      chartRulerLocation: chartData.chartRulerLocation || null,
+      majorAspects: chartData.majorAspects || [],
+      midpoints: chartData.midpoints || []
+    };
 
     // If this is set as primary, unset other primary charts
     if (isPrimary) {
@@ -113,7 +122,7 @@ export async function POST(req) {
       );
     }
 
-    // Insert natal chart into database
+    // Insert natal chart into database (include premium data points)
     const { rows: chartRows } = await pool.query(
       `INSERT INTO natal_charts (
         user_id, birth_date, birth_time, timezone, latitude, longitude,
@@ -129,8 +138,11 @@ export async function POST(req) {
         latitude,
         longitude,
         locationName || null,
-        JSON.stringify(natalPositions),
-        JSON.stringify(chartData.houses),
+        JSON.stringify(natalPositions), // Includes _premium_data
+        JSON.stringify({
+          ...chartData.houses,
+          _cusps_detailed: chartData.houseCuspsDetailed || []
+        }),
         JSON.stringify(chartData.ascendant),
         JSON.stringify(chartData.midheaven),
         chartName || 'Birth Chart',
