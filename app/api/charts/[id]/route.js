@@ -48,7 +48,25 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    // Format response
+    // Format response (include premium data points)
+    const natalPositions = typeof chart.natal_positions === 'string' 
+      ? JSON.parse(chart.natal_positions) 
+      : chart.natal_positions;
+    
+    const premiumData = natalPositions._premium_data || {};
+    
+    // Extract planets (excluding _premium_data)
+    const planets = { ...natalPositions };
+    delete planets._premium_data;
+    
+    const houses = typeof chart.houses === 'string' 
+      ? JSON.parse(chart.houses) 
+      : chart.houses;
+    
+    const aspects = typeof chart.aspects === 'string' 
+      ? JSON.parse(chart.aspects) 
+      : chart.aspects;
+    
     const chartData = {
       id: chart.id,
       chartName: chart.chart_name,
@@ -64,10 +82,16 @@ export async function GET(req, { params }) {
         }
       },
       chartData: {
-        planets: chart.natal_positions,
-        houses: chart.houses,
+        planets,
+        houses: houses || {},
         ascendant: chart.ascendant,
-        midheaven: chart.midheaven
+        midheaven: chart.midheaven,
+        // Include premium data points
+        planetSignHouseCombinations: premiumData.planetSignHouseCombinations || [],
+        houseCuspsDetailed: premiumData.houseCuspsDetailed || houses?._cusps_detailed || [],
+        chartRulerLocation: premiumData.chartRulerLocation || null,
+        majorAspects: premiumData.majorAspects || aspects?.major || [],
+        midpoints: premiumData.midpoints || []
       },
       createdAt: chart.created_at,
       updatedAt: chart.updated_at
