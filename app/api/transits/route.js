@@ -162,6 +162,9 @@ export async function GET(req) {
         totalActive: allTransitsWithInterpretations.length,
         averageIntensity: avgIntensity,
       },
+      // Premium data points
+      cuspTransits: cuspTransits,
+      progressedChart: progressedChart,
       userChart: {
         sunSign: userBirthChart.planets.sun?.sign,
         moonSign: userBirthChart.planets.moon?.sign,
