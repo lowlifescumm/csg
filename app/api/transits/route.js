@@ -163,8 +163,8 @@ export async function GET(req) {
         averageIntensity: avgIntensity,
       },
       // Premium data points
-      cuspTransits: cuspTransits,
-      progressedChart: progressedChart,
+      cuspTransits: cuspTransits || [],
+      progressedChart: progressedChart || null,
       userChart: {
         sunSign: userBirthChart.planets.sun?.sign,
         moonSign: userBirthChart.planets.moon?.sign,
