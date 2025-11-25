@@ -90,6 +90,22 @@ export async function POST(request) {
       }
     }
 
+    const clientAcceptsHtml = (request.headers.get('accept') || '').includes('text/html');
+
+    if (
+      generate_pdf &&
+      !result?.pdfUrl &&
+      result?.html &&
+      clientAcceptsHtml
+    ) {
+      return new Response(result.html, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       report_type,
