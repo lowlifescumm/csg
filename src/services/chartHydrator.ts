@@ -319,32 +319,88 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       // Calculate synastry compatibility score
       const compatibilityScore = calculateSynastryScore(chart, partnerChart);
 
-      // Calculate relationship matrix scores
+      // Calculate relationship matrix scores (ensure it's never null)
       const matrixScores = calculateRelationshipMatrix(userChart, partnerChartData);
 
+      // Return with explicit structure including partner data
       return {
+        // User Data
         ...userChart,
-        partner: partnerChartData,
+        name: input.name,
+        birth_date: input.birthDate,
+        sun: userChart.planets?.sun || chart.planets?.sun,
+        moon: userChart.planets?.moon || chart.planets?.moon,
+        rising: userChart.risingSign || chart.ascendant,
+        planets: userChart.planets || chart.planets,
+        houses: userChart.houses || chart.houses,
+
+        // PARTNER DATA (The Fix)
+        partner: {
+          name: input.partnerBirthCity ? `${input.name} (Partner)` : "Partner",
+          birth_date: input.partnerBirthDate,
+          sun: partnerChartData.planets?.sun || partnerChart.planets?.sun,
+          moon: partnerChartData.planets?.moon || partnerChart.planets?.moon,
+          rising: partnerChartData.risingSign || partnerChart.ascendant,
+          planets: partnerChartData.planets || partnerChart.planets,
+          houses: partnerChartData.houses || partnerChart.houses,
+          // Include full partner chart data for compatibility
+          ...partnerChartData,
+        },
+
+        // SCORES
+        matrix_scores: matrixScores, // Ensure this variable is calculated before return
+        compatibility_score: compatibilityScore,
         compatibility: compatibilityScore,
-        matrix_scores: matrixScores,
       };
     } catch (error) {
       console.error("[chartHydrator] Error calculating partner chart:", error);
       // Return user chart only if partner calculation fails
+      const defaultMatrixScores = {
+        emotional: 50,
+        communication: 50,
+        spiritual: 50,
+        stability: 50,
+        physical: 50,
+      };
       return {
         ...userChart,
+        name: input.name,
+        birth_date: input.birthDate,
+        sun: userChart.planets?.sun || chart.planets?.sun,
+        moon: userChart.planets?.moon || chart.planets?.moon,
+        rising: userChart.risingSign || chart.ascendant,
+        planets: userChart.planets || chart.planets,
+        houses: userChart.houses || chart.houses,
         partner: null,
         compatibility: null,
+        compatibility_score: null,
+        matrix_scores: defaultMatrixScores, // Default scores when no partner
       };
     }
   }
 
   console.log('No Partner Data Found. Skipping...');
-  // No partner data - return user chart only
+  // No partner data - return user chart only with default matrix scores
+  const defaultMatrixScores = {
+    emotional: 50,
+    communication: 50,
+    spiritual: 50,
+    stability: 50,
+    physical: 50,
+  };
   return {
     ...userChart,
+    name: input.name,
+    birth_date: input.birthDate,
+    sun: userChart.planets?.sun || chart.planets?.sun,
+    moon: userChart.planets?.moon || chart.planets?.moon,
+    rising: userChart.risingSign || chart.ascendant,
+    planets: userChart.planets || chart.planets,
+    houses: userChart.houses || chart.houses,
     partner: null,
     compatibility: null,
+    compatibility_score: null,
+    matrix_scores: defaultMatrixScores, // Default scores when no partner
   };
 }
 
