@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/lib/db.js';
-import { calculateBirthChart, interpretBirthChart } from '@/lib/astrology.js';
+import { interpretBirthChart } from '@/lib/astrology.js';
 import { canAccessReading, consumeCreditsForReading, claimFreeNatalChart } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { getAuthenticatedUser } from '@/lib/auth.js';
+import { hydrateReportData } from '@/src/services/chartHydrator';
 
 /**
  * POST /api/birth-chart
@@ -32,8 +33,22 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
+    const latNumber = typeof latitude === 'number' ? latitude : parseFloat(latitude);
+    const lonNumber = typeof longitude === 'number' ? longitude : parseFloat(longitude);
+
+    const hydrationInput = {
+      name: body.name || 'Primary Chart',
+      birthDate: date,
+      birthTime: time,
+      birthCity: location,
+      birthLatitude: latNumber,
+      birthLongitude: lonNumber,
+    };
+
+    const hydrated = await hydrateReportData(hydrationInput);
+
     // Calculate birth chart - NOW FREE (no credit check)
-    const chartData = calculateBirthChart(date, time, latitude, longitude);
+    const chartData = hydrated.rawChart;
 
     // Generate AI interpretation ONLY if requested and user has credits
     let interpretation = '';
@@ -94,7 +109,7 @@ export async function POST(req) {
         (user_id, birth_date, birth_time, location, latitude, longitude, chart_data, interpretation)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id`,
-      [userId, date, time, location, latitude, longitude, JSON.stringify(chartData), interpretation]
+      [userId, date, time, location, latNumber, lonNumber, JSON.stringify(chartData), interpretation]
     );
     // Note: chartData now includes: planetSignHouseCombinations, houseCuspsDetailed, 
     // chartRulerLocation, majorAspects, midpoints - all stored in chart_data JSON
@@ -129,8 +144,8 @@ export async function POST(req) {
           date,
           time,
           location,
-          latitude,
-          longitude,
+          latNumber,
+          lonNumber,
           'UTC', // Default timezone
           JSON.stringify({
             ...chartData.planets,

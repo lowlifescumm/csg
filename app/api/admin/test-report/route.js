@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { generateReportContent, generatePDF, generatePremiumReport } from '@/lib/pdf-generator.js';
-import { hydrateReportData } from '@/src/services/chartHydrator';
+import { hydrateReportData, buildNatalChartPayload } from '@/src/services/chartHydrator';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -319,32 +319,6 @@ function buildHydrationInput(chartInput, fallbackData = {}) {
   }
   
   return input;
-}
-
-function buildNatalChartPayload(calculatedData, hydrationInput) {
-  if (!calculatedData?.rawChart) return null;
-  
-  const normalizedDate = normalizeBirthDate(hydrationInput.birthDate);
-  const coords = calculatedData.coordinates;
-  
-  return {
-    ...calculatedData.rawChart,
-    birth_date: normalizedDate,
-    birth_time: hydrationInput.birthTime,
-    latitude: coords.latitude,
-    longitude: coords.longitude,
-    location: hydrationInput.birthCity || `${coords.latitude}, ${coords.longitude}`,
-    name: hydrationInput.name,
-  };
-}
-
-function normalizeBirthDate(value) {
-  if (!value) return value;
-  if (typeof value === 'string') return value;
-  if (value instanceof Date) {
-    return value.toISOString().split('T')[0];
-  }
-  return String(value);
 }
 
 function parseMaybeNumber(value) {

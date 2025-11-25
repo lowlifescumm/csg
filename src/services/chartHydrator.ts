@@ -96,6 +96,24 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   };
 }
 
+export function buildNatalChartPayload(calculatedData: CalculatedChartData, input: UserInput) {
+  if (!calculatedData?.rawChart) {
+    return null;
+  }
+
+  return {
+    ...calculatedData.rawChart,
+    birth_date: normalizeBirthDate(input.birthDate),
+    birth_time: input.birthTime,
+    latitude: calculatedData.coordinates.latitude,
+    longitude: calculatedData.coordinates.longitude,
+    location:
+      input.birthCity ||
+      `${roundTo(calculatedData.coordinates.latitude, 4)}, ${roundTo(calculatedData.coordinates.longitude, 4)}`,
+    name: input.name,
+  };
+}
+
 function validateInput(input: UserInput) {
   if (!input.name) throw new Error("Name is required");
   if (!input.birthDate) throw new Error("Birth date is required");
@@ -131,6 +149,15 @@ async function resolveCoordinates(input: UserInput): Promise<Coordinates> {
   }
 
   return geocodeCity(input.birthCity);
+}
+
+function normalizeBirthDate(value: string | Date) {
+  if (!value) return value as string;
+  if (typeof value === "string") return value;
+  if (value instanceof Date) {
+    return value.toISOString().split("T")[0];
+  }
+  return String(value);
 }
 
 async function geocodeCity(city: string): Promise<Coordinates> {

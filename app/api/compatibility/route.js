@@ -3,11 +3,11 @@ import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { generateCompatibilityReport } from '@/lib/compatibility';
-import { calculateBirthChart } from '@/lib/astrology';
 import { pool } from '@/lib/db';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
+import { hydrateReportData } from '@/src/services/chartHydrator';
 
 
 export async function POST(request) {
@@ -60,11 +60,29 @@ export async function POST(request) {
       }, { status: 403 });
     }
 
-    const date1 = new Date(person1BirthDate);
-    const chart1 = calculateBirthChart(date1, person1BirthTime, parseFloat(person1Latitude), parseFloat(person1Longitude));
+    const person1Lat = typeof person1Latitude === 'number' ? person1Latitude : parseFloat(person1Latitude);
+    const person1Lon = typeof person1Longitude === 'number' ? person1Longitude : parseFloat(person1Longitude);
+    const person2Lat = typeof person2Latitude === 'number' ? person2Latitude : parseFloat(person2Latitude);
+    const person2Lon = typeof person2Longitude === 'number' ? person2Longitude : parseFloat(person2Longitude);
 
-    const date2 = new Date(person2BirthDate);
-    const chart2 = calculateBirthChart(date2, person2BirthTime, parseFloat(person2Latitude), parseFloat(person2Longitude));
+    const chart1Hydrated = await hydrateReportData({
+      name: person1Name || 'Person 1',
+      birthDate: person1BirthDate,
+      birthTime: person1BirthTime,
+      birthLatitude: person1Lat,
+      birthLongitude: person1Lon,
+    });
+
+    const chart2Hydrated = await hydrateReportData({
+      name: person2Name || 'Person 2',
+      birthDate: person2BirthDate,
+      birthTime: person2BirthTime,
+      birthLatitude: person2Lat,
+      birthLongitude: person2Lon,
+    });
+
+    const chart1 = chart1Hydrated.rawChart;
+    const chart2 = chart2Hydrated.rawChart;
 
     console.log('Generating compatibility report...');
     const result = await generateCompatibilityReport(
