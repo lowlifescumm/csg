@@ -283,6 +283,7 @@ export default function TestReportsPage() {
   const [customDataMap, setCustomDataMap] = useState({});
   const [editingReport, setEditingReport] = useState(null);
   const [customDataError, setCustomDataError] = useState(null);
+  const [formData, setFormData] = useState({});
 
   const handleTestReport = async (reportType) => {
     setTesting(reportType);
@@ -416,30 +417,386 @@ export default function TestReportsPage() {
   };
 
   const openCustomDataEditor = (reportId) => {
-    if (!customDataInputs[reportId]) {
+    // Initialize form data with sample data if not already set
+    if (!formData[reportId]) {
       const sample = SAMPLE_DATA[reportId] || SAMPLE_DATA[reportId?.toUpperCase()] || {};
-      setCustomDataInputs((prev) => ({
+      setFormData((prev) => ({
         ...prev,
-        [reportId]: JSON.stringify(sample, null, 2),
+        [reportId]: initializeFormData(reportId, sample),
       }));
     }
     setCustomDataError(null);
     setEditingReport(reportId);
   };
 
+  const initializeFormData = (reportId, sample) => {
+    // Return flattened form data structure based on report type
+    if (reportId === 'tarot') {
+      return {
+        name: sample.name || '',
+        cards: sample.card_spread || [{ card: '', position: '', orientation: 'Upright' }],
+      };
+    } else if (reportId === 'moon_reading') {
+      return {
+        name: sample.name || '',
+        moon_phase: sample.moon_phase || '',
+        phase_energy: sample.phase_energy || '',
+        sun_sign: sample.sun_sign || '',
+        moon_sign: sample.moon_sign || '',
+      };
+    } else if (reportId === 'birth_chart') {
+      return {
+        name: sample.name || '',
+        birth_date: sample.birth_date || '',
+        birth_time: sample.birth_time || '',
+        location: sample.location || '',
+        latitude: sample.latitude || '',
+        longitude: sample.longitude || '',
+        sun: sample.sun || '',
+        moon: sample.moon || '',
+        rising: sample.rising || '',
+      };
+    } else if (reportId === 'compatibility') {
+      return {
+        user_name: sample.user?.name || '',
+        user_birth_date: sample.user?.birth_date || '',
+        user_birth_time: sample.user?.birth_time || '',
+        user_location: sample.user?.location || '',
+        partner_name: sample.partner?.name || '',
+        partner_birth_date: sample.partner?.birth_date || '',
+        partner_birth_time: sample.partner?.birth_time || '',
+        partner_location: sample.partner?.location || '',
+        compatibility_score: sample.compatibility_score || 0,
+      };
+    } else if (reportId === 'transit_forecast_short' || reportId === 'transit_forecast_extended') {
+      return {
+        name: sample.name || '',
+        date_range: sample.date_range || '',
+        transits: sample.transits || [{ aspect: '', date: '', description: '' }],
+      };
+    } else if (reportId === 'ESSENTIAL') {
+      return {
+        name: sample.name || '',
+        tarot_name: sample.tarot_data?.name || '',
+        tarot_cards: sample.tarot_data?.card_spread || [{ card: '', position: '', orientation: 'Upright' }],
+        moon_name: sample.moon_data?.name || '',
+        moon_phase: sample.moon_data?.moon_phase || '',
+        moon_phase_energy: sample.moon_data?.phase_energy || '',
+        moon_sun_sign: sample.moon_data?.sun_sign || '',
+        moon_moon_sign: sample.moon_data?.moon_sign || '',
+        transit_name: sample.transit_data?.name || '',
+        transit_date_range: sample.transit_data?.date_range || '',
+        transit_transits: sample.transit_data?.transits || [{ aspect: '', date: '' }],
+      };
+    } else if (reportId === 'ADVANCED') {
+      return {
+        name: sample.name || '',
+        birth_name: sample.birth_chart_data?.name || '',
+        birth_date: sample.birth_chart_data?.birth_date || '',
+        birth_time: sample.birth_chart_data?.birth_time || '',
+        birth_location: sample.birth_chart_data?.location || '',
+        birth_latitude: sample.birth_chart_data?.latitude || '',
+        birth_longitude: sample.birth_chart_data?.longitude || '',
+        birth_sun: sample.birth_chart_data?.sun || '',
+        birth_moon: sample.birth_chart_data?.moon || '',
+        birth_rising: sample.birth_chart_data?.rising || '',
+        user_name: sample.compatibility_data?.user?.name || '',
+        user_birth_date: sample.compatibility_data?.user?.birth_date || '',
+        user_birth_time: sample.compatibility_data?.user?.birth_time || '',
+        user_location: sample.compatibility_data?.user?.location || '',
+        partner_name: sample.compatibility_data?.partner?.name || '',
+        partner_birth_date: sample.compatibility_data?.partner?.birth_date || '',
+        partner_birth_time: sample.compatibility_data?.partner?.birth_time || '',
+        partner_location: sample.compatibility_data?.partner?.location || '',
+        compatibility_score: sample.compatibility_data?.compatibility_score || 0,
+        transit_name: sample.transit_data?.name || '',
+        transit_date_range: sample.transit_data?.date_range || '',
+      };
+    } else if (reportId === 'MASTER') {
+      return {
+        name: sample.name || '',
+        birth_name: sample.birth_chart_data?.name || '',
+        birth_date: sample.birth_chart_data?.birth_date || '',
+        birth_time: sample.birth_chart_data?.birth_time || '',
+        birth_location: sample.birth_chart_data?.location || '',
+        birth_latitude: sample.birth_chart_data?.latitude || '',
+        birth_longitude: sample.birth_chart_data?.longitude || '',
+        birth_sun: sample.birth_chart_data?.sun || '',
+        birth_moon: sample.birth_chart_data?.moon || '',
+        birth_rising: sample.birth_chart_data?.rising || '',
+        user_name: sample.compatibility_data?.user?.name || '',
+        user_birth_date: sample.compatibility_data?.user?.birth_date || '',
+        user_birth_time: sample.compatibility_data?.user?.birth_time || '',
+        user_location: sample.compatibility_data?.user?.location || '',
+        partner_name: sample.compatibility_data?.partner?.name || '',
+        partner_birth_date: sample.compatibility_data?.partner?.birth_date || '',
+        partner_birth_time: sample.compatibility_data?.partner?.birth_time || '',
+        partner_location: sample.compatibility_data?.partner?.location || '',
+        compatibility_score: sample.compatibility_data?.compatibility_score || 0,
+        transit_name: sample.transit_data?.name || '',
+        transit_date_range: sample.transit_data?.date_range || '',
+        destiny_cycle_name: sample.destiny_data?.cycle_name || '',
+        destiny_start_date: sample.destiny_data?.start_date || '',
+        destiny_end_date: sample.destiny_data?.end_date || '',
+        matrix_user_sun: sample.matrix_data?.pair?.user?.sun || '',
+        matrix_partner_sun: sample.matrix_data?.pair?.partner?.sun || '',
+        matrix_emotional: sample.matrix_data?.matrix_scores?.emotional || 0,
+        matrix_communication: sample.matrix_data?.matrix_scores?.communication || 0,
+        matrix_spiritual: sample.matrix_data?.matrix_scores?.spiritual || 0,
+        matrix_stability: sample.matrix_data?.matrix_scores?.stability || 0,
+        matrix_physical: sample.matrix_data?.matrix_scores?.physical || 0,
+        karmic_north_node: sample.karmic_data?.nodes?.north_node || '',
+        karmic_south_node: sample.karmic_data?.nodes?.south_node || '',
+      };
+    }
+    return {};
+  };
+
+  const buildDataFromForm = (reportId, formValues) => {
+    // Build the data object from form values
+    if (reportId === 'tarot') {
+      return {
+        name: formValues.name || 'Test User',
+        card_spread: formValues.cards || [],
+      };
+    } else if (reportId === 'moon_reading') {
+      return {
+        name: formValues.name || 'Test User',
+        moon_phase: formValues.moon_phase || '',
+        phase_energy: formValues.phase_energy || '',
+        sun_sign: formValues.sun_sign || '',
+        moon_sign: formValues.moon_sign || '',
+      };
+    } else if (reportId === 'birth_chart') {
+      return {
+        name: formValues.name || 'Test User',
+        birth_date: formValues.birth_date || '',
+        birth_time: formValues.birth_time || '',
+        location: formValues.location || '',
+        latitude: parseFloat(formValues.latitude) || 0,
+        longitude: parseFloat(formValues.longitude) || 0,
+        sun: formValues.sun || '',
+        moon: formValues.moon || '',
+        rising: formValues.rising || '',
+        planets: {},
+        houses: {},
+        aspects: [],
+      };
+    } else if (reportId === 'compatibility') {
+      return {
+        user: {
+          name: formValues.user_name || 'Person One',
+          birth_date: formValues.user_birth_date || '',
+          birth_time: formValues.user_birth_time || '',
+          location: formValues.user_location || '',
+        },
+        partner: {
+          name: formValues.partner_name || 'Person Two',
+          birth_date: formValues.partner_birth_date || '',
+          birth_time: formValues.partner_birth_time || '',
+          location: formValues.partner_location || '',
+        },
+        aspects: [],
+        compatibility_score: parseInt(formValues.compatibility_score) || 0,
+      };
+    } else if (reportId === 'transit_forecast_short' || reportId === 'transit_forecast_extended') {
+      return {
+        name: formValues.name || 'Test User',
+        date_range: formValues.date_range || '',
+        transits: formValues.transits || [],
+      };
+    } else if (reportId === 'ESSENTIAL') {
+      return {
+        name: formValues.name || 'Test User',
+        tarot_data: {
+          name: formValues.tarot_name || formValues.name || 'Test User',
+          card_spread: formValues.tarot_cards || [],
+        },
+        moon_data: {
+          name: formValues.moon_name || formValues.name || 'Test User',
+          moon_phase: formValues.moon_phase || '',
+          phase_energy: formValues.moon_phase_energy || '',
+          sun_sign: formValues.moon_sun_sign || '',
+          moon_sign: formValues.moon_moon_sign || '',
+        },
+        transit_data: {
+          name: formValues.transit_name || formValues.name || 'Test User',
+          date_range: formValues.transit_date_range || '',
+          transits: formValues.transit_transits || [],
+        },
+      };
+    } else if (reportId === 'ADVANCED') {
+      return {
+        name: formValues.name || 'Test User',
+        birth_chart_data: {
+          name: formValues.birth_name || formValues.name || 'Test User',
+          birth_date: formValues.birth_date || '',
+          birth_time: formValues.birth_time || '',
+          location: formValues.birth_location || '',
+          latitude: parseFloat(formValues.birth_latitude) || 0,
+          longitude: parseFloat(formValues.birth_longitude) || 0,
+          sun: formValues.birth_sun || '',
+          moon: formValues.birth_moon || '',
+          rising: formValues.birth_rising || '',
+          planets: {},
+          houses: {},
+          aspects: [],
+        },
+        compatibility_data: {
+          user: {
+            name: formValues.user_name || 'Person One',
+            birth_date: formValues.user_birth_date || '',
+            birth_time: formValues.user_birth_time || '',
+            location: formValues.user_location || '',
+          },
+          partner: {
+            name: formValues.partner_name || 'Person Two',
+            birth_date: formValues.partner_birth_date || '',
+            birth_time: formValues.partner_birth_time || '',
+            location: formValues.partner_location || '',
+          },
+          aspects: [],
+          compatibility_score: parseInt(formValues.compatibility_score) || 0,
+        },
+        transit_data: {
+          name: formValues.transit_name || formValues.name || 'Test User',
+          date_range: formValues.transit_date_range || '',
+          transits: [],
+        },
+      };
+    } else if (reportId === 'MASTER') {
+      return {
+        name: formValues.name || 'Test User',
+        birth_chart_data: {
+          name: formValues.birth_name || formValues.name || 'Test User',
+          birth_date: formValues.birth_date || '',
+          birth_time: formValues.birth_time || '',
+          location: formValues.birth_location || '',
+          latitude: parseFloat(formValues.birth_latitude) || 0,
+          longitude: parseFloat(formValues.birth_longitude) || 0,
+          sun: formValues.birth_sun || '',
+          moon: formValues.birth_moon || '',
+          rising: formValues.birth_rising || '',
+          planets: {},
+          houses: {},
+          aspects: [],
+        },
+        compatibility_data: {
+          user: {
+            name: formValues.user_name || 'Person One',
+            birth_date: formValues.user_birth_date || '',
+            birth_time: formValues.user_birth_time || '',
+            location: formValues.user_location || '',
+          },
+          partner: {
+            name: formValues.partner_name || 'Person Two',
+            birth_date: formValues.partner_birth_date || '',
+            birth_time: formValues.partner_birth_time || '',
+            location: formValues.partner_location || '',
+          },
+          aspects: [],
+          compatibility_score: parseInt(formValues.compatibility_score) || 0,
+        },
+        transit_data: {
+          name: formValues.transit_name || formValues.name || 'Test User',
+          date_range: formValues.transit_date_range || '',
+          transits: [],
+        },
+        destiny_data: {
+          cycle_name: formValues.destiny_cycle_name || 'Saturn Return',
+          start_date: formValues.destiny_start_date || '',
+          end_date: formValues.destiny_end_date || '',
+          themes: ['Responsibility', 'Transformation'],
+        },
+        matrix_data: {
+          pair: {
+            user: { sun: formValues.matrix_user_sun || 'Gemini' },
+            partner: { sun: formValues.matrix_partner_sun || 'Scorpio' },
+          },
+          matrix_scores: {
+            emotional: parseInt(formValues.matrix_emotional) || 0,
+            communication: parseInt(formValues.matrix_communication) || 0,
+            spiritual: parseInt(formValues.matrix_spiritual) || 0,
+            stability: parseInt(formValues.matrix_stability) || 0,
+            physical: parseInt(formValues.matrix_physical) || 0,
+          },
+        },
+        karmic_data: {
+          placements: {},
+          aspects: [],
+          nodes: {
+            north_node: formValues.karmic_north_node || 'Aries',
+            south_node: formValues.karmic_south_node || 'Libra',
+          },
+        },
+      };
+    }
+    return {};
+  };
+
   const handleSaveCustomData = () => {
     if (!editingReport) return;
-    try {
-      const parsed = JSON.parse(customDataInputs[editingReport] || "{}");
-      setCustomDataMap((prev) => ({
-        ...prev,
-        [editingReport]: parsed,
-      }));
-      setCustomDataError(null);
-      setEditingReport(null);
-    } catch (err) {
-      setCustomDataError(err.message);
+    
+    const currentFormData = formData[editingReport] || {};
+    
+    // Validate required fields based on report type
+    const validationErrors = validateFormData(editingReport, currentFormData);
+    
+    if (validationErrors.length > 0) {
+      setCustomDataError(validationErrors.join(', '));
+      return;
     }
+    
+    // Build data object from form
+    const builtData = buildDataFromForm(editingReport, currentFormData);
+    
+    setCustomDataMap((prev) => ({
+      ...prev,
+      [editingReport]: builtData,
+    }));
+    setCustomDataError(null);
+    setEditingReport(null);
+  };
+
+  const validateFormData = (reportId, formValues) => {
+    const errors = [];
+    
+    if (reportId === 'birth_chart' || reportId === 'ADVANCED' || reportId === 'MASTER') {
+      if (reportId === 'birth_chart') {
+        if (!formValues.birth_date) errors.push('Birth date is required');
+        if (!formValues.birth_time) errors.push('Birth time is required');
+        if (!formValues.latitude || isNaN(parseFloat(formValues.latitude))) errors.push('Valid latitude is required');
+        if (!formValues.longitude || isNaN(parseFloat(formValues.longitude))) errors.push('Valid longitude is required');
+      } else {
+        if (!formValues.birth_date) errors.push('Birth date is required');
+        if (!formValues.birth_time) errors.push('Birth time is required');
+        if (!formValues.birth_latitude || isNaN(parseFloat(formValues.birth_latitude))) errors.push('Valid birth latitude is required');
+        if (!formValues.birth_longitude || isNaN(parseFloat(formValues.birth_longitude))) errors.push('Valid birth longitude is required');
+      }
+    }
+    
+    if (reportId === 'compatibility' || reportId === 'ADVANCED' || reportId === 'MASTER') {
+      if (!formValues.user_birth_date) errors.push('User birth date is required');
+      if (!formValues.user_birth_time) errors.push('User birth time is required');
+      if (!formValues.partner_birth_date) errors.push('Partner birth date is required');
+      if (!formValues.partner_birth_time) errors.push('Partner birth time is required');
+      const score = parseInt(formValues.compatibility_score);
+      if (isNaN(score) || score < 0 || score > 100) errors.push('Compatibility score must be between 0-100');
+    }
+    
+    if (reportId === 'MASTER') {
+      if (!formValues.matrix_user_sun) errors.push('Matrix user sun sign is required');
+      if (!formValues.matrix_partner_sun) errors.push('Matrix partner sun sign is required');
+      const scores = ['emotional', 'communication', 'spiritual', 'stability', 'physical'];
+      scores.forEach(scoreType => {
+        const score = parseInt(formValues[`matrix_${scoreType}`]);
+        if (isNaN(score) || score < 0 || score > 100) {
+          errors.push(`Matrix ${scoreType} score must be between 0-100`);
+        }
+      });
+    }
+    
+    return errors;
   };
 
   const handleRemoveCustomData = (reportId) => {
@@ -449,6 +806,11 @@ export default function TestReportsPage() {
       return updated;
     });
     setCustomDataInputs((prev) => {
+      const updated = { ...prev };
+      delete updated[reportId];
+      return updated;
+    });
+    setFormData((prev) => {
       const updated = { ...prev };
       delete updated[reportId];
       return updated;
@@ -683,15 +1045,15 @@ export default function TestReportsPage() {
 
         {/* Custom Data Editor */}
         {editingReport && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8 overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900">
                     Customize Data – {reportIdToName(editingReport)}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Paste or modify the JSON payload that will be sent to the generator.
+                    Fill out the form fields to customize the test data. All fields are validated to prevent invalid data.
                   </p>
                 </div>
                 <button
@@ -701,26 +1063,26 @@ export default function TestReportsPage() {
                   <XCircle className="w-6 h-6" />
                 </button>
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  JSON Input
-                </label>
-                <textarea
-                  value={customDataInputs[editingReport] || ""}
-                  onChange={(e) =>
-                    setCustomDataInputs((prev) => ({
-                      ...prev,
-                      [editingReport]: e.target.value,
-                    }))
-                  }
-                  className="w-full h-72 border border-gray-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="{ ... }"
-                />
-                {customDataError && (
-                  <p className="mt-2 text-sm text-red-600">{customDataError}</p>
-                )}
+              
+              {customDataError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{customDataError}</p>
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                {renderFormFields(editingReport, formData[editingReport] || {}, (field, value) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    [editingReport]: {
+                      ...(prev[editingReport] || {}),
+                      [field]: value,
+                    },
+                  }));
+                })}
               </div>
-              <div className="flex flex-wrap gap-3 justify-between items-center">
+              
+              <div className="mt-6 flex flex-wrap gap-3 justify-between items-center pt-4 border-t border-gray-200">
                 <button
                   onClick={() => handleRemoveCustomData(editingReport)}
                   className="text-sm text-red-600 hover:text-red-700"
@@ -780,5 +1142,954 @@ export default function TestReportsPage() {
 function reportIdToName(reportId) {
   const match = REPORT_TYPES.find((report) => report.id === reportId);
   return match ? match.name : reportId;
+}
+
+function renderFormFields(reportId, formValues, onChange) {
+  const handleChange = (field) => (e) => {
+    const value = e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+    onChange(field, value);
+  };
+
+  const handleArrayChange = (field, index, subField) => (e) => {
+    const currentArray = formValues[field] || [];
+    const updatedArray = [...currentArray];
+    if (!updatedArray[index]) updatedArray[index] = {};
+    updatedArray[index][subField] = e.target.value;
+    onChange(field, updatedArray);
+  };
+
+  const addArrayItem = (field, defaultItem) => () => {
+    const currentArray = formValues[field] || [];
+    onChange(field, [...currentArray, { ...defaultItem }]);
+  };
+
+  const removeArrayItem = (field, index) => () => {
+    const currentArray = formValues[field] || [];
+    onChange(field, currentArray.filter((_, i) => i !== index));
+  };
+
+  if (reportId === 'tarot') {
+    return (
+      <>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <input
+            type="text"
+            value={formValues.name || ''}
+            onChange={handleChange('name')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Test User"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tarot Cards</label>
+          {(formValues.cards || []).map((card, idx) => (
+            <div key={idx} className="mb-2 p-3 border border-gray-200 rounded-lg">
+              <div className="grid grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  value={card.card || ''}
+                  onChange={handleArrayChange('cards', idx, 'card')}
+                  placeholder="Card name"
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+                <input
+                  type="text"
+                  value={card.position || ''}
+                  onChange={handleArrayChange('cards', idx, 'position')}
+                  placeholder="Position"
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+                <select
+                  value={card.orientation || 'Upright'}
+                  onChange={handleArrayChange('cards', idx, 'orientation')}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                >
+                  <option>Upright</option>
+                  <option>Reversed</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={removeArrayItem('cards', idx)}
+                className="mt-1 text-xs text-red-600 hover:text-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addArrayItem('cards', { card: '', position: '', orientation: 'Upright' })}
+            className="text-sm text-purple-600 hover:text-purple-700"
+          >
+            + Add Card
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  if (reportId === 'moon_reading') {
+    return (
+      <>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <input
+            type="text"
+            value={formValues.name || ''}
+            onChange={handleChange('name')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Moon Phase</label>
+          <input
+            type="text"
+            value={formValues.moon_phase || ''}
+            onChange={handleChange('moon_phase')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Waxing Crescent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Phase Energy</label>
+          <input
+            type="text"
+            value={formValues.phase_energy || ''}
+            onChange={handleChange('phase_energy')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Growth and intention setting"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
+            <select
+              value={formValues.sun_sign || ''}
+              onChange={handleChange('sun_sign')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            >
+              <option value="">Select...</option>
+              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                <option key={sign} value={sign}>{sign}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
+            <select
+              value={formValues.moon_sign || ''}
+              onChange={handleChange('moon_sign')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            >
+              <option value="">Select...</option>
+              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                <option key={sign} value={sign}>{sign}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (reportId === 'birth_chart') {
+    return (
+      <>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <input
+            type="text"
+            value={formValues.name || ''}
+            onChange={handleChange('name')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date <span className="text-red-500">*</span></label>
+            <input
+              type="date"
+              value={formValues.birth_date || ''}
+              onChange={handleChange('birth_date')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Birth Time <span className="text-red-500">*</span></label>
+            <input
+              type="time"
+              value={formValues.birth_time || ''}
+              onChange={handleChange('birth_time')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <input
+            type="text"
+            value={formValues.location || ''}
+            onChange={handleChange('location')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="City, State"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Latitude <span className="text-red-500">*</span></label>
+            <input
+              type="number"
+              step="0.0001"
+              value={formValues.latitude || ''}
+              onChange={handleChange('latitude')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              placeholder="36.9741"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Longitude <span className="text-red-500">*</span></label>
+            <input
+              type="number"
+              step="0.0001"
+              value={formValues.longitude || ''}
+              onChange={handleChange('longitude')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              placeholder="-122.0308"
+              required
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
+            <select
+              value={formValues.sun || ''}
+              onChange={handleChange('sun')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            >
+              <option value="">Select...</option>
+              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                <option key={sign} value={sign}>{sign}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
+            <select
+              value={formValues.moon || ''}
+              onChange={handleChange('moon')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            >
+              <option value="">Select...</option>
+              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                <option key={sign} value={sign}>{sign}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Rising Sign</label>
+            <select
+              value={formValues.rising || ''}
+              onChange={handleChange('rising')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            >
+              <option value="">Select...</option>
+              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                <option key={sign} value={sign}>{sign}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (reportId === 'compatibility') {
+    return (
+      <>
+        <div className="border-b border-gray-200 pb-4 mb-4">
+          <h4 className="font-semibold text-gray-900 mb-3">User Information</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={formValues.user_name || ''}
+                onChange={handleChange('user_name')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                value={formValues.user_birth_date || ''}
+                onChange={handleChange('user_birth_date')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Birth Time <span className="text-red-500">*</span></label>
+              <input
+                type="time"
+                value={formValues.user_birth_time || ''}
+                onChange={handleChange('user_birth_time')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input
+                type="text"
+                value={formValues.user_location || ''}
+                onChange={handleChange('user_location')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="border-b border-gray-200 pb-4 mb-4">
+          <h4 className="font-semibold text-gray-900 mb-3">Partner Information</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={formValues.partner_name || ''}
+                onChange={handleChange('partner_name')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                value={formValues.partner_birth_date || ''}
+                onChange={handleChange('partner_birth_date')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Birth Time <span className="text-red-500">*</span></label>
+              <input
+                type="time"
+                value={formValues.partner_birth_time || ''}
+                onChange={handleChange('partner_birth_time')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input
+                type="text"
+                value={formValues.partner_location || ''}
+                onChange={handleChange('partner_location')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Compatibility Score (0-100)</label>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            value={formValues.compatibility_score || 0}
+            onChange={handleChange('compatibility_score')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        </div>
+      </>
+    );
+  }
+
+  if (reportId === 'transit_forecast_short' || reportId === 'transit_forecast_extended') {
+    return (
+      <>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <input
+            type="text"
+            value={formValues.name || ''}
+            onChange={handleChange('name')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+          <input
+            type="text"
+            value={formValues.date_range || ''}
+            onChange={handleChange('date_range')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Feb 4–Feb 18, 2025"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Transits</label>
+          {(formValues.transits || []).map((transit, idx) => (
+            <div key={idx} className="mb-2 p-3 border border-gray-200 rounded-lg">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={transit.aspect || ''}
+                  onChange={handleArrayChange('transits', idx, 'aspect')}
+                  placeholder="Aspect (e.g., Mars trine Sun)"
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+                <input
+                  type="text"
+                  value={transit.date || ''}
+                  onChange={handleArrayChange('transits', idx, 'date')}
+                  placeholder="Date"
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={removeArrayItem('transits', idx)}
+                className="mt-1 text-xs text-red-600 hover:text-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addArrayItem('transits', { aspect: '', date: '' })}
+            className="text-sm text-purple-600 hover:text-purple-700"
+          >
+            + Add Transit
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  // For premium reports (ESSENTIAL, ADVANCED, MASTER), render nested forms
+  if (reportId === 'ESSENTIAL') {
+    return (
+      <>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <input
+            type="text"
+            value={formValues.name || ''}
+            onChange={handleChange('name')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        </div>
+        <div className="border-t border-gray-200 pt-4 mt-4">
+          <h4 className="font-semibold text-gray-900 mb-3">Tarot Data</h4>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              value={formValues.tarot_name || ''}
+              onChange={handleChange('tarot_name')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+          </div>
+          <div className="mt-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cards</label>
+            {(formValues.tarot_cards || []).map((card, idx) => (
+              <div key={idx} className="mb-2 p-3 border border-gray-200 rounded-lg">
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={card.card || ''}
+                    onChange={handleArrayChange('tarot_cards', idx, 'card')}
+                    placeholder="Card name"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={card.position || ''}
+                    onChange={handleArrayChange('tarot_cards', idx, 'position')}
+                    placeholder="Position"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  />
+                  <select
+                    value={card.orientation || 'Upright'}
+                    onChange={handleArrayChange('tarot_cards', idx, 'orientation')}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  >
+                    <option>Upright</option>
+                    <option>Reversed</option>
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeArrayItem('tarot_cards', idx)}
+                  className="mt-1 text-xs text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addArrayItem('tarot_cards', { card: '', position: '', orientation: 'Upright' })}
+              className="text-sm text-purple-600 hover:text-purple-700"
+            >
+              + Add Card
+            </button>
+          </div>
+        </div>
+        <div className="border-t border-gray-200 pt-4 mt-4">
+          <h4 className="font-semibold text-gray-900 mb-3">Moon Data</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input
+                type="text"
+                value={formValues.moon_name || ''}
+                onChange={handleChange('moon_name')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Moon Phase</label>
+              <input
+                type="text"
+                value={formValues.moon_phase || ''}
+                onChange={handleChange('moon_phase')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phase Energy</label>
+              <input
+                type="text"
+                value={formValues.moon_phase_energy || ''}
+                onChange={handleChange('moon_phase_energy')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
+              <select
+                value={formValues.moon_sun_sign || ''}
+                onChange={handleChange('moon_sun_sign')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              >
+                <option value="">Select...</option>
+                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                  <option key={sign} value={sign}>{sign}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
+              <select
+                value={formValues.moon_moon_sign || ''}
+                onChange={handleChange('moon_moon_sign')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              >
+                <option value="">Select...</option>
+                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                  <option key={sign} value={sign}>{sign}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-gray-200 pt-4 mt-4">
+          <h4 className="font-semibold text-gray-900 mb-3">Transit Data</h4>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              value={formValues.transit_name || ''}
+              onChange={handleChange('transit_name')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+          </div>
+          <div className="mt-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <input
+              type="text"
+              value={formValues.transit_date_range || ''}
+              onChange={handleChange('transit_date_range')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // For ADVANCED and MASTER, render more complex nested forms
+  if (reportId === 'ADVANCED' || reportId === 'MASTER') {
+    return (
+      <>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <input
+            type="text"
+            value={formValues.name || ''}
+            onChange={handleChange('name')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        </div>
+        
+        {/* Birth Chart Data */}
+        <div className="border-t border-gray-200 pt-4 mt-4">
+          <h4 className="font-semibold text-gray-900 mb-3">Birth Chart Data</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input
+                type="text"
+                value={formValues.birth_name || ''}
+                onChange={handleChange('birth_name')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                value={formValues.birth_date || ''}
+                onChange={handleChange('birth_date')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Birth Time <span className="text-red-500">*</span></label>
+              <input
+                type="time"
+                value={formValues.birth_time || ''}
+                onChange={handleChange('birth_time')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input
+                type="text"
+                value={formValues.birth_location || ''}
+                onChange={handleChange('birth_location')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Latitude <span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                step="0.0001"
+                value={formValues.birth_latitude || ''}
+                onChange={handleChange('birth_latitude')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Longitude <span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                step="0.0001"
+                value={formValues.birth_longitude || ''}
+                onChange={handleChange('birth_longitude')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
+              <select
+                value={formValues.birth_sun || ''}
+                onChange={handleChange('birth_sun')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              >
+                <option value="">Select...</option>
+                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                  <option key={sign} value={sign}>{sign}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
+              <select
+                value={formValues.birth_moon || ''}
+                onChange={handleChange('birth_moon')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              >
+                <option value="">Select...</option>
+                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                  <option key={sign} value={sign}>{sign}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rising Sign</label>
+              <select
+                value={formValues.birth_rising || ''}
+                onChange={handleChange('birth_rising')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              >
+                <option value="">Select...</option>
+                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                  <option key={sign} value={sign}>{sign}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Compatibility Data */}
+        <div className="border-t border-gray-200 pt-4 mt-4">
+          <h4 className="font-semibold text-gray-900 mb-3">Compatibility Data</h4>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">User Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={formValues.user_name || ''}
+                onChange={handleChange('user_name')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">User Birth Date <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                value={formValues.user_birth_date || ''}
+                onChange={handleChange('user_birth_date')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">User Birth Time <span className="text-red-500">*</span></label>
+              <input
+                type="time"
+                value={formValues.user_birth_time || ''}
+                onChange={handleChange('user_birth_time')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">User Location</label>
+              <input
+                type="text"
+                value={formValues.user_location || ''}
+                onChange={handleChange('user_location')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Partner Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={formValues.partner_name || ''}
+                onChange={handleChange('partner_name')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Partner Birth Date <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                value={formValues.partner_birth_date || ''}
+                onChange={handleChange('partner_birth_date')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Partner Birth Time <span className="text-red-500">*</span></label>
+              <input
+                type="time"
+                value={formValues.partner_birth_time || ''}
+                onChange={handleChange('partner_birth_time')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Partner Location</label>
+              <input
+                type="text"
+                value={formValues.partner_location || ''}
+                onChange={handleChange('partner_location')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Compatibility Score (0-100)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={formValues.compatibility_score || 0}
+                onChange={handleChange('compatibility_score')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Transit Data */}
+        <div className="border-t border-gray-200 pt-4 mt-4">
+          <h4 className="font-semibold text-gray-900 mb-3">Transit Data</h4>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              value={formValues.transit_name || ''}
+              onChange={handleChange('transit_name')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+          </div>
+          <div className="mt-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <input
+              type="text"
+              value={formValues.transit_date_range || ''}
+              onChange={handleChange('transit_date_range')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+          </div>
+        </div>
+
+        {/* MASTER-only fields */}
+        {reportId === 'MASTER' && (
+          <>
+            <div className="border-t border-gray-200 pt-4 mt-4">
+              <h4 className="font-semibold text-gray-900 mb-3">Destiny Data</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cycle Name</label>
+                  <input
+                    type="text"
+                    value={formValues.destiny_cycle_name || ''}
+                    onChange={handleChange('destiny_cycle_name')}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={formValues.destiny_start_date || ''}
+                    onChange={handleChange('destiny_start_date')}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                  <input
+                    type="date"
+                    value={formValues.destiny_end_date || ''}
+                    onChange={handleChange('destiny_end_date')}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-gray-200 pt-4 mt-4">
+              <h4 className="font-semibold text-gray-900 mb-3">Relationship Matrix Data</h4>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">User Sun Sign <span className="text-red-500">*</span></label>
+                  <select
+                    value={formValues.matrix_user_sun || ''}
+                    onChange={handleChange('matrix_user_sun')}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    required
+                  >
+                    <option value="">Select...</option>
+                    {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                      <option key={sign} value={sign}>{sign}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Partner Sun Sign <span className="text-red-500">*</span></label>
+                  <select
+                    value={formValues.matrix_partner_sun || ''}
+                    onChange={handleChange('matrix_partner_sun')}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    required
+                  >
+                    <option value="">Select...</option>
+                    {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                      <option key={sign} value={sign}>{sign}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-4">
+                {['emotional', 'communication', 'spiritual', 'stability', 'physical'].map(scoreType => (
+                  <div key={scoreType}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">{scoreType} (0-100)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formValues[`matrix_${scoreType}`] || 0}
+                      onChange={handleChange(`matrix_${scoreType}`)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="border-t border-gray-200 pt-4 mt-4">
+              <h4 className="font-semibold text-gray-900 mb-3">Karmic Data</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">North Node</label>
+                  <select
+                    value={formValues.karmic_north_node || ''}
+                    onChange={handleChange('karmic_north_node')}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="">Select...</option>
+                    {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                      <option key={sign} value={sign}>{sign}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">South Node</label>
+                  <select
+                    value={formValues.karmic_south_node || ''}
+                    onChange={handleChange('karmic_south_node')}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="">Select...</option>
+                    {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
+                      <option key={sign} value={sign}>{sign}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </>
+    );
+  }
+
+  return <div className="text-gray-600">Form not available for this report type</div>;
 }
 
