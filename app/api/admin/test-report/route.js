@@ -48,35 +48,34 @@ export async function POST(request) {
     const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
 
     // Handle nested data structure (body.data) or flat structure (body)
-    const source = body.data || body;
+    const root = body.data || body;
 
-    const getPartnerDate = (b) => {
-      return (
-        b.partner_birth_date ||
-        b.partnerBirthDate ||
-        b.partnerDate ||
-        b.partner_date ||
-        b.partnerDob ||
-        (b.partner && (b.partner.birthDate || b.partner.birth_date)) ||
-        null
-      );
-    };
+    // Helpers to find nested data safely
+    const getUser = () => root.birth_chart_data || root.user || root;
+    const getPartner = () => root.compatibility_data?.partner || root.partner || root;
+
+    const userSource = getUser();
+    const partnerSource = getPartner();
 
     const inputData = {
-      name: source.name,
-      birthDate: source.birth_date || source.birthDate,
-      birthTime: source.birth_time || source.birthTime,
-      birthCity: source.location || source.birthCity,
-      lat: source.latitude,
-      lng: source.longitude,
-      // PARTNER MAPPING (Crucial Fix)
-      partnerName: source.partner_name || source.partnerName || (source.partner && source.partner.name),
-      partnerBirthDate: getPartnerDate(source),
-      partnerBirthTime: source.partner_birth_time || source.partnerBirthTime || (source.partner && source.partner.time),
-      partnerCity: source.partner_location || source.partnerCity || (source.partner ? source.partner.location : undefined),
-      partnerLat: source.partner_latitude || (source.partner && source.partner.latitude),
-      partnerLng: source.partner_longitude || (source.partner && source.partner.longitude),
+      // User Data (from birth_chart_data)
+      name: userSource.name,
+      birthDate: userSource.birth_date || userSource.birthDate,
+      birthTime: userSource.birth_time || userSource.birthTime,
+      birthCity: userSource.location || userSource.birthCity,
+      lat: userSource.latitude || userSource.lat,
+      lng: userSource.longitude || userSource.lng,
+
+      // Partner Data (from compatibility_data.partner)
+      partnerName: partnerSource.name || partnerSource.partnerName,
+      partnerBirthDate: partnerSource.birth_date || partnerSource.partnerBirthDate || partnerSource.birthDate,
+      partnerBirthTime: partnerSource.birth_time || partnerSource.partnerBirthTime || partnerSource.birthTime,
+      partnerCity: partnerSource.location || partnerSource.partnerCity || partnerSource.partnerLocation,
+      partnerLat: partnerSource.latitude,
+      partnerLng: partnerSource.longitude,
     };
+
+    console.log('DEBUG PARTNER DATE:', inputData.partnerBirthDate);
     console.log('MAPPED INPUT DATA:', JSON.stringify(inputData, null, 2));
 
     if (!report_type) {
