@@ -33,6 +33,23 @@ export async function POST(request) {
     const body = await request.json();
     const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
 
+    const inputData = {
+      name: body.name,
+      birthDate: body.birth_date || body.birthDate,
+      birthTime: body.birth_time || body.birthTime,
+      birthCity: body.location || body.birthCity,
+      lat: body.latitude,
+      lng: body.longitude,
+      // PARTNER MAPPING (Crucial Fix)
+      partnerName: body.partner_name || body.partnerName,
+      partnerBirthDate: body.partner_birth_date || body.partnerBirthDate,
+      partnerBirthTime: body.partner_birth_time || body.partnerBirthTime,
+      partnerCity: body.partner_location || body.partnerCity,
+      partnerLat: body.partner_latitude,
+      partnerLng: body.partner_longitude,
+    };
+    console.log('MAPPED INPUT DATA:', JSON.stringify(inputData, null, 2));
+
     if (!report_type) {
       return NextResponse.json({ error: 'report_type is required' }, { status: 400 });
     }
