@@ -52,6 +52,7 @@
     "recharts": "^3.3.0",
     "resend": "^3.2.0",
     "stripe": "^14.14.0",
+    "sweph-wasm": "^2.6.9",
     "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
