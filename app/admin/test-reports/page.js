@@ -311,28 +311,64 @@ export default function TestReportsPage() {
         }),
       });
 
-      const data = await response.json();
+      // Check content type before parsing
+      const contentType = response.headers.get('content-type') || '';
 
-      if (response.ok) {
-        setResult({
-          reportType,
-          ...data,
-        });
-        
-        // Auto-download PDF if available
-        if (data.pdfUrl) {
-          setTimeout(() => {
-            const link = document.createElement('a');
-            link.href = data.pdfUrl;
-            link.download = `test-report-${reportType}-${new Date().toISOString()}.pdf`;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }, 500);
+      if (contentType.includes('application/pdf')) {
+        // Handle PDF response - download as blob
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `test-report-${reportType}-${new Date().toISOString()}.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        setTesting(null);
+        return;
+      } else if (contentType.includes('text/html')) {
+        // Handle HTML response - open in new window
+        const html = await response.text();
+        const win = window.open();
+        if (win) {
+          win.document.write(html);
+          win.document.close();
+        } else {
+          setError('Popup blocked. Please allow popups for this site to view HTML reports.');
+        }
+        setTesting(null);
+        return;
+      } else if (contentType.includes('application/json')) {
+        // Handle JSON response - parse and handle success/error
+        const data = await response.json();
+
+        if (response.ok) {
+          setResult({
+            reportType,
+            ...data,
+          });
+          
+          // Auto-download PDF if available
+          if (data.pdfUrl) {
+            setTimeout(() => {
+              const link = document.createElement('a');
+              link.href = data.pdfUrl;
+              link.download = `test-report-${reportType}-${new Date().toISOString()}.pdf`;
+              link.target = '_blank';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }, 500);
+          }
+        } else {
+          setError(data.error || "Failed to generate report");
         }
       } else {
-        setError(data.error || "Failed to generate report");
+        // Unknown content type - try to parse as text
+        const text = await response.text();
+        setError(`Unexpected response type: ${contentType}. Response: ${text.substring(0, 200)}`);
       }
     } catch (err) {
       setError(err.message || "Network error");
