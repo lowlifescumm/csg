@@ -1,5 +1,7 @@
 import { calculateBirthChart } from "@/lib/astrology";
 
+type BirthChartResult = ReturnType<typeof calculateBirthChart>;
+
 export interface UserInput {
   name: string;
   birthDate: string | Date;
@@ -41,7 +43,10 @@ export interface CalculatedChartData {
   southNode: PlanetaryPosition | null;
   planetaryPositions: PlanetaryPosition[];
   aspectMatrix: AspectEntry[];
-  rawChart: ReturnType<typeof calculateBirthChart>;
+  planets: Record<string, PlanetaryPosition>;
+  houses: BirthChartResult["houses"];
+  isSaturnReturn: boolean;
+  rawChart: BirthChartResult;
 }
 
 const STATIC_CITY_DB: Record<string, Coordinates> = {
@@ -67,19 +72,24 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   const chart = calculateBirthChart(input.birthDate, input.birthTime, coordinates.latitude, coordinates.longitude);
 
   const planetaryPositions = extractPlanetaryPositions(chart);
+  const planets = mergePlanetHouses(chart);
   const { northNode, southNode } = extractNodes(chart);
   const aspectMatrix = buildAspectMatrix(chart.aspects || []);
+  const houses = chart.houses || {};
 
   return {
     input,
     coordinates,
     sunSign: chart.planets?.sun?.sign ?? "Unknown",
     moonSign: chart.planets?.moon?.sign ?? "Unknown",
-    risingSign: chart.ascendant ?? chart.houses?.[1]?.sign ?? "Unknown",
+    risingSign: chart.ascendant ?? houses?.[1]?.sign ?? "Unknown",
     northNode,
     southNode,
     planetaryPositions,
     aspectMatrix,
+    planets,
+    houses,
+    isSaturnReturn: Boolean((chart as any)?.isSaturnReturn),
     rawChart: chart,
   };
 }
@@ -192,6 +202,35 @@ function extractPlanetaryPositions(chart: ReturnType<typeof calculateBirthChart>
       house: chart.planetHouses?.[key] ?? null,
       retrograde: data.retrograde ?? false,
     });
+  }
+
+  return planets;
+}
+
+function mergePlanetHouses(chart: BirthChartResult): Record<string, PlanetaryPosition> {
+  const planets: Record<string, PlanetaryPosition> = {};
+  if (!chart?.planets) return planets;
+
+  for (const [key, data] of Object.entries(chart.planets)) {
+    if (!data) continue;
+    const lowerKey = key.toLowerCase();
+    const house =
+      chart.planetHouses?.[key] ??
+      chart.planetHouses?.[lowerKey] ??
+      (lowerKey === "northnode"
+        ? chart.planetHouses?.northnode
+        : lowerKey === "southnode"
+        ? chart.planetHouses?.southnode
+        : (data as any).house ?? null);
+
+    planets[key] = {
+      name: capitalize(key),
+      sign: (data as any).sign ?? "Unknown",
+      degree: roundTo((data as any).degree ?? 0, 2),
+      longitude: roundTo((data as any).longitude ?? 0, 4),
+      house: house ?? null,
+      retrograde: (data as any).retrograde ?? false,
+    };
   }
 
   return planets;
