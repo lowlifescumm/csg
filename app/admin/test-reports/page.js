@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import PremiumReportInputForm from "@/components/PremiumReportInputForm";
 import {
   ArrowLeft,
   FileText,
@@ -417,7 +418,31 @@ export default function TestReportsPage() {
   };
 
   const openCustomDataEditor = (reportId) => {
-    // Initialize form data with sample data if not already set
+    // For premium reports (ADVANCED, MASTER), use the simplified input form
+    if (reportId === 'ADVANCED' || reportId === 'MASTER') {
+      // Initialize with sample data if available
+      if (!formData[reportId]) {
+        const sample = SAMPLE_DATA[reportId] || {};
+        setFormData((prev) => ({
+          ...prev,
+          [reportId]: {
+            name: sample.name || sample.birth_chart_data?.name || '',
+            birthDate: sample.birth_chart_data?.birth_date || '',
+            birthTime: sample.birth_chart_data?.birth_time || '',
+            birthCity: sample.birth_chart_data?.location || '',
+            partnerName: sample.compatibility_data?.partner?.name || '',
+            partnerBirthDate: sample.compatibility_data?.partner?.birth_date || '',
+            partnerBirthTime: sample.compatibility_data?.partner?.birth_time || '',
+            partnerBirthCity: sample.compatibility_data?.partner?.location || '',
+          },
+        }));
+      }
+      setCustomDataError(null);
+      setEditingReport(reportId);
+      return;
+    }
+
+    // For other reports, use the old form system
     if (!formData[reportId]) {
       const sample = SAMPLE_DATA[reportId] || SAMPLE_DATA[reportId?.toUpperCase()] || {};
       setFormData((prev) => ({
@@ -737,6 +762,12 @@ export default function TestReportsPage() {
   const handleSaveCustomData = () => {
     if (!editingReport) return;
     
+    // For premium reports, data is saved via PremiumReportInputForm onSubmit
+    // This function is only for non-premium reports
+    if (editingReport === 'ADVANCED' || editingReport === 'MASTER') {
+      return;
+    }
+    
     const currentFormData = formData[editingReport] || {};
     
     // Validate required fields based on report type
@@ -758,42 +789,119 @@ export default function TestReportsPage() {
     setEditingReport(null);
   };
 
+  const handlePremiumReportSubmit = (inputData) => {
+    if (!editingReport) return;
+
+    // Build the data structure expected by the report generator
+    // This converts raw inputs to the format needed for report generation
+    const builtData = {
+      name: inputData.name,
+      birth_chart_data: {
+        name: inputData.name,
+        birth_date: inputData.birthDate,
+        birth_time: inputData.birthTime,
+        location: inputData.birthCity,
+        latitude: inputData.birthLatitude,
+        longitude: inputData.birthLongitude,
+        // These will be calculated server-side
+        sun: '',
+        moon: '',
+        rising: '',
+        planets: {},
+        houses: {},
+        aspects: [],
+      },
+    };
+
+    // Add compatibility data if partner info is provided
+    if (inputData.partnerName && inputData.partnerBirthDate && inputData.partnerBirthTime && inputData.partnerBirthCity) {
+      builtData.compatibility_data = {
+        user: {
+          name: inputData.name,
+          birth_date: inputData.birthDate,
+          birth_time: inputData.birthTime,
+          location: inputData.birthCity,
+        },
+        partner: {
+          name: inputData.partnerName,
+          birth_date: inputData.partnerBirthDate,
+          birth_time: inputData.partnerBirthTime,
+          location: inputData.partnerBirthCity,
+        },
+        aspects: [],
+        compatibility_score: 0, // Will be calculated server-side
+      };
+    }
+
+    // Add transit data (will be calculated server-side)
+    builtData.transit_data = {
+      name: inputData.name,
+      date_range: '',
+      transits: [],
+    };
+
+    // Add MASTER-specific data (will be calculated server-side)
+    if (editingReport === 'MASTER') {
+      builtData.destiny_data = {
+        cycle_name: '',
+        start_date: '',
+        end_date: '',
+        themes: [],
+      };
+      builtData.matrix_data = {
+        pair: {
+          user: { sun: '' },
+          partner: { sun: '' },
+        },
+        matrix_scores: {
+          emotional: 0,
+          communication: 0,
+          spiritual: 0,
+          stability: 0,
+          physical: 0,
+        },
+      };
+      builtData.karmic_data = {
+        placements: {},
+        aspects: [],
+        nodes: {
+          north_node: '',
+          south_node: '',
+        },
+      };
+    }
+
+    // Save to custom data map
+    setCustomDataMap((prev) => ({
+      ...prev,
+      [editingReport]: builtData,
+    }));
+    setCustomDataError(null);
+    setEditingReport(null);
+  };
+
   const validateFormData = (reportId, formValues) => {
+    // Premium reports (ADVANCED, MASTER) use PremiumReportInputForm which handles its own validation
+    if (reportId === 'ADVANCED' || reportId === 'MASTER') {
+      return [];
+    }
+
     const errors = [];
     
-    if (reportId === 'birth_chart' || reportId === 'ADVANCED' || reportId === 'MASTER') {
-      if (reportId === 'birth_chart') {
-        if (!formValues.birth_date) errors.push('Birth date is required');
-        if (!formValues.birth_time) errors.push('Birth time is required');
-        if (!formValues.latitude || isNaN(parseFloat(formValues.latitude))) errors.push('Valid latitude is required');
-        if (!formValues.longitude || isNaN(parseFloat(formValues.longitude))) errors.push('Valid longitude is required');
-      } else {
-        if (!formValues.birth_date) errors.push('Birth date is required');
-        if (!formValues.birth_time) errors.push('Birth time is required');
-        if (!formValues.birth_latitude || isNaN(parseFloat(formValues.birth_latitude))) errors.push('Valid birth latitude is required');
-        if (!formValues.birth_longitude || isNaN(parseFloat(formValues.birth_longitude))) errors.push('Valid birth longitude is required');
-      }
+    if (reportId === 'birth_chart') {
+      if (!formValues.birth_date) errors.push('Birth date is required');
+      if (!formValues.birth_time) errors.push('Birth time is required');
+      if (!formValues.latitude || isNaN(parseFloat(formValues.latitude))) errors.push('Valid latitude is required');
+      if (!formValues.longitude || isNaN(parseFloat(formValues.longitude))) errors.push('Valid longitude is required');
     }
     
-    if (reportId === 'compatibility' || reportId === 'ADVANCED' || reportId === 'MASTER') {
+    if (reportId === 'compatibility') {
       if (!formValues.user_birth_date) errors.push('User birth date is required');
       if (!formValues.user_birth_time) errors.push('User birth time is required');
       if (!formValues.partner_birth_date) errors.push('Partner birth date is required');
       if (!formValues.partner_birth_time) errors.push('Partner birth time is required');
       const score = parseInt(formValues.compatibility_score);
       if (isNaN(score) || score < 0 || score > 100) errors.push('Compatibility score must be between 0-100');
-    }
-    
-    if (reportId === 'MASTER') {
-      if (!formValues.matrix_user_sun) errors.push('Matrix user sun sign is required');
-      if (!formValues.matrix_partner_sun) errors.push('Matrix partner sun sign is required');
-      const scores = ['emotional', 'communication', 'spiritual', 'stability', 'physical'];
-      scores.forEach(scoreType => {
-        const score = parseInt(formValues[`matrix_${scoreType}`]);
-        if (isNaN(score) || score < 0 || score > 100) {
-          errors.push(`Matrix ${scoreType} score must be between 0-100`);
-        }
-      });
     }
     
     return errors;
@@ -1053,7 +1161,9 @@ export default function TestReportsPage() {
                     Customize Data – {reportIdToName(editingReport)}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Fill out the form fields to customize the test data. All fields are validated to prevent invalid data.
+                    {editingReport === 'ADVANCED' || editingReport === 'MASTER' 
+                      ? 'Enter your birth information. All calculations (signs, scores, transits) will be done automatically.'
+                      : 'Fill out the form fields to customize the test data. All fields are validated to prevent invalid data.'}
                   </p>
                 </div>
                 <button
@@ -1070,40 +1180,52 @@ export default function TestReportsPage() {
                 </div>
               )}
               
-              <div className="space-y-4">
-                {renderFormFields(editingReport, formData[editingReport] || {}, (field, value) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    [editingReport]: {
-                      ...(prev[editingReport] || {}),
-                      [field]: value,
-                    },
-                  }));
-                })}
-              </div>
-              
-              <div className="mt-6 flex flex-wrap gap-3 justify-between items-center pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => handleRemoveCustomData(editingReport)}
-                  className="text-sm text-red-600 hover:text-red-700"
-                >
-                  Remove custom data
-                </button>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setEditingReport(null)}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveCustomData}
-                    className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
-                  >
-                    Save & Close
-                  </button>
-                </div>
-              </div>
+              {/* Use PremiumReportInputForm for ADVANCED and MASTER reports */}
+              {(editingReport === 'ADVANCED' || editingReport === 'MASTER') ? (
+                <PremiumReportInputForm
+                  initialData={formData[editingReport] || {}}
+                  onSubmit={handlePremiumReportSubmit}
+                  onCancel={() => setEditingReport(null)}
+                  requirePartner={editingReport === 'MASTER'} // MASTER reports require partner data
+                />
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    {renderFormFields(editingReport, formData[editingReport] || {}, (field, value) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        [editingReport]: {
+                          ...(prev[editingReport] || {}),
+                          [field]: value,
+                        },
+                      }));
+                    })}
+                  </div>
+                  
+                  <div className="mt-6 flex flex-wrap gap-3 justify-between items-center pt-4 border-t border-gray-200">
+                    <button
+                      onClick={() => handleRemoveCustomData(editingReport)}
+                      className="text-sm text-red-600 hover:text-red-700"
+                    >
+                      Remove custom data
+                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setEditingReport(null)}
+                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveCustomData}
+                        className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
+                      >
+                        Save & Close
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
