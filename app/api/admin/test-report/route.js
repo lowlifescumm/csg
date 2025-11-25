@@ -57,22 +57,22 @@ export async function POST(request) {
     const userSource = getUser();
     const partnerSource = getPartner();
 
+    // Build inputData with correct key names matching UserInput interface
     const inputData = {
       // User Data (from birth_chart_data)
       name: userSource.name,
       birthDate: userSource.birth_date || userSource.birthDate,
       birthTime: userSource.birth_time || userSource.birthTime,
       birthCity: userSource.location || userSource.birthCity,
-      lat: userSource.latitude || userSource.lat,
-      lng: userSource.longitude || userSource.lng,
+      birthLatitude: userSource.latitude || userSource.lat,
+      birthLongitude: userSource.longitude || userSource.lng,
 
       // Partner Data (from compatibility_data.partner)
-      partnerName: partnerSource.name || partnerSource.partnerName,
       partnerBirthDate: partnerSource.birth_date || partnerSource.partnerBirthDate || partnerSource.birthDate,
       partnerBirthTime: partnerSource.birth_time || partnerSource.partnerBirthTime || partnerSource.birthTime,
-      partnerCity: partnerSource.location || partnerSource.partnerCity || partnerSource.partnerLocation,
-      partnerLat: partnerSource.latitude,
-      partnerLng: partnerSource.longitude,
+      partnerBirthCity: partnerSource.location || partnerSource.partnerCity || partnerSource.partnerLocation,
+      partnerBirthLatitude: partnerSource.latitude || partnerSource.partnerLat,
+      partnerBirthLongitude: partnerSource.longitude || partnerSource.partnerLng,
     };
 
     console.log('DEBUG PARTNER DATE:', inputData.partnerBirthDate);
@@ -89,16 +89,15 @@ export async function POST(request) {
       return NextResponse.json({ error: `No sample data available for ${report_type}` }, { status: 400 });
     }
 
-    // Hydrate natal chart data for premium reports if raw inputs were provided
-    const chartInput = sampleData?.natalChart || sampleData?.birth_chart_data;
-    const hydrationInput = (!hasPopulatedPlanetData(chartInput) && chartInput)
-      ? buildHydrationInput(chartInput, sampleData)
-      : null;
+    // Hydrate natal chart data using inputData if we have required fields
+    const hasValidInput = inputData.name && inputData.birthDate && inputData.birthTime && 
+                          (inputData.birthCity || (inputData.birthLatitude && inputData.birthLongitude));
 
-    if (hydrationInput) {
+    if (hasValidInput) {
       try {
-        const calculatedData = await hydrateReportData(hydrationInput);
-        const natalChart = buildNatalChartPayload(calculatedData, hydrationInput);
+        // THE FIX: Pass 'inputData', not the old variable
+        const calculatedData = await hydrateReportData(inputData);
+        const natalChart = buildNatalChartPayload(calculatedData, inputData);
 
         if (natalChart) {
           sampleData.natalChart = natalChart;
@@ -111,6 +110,28 @@ export async function POST(request) {
           { error: 'Failed to hydrate chart data', details: hydrationError.message },
           { status: 400 }
         );
+      }
+    } else {
+      // Fallback: Try to hydrate from sampleData if inputData is incomplete
+      const chartInput = sampleData?.natalChart || sampleData?.birth_chart_data;
+      const hydrationInput = (!hasPopulatedPlanetData(chartInput) && chartInput)
+        ? buildHydrationInput(chartInput, sampleData)
+        : null;
+
+      if (hydrationInput) {
+        try {
+          const calculatedData = await hydrateReportData(hydrationInput);
+          const natalChart = buildNatalChartPayload(calculatedData, hydrationInput);
+
+          if (natalChart) {
+            sampleData.natalChart = natalChart;
+            sampleData.birth_chart_data = natalChart;
+            console.log('DEBUG CHART DATA:', JSON.stringify(natalChart, null, 2));
+          }
+        } catch (hydrationError) {
+          console.error('[Test Report] Chart hydration failed:', hydrationError);
+          // Don't fail the request, just log the error
+        }
       }
     }
 
