@@ -47,6 +47,9 @@ export async function POST(request) {
     );
     const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
 
+    // Handle nested data structure (body.data) or flat structure (body)
+    const source = body.data || body;
+
     const getPartnerDate = (b) => {
       return (
         b.partner_birth_date ||
@@ -60,19 +63,19 @@ export async function POST(request) {
     };
 
     const inputData = {
-      name: body.name,
-      birthDate: body.birth_date || body.birthDate,
-      birthTime: body.birth_time || body.birthTime,
-      birthCity: body.location || body.birthCity,
-      lat: body.latitude,
-      lng: body.longitude,
+      name: source.name,
+      birthDate: source.birth_date || source.birthDate,
+      birthTime: source.birth_time || source.birthTime,
+      birthCity: source.location || source.birthCity,
+      lat: source.latitude,
+      lng: source.longitude,
       // PARTNER MAPPING (Crucial Fix)
-      partnerName: body.partner_name || body.partnerName || (body.partner && body.partner.name),
-      partnerBirthDate: getPartnerDate(body),
-      partnerBirthTime: body.partner_birth_time || body.partnerBirthTime || (body.partner && body.partner.time),
-      partnerCity: body.partner_location || body.partnerCity || (body.partner ? body.partner.location : undefined),
-      partnerLat: body.partner_latitude || (body.partner && body.partner.latitude),
-      partnerLng: body.partner_longitude || (body.partner && body.partner.longitude),
+      partnerName: source.partner_name || source.partnerName || (source.partner && source.partner.name),
+      partnerBirthDate: getPartnerDate(source),
+      partnerBirthTime: source.partner_birth_time || source.partnerBirthTime || (source.partner && source.partner.time),
+      partnerCity: source.partner_location || source.partnerCity || (source.partner ? source.partner.location : undefined),
+      partnerLat: source.partner_latitude || (source.partner && source.partner.latitude),
+      partnerLng: source.partner_longitude || (source.partner && source.partner.longitude),
     };
     console.log('MAPPED INPUT DATA:', JSON.stringify(inputData, null, 2));
 
