@@ -47,7 +47,7 @@ export async function POST(request) {
     );
     const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
 
-    const getPartnerDate = (b: any) => {
+    const getPartnerDate = (b) => {
       return (
         b.partner_birth_date ||
         b.partnerBirthDate ||
