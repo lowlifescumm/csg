@@ -31,35 +31,28 @@ export async function POST(request) {
     // }
 
     const body = await request.json();
-    console.log('RAW BODY KEYS:', Object.keys(body));
-    console.log(
-      'RAW BODY PARTNER DATA:',
-      JSON.stringify(
-        {
-          partner_birth_date: body.partner_birth_date,
-          partnerBirthDate: body.partnerBirthDate,
-          partnerDate: body.partnerDate,
-          partner: body.partner,
-        },
-        null,
-        2,
-      ),
-    );
     const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
 
-    // Handle nested data structure (body.data) or flat structure (body)
+    if (!report_type) {
+      return NextResponse.json({ error: 'report_type is required' }, { status: 400 });
+    }
+
+    // ============================================
+    // STEP 1: UNWRAP THE PAYLOAD (Input Layer)
+    // ============================================
     const root = body.data || body;
 
-    // Helpers to find nested data safely
-    const getUser = () => root.birth_chart_data || root.user || root;
-    const getPartner = () => root.compatibility_data?.partner || root.partner || root;
+    // Check for user data in birth_chart_data or user
+    const userSource = root.birth_chart_data || root.user || root;
+    
+    // Check for partner data in compatibility_data.partner or partner
+    const partnerSource = root.compatibility_data?.partner || root.partner;
 
-    const userSource = getUser();
-    const partnerSource = getPartner();
-
-    // Build inputData with correct key names matching UserInput interface
-    const inputData = {
-      // User Data (from birth_chart_data)
+    // ============================================
+    // STEP 2: MAP TO STANDARD INTERFACE
+    // ============================================
+    const hydrationInput = {
+      // User fields
       name: userSource.name,
       birthDate: userSource.birth_date || userSource.birthDate,
       birthTime: userSource.birth_time || userSource.birthTime,
@@ -67,21 +60,69 @@ export async function POST(request) {
       birthLatitude: userSource.latitude || userSource.lat,
       birthLongitude: userSource.longitude || userSource.lng,
 
-      // Partner Data (from compatibility_data.partner)
-      partnerBirthDate: partnerSource.birth_date || partnerSource.partnerBirthDate || partnerSource.birthDate,
-      partnerBirthTime: partnerSource.birth_time || partnerSource.partnerBirthTime || partnerSource.birthTime,
-      partnerBirthCity: partnerSource.location || partnerSource.partnerCity || partnerSource.partnerLocation,
-      partnerBirthLatitude: partnerSource.latitude || partnerSource.partnerLat,
-      partnerBirthLongitude: partnerSource.longitude || partnerSource.partnerLng,
+      // Partner fields (only if partner data exists)
+      ...(partnerSource && {
+        partnerBirthDate: partnerSource.birth_date || partnerSource.partnerBirthDate || partnerSource.birthDate,
+        partnerBirthTime: partnerSource.birth_time || partnerSource.partnerBirthTime || partnerSource.birthTime,
+        partnerBirthCity: partnerSource.location || partnerSource.partnerCity || partnerSource.partnerLocation,
+        partnerBirthLatitude: partnerSource.latitude || partnerSource.partnerLat,
+        partnerBirthLongitude: partnerSource.longitude || partnerSource.partnerLng,
+      }),
     };
 
-    console.log('DEBUG PARTNER DATE:', inputData.partnerBirthDate);
-    console.log('MAPPED INPUT DATA:', JSON.stringify(inputData, null, 2));
+    console.log('ROUTE INPUT:', JSON.stringify(hydrationInput, null, 2));
 
-    if (!report_type) {
-      return NextResponse.json({ error: 'report_type is required' }, { status: 400 });
+    // Validate required user fields
+    if (!hydrationInput.name || !hydrationInput.birthDate || !hydrationInput.birthTime) {
+      return NextResponse.json(
+        { error: 'Missing required user fields: name, birthDate, birthTime' },
+        { status: 400 }
+      );
     }
 
+    if (!hydrationInput.birthCity && (!hydrationInput.birthLatitude || !hydrationInput.birthLongitude)) {
+      return NextResponse.json(
+        { error: 'Missing location: birthCity or (birthLatitude and birthLongitude)' },
+        { status: 400 }
+      );
+    }
+
+    // ============================================
+    // STEP 3: CALL THE HYDRATOR (Calculation Layer)
+    // ============================================
+    let calculatedData;
+    try {
+      calculatedData = await hydrateReportData(hydrationInput);
+      console.log('HYDRATOR OUTPUT:', JSON.stringify({
+        hasPartner: !!calculatedData.partner,
+        partnerSun: calculatedData.partner?.sun?.sign,
+        matrixScores: calculatedData.matrix_scores,
+      }, null, 2));
+    } catch (hydrationError) {
+      console.error('[Test Report] Chart hydration failed:', hydrationError);
+      return NextResponse.json(
+        { error: 'Failed to hydrate chart data', details: hydrationError.message },
+        { status: 400 }
+      );
+    }
+
+    // ============================================
+    // STEP 4: VALIDATION GATE (Safety Check)
+    // ============================================
+    if (hydrationInput.partnerBirthDate && !calculatedData.partner) {
+      throw new Error("CRITICAL FAILURE: Partner input received, but Hydrator returned NULL partner data.");
+    }
+
+    if (calculatedData.partner && (!calculatedData.partner.sun || !calculatedData.partner.sun.sign)) {
+      throw new Error("CRITICAL FAILURE: Partner data exists, but Sun Sign was not calculated.");
+    }
+
+    console.log("✅ DATA VALIDATION PASSED. Partner Sun Sign:", calculatedData.partner?.sun?.sign);
+    console.log("✅ Matrix Scores:", calculatedData.matrix_scores ? JSON.stringify(calculatedData.matrix_scores) : 'null');
+
+    // ============================================
+    // STEP 5: PREPARE DATA FOR REPORT GENERATION
+    // ============================================
     // Sample data if not provided
     const sampleData = data || getSampleData(report_type);
 
@@ -89,50 +130,48 @@ export async function POST(request) {
       return NextResponse.json({ error: `No sample data available for ${report_type}` }, { status: 400 });
     }
 
-    // Hydrate natal chart data using inputData if we have required fields
-    const hasValidInput = inputData.name && inputData.birthDate && inputData.birthTime && 
-                          (inputData.birthCity || (inputData.birthLatitude && inputData.birthLongitude));
-
-    if (hasValidInput) {
-      try {
-        // THE FIX: Pass 'inputData', not the old variable
-        const calculatedData = await hydrateReportData(inputData);
-        const natalChart = buildNatalChartPayload(calculatedData, inputData);
-
-        if (natalChart) {
-          sampleData.natalChart = natalChart;
-          sampleData.birth_chart_data = natalChart;
-          console.log('DEBUG CHART DATA:', JSON.stringify(natalChart, null, 2));
-        }
-      } catch (hydrationError) {
-        console.error('[Test Report] Chart hydration failed:', hydrationError);
-        return NextResponse.json(
-          { error: 'Failed to hydrate chart data', details: hydrationError.message },
-          { status: 400 }
-        );
+    // Merge calculated data into sampleData
+    if (calculatedData && calculatedData.user) {
+      // Build natal chart payload for user
+      const natalChart = buildNatalChartPayload(calculatedData.user, hydrationInput);
+      if (natalChart) {
+        sampleData.natalChart = natalChart;
+        sampleData.birth_chart_data = natalChart;
       }
-    } else {
-      // Fallback: Try to hydrate from sampleData if inputData is incomplete
-      const chartInput = sampleData?.natalChart || sampleData?.birth_chart_data;
-      const hydrationInput = (!hasPopulatedPlanetData(chartInput) && chartInput)
-        ? buildHydrationInput(chartInput, sampleData)
-        : null;
 
-      if (hydrationInput) {
-        try {
-          const calculatedData = await hydrateReportData(hydrationInput);
-          const natalChart = buildNatalChartPayload(calculatedData, hydrationInput);
+      // Add user chart data
+      sampleData.user = calculatedData.user;
+      sampleData.chart1 = calculatedData.user;
 
-          if (natalChart) {
-            sampleData.natalChart = natalChart;
-            sampleData.birth_chart_data = natalChart;
-            console.log('DEBUG CHART DATA:', JSON.stringify(natalChart, null, 2));
-          }
-        } catch (hydrationError) {
-          console.error('[Test Report] Chart hydration failed:', hydrationError);
-          // Don't fail the request, just log the error
+      // Add partner data if it exists
+      if (calculatedData.partner) {
+        sampleData.partner = calculatedData.partner;
+        sampleData.chart2 = calculatedData.partner;
+        sampleData.compatibility_data = {
+          ...sampleData.compatibility_data,
+          partner: calculatedData.partner,
+          user: calculatedData.user || natalChart,
+        };
+      }
+
+      // Add matrix scores if they exist
+      if (calculatedData.matrix_scores) {
+        sampleData.matrix_scores = calculatedData.matrix_scores;
+        if (sampleData.matrix_data) {
+          sampleData.matrix_data.matrix_scores = calculatedData.matrix_scores;
         }
       }
+
+      // Add compatibility score
+      if (calculatedData.compatibility_score !== undefined) {
+        sampleData.compatibility_score = calculatedData.compatibility_score;
+        if (sampleData.compatibility_data) {
+          sampleData.compatibility_data.compatibility_score = calculatedData.compatibility_score;
+        }
+      }
+
+      // Add chartData for prompt generation (full structure)
+      sampleData.chartData = calculatedData;
     }
 
     const progressCallback = (percent, message) => {

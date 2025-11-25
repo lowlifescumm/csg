@@ -256,18 +256,11 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     rawChart: chart,
   };
 
-  // Robust partner data check (supports string or Date objects)
-  const hasPartnerDate =
-    Boolean(input.partnerBirthDate) &&
-    input.partnerBirthDate !== '' &&
-    new Date(
-      input.partnerBirthDate instanceof Date
-        ? input.partnerBirthDate.toISOString()
-        : input.partnerBirthDate
-    ).toString() !== 'Invalid Date';
+  // Trigger Logic: Simple check for partner birth date
+  const hasPartner = !!input.partnerBirthDate;
 
   // Check if partner data exists
-  if (hasPartnerDate) {
+  if (hasPartner) {
     console.log('Partner Data Found. Calculating...');
     try {
       // Validate partner input
@@ -322,85 +315,43 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       // Calculate relationship matrix scores (ensure it's never null)
       const matrixScores = calculateRelationshipMatrix(userChart, partnerChartData);
 
-      // Return with explicit structure including partner data
+      // Explicit Return Structure
       return {
-        // User Data
-        ...userChart,
-        name: input.name,
-        birth_date: input.birthDate,
-        sun: userChart.planets?.sun || chart.planets?.sun,
-        moon: userChart.planets?.moon || chart.planets?.moon,
-        rising: userChart.risingSign || chart.ascendant,
-        planets: userChart.planets || chart.planets,
-        houses: userChart.houses || chart.houses,
-
-        // PARTNER DATA (The Fix)
+        user: userChart,
         partner: {
-          name: input.partnerBirthCity ? `${input.name} (Partner)` : "Partner",
-          birth_date: input.partnerBirthDate,
-          sun: partnerChartData.planets?.sun || partnerChart.planets?.sun,
-          moon: partnerChartData.planets?.moon || partnerChart.planets?.moon,
+          // Must include { sun: { sign: '...' } }
+          sun: partnerChartData.planets?.sun || partnerChart.planets?.sun || { sign: partnerChartData.sunSign },
+          moon: partnerChartData.planets?.moon || partnerChart.planets?.moon || { sign: partnerChartData.moonSign },
           rising: partnerChartData.risingSign || partnerChart.ascendant,
           planets: partnerChartData.planets || partnerChart.planets,
           houses: partnerChartData.houses || partnerChart.houses,
+          name: input.partnerBirthCity ? `${input.name} (Partner)` : "Partner",
+          birth_date: input.partnerBirthDate,
           // Include full partner chart data for compatibility
           ...partnerChartData,
         },
-
-        // SCORES
-        matrix_scores: matrixScores, // Ensure this variable is calculated before return
+        matrix_scores: matrixScores, // Real numbers (0-100) based on aspects
         compatibility_score: compatibilityScore,
-        compatibility: compatibilityScore,
       };
     } catch (error) {
       console.error("[chartHydrator] Error calculating partner chart:", error);
       // Return user chart only if partner calculation fails
-      const defaultMatrixScores = {
-        emotional: 50,
-        communication: 50,
-        spiritual: 50,
-        stability: 50,
-        physical: 50,
-      };
       return {
-        ...userChart,
-        name: input.name,
-        birth_date: input.birthDate,
-        sun: userChart.planets?.sun || chart.planets?.sun,
-        moon: userChart.planets?.moon || chart.planets?.moon,
-        rising: userChart.risingSign || chart.ascendant,
-        planets: userChart.planets || chart.planets,
-        houses: userChart.houses || chart.houses,
+        user: userChart,
         partner: null,
-        compatibility: null,
+        matrix_scores: null,
         compatibility_score: null,
-        matrix_scores: defaultMatrixScores, // Default scores when no partner
       };
     }
   }
 
   console.log('No Partner Data Found. Skipping...');
-  // No partner data - return user chart only with default matrix scores
-  const defaultMatrixScores = {
-    emotional: 50,
-    communication: 50,
-    spiritual: 50,
-    stability: 50,
-    physical: 50,
-  };
+  // No partner data - return user chart only
   return {
-    ...userChart,
-    name: input.name,
-    birth_date: input.birthDate,
-    sun: userChart.planets?.sun || chart.planets?.sun,
-    moon: userChart.planets?.moon || chart.planets?.moon,
-    rising: userChart.risingSign || chart.ascendant,
-    planets: userChart.planets || chart.planets,
-    houses: userChart.houses || chart.houses,
+    user: userChart,
     partner: null,
-    compatibility: null,
+    matrix_scores: null,
     compatibility_score: null,
-    matrix_scores: defaultMatrixScores, // Default scores when no partner
   };
 }
 
