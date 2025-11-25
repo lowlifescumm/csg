@@ -109,17 +109,17 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   };
 
   // Robust partner data check (supports string or Date objects)
-  const hasPartner = Boolean(
-    input.partnerBirthDate &&
+  const hasPartnerDate =
+    Boolean(input.partnerBirthDate) &&
+    input.partnerBirthDate !== '' &&
     new Date(
       input.partnerBirthDate instanceof Date
         ? input.partnerBirthDate.toISOString()
         : input.partnerBirthDate
-    ).toString() !== 'Invalid Date'
-  );
+    ).toString() !== 'Invalid Date';
 
   // Check if partner data exists
-  if (hasPartner) {
+  if (hasPartnerDate) {
     console.log('Partner Data Found. Calculating...');
     try {
       // Validate partner input
