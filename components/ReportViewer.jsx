@@ -16,6 +16,80 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
   const [autoDownloaded, setAutoDownloaded] = useState(false);
   const hasAutoDownloaded = useRef(false);
 
+  const triggerBlobDownload = useCallback((blob, filename) => {
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  }, []);
+
+  const openHtmlPreview = useCallback((blob) => {
+    const htmlUrl = URL.createObjectURL(blob);
+    const preview = window.open(htmlUrl, '_blank', 'noopener,noreferrer');
+    if (!preview) {
+      // Pop-up blocked; fall back to forcing a download instead
+      triggerBlobDownload(blob, 'cosmic-report.html');
+    }
+    setTimeout(() => URL.revokeObjectURL(htmlUrl), 60_000);
+  }, [triggerBlobDownload]);
+
+  const handleDownload = useCallback(
+    async (format = 'pdf', silent = false) => {
+      if (!result?.id) return;
+
+      try {
+        if (!silent) {
+          setDownloading(true);
+        }
+
+        // Prefer direct URLs for PDFs (Cloudinary/S3) to avoid CORS issues
+        if (format === 'pdf' && result.download_url) {
+          const link = document.createElement('a');
+          link.href = result.download_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          return;
+        }
+
+        const response = await fetch(`/api/reports/${result.id}/download?format=${format}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to download report');
+        }
+
+        const contentType = (response.headers.get('content-type') || '').toLowerCase();
+        const blob = await response.blob();
+        const baseFilename = `cosmic-report-${result.reading_type || reportType || 'reading'}-${result.id}`;
+
+        if (contentType.includes('application/pdf') || format === 'pdf') {
+          triggerBlobDownload(blob, `${baseFilename}.pdf`);
+        } else if (contentType.includes('text/html')) {
+          openHtmlPreview(blob);
+        } else {
+          // Unknown content-type – default to generic download
+          triggerBlobDownload(blob, `${baseFilename}.${format === 'html' ? 'html' : 'txt'}`);
+        }
+      } catch (err) {
+        console.error('[ReportViewer] download error:', err);
+        if (!silent) {
+          alert(err.message || 'Failed to download report. Please try again.');
+        }
+      } finally {
+        if (!silent) {
+          setDownloading(false);
+        }
+      }
+    },
+    [result, reportType, triggerBlobDownload, openHtmlPreview]
+  );
+
   useEffect(() => {
     if (jobId) {
       fetchJobStatus();
@@ -52,7 +126,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
       
       return () => clearTimeout(timer);
     }
-  }, [result?.id, autoDownload]);
+  }, [result?.id, autoDownload, handleDownload]);
 
   const fetchJobStatus = async () => {
     try {
