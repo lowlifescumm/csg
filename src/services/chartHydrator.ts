@@ -1,5 +1,7 @@
 import { calculateBirthChart } from "@/lib/astrology";
 import { calculateSynastryScore, calculateSynastryAspects } from "@/lib/compatibility";
+import { calculateBodyGraph } from "@/utils/humanDesign/hdCalculator";
+import * as Astronomy from 'astronomy-engine';
 
 type BirthChartResult = ReturnType<typeof calculateBirthChart>;
 
@@ -56,6 +58,17 @@ export interface CalculatedChartData {
   houses: BirthChartResult["houses"];
   isSaturnReturn: boolean;
   rawChart: BirthChartResult;
+  // Human Design data
+  humanDesign?: {
+    definedCenters: string[];
+    activeChannels: string[];
+    activeGates: {
+      gate: number;
+      line: number;
+      planet: string;
+      type: 'natal' | 'transit' | 'quantum';
+    }[];
+  };
   // Partner data (if provided)
   partner?: CalculatedChartData | null;
   compatibility?: number | null; // 0-100 synastry score
@@ -240,6 +253,9 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   const aspectMatrix = buildAspectMatrix(chart.aspects || []);
   const houses = chart.houses || {};
 
+  // Calculate Human Design Body Graph
+  const humanDesignData = await calculateHumanDesign(chart, input.birthDate, input.birthTime, coordinates.latitude, coordinates.longitude);
+
   const userChart: CalculatedChartData = {
     input,
     coordinates,
@@ -254,6 +270,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     houses,
     isSaturnReturn: Boolean((chart as any)?.isSaturnReturn),
     rawChart: chart,
+    humanDesign: humanDesignData,
   };
 
   // Trigger Logic: Simple check for partner birth date
@@ -635,5 +652,214 @@ function capitalize(value: string = ""): string {
 function roundTo(value: number, precision: number): number {
   const factor = Math.pow(10, precision);
   return Math.round(value * factor) / factor;
+}
+
+/**
+ * Calculate Human Design Body Graph
+ * 
+ * Human Design requires two calculation points:
+ * - Personality (Black/Conscious): Time of Birth
+ * - Design (Red/Unconscious): 88 degrees solar prior to birth
+ * 
+ * @param natalChart - The calculated natal chart at birth time
+ * @param birthDate - Birth date
+ * @param birthTime - Birth time
+ * @param latitude - Birth latitude
+ * @param longitude - Birth longitude
+ * @returns Human Design Body Graph data
+ */
+async function calculateHumanDesign(
+  natalChart: BirthChartResult,
+  birthDate: string | Date,
+  birthTime: string,
+  latitude: number,
+  longitude: number
+): Promise<{
+  definedCenters: string[];
+  activeChannels: string[];
+  activeGates: {
+    gate: number;
+    line: number;
+    planet: string;
+    type: 'natal' | 'transit' | 'quantum';
+  }[];
+} | undefined> {
+  try {
+    // Parse birth date and time
+    const birthDateObj = typeof birthDate === 'string' ? new Date(birthDate) : birthDate;
+    const [hours, minutes] = birthTime.split(':').map(Number);
+    const birthDateTime = new Date(birthDateObj);
+    birthDateTime.setHours(hours, minutes || 0, 0, 0);
+
+    // Calculate Design Date: 88 degrees solar prior
+    // The Sun moves approximately 1 degree per day, so 88 degrees ≈ 88 days
+    // But we need to find the exact date when Sun was 88 degrees earlier
+    const designDate = await calculateDesignDate(birthDateTime, latitude, longitude);
+
+    // Calculate Personality chart (at birth time) - we already have this
+    const personalityPlanets = extractPlanetaryPositionsForHD(natalChart);
+
+    // Calculate Design chart (at design date)
+    const designDateStr = designDate.toISOString().split('T')[0];
+    const designChart = calculateBirthChart(
+      designDateStr,
+      birthTime, // Use same time of day
+      latitude,
+      longitude
+    );
+    const designPlanets = extractPlanetaryPositionsForHD(designChart);
+
+    // Get current transit planetary positions for transit gates
+    const currentDate = new Date();
+    const transitPlanets = await getCurrentTransitPositions(currentDate);
+
+    // Combine Personality (natal) and Design (also natal, but from earlier date) planets
+    // In Human Design, both Personality and Design are considered "natal" for the Body Graph
+    const allNatalPlanets = [...personalityPlanets, ...designPlanets];
+
+    // Calculate Body Graph
+    const bodyGraph = calculateBodyGraph(allNatalPlanets, transitPlanets);
+
+    return bodyGraph;
+  } catch (error) {
+    console.error('[chartHydrator] Error calculating Human Design:', error);
+    return undefined;
+  }
+}
+
+/**
+ * Calculate Design Date (88 degrees solar prior to birth)
+ * 
+ * @param birthDateTime - Birth date and time
+ * @param latitude - Birth latitude
+ * @param longitude - Birth longitude
+ * @returns Design date (approximately 88 days before birth)
+ */
+async function calculateDesignDate(birthDateTime: Date, latitude: number, longitude: number): Promise<Date> {
+  // Get Sun's longitude at birth
+  const birthTime = Astronomy.MakeTime(birthDateTime);
+  const sunPos = Astronomy.SunPosition(birthTime);
+  const birthSunLongitude = sunPos.elon;
+
+  // Calculate target Sun longitude (88 degrees earlier)
+  let targetSunLongitude = birthSunLongitude - 88;
+  if (targetSunLongitude < 0) {
+    targetSunLongitude += 360;
+  }
+
+  // Approximate: Sun moves ~1 degree per day, so start ~88 days before
+  const designDateApprox = new Date(birthDateTime);
+  designDateApprox.setDate(designDateApprox.getDate() - 88);
+
+  // Refine by finding exact date when Sun was at target longitude
+  // Search within ±10 days of approximation
+  let bestDate = designDateApprox;
+  let bestDiff = Infinity;
+
+  for (let daysOffset = -10; daysOffset <= 10; daysOffset++) {
+    const testDate = new Date(designDateApprox);
+    testDate.setDate(testDate.getDate() + daysOffset);
+    
+    const testTime = Astronomy.MakeTime(testDate);
+    const testSunPos = Astronomy.SunPosition(testTime);
+    const testSunLongitude = testSunPos.elon;
+    
+    // Calculate angular difference
+    let diff = Math.abs(testSunLongitude - targetSunLongitude);
+    if (diff > 180) {
+      diff = 360 - diff;
+    }
+    
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestDate = testDate;
+    }
+  }
+
+  return bestDate;
+}
+
+/**
+ * Extract planetary positions for Human Design calculation
+ * 
+ * @param chart - Birth chart result
+ * @returns Array of planetary positions with longitude
+ */
+function extractPlanetaryPositionsForHD(chart: BirthChartResult): Array<{ planet: string; longitude: number }> {
+  const planets: Array<{ planet: string; longitude: number }> = [];
+  
+  if (!chart?.planets) return planets;
+
+  const planetKeys = [
+    "sun",
+    "moon",
+    "mercury",
+    "venus",
+    "mars",
+    "jupiter",
+    "saturn",
+    "uranus",
+    "neptune",
+    "pluto",
+  ];
+
+  for (const key of planetKeys) {
+    const data = chart.planets[key];
+    if (!data || data.longitude === undefined) continue;
+    
+    planets.push({
+      planet: capitalize(key),
+      longitude: data.longitude,
+    });
+  }
+
+  return planets;
+}
+
+/**
+ * Get current transit planetary positions
+ * 
+ * @param date - Date to calculate transits for (default: now)
+ * @returns Array of current planetary positions with longitude
+ */
+async function getCurrentTransitPositions(date: Date = new Date()): Promise<Array<{ planet: string; longitude: number }>> {
+  const time = Astronomy.MakeTime(date);
+  const planets: Array<{ planet: string; longitude: number }> = [];
+
+  // Sun
+  const sunPos = Astronomy.SunPosition(time);
+  planets.push({
+    planet: 'Sun',
+    longitude: normalizeLongitude(sunPos.elon),
+  });
+
+  // Other planets
+  const planetNames = ['Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+  
+  for (const planetName of planetNames) {
+    try {
+      const geoVector = Astronomy.GeoVector(planetName, time, false);
+      const ecliptic = Astronomy.Ecliptic(geoVector);
+      planets.push({
+        planet: planetName,
+        longitude: normalizeLongitude(ecliptic.elon),
+      });
+    } catch (error) {
+      console.warn(`[chartHydrator] Failed to calculate ${planetName} position:`, error);
+    }
+  }
+
+  return planets;
+}
+
+/**
+ * Normalize longitude to 0-360 range
+ */
+function normalizeLongitude(longitude: number): number {
+  let normalized = longitude % 360;
+  if (normalized < 0) {
+    normalized += 360;
+  }
+  return normalized;
 }
 
