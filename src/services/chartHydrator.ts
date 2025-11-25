@@ -1,4 +1,5 @@
 import { calculateBirthChart } from "@/lib/astrology";
+import { calculateSynastryScore } from "@/lib/compatibility";
 
 type BirthChartResult = ReturnType<typeof calculateBirthChart>;
 
@@ -9,6 +10,12 @@ export interface UserInput {
   birthCity?: string;
   birthLatitude?: number;
   birthLongitude?: number;
+  // Partner data (optional)
+  partnerBirthDate?: string | Date;
+  partnerBirthTime?: string;
+  partnerBirthCity?: string;
+  partnerBirthLatitude?: number;
+  partnerBirthLongitude?: number;
 }
 
 export interface Coordinates {
@@ -49,6 +56,9 @@ export interface CalculatedChartData {
   houses: BirthChartResult["houses"];
   isSaturnReturn: boolean;
   rawChart: BirthChartResult;
+  // Partner data (if provided)
+  partner?: CalculatedChartData | null;
+  compatibility?: number | null; // 0-100 synastry score
 }
 
 const STATIC_CITY_DB: Record<string, Coordinates> = {
@@ -65,6 +75,8 @@ const STATIC_CITY_DB: Record<string, Coordinates> = {
  * 1. Geocoding (city -> latitude/longitude)
  * 2. Swiss Ephemeris based calculations (via our calculateBirthChart wrapper)
  * 3. Aspect matrix extraction (squares + trines)
+ * 4. Partner chart calculation (if partner data provided)
+ * 5. Synastry compatibility scoring (if partner data provided)
  */
 export async function hydrateReportData(input: UserInput): Promise<CalculatedChartData> {
   validateInput(input);
@@ -79,7 +91,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   const aspectMatrix = buildAspectMatrix(chart.aspects || []);
   const houses = chart.houses || {};
 
-  return {
+  const userChart: CalculatedChartData = {
     input,
     coordinates,
     sunSign: chart.planets?.sun?.sign ?? "Unknown",
@@ -93,6 +105,81 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     houses,
     isSaturnReturn: Boolean((chart as any)?.isSaturnReturn),
     rawChart: chart,
+  };
+
+  // Check if partner data exists
+  if (input.partnerBirthDate) {
+    try {
+      // Validate partner input
+      if (!input.partnerBirthTime) {
+        throw new Error("Partner birth time is required when partner birth date is provided");
+      }
+
+      // Resolve partner coordinates
+      const partnerCoordinates = await resolvePartnerCoordinates(input);
+
+      // Calculate partner's natal chart
+      const partnerChart = calculateBirthChart(
+        input.partnerBirthDate,
+        input.partnerBirthTime,
+        partnerCoordinates.latitude,
+        partnerCoordinates.longitude
+      );
+
+      // Extract partner chart data
+      const partnerPlanetaryPositions = extractPlanetaryPositions(partnerChart);
+      const partnerPlanets = mergePlanetHouses(partnerChart);
+      const partnerNodes = extractNodes(partnerChart);
+      const partnerAspectMatrix = buildAspectMatrix(partnerChart.aspects || []);
+      const partnerHouses = partnerChart.houses || {};
+
+      const partnerChartData: CalculatedChartData = {
+        input: {
+          name: input.name + " (Partner)",
+          birthDate: input.partnerBirthDate,
+          birthTime: input.partnerBirthTime,
+          birthCity: input.partnerBirthCity,
+          birthLatitude: input.partnerBirthLatitude,
+          birthLongitude: input.partnerBirthLongitude,
+        },
+        coordinates: partnerCoordinates,
+        sunSign: partnerChart.planets?.sun?.sign ?? "Unknown",
+        moonSign: partnerChart.planets?.moon?.sign ?? "Unknown",
+        risingSign: partnerChart.ascendant ?? partnerHouses?.[1]?.sign ?? "Unknown",
+        northNode: partnerNodes.northNode,
+        southNode: partnerNodes.southNode,
+        planetaryPositions: partnerPlanetaryPositions,
+        aspectMatrix: partnerAspectMatrix,
+        planets: partnerPlanets,
+        houses: partnerHouses,
+        isSaturnReturn: Boolean((partnerChart as any)?.isSaturnReturn),
+        rawChart: partnerChart,
+      };
+
+      // Calculate synastry compatibility score
+      const compatibilityScore = calculateSynastryScore(chart, partnerChart);
+
+      return {
+        ...userChart,
+        partner: partnerChartData,
+        compatibility: compatibilityScore,
+      };
+    } catch (error) {
+      console.error("[chartHydrator] Error calculating partner chart:", error);
+      // Return user chart only if partner calculation fails
+      return {
+        ...userChart,
+        partner: null,
+        compatibility: null,
+      };
+    }
+  }
+
+  // No partner data - return user chart only
+  return {
+    ...userChart,
+    partner: null,
+    compatibility: null,
   };
 }
 
@@ -149,6 +236,27 @@ async function resolveCoordinates(input: UserInput): Promise<Coordinates> {
   }
 
   return geocodeCity(input.birthCity);
+}
+
+async function resolvePartnerCoordinates(input: UserInput): Promise<Coordinates> {
+  if (
+    typeof input.partnerBirthLatitude === "number" &&
+    Number.isFinite(input.partnerBirthLatitude) &&
+    typeof input.partnerBirthLongitude === "number" &&
+    Number.isFinite(input.partnerBirthLongitude)
+  ) {
+    return {
+      latitude: input.partnerBirthLatitude,
+      longitude: input.partnerBirthLongitude,
+      source: "static",
+    };
+  }
+
+  if (!input.partnerBirthCity) {
+    throw new Error("Partner birth city is required when coordinates are missing");
+  }
+
+  return geocodeCity(input.partnerBirthCity);
 }
 
 function normalizeBirthDate(value: string | Date) {
