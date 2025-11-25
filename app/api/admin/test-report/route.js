@@ -31,6 +31,20 @@ export async function POST(request) {
     // }
 
     const body = await request.json();
+    console.log('RAW BODY KEYS:', Object.keys(body));
+    console.log(
+      'RAW BODY PARTNER DATA:',
+      JSON.stringify(
+        {
+          partner_birth_date: body.partner_birth_date,
+          partnerBirthDate: body.partnerBirthDate,
+          partnerDate: body.partnerDate,
+          partner: body.partner,
+        },
+        null,
+        2,
+      ),
+    );
     const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
 
     const inputData = {
