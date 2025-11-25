@@ -1,5 +1,5 @@
 import { calculateBirthChart } from "@/lib/astrology";
-import { calculateSynastryScore } from "@/lib/compatibility";
+import { calculateSynastryScore, calculateSynastryAspects } from "@/lib/compatibility";
 
 type BirthChartResult = ReturnType<typeof calculateBirthChart>;
 
@@ -59,6 +59,13 @@ export interface CalculatedChartData {
   // Partner data (if provided)
   partner?: CalculatedChartData | null;
   compatibility?: number | null; // 0-100 synastry score
+  matrix_scores?: {
+    emotional: number;
+    communication: number;
+    spiritual: number;
+    stability: number;
+    physical: number;
+  } | null;
 }
 
 const STATIC_CITY_DB: Record<string, Coordinates> = {
@@ -68,6 +75,147 @@ const STATIC_CITY_DB: Record<string, Coordinates> = {
   "paris, france": { latitude: 48.8566, longitude: 2.3522, source: "static" },
   "mexico city, mexico": { latitude: 19.4326, longitude: -99.1332, source: "static" },
 };
+
+/**
+ * Calculate relationship matrix scores (0-100) for different compatibility categories
+ */
+function calculateRelationshipMatrix(
+  userChart: CalculatedChartData,
+  partnerChart: CalculatedChartData
+): {
+  emotional: number;
+  communication: number;
+  spiritual: number;
+  stability: number;
+  physical: number;
+} {
+  try {
+    const userRawChart = userChart.rawChart;
+    const partnerRawChart = partnerChart.rawChart;
+
+    if (!userRawChart || !partnerRawChart) {
+      return {
+        emotional: 50,
+        communication: 50,
+        spiritual: 50,
+        stability: 50,
+        physical: 50,
+      };
+    }
+
+    const synastryAspects = calculateSynastryAspects(userRawChart, partnerRawChart);
+
+    // Water signs for emotional calculation
+    const waterSigns = ["Cancer", "Scorpio", "Pisces"];
+    const earthSigns = ["Taurus", "Virgo", "Capricorn"];
+
+    // Helper to score aspects (positive for harmonious, negative for challenging)
+    const getAspectScore = (aspectType: string): number => {
+      switch (aspectType) {
+        case "Trine":
+        case "Conjunction":
+          return 10;
+        case "Sextile":
+          return 5;
+        case "Square":
+        case "Opposition":
+          return -5;
+        default:
+          return 0;
+      }
+    };
+
+    // Emotional: Moon/Water placements
+    let emotionalScore = 50;
+    const moonAspects = synastryAspects.filter(
+      (a) => a.person1Planet === "Moon" || a.person2Planet === "Moon"
+    );
+    const waterPlacements =
+      waterSigns.includes(userChart.moonSign) || waterSigns.includes(partnerChart.moonSign);
+    
+    moonAspects.forEach((aspect) => {
+      emotionalScore += getAspectScore(aspect.aspect) * (1 - aspect.orb / 8); // Weight by orb tightness
+    });
+    if (waterPlacements) emotionalScore += 10;
+    emotionalScore = Math.max(0, Math.min(100, Math.round(emotionalScore)));
+
+    // Communication: Mercury aspects
+    let communicationScore = 50;
+    const mercuryAspects = synastryAspects.filter(
+      (a) => a.person1Planet === "Mercury" || a.person2Planet === "Mercury"
+    );
+    mercuryAspects.forEach((aspect) => {
+      communicationScore += getAspectScore(aspect.aspect) * (1 - aspect.orb / 8);
+    });
+    communicationScore = Math.max(0, Math.min(100, Math.round(communicationScore)));
+
+    // Spiritual: Neptune/12th House
+    let spiritualScore = 50;
+    const neptuneAspects = synastryAspects.filter(
+      (a) => a.person1Planet === "Neptune" || a.person2Planet === "Neptune"
+    );
+    const user12thHouse = userChart.houses?.[12];
+    const partner12thHouse = partnerChart.houses?.[12];
+    const has12thHouseActivity = Boolean(user12thHouse || partner12thHouse);
+
+    neptuneAspects.forEach((aspect) => {
+      spiritualScore += getAspectScore(aspect.aspect) * (1 - aspect.orb / 8);
+    });
+    if (has12thHouseActivity) spiritualScore += 15;
+    spiritualScore = Math.max(0, Math.min(100, Math.round(spiritualScore)));
+
+    // Stability: Saturn/Earth placements
+    let stabilityScore = 50;
+    const saturnAspects = synastryAspects.filter(
+      (a) => a.person1Planet === "Saturn" || a.person2Planet === "Saturn"
+    );
+    const earthPlacements =
+      earthSigns.includes(userChart.sunSign) ||
+      earthSigns.includes(partnerChart.sunSign) ||
+      earthSigns.includes(userChart.moonSign) ||
+      earthSigns.includes(partnerChart.moonSign);
+
+    saturnAspects.forEach((aspect) => {
+      // Saturn aspects: Conjunctions/Trines = stability, Squares/Oppositions = tension
+      if (aspect.aspect === "Conjunction" || aspect.aspect === "Trine") {
+        stabilityScore += 8 * (1 - aspect.orb / 8);
+      } else if (aspect.aspect === "Square" || aspect.aspect === "Opposition") {
+        stabilityScore -= 5 * (1 - aspect.orb / 8);
+      }
+    });
+    if (earthPlacements) stabilityScore += 10;
+    stabilityScore = Math.max(0, Math.min(100, Math.round(stabilityScore)));
+
+    // Physical: Mars/Venus aspects
+    let physicalScore = 50;
+    const marsVenusAspects = synastryAspects.filter(
+      (a) =>
+        (a.person1Planet === "Mars" || a.person2Planet === "Mars") ||
+        (a.person1Planet === "Venus" || a.person2Planet === "Venus")
+    );
+    marsVenusAspects.forEach((aspect) => {
+      physicalScore += getAspectScore(aspect.aspect) * (1 - aspect.orb / 8);
+    });
+    physicalScore = Math.max(0, Math.min(100, Math.round(physicalScore)));
+
+    return {
+      emotional: emotionalScore,
+      communication: communicationScore,
+      spiritual: spiritualScore,
+      stability: stabilityScore,
+      physical: physicalScore,
+    };
+  } catch (error) {
+    console.error("[calculateRelationshipMatrix] Error calculating matrix:", error);
+    return {
+      emotional: 50,
+      communication: 50,
+      spiritual: 50,
+      stability: 50,
+      physical: 50,
+    };
+  }
+}
 
 /**
  * Hydrate the user input with fully calculated astrological data.
@@ -171,10 +319,14 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       // Calculate synastry compatibility score
       const compatibilityScore = calculateSynastryScore(chart, partnerChart);
 
+      // Calculate relationship matrix scores
+      const matrixScores = calculateRelationshipMatrix(userChart, partnerChartData);
+
       return {
         ...userChart,
         partner: partnerChartData,
         compatibility: compatibilityScore,
+        matrix_scores: matrixScores,
       };
     } catch (error) {
       console.error("[chartHydrator] Error calculating partner chart:", error);
