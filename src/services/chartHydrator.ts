@@ -79,6 +79,7 @@ const STATIC_CITY_DB: Record<string, Coordinates> = {
  * 5. Synastry compatibility scoring (if partner data provided)
  */
 export async function hydrateReportData(input: UserInput): Promise<CalculatedChartData> {
+  console.log('HYDRATOR INPUT:', JSON.stringify(input, null, 2));
   validateInput(input);
 
   const coordinates = await resolveCoordinates(input);
@@ -107,8 +108,19 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     rawChart: chart,
   };
 
+  // Robust partner data check (supports string or Date objects)
+  const hasPartner = Boolean(
+    input.partnerBirthDate &&
+    new Date(
+      input.partnerBirthDate instanceof Date
+        ? input.partnerBirthDate.toISOString()
+        : input.partnerBirthDate
+    ).toString() !== 'Invalid Date'
+  );
+
   // Check if partner data exists
-  if (input.partnerBirthDate) {
+  if (hasPartner) {
+    console.log('Partner Data Found. Calculating...');
     try {
       // Validate partner input
       if (!input.partnerBirthTime) {
@@ -175,6 +187,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     }
   }
 
+  console.log('No Partner Data Found. Skipping...');
   // No partner data - return user chart only
   return {
     ...userChart,
