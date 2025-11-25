@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { generateReportContent, generatePDF, generatePremiumReport } from '@/lib/pdf-generator.js';
+import { hydrateReportData } from '@/src/services/chartHydrator';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,31 @@ export async function POST(request) {
 
     if (!sampleData) {
       return NextResponse.json({ error: `No sample data available for ${report_type}` }, { status: 400 });
+    }
+
+    // Hydrate natal chart data for premium reports if raw inputs were provided
+    const chartInput = sampleData?.natalChart || sampleData?.birth_chart_data;
+    const hydrationInput = (!hasPopulatedPlanetData(chartInput) && chartInput)
+      ? buildHydrationInput(chartInput, sampleData)
+      : null;
+
+    if (hydrationInput) {
+      try {
+        const calculatedData = await hydrateReportData(hydrationInput);
+        const natalChart = buildNatalChartPayload(calculatedData, hydrationInput);
+
+        if (natalChart) {
+          sampleData.natalChart = natalChart;
+          sampleData.birth_chart_data = natalChart;
+          console.log('DEBUG CHART DATA:', JSON.stringify(natalChart, null, 2));
+        }
+      } catch (hydrationError) {
+        console.error('[Test Report] Chart hydration failed:', hydrationError);
+        return NextResponse.json(
+          { error: 'Failed to hydrate chart data', details: hydrationError.message },
+          { status: 400 }
+        );
+      }
     }
 
     const progressCallback = (percent, message) => {
@@ -238,5 +264,95 @@ function getSampleData(reportType) {
   };
 
   return samples[reportType] || samples[reportType.toUpperCase()];
+}
+
+function hasPopulatedPlanetData(chart) {
+  if (!chart) return false;
+  if (chart.planets && Object.keys(chart.planets).length > 0) {
+    return true;
+  }
+  
+  // Some data structures might store the core triad at the top level (strings or objects)
+  const sunSign = chart.sun?.sign || chart.sun;
+  const moonSign = chart.moon?.sign || chart.moon;
+  const risingSign = chart.rising?.sign || chart.rising || chart.ascendant;
+  
+  return Boolean(sunSign || moonSign || risingSign);
+}
+
+function buildHydrationInput(chartInput, fallbackData = {}) {
+  if (!chartInput) return null;
+  
+  const birthDate = chartInput.birth_date || chartInput.birthDate;
+  const birthTime = chartInput.birth_time || chartInput.birthTime;
+  const birthCity = chartInput.birthCity || chartInput.location || fallbackData.birthCity || fallbackData.location;
+  const latitude = parseMaybeNumber(
+    chartInput.latitude ?? chartInput.lat ?? chartInput.birth_latitude ??
+    fallbackData.latitude ?? fallbackData.lat ?? fallbackData.birth_latitude
+  );
+  const longitude = parseMaybeNumber(
+    chartInput.longitude ?? chartInput.lng ?? chartInput.birth_longitude ??
+    fallbackData.longitude ?? fallbackData.lng ?? fallbackData.birth_longitude
+  );
+  
+  if (!birthDate || !birthTime) {
+    return null;
+  }
+  
+  if (!birthCity && (latitude === null || longitude === null)) {
+    return null;
+  }
+  
+  const input = {
+    name: chartInput.name || fallbackData.name || 'Test User',
+    birthDate,
+    birthTime,
+  };
+  
+  if (birthCity) {
+    input.birthCity = birthCity;
+  }
+  
+  if (latitude !== null && longitude !== null) {
+    input.birthLatitude = latitude;
+    input.birthLongitude = longitude;
+  }
+  
+  return input;
+}
+
+function buildNatalChartPayload(calculatedData, hydrationInput) {
+  if (!calculatedData?.rawChart) return null;
+  
+  const normalizedDate = normalizeBirthDate(hydrationInput.birthDate);
+  const coords = calculatedData.coordinates;
+  
+  return {
+    ...calculatedData.rawChart,
+    birth_date: normalizedDate,
+    birth_time: hydrationInput.birthTime,
+    latitude: coords.latitude,
+    longitude: coords.longitude,
+    location: hydrationInput.birthCity || `${coords.latitude}, ${coords.longitude}`,
+    name: hydrationInput.name,
+  };
+}
+
+function normalizeBirthDate(value) {
+  if (!value) return value;
+  if (typeof value === 'string') return value;
+  if (value instanceof Date) {
+    return value.toISOString().split('T')[0];
+  }
+  return String(value);
+}
+
+function parseMaybeNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 

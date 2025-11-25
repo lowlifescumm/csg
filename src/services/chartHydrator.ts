@@ -6,7 +6,9 @@ export interface UserInput {
   name: string;
   birthDate: string | Date;
   birthTime: string;
-  birthCity: string;
+  birthCity?: string;
+  birthLatitude?: number;
+  birthLongitude?: number;
 }
 
 export interface Coordinates {
@@ -67,7 +69,7 @@ const STATIC_CITY_DB: Record<string, Coordinates> = {
 export async function hydrateReportData(input: UserInput): Promise<CalculatedChartData> {
   validateInput(input);
 
-  const coordinates = await geocodeCity(input.birthCity);
+  const coordinates = await resolveCoordinates(input);
 
   const chart = calculateBirthChart(input.birthDate, input.birthTime, coordinates.latitude, coordinates.longitude);
 
@@ -98,7 +100,37 @@ function validateInput(input: UserInput) {
   if (!input.name) throw new Error("Name is required");
   if (!input.birthDate) throw new Error("Birth date is required");
   if (!input.birthTime) throw new Error("Birth time is required");
-  if (!input.birthCity) throw new Error("Birth city is required");
+
+  const hasCoordinates =
+    typeof input.birthLatitude === "number" &&
+    Number.isFinite(input.birthLatitude) &&
+    typeof input.birthLongitude === "number" &&
+    Number.isFinite(input.birthLongitude);
+
+  if (!input.birthCity && !hasCoordinates) {
+    throw new Error("Birth city or precise coordinates are required");
+  }
+}
+
+async function resolveCoordinates(input: UserInput): Promise<Coordinates> {
+  if (
+    typeof input.birthLatitude === "number" &&
+    Number.isFinite(input.birthLatitude) &&
+    typeof input.birthLongitude === "number" &&
+    Number.isFinite(input.birthLongitude)
+  ) {
+    return {
+      latitude: input.birthLatitude,
+      longitude: input.birthLongitude,
+      source: "static",
+    };
+  }
+
+  if (!input.birthCity) {
+    throw new Error("Birth city is required when coordinates are missing");
+  }
+
+  return geocodeCity(input.birthCity);
 }
 
 async function geocodeCity(city: string): Promise<Coordinates> {
