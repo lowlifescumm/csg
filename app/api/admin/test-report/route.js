@@ -47,6 +47,18 @@ export async function POST(request) {
     );
     const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
 
+    const getPartnerDate = (b: any) => {
+      return (
+        b.partner_birth_date ||
+        b.partnerBirthDate ||
+        b.partnerDate ||
+        b.partner_date ||
+        b.partnerDob ||
+        (b.partner && (b.partner.birthDate || b.partner.birth_date)) ||
+        null
+      );
+    };
+
     const inputData = {
       name: body.name,
       birthDate: body.birth_date || body.birthDate,
@@ -55,12 +67,12 @@ export async function POST(request) {
       lat: body.latitude,
       lng: body.longitude,
       // PARTNER MAPPING (Crucial Fix)
-      partnerName: body.partner_name || body.partnerName,
-      partnerBirthDate: body.partner_birth_date || body.partnerBirthDate,
-      partnerBirthTime: body.partner_birth_time || body.partnerBirthTime,
-      partnerCity: body.partner_location || body.partnerCity,
-      partnerLat: body.partner_latitude,
-      partnerLng: body.partner_longitude,
+      partnerName: body.partner_name || body.partnerName || (body.partner && body.partner.name),
+      partnerBirthDate: getPartnerDate(body),
+      partnerBirthTime: body.partner_birth_time || body.partnerBirthTime || (body.partner && body.partner.time),
+      partnerCity: body.partner_location || body.partnerCity || (body.partner ? body.partner.location : undefined),
+      partnerLat: body.partner_latitude || (body.partner && body.partner.latitude),
+      partnerLng: body.partner_longitude || (body.partner && body.partner.longitude),
     };
     console.log('MAPPED INPUT DATA:', JSON.stringify(inputData, null, 2));
 
