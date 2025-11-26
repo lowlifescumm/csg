@@ -3,13 +3,17 @@ import { useState, useEffect } from 'react';
 import { zodiacSigns } from '@/lib/zodiac-data';
 
 export default function DailyHoroscope({ userSign = null }) {
-  const [selectedSign, setSelectedSign] = useState(userSign || 'aries');
   const [horoscope, setHoroscope] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Normalize sign name to lowercase
+  const normalizedSign = userSign ? userSign.toLowerCase() : null;
+
   useEffect(() => {
-    loadHoroscope(selectedSign);
-  }, [selectedSign]);
+    if (normalizedSign) {
+      loadHoroscope(normalizedSign);
+    }
+  }, [normalizedSign]);
 
   const loadHoroscope = async (sign) => {
     setLoading(true);
@@ -35,27 +39,26 @@ export default function DailyHoroscope({ userSign = null }) {
     return emojis[sign] || '⭐';
   };
 
+  if (!normalizedSign) {
+    return (
+      <div className="w-full">
+        <div className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40">
+          <h2 className="text-2xl font-semibold gradient-text mb-6">Daily Horoscope</h2>
+          <div className="text-center py-12">
+            <p className="text-gray-600">Please create a birth chart to see your personalized horoscope.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const signInfo = zodiacSigns.find(s => s.name.toLowerCase() === normalizedSign);
+  const displaySign = signInfo?.name || normalizedSign;
+
   return (
     <div className="w-full">
       <div className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40">
         <h2 className="text-2xl font-semibold gradient-text mb-6">Daily Horoscope</h2>
-
-        <div className="grid grid-cols-4 md:grid-cols-6 gap-2 mb-6">
-          {zodiacSigns.map(sign => (
-            <button
-              key={sign.name}
-              onClick={() => setSelectedSign(sign.name.toLowerCase())}
-              className={`p-3 rounded-xl smooth-transition ${
-                selectedSign === sign.name.toLowerCase()
-                  ? 'bg-gradient-to-br from-purple-500 to-blue-500 text-white apple-shadow-lg scale-105'
-                  : 'bg-white bg-opacity-60 text-gray-700 hover:bg-opacity-80 apple-shadow hover:scale-105'
-              }`}
-            >
-              <div className="text-2xl mb-1">{getSignEmoji(sign.name)}</div>
-              <div className="text-xs font-medium">{sign.name}</div>
-            </button>
-          ))}
-        </div>
 
         {loading ? (
           <div className="text-center py-12">
@@ -68,11 +71,11 @@ export default function DailyHoroscope({ userSign = null }) {
         ) : horoscope ? (
           <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-2xl border border-purple-100 apple-shadow">
             <div className="flex items-center gap-3 mb-4">
-              <div className="text-4xl">{getSignEmoji(zodiacSigns.find(s => s.name.toLowerCase() === selectedSign)?.name || '')}</div>
+              <div className="text-4xl">{getSignEmoji(displaySign)}</div>
               <div>
-                <h3 className="text-2xl font-bold capitalize text-gray-900">{selectedSign}</h3>
+                <h3 className="text-2xl font-bold capitalize text-gray-900">{displaySign}</h3>
                 <p className="text-sm text-gray-600">
-                  {zodiacSigns.find(s => s.name.toLowerCase() === selectedSign)?.dates}
+                  {signInfo?.dates || ''}
                 </p>
               </div>
             </div>
