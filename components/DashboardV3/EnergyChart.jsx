@@ -328,17 +328,33 @@ export default function EnergyChart({
       )}
 
       <div className="relative" role="img" aria-label="Weekly energy forecast chart">
+        {/* Debug: Show data count */}
+        <div className="mb-2 text-xs text-purple-300">
+          Debug: {finalChartData.length} data points, mounted: {isMounted ? 'yes' : 'no'}
+        </div>
+        
         {finalChartData.length === 0 ? (
           <div className="h-[300px] w-full flex items-center justify-center">
             <p className="text-purple-200">No data available</p>
           </div>
         ) : (
-          <div className="h-[300px] w-full min-h-[300px] relative" style={{ minHeight: '300px', height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={finalChartData}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-              >
+          <div 
+            className="h-[300px] w-full min-h-[300px] relative"
+            style={{ 
+              minHeight: '300px', 
+              height: '300px', 
+              width: '100%',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              borderRadius: '8px'
+            }}
+          >
+            {isMounted ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={finalChartData}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
             <defs>
               {/* Physical: Red/Orange gradient */}
               <linearGradient id="colorPhysical" x1="0" y1="0" x2="0" y2="1">
@@ -542,8 +558,13 @@ export default function EnergyChart({
               }}
               activeDot={{ r: 6, fill: "#a855f7" }}
             />
-              </AreaChart>
-            </ResponsiveContainer>
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-purple-200">Loading chart...</p>
+              </div>
+            )}
           </div>
         )}
       </div>
