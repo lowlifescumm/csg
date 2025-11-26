@@ -155,21 +155,12 @@ const SAMPLE_DATA = {
   },
   ESSENTIAL: {
     name: "Test User",
-    tarot_data: {
+    birth_chart_data: {
       name: "Test User",
-      card_spread: [{ card: "The High Priestess", position: "Present", orientation: "Upright" }],
-    },
-    moon_data: {
-      name: "Test User",
-      moon_phase: "Waxing Crescent",
-      phase_energy: "Growth",
-      sun_sign: "Gemini",
-      moon_sign: "Pisces",
-    },
-    transit_data: {
-      name: "Test User",
-      date_range: "Feb 4–Feb 18, 2025",
-      transits: [{ aspect: "Mars trine Sun", date: "Feb 6" }],
+      birth_date: "1990-01-15",
+      birth_time: "14:30",
+      location: "New York, USA",
+      // All other fields (sun, moon, rising, tarot, moon phase, transits) will be calculated server-side
     },
   },
   ADVANCED: {
@@ -538,16 +529,9 @@ export default function TestReportsPage() {
     } else if (reportId === 'ESSENTIAL') {
       return {
         name: sample.name || '',
-        tarot_name: sample.tarot_data?.name || '',
-        tarot_cards: sample.tarot_data?.card_spread || [{ card: '', position: '', orientation: 'Upright' }],
-        moon_name: sample.moon_data?.name || '',
-        moon_phase: sample.moon_data?.moon_phase || '',
-        moon_phase_energy: sample.moon_data?.phase_energy || '',
-        moon_sun_sign: sample.moon_data?.sun_sign || '',
-        moon_moon_sign: sample.moon_data?.moon_sign || '',
-        transit_name: sample.transit_data?.name || '',
-        transit_date_range: sample.transit_data?.date_range || '',
-        transit_transits: sample.transit_data?.transits || [{ aspect: '', date: '' }],
+        birthDate: sample.birth_chart_data?.birth_date || '',
+        birthTime: sample.birth_chart_data?.birth_time || '',
+        birthCity: sample.birth_chart_data?.location || '',
       };
     } else if (reportId === 'ADVANCED') {
       return {
@@ -667,24 +651,12 @@ export default function TestReportsPage() {
         transits: formValues.transits || [],
       };
     } else if (reportId === 'ESSENTIAL') {
+      // Only submit birth data - all other fields will be calculated by backend
       return {
         name: formValues.name || 'Test User',
-        tarot_data: {
-          name: formValues.tarot_name || formValues.name || 'Test User',
-          card_spread: formValues.tarot_cards || [],
-        },
-        moon_data: {
-          name: formValues.moon_name || formValues.name || 'Test User',
-          moon_phase: formValues.moon_phase || '',
-          phase_energy: formValues.moon_phase_energy || '',
-          sun_sign: formValues.moon_sun_sign || '',
-          moon_sign: formValues.moon_moon_sign || '',
-        },
-        transit_data: {
-          name: formValues.transit_name || formValues.name || 'Test User',
-          date_range: formValues.transit_date_range || '',
-          transits: formValues.transit_transits || [],
-        },
+        birthDate: formValues.birthDate || '',
+        birthTime: formValues.birthTime || '',
+        birthCity: formValues.birthCity || '',
       };
     } else if (reportId === 'ADVANCED') {
       return {
@@ -917,8 +889,8 @@ export default function TestReportsPage() {
   };
 
   const validateFormData = (reportId, formValues) => {
-    // Premium reports (ADVANCED, MASTER) use PremiumReportInputForm which handles its own validation
-    if (reportId === 'ADVANCED' || reportId === 'MASTER') {
+    // Premium reports (ESSENTIAL, ADVANCED, MASTER) use PremiumReportInputForm which handles its own validation
+    if (reportId === 'ESSENTIAL' || reportId === 'ADVANCED' || reportId === 'MASTER') {
       return [];
     }
 
@@ -1197,8 +1169,8 @@ export default function TestReportsPage() {
                     Customize Data – {reportIdToName(editingReport)}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {editingReport === 'ADVANCED' || editingReport === 'MASTER' 
-                      ? 'Enter your birth information. All calculations (signs, scores, transits) will be done automatically.'
+                    {editingReport === 'ESSENTIAL' || editingReport === 'ADVANCED' || editingReport === 'MASTER' 
+                      ? 'Enter your birth information. All calculations (signs, scores, transits, moon phase, tarot) will be done automatically.'
                       : 'Fill out the form fields to customize the test data. All fields are validated to prevent invalid data.'}
                   </p>
                 </div>
@@ -1216,8 +1188,8 @@ export default function TestReportsPage() {
                 </div>
               )}
               
-              {/* Use PremiumReportInputForm for ADVANCED and MASTER reports */}
-              {(editingReport === 'ADVANCED' || editingReport === 'MASTER') ? (
+              {/* Use PremiumReportInputForm for ESSENTIAL, ADVANCED and MASTER reports */}
+              {(editingReport === 'ESSENTIAL' || editingReport === 'ADVANCED' || editingReport === 'MASTER') ? (
                 <PremiumReportInputForm
                   initialData={formData[editingReport] || {}}
                   onSubmit={handlePremiumReportSubmit}
@@ -1738,152 +1710,68 @@ function renderFormFields(reportId, formValues, onChange) {
 
   // For premium reports (ESSENTIAL, ADVANCED, MASTER), render nested forms
   if (reportId === 'ESSENTIAL') {
+    // ESSENTIAL now only asks for birth data - all other fields calculated by backend
     return (
       <>
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Only birth data is required. Moon phase, tarot cards, and transits will be calculated automatically by the backend.
+          </p>
+        </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Name <span className="text-red-500">*</span>
+          </label>
           <input
             type="text"
             value={formValues.name || ''}
             onChange={handleChange('name')}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            required
+            placeholder="Your full name"
           />
         </div>
-        <div className="border-t border-gray-200 pt-4 mt-4">
-          <h4 className="font-semibold text-gray-900 mb-3">Tarot Data</h4>
+        <div className="grid grid-cols-2 gap-4 mt-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Birth Date <span className="text-red-500">*</span>
+            </label>
             <input
-              type="text"
-              value={formValues.tarot_name || ''}
-              onChange={handleChange('tarot_name')}
+              type="date"
+              value={formValues.birthDate || ''}
+              onChange={handleChange('birthDate')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              required
             />
           </div>
-          <div className="mt-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cards</label>
-            {(formValues.tarot_cards || []).map((card, idx) => (
-              <div key={idx} className="mb-2 p-3 border border-gray-200 rounded-lg">
-                <div className="grid grid-cols-3 gap-2">
-                  <input
-                    type="text"
-                    value={card.card || ''}
-                    onChange={handleArrayChange('tarot_cards', idx, 'card')}
-                    placeholder="Card name"
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
-                  />
-                  <input
-                    type="text"
-                    value={card.position || ''}
-                    onChange={handleArrayChange('tarot_cards', idx, 'position')}
-                    placeholder="Position"
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
-                  />
-                  <select
-                    value={card.orientation || 'Upright'}
-                    onChange={handleArrayChange('tarot_cards', idx, 'orientation')}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
-                  >
-                    <option>Upright</option>
-                    <option>Reversed</option>
-                  </select>
-                </div>
-                <button
-                  type="button"
-                  onClick={removeArrayItem('tarot_cards', idx)}
-                  className="mt-1 text-xs text-red-600 hover:text-red-700"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addArrayItem('tarot_cards', { card: '', position: '', orientation: 'Upright' })}
-              className="text-sm text-purple-600 hover:text-purple-700"
-            >
-              + Add Card
-            </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Birth Time <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="time"
+              value={formValues.birthTime || ''}
+              onChange={handleChange('birthTime')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              required
+            />
           </div>
         </div>
-        <div className="border-t border-gray-200 pt-4 mt-4">
-          <h4 className="font-semibold text-gray-900 mb-3">Moon Data</h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input
-                type="text"
-                value={formValues.moon_name || ''}
-                onChange={handleChange('moon_name')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Moon Phase</label>
-              <input
-                type="text"
-                value={formValues.moon_phase || ''}
-                onChange={handleChange('moon_phase')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phase Energy</label>
-              <input
-                type="text"
-                value={formValues.moon_phase_energy || ''}
-                onChange={handleChange('moon_phase_energy')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
-              <select
-                value={formValues.moon_sun_sign || ''}
-                onChange={handleChange('moon_sun_sign')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="">Select...</option>
-                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                  <option key={sign} value={sign}>{sign}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
-              <select
-                value={formValues.moon_moon_sign || ''}
-                onChange={handleChange('moon_moon_sign')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="">Select...</option>
-                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                  <option key={sign} value={sign}>{sign}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-gray-200 pt-4 mt-4">
-          <h4 className="font-semibold text-gray-900 mb-3">Transit Data</h4>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input
-              type="text"
-              value={formValues.transit_name || ''}
-              onChange={handleChange('transit_name')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            />
-          </div>
-          <div className="mt-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-            <input
-              type="text"
-              value={formValues.transit_date_range || ''}
-              onChange={handleChange('transit_date_range')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            />
-          </div>
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Birth City <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={formValues.birthCity || ''}
+            onChange={handleChange('birthCity')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            required
+            placeholder="e.g., New York, USA or London, UK"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Enter a city name. The system will automatically find the coordinates.
+          </p>
         </div>
       </>
     );
