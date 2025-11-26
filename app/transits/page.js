@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Zap, TrendingUp, AlertTriangle, Sparkles, Calendar, 
   Bell, ChevronRight, Clock, Star, Heart, Briefcase, 
@@ -449,16 +449,24 @@ function TransitCard({ transit, onClick }) {
 function TransitDetailView({ transit, onBack }) {
   const [interpretation, setInterpretation] = useState(transit.interpretation);
   const [loadingInterpretation, setLoadingInterpretation] = useState(false);
+  const hasFetchedRef = useRef(false);
+  const transitKeyRef = useRef(`${transit.transitPlanet}-${transit.natalPlanet}-${transit.aspect}`);
 
-  useEffect(() => {
-    if (!transit.interpretation || !transit.interpretation.fullGuidance) {
-      fetchInterpretation();
-    }
-  }, [fetchInterpretation, transit.interpretation]);
+  // Check if transit changed (new transit selected)
+  const currentKey = `${transit.transitPlanet}-${transit.natalPlanet}-${transit.aspect}`;
+  if (currentKey !== transitKeyRef.current) {
+    transitKeyRef.current = currentKey;
+    hasFetchedRef.current = false;
+    setInterpretation(transit.interpretation);
+  }
 
-  const fetchInterpretation = async () => {
+  const fetchInterpretation = useCallback(async () => {
+    if (hasFetchedRef.current) return; // Prevent duplicate fetches
+    
     try {
       setLoadingInterpretation(true);
+      hasFetchedRef.current = true;
+      
       const response = await fetch('/api/transits/interpret', {
         method: 'POST',
         headers: {
@@ -508,7 +516,14 @@ function TransitDetailView({ transit, onBack }) {
     } finally {
       setLoadingInterpretation(false);
     }
-  };
+  }, [transit]);
+
+  useEffect(() => {
+    // Only fetch if we don't have full guidance and haven't fetched yet
+    if (!hasFetchedRef.current && (!transit.interpretation || !transit.interpretation.fullGuidance)) {
+      fetchInterpretation();
+    }
+  }, [fetchInterpretation, transit.interpretation]);
 
   const getColorGradient = (color) => {
     const gradients = {
