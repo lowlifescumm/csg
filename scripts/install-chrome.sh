@@ -54,3 +54,4 @@ apt-get install -y google-chrome-stable
 
 echo "Chrome installed successfully"
 
+

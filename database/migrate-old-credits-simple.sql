@@ -70,3 +70,4 @@ DO UPDATE SET
   ), 0),
   updated_at = NOW();
 
+

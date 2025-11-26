@@ -48,3 +48,4 @@ CREATE TRIGGER trg_touch_reading_results
   FOR EACH ROW
   EXECUTE FUNCTION touch_reading_results_updated_at();
 
+

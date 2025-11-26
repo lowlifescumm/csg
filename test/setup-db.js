@@ -12,3 +12,4 @@ if (testDatabaseUrl) {
 
   console.warn(`\n[Jest] ${message}\n`)
 }
+

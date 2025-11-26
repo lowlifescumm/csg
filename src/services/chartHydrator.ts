@@ -1,6 +1,6 @@
 import { calculateBirthChart } from "@/lib/astrology";
 import { calculateSynastryScore, calculateSynastryAspects } from "@/lib/compatibility";
-import { calculateBodyGraph } from "@/utils/humanDesign/hdCalculator";
+import { calculateBodyGraph } from "@/src/utils/humanDesign/hdCalculator";
 import * as Astronomy from 'astronomy-engine';
 
 type BirthChartResult = ReturnType<typeof calculateBirthChart>;

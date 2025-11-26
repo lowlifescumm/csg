@@ -463,3 +463,4 @@ To generate a Master report, you need to provide:
 - **Report Generation:** `csg/lib/pdf-generator.js` (function `generatePremiumReport`)
 - **AI Text Generation:** `csg/lib/openai.js` (function `generateText`)
 
+

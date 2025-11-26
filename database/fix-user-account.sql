@@ -42,3 +42,4 @@ WHERE LOWER(email) = 'mazatlanexpatit@gmail.com'
 GROUP BY LOWER(email)
 HAVING COUNT(*) > 1;
 
+

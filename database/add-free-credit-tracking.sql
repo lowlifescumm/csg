@@ -16,3 +16,4 @@ ON users(next_free_credit_issue_at)
 WHERE next_free_credit_issue_at IS NOT NULL;
 
 
+

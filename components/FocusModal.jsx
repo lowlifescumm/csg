@@ -96,3 +96,4 @@ export default function FocusModal({ isOpen, onClose, onSubmit, readingType = "g
     </div>
   );
 }
+

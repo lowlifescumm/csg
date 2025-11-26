@@ -72,3 +72,4 @@ After setting up the PDF API:
 - **"PDF API returned error"**: Check your API key and service status
 - **PDFs not generating**: Check Render logs for detailed error messages
 
+

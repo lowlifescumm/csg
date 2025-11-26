@@ -95,3 +95,4 @@ SELECT
 FROM users u
 ON CONFLICT (user_id) DO NOTHING;
 
+
