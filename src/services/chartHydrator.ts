@@ -69,6 +69,27 @@ export interface CalculatedChartData {
       type: 'natal' | 'transit' | 'quantum';
     }[];
   };
+  // Essential Report data
+  tarot_spread?: Array<{
+    card: string;
+    position: string;
+    orientation: 'Upright' | 'Reversed';
+    isUpright: boolean;
+  }>;
+  moon_data?: {
+    phase_name: string;
+    illumination: string;
+    sun_sign: string;
+    moon_sign: string;
+  };
+  short_transits?: Array<{
+    transitingBody: string;
+    natalPoint: string;
+    aspect: string;
+    exactDate: Date | string;
+    orb: number;
+    strengthScore: number;
+  }>;
   // Partner data (if provided)
   partner?: CalculatedChartData | null;
   compatibility?: number | null; // 0-100 synastry score
@@ -88,6 +109,217 @@ const STATIC_CITY_DB: Record<string, Coordinates> = {
   "paris, france": { latitude: 48.8566, longitude: 2.3522, source: "static" },
   "mexico city, mexico": { latitude: 19.4326, longitude: -99.1332, source: "static" },
 };
+
+/**
+ * Standard 78-card Tarot deck
+ */
+const TAROT_DECK = [
+  // Major Arcana (0-21)
+  'The Fool', 'The Magician', 'The High Priestess', 'The Empress', 'The Emperor',
+  'The Hierophant', 'The Lovers', 'The Chariot', 'Strength', 'The Hermit',
+  'Wheel of Fortune', 'Justice', 'The Hanged Man', 'Death', 'Temperance',
+  'The Devil', 'The Tower', 'The Star', 'The Moon', 'The Sun',
+  'Judgement', 'The World',
+  // Minor Arcana - Wands
+  'Ace of Wands', 'Two of Wands', 'Three of Wands', 'Four of Wands', 'Five of Wands',
+  'Six of Wands', 'Seven of Wands', 'Eight of Wands', 'Nine of Wands', 'Ten of Wands',
+  'Page of Wands', 'Knight of Wands', 'Queen of Wands', 'King of Wands',
+  // Minor Arcana - Cups
+  'Ace of Cups', 'Two of Cups', 'Three of Cups', 'Four of Cups', 'Five of Cups',
+  'Six of Cups', 'Seven of Cups', 'Eight of Cups', 'Nine of Cups', 'Ten of Cups',
+  'Page of Cups', 'Knight of Cups', 'Queen of Cups', 'King of Cups',
+  // Minor Arcana - Swords
+  'Ace of Swords', 'Two of Swords', 'Three of Swords', 'Four of Swords', 'Five of Swords',
+  'Six of Swords', 'Seven of Swords', 'Eight of Swords', 'Nine of Swords', 'Ten of Swords',
+  'Page of Swords', 'Knight of Swords', 'Queen of Swords', 'King of Swords',
+  // Minor Arcana - Pentacles
+  'Ace of Pentacles', 'Two of Pentacles', 'Three of Pentacles', 'Four of Pentacles', 'Five of Pentacles',
+  'Six of Pentacles', 'Seven of Pentacles', 'Eight of Pentacles', 'Nine of Pentacles', 'Ten of Pentacles',
+  'Page of Pentacles', 'Knight of Pentacles', 'Queen of Pentacles', 'King of Pentacles',
+];
+
+/**
+ * Standard tarot spread positions
+ */
+const TAROT_POSITIONS = [
+  'Past', 'Present', 'Future',
+  'Situation', 'Challenge', 'Outcome',
+  'You', 'Your Path', 'Potential',
+  'Mind', 'Body', 'Spirit',
+];
+
+/**
+ * Draw a random tarot spread
+ * @param count - Number of cards to draw (default: 3)
+ * @returns Array of tarot cards with position and orientation
+ */
+function drawTarotSpread(count: number = 3): Array<{
+  card: string;
+  position: string;
+  orientation: 'Upright' | 'Reversed';
+  isUpright: boolean;
+}> {
+  // Create a copy of the deck to avoid drawing duplicates
+  const availableCards = [...TAROT_DECK];
+  const availablePositions = [...TAROT_POSITIONS];
+  const spread: Array<{
+    card: string;
+    position: string;
+    orientation: 'Upright' | 'Reversed';
+    isUpright: boolean;
+  }> = [];
+
+  for (let i = 0; i < count && availableCards.length > 0; i++) {
+    // Randomly select a card
+    const cardIndex = Math.floor(Math.random() * availableCards.length);
+    const card = availableCards.splice(cardIndex, 1)[0];
+
+    // Randomly select a position
+    const positionIndex = Math.floor(Math.random() * availablePositions.length);
+    const position = availablePositions.splice(positionIndex, 1)[0] || `Position ${i + 1}`;
+
+    // Randomly determine orientation (70% Upright, 30% Reversed)
+    const isUpright = Math.random() > 0.3;
+    const orientation = isUpright ? 'Upright' : 'Reversed';
+
+    spread.push({
+      card,
+      position,
+      orientation,
+      isUpright,
+    });
+  }
+
+  return spread;
+}
+
+/**
+ * Calculate current moon phase using astronomy-engine
+ * @returns Moon phase data
+ */
+function calculateCurrentMoonPhase(): {
+  phase_name: string;
+  illumination: string;
+} {
+  const now = new Date();
+  const time = Astronomy.MakeTime(now);
+
+  // Get Sun and Moon positions
+  const sunVec = Astronomy.GeoVector('Sun', time, true);
+  const moonVec = Astronomy.GeoVector('Moon', time, true);
+
+  const sunEcl = Astronomy.Ecliptic(sunVec);
+  const moonEcl = Astronomy.Ecliptic(moonVec);
+
+  const sunLon = sunEcl.elon;
+  const moonLon = moonEcl.elon;
+
+  // Calculate phase angle (0-360)
+  let phaseAngle = moonLon - sunLon;
+  if (phaseAngle < 0) phaseAngle += 360;
+
+  // Get illumination percentage
+  const illumination = Astronomy.Illumination('Moon', time);
+  const illuminationPercent = Math.round(illumination.phase_fraction * 100);
+
+  // Determine phase name
+  let phaseName: string;
+  
+  if (phaseAngle < 22.5) {
+    phaseName = 'New Moon';
+  } else if (phaseAngle < 67.5) {
+    phaseName = 'Waxing Crescent';
+  } else if (phaseAngle < 112.5) {
+    phaseName = 'First Quarter';
+  } else if (phaseAngle < 157.5) {
+    phaseName = 'Waxing Gibbous';
+  } else if (phaseAngle < 202.5) {
+    phaseName = 'Full Moon';
+  } else if (phaseAngle < 247.5) {
+    phaseName = 'Waning Gibbous';
+  } else if (phaseAngle < 292.5) {
+    phaseName = 'Last Quarter';
+  } else if (phaseAngle < 337.5) {
+    phaseName = 'Waning Crescent';
+  } else {
+    phaseName = 'New Moon';
+  }
+
+  return {
+    phase_name: phaseName,
+    illumination: `${illuminationPercent}%`,
+  };
+}
+
+/**
+ * Calculate short-term transits (2-week window)
+ * @param natalChart - The calculated natal chart
+ * @returns Array of transits within the next 14 days
+ */
+async function calculateShortTermTransits(natalChart: BirthChartResult): Promise<Array<{
+  transitingBody: string;
+  natalPoint: string;
+  aspect: string;
+  exactDate: Date | string;
+  orb: number;
+  strengthScore: number;
+}>> {
+  try {
+    // Import transit calculation function
+    const { calculateActiveTransits } = await import('@/lib/transit-engine');
+    
+    // Convert chart format to match what calculateActiveTransits expects
+    // calculateActiveTransits expects natal_positions with lowercase keys
+    const natalPositions: Record<string, { longitude: number; sign?: string; degree?: number }> = {};
+    if (natalChart.planets) {
+      for (const [planet, data] of Object.entries(natalChart.planets)) {
+        if (data && typeof data === 'object' && 'longitude' in data) {
+          natalPositions[planet.toLowerCase()] = {
+            longitude: (data as any).longitude,
+            sign: (data as any).sign,
+            degree: (data as any).degree,
+          };
+        }
+      }
+    }
+
+    // Create chart object in the format expected by calculateActiveTransits
+    const chartForTransits = {
+      natal_positions: natalPositions,
+      houses: natalChart.houses || {},
+      ascendant: natalChart.ascendant,
+    };
+    
+    // Calculate transits starting from today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Get all transits (they're already filtered to future dates)
+    const allTransits = await calculateActiveTransits(chartForTransits, today);
+    
+    // Filter to only include transits within the next 14 days
+    const twoWeeksFromNow = new Date(today);
+    twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
+    
+    const shortTransits = allTransits.filter(transit => {
+      const transitDate = new Date(transit.exactDate || transit.date);
+      return transitDate >= today && transitDate <= twoWeeksFromNow;
+    });
+
+    // Return simplified format
+    return shortTransits.map(transit => ({
+      transitingBody: transit.transitingBody,
+      natalPoint: transit.natalPoint,
+      aspect: transit.aspect,
+      exactDate: transit.exactDate || transit.date,
+      orb: transit.orb,
+      strengthScore: transit.strengthScore,
+    }));
+  } catch (error) {
+    console.error('[chartHydrator] Error calculating short-term transits:', error);
+    return [];
+  }
+}
 
 /**
  * Calculate relationship matrix scores (0-100) for different compatibility categories
@@ -256,6 +488,11 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   // Calculate Human Design Body Graph
   const humanDesignData = await calculateHumanDesign(chart, input.birthDate, input.birthTime, coordinates.latitude, coordinates.longitude);
 
+  // Calculate Essential Report data (Tarot, Moon Phase, Short Transits)
+  const tarotSpread = drawTarotSpread(3); // Draw 3 cards for Essential report
+  const moonPhase = calculateCurrentMoonPhase();
+  const shortTransits = await calculateShortTermTransits(chart);
+
   const userChart: CalculatedChartData = {
     input,
     coordinates,
@@ -271,6 +508,15 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     isSaturnReturn: Boolean((chart as any)?.isSaturnReturn),
     rawChart: chart,
     humanDesign: humanDesignData,
+    // Essential Report data
+    tarot_spread: tarotSpread,
+    moon_data: {
+      phase_name: moonPhase.phase_name,
+      illumination: moonPhase.illumination,
+      sun_sign: chart.planets?.sun?.sign ?? "Unknown",
+      moon_sign: chart.planets?.moon?.sign ?? "Unknown",
+    },
+    short_transits: shortTransits,
   };
 
   // Trigger Logic: Simple check for partner birth date
@@ -332,8 +578,9 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       // Calculate relationship matrix scores (ensure it's never null)
       const matrixScores = calculateRelationshipMatrix(userChart, partnerChartData);
 
-      // Explicit Return Structure
+      // Explicit Return Structure (include Essential data from userChart)
       return {
+        ...userChart, // Spread to include tarot_spread, moon_data, short_transits
         user: userChart,
         partner: {
           // Must include { sun: { sign: '...' } }
@@ -352,8 +599,9 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       };
     } catch (error) {
       console.error("[chartHydrator] Error calculating partner chart:", error);
-      // Return user chart only if partner calculation fails
+      // Return user chart only if partner calculation fails (include Essential data)
       return {
+        ...userChart, // Spread to include tarot_spread, moon_data, short_transits
         user: userChart,
         partner: null,
         matrix_scores: null,
@@ -363,8 +611,9 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   }
 
   console.log('No Partner Data Found. Skipping...');
-  // No partner data - return user chart only
+  // No partner data - return user chart only (include Essential data)
   return {
+    ...userChart, // Spread to include tarot_spread, moon_data, short_transits
     user: userChart,
     partner: null,
     matrix_scores: null,

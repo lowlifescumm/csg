@@ -172,6 +172,43 @@ export async function POST(request) {
 
       // Add chartData for prompt generation (full structure)
       sampleData.chartData = calculatedData;
+
+      // Map Essential Report data from hydrator to report generator format
+      if (report_type === 'ESSENTIAL' && calculatedData.user) {
+        // Map tarot_spread to tarot_data.card_spread
+        if (calculatedData.user.tarot_spread) {
+          sampleData.tarot_data = {
+            name: hydrationInput.name,
+            card_spread: calculatedData.user.tarot_spread.map(card => ({
+              card: card.card,
+              position: card.position,
+              orientation: card.orientation,
+            })),
+            // Include sun sign for prompt
+            sun_sign: calculatedData.user.sunSign,
+          };
+        }
+
+        // Map moon_data (already in correct format, but ensure sun_sign is included)
+        if (calculatedData.user.moon_data) {
+          sampleData.moon_data = {
+            ...calculatedData.user.moon_data,
+            name: hydrationInput.name,
+            natal_moon_sign: calculatedData.user.moonSign, // User's natal moon sign
+            sun_sign: calculatedData.user.sunSign, // User's sun sign
+          };
+        }
+
+        // Map short_transits to transit_data.transits
+        if (calculatedData.user.short_transits) {
+          sampleData.transit_data = {
+            name: hydrationInput.name,
+            date_range: `Next 14 days from ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+            transits: calculatedData.user.short_transits,
+            short_transits: calculatedData.user.short_transits, // Also include for prompt compatibility
+          };
+        }
+      }
     }
 
     const progressCallback = (percent, message) => {
