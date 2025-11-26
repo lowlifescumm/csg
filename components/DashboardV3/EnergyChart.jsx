@@ -47,10 +47,18 @@ export default function EnergyChart({
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasData, setHasData] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Client-side guard to prevent SSR rendering issues
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
-    fetchEnergyData();
-  }, [userId, physical, emotional, spiritual, labels]);
+    if (isMounted) {
+      fetchEnergyData();
+    }
+  }, [userId, physical, emotional, spiritual, labels, isMounted]);
 
   const fetchEnergyData = async () => {
     // If props are provided, use them (legacy support)
@@ -216,6 +224,15 @@ export default function EnergyChart({
   const todayData = chartData.find(d => d.isToday) || chartData[0];
   const summaryWord = todayData?.summary_word || "Balanced";
 
+  // Client-side guard: return loading placeholder if not mounted (SSR)
+  if (!isMounted) {
+    return (
+      <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
+        <div className="h-[300px] w-full animate-pulse bg-white/5 rounded-xl" />
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
@@ -280,7 +297,7 @@ export default function EnergyChart({
       )}
 
       <div className="relative" role="img" aria-label="Weekly energy forecast chart">
-        <div style={{ width: '100%', height: '300px' }}>
+        <div className="h-[300px] w-full min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={DUMMY_DATA}
