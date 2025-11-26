@@ -333,7 +333,7 @@ export default function EnergyChart({
             <p className="text-purple-200">No data available</p>
           </div>
         ) : (
-          <div className="h-[300px] w-full min-h-[300px]">
+          <div className="h-[300px] w-full min-h-[300px] relative" style={{ minHeight: '300px', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={finalChartData}
@@ -413,6 +413,7 @@ export default function EnergyChart({
               filter="url(#glowPhysical)"
               dot={(props) => {
                 const { cx, cy, payload } = props;
+                if (!cx || !cy) return null;
                 if (payload.isToday) {
                   return (
                     <g>
@@ -435,8 +436,17 @@ export default function EnergyChart({
                     </g>
                   );
                 }
-                return null;
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={3}
+                    fill="#ef4444"
+                    opacity={0.6}
+                  />
+                );
               }}
+              activeDot={{ r: 6, fill: "#ef4444" }}
             />
             <Area
               type="monotone"
@@ -450,6 +460,7 @@ export default function EnergyChart({
               filter="url(#glowEmotional)"
               dot={(props) => {
                 const { cx, cy, payload } = props;
+                if (!cx || !cy) return null;
                 if (payload.isToday) {
                   return (
                     <g>
@@ -472,8 +483,17 @@ export default function EnergyChart({
                     </g>
                   );
                 }
-                return null;
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={3}
+                    fill="#06b6d4"
+                    opacity={0.6}
+                  />
+                );
               }}
+              activeDot={{ r: 6, fill: "#06b6d4" }}
             />
             <Area
               type="monotone"
@@ -487,6 +507,7 @@ export default function EnergyChart({
               filter="url(#glowSpiritual)"
               dot={(props) => {
                 const { cx, cy, payload } = props;
+                if (!cx || !cy) return null;
                 if (payload.isToday) {
                   return (
                     <g>
@@ -509,8 +530,17 @@ export default function EnergyChart({
                     </g>
                   );
                 }
-                return null;
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={3}
+                    fill="#a855f7"
+                    opacity={0.6}
+                  />
+                );
               }}
+              activeDot={{ r: 6, fill: "#a855f7" }}
             />
               </AreaChart>
             </ResponsiveContainer>
