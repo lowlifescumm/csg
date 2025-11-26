@@ -280,11 +280,12 @@ export default function EnergyChart({
       )}
 
       <div className="relative" role="img" aria-label="Weekly energy forecast chart">
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart
-            data={DUMMY_DATA}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          >
+        <div style={{ width: '100%', height: '300px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={DUMMY_DATA}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
             <defs>
               {/* Physical: Red/Orange gradient */}
               <linearGradient id="colorPhysical" x1="0" y1="0" x2="0" y2="1">
@@ -461,8 +462,9 @@ export default function EnergyChart({
                 return null;
               }}
             />
-          </AreaChart>
-        </ResponsiveContainer>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Action Button */}
