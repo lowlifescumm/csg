@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BirthChartWheel from '@/components/BirthChartWheel';
+import HumanDesignChart from '@/src/components/visuals/HumanDesignChart';
 import { ArrowLeft, Loader2, Sparkles, Star } from 'lucide-react';
 
 export default function MyChartPage() {
@@ -13,6 +14,7 @@ export default function MyChartPage() {
   const [birthInfo, setBirthInfo] = useState(null);
   const [interpretation, setInterpretation] = useState(null);
   const [error, setError] = useState(null);
+  const [humanDesignData, setHumanDesignData] = useState(null);
 
   useEffect(() => {
     fetchChart();
@@ -42,6 +44,34 @@ export default function MyChartPage() {
       setChartData(data.chart);
       setBirthInfo(data.birthInfo);
       setInterpretation(data.interpretation);
+      
+      // Fetch human design data if available
+      if (data.birthInfo) {
+        try {
+          const hdResponse = await fetch('/api/birth-chart/human-design', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              birthDate: data.birthInfo.date,
+              birthTime: data.birthInfo.time,
+              latitude: parseFloat(data.birthInfo.latitude),
+              longitude: parseFloat(data.birthInfo.longitude),
+              chart: data.chart
+            })
+          });
+          
+          if (hdResponse.ok) {
+            const hdData = await hdResponse.json();
+            if (hdData.success && hdData.humanDesign) {
+              setHumanDesignData(hdData.humanDesign);
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching human design data:', err);
+          // Continue without human design data
+        }
+      }
+      
       setLoading(false);
     } catch (err) {
       console.error('Error fetching chart:', err);
@@ -340,6 +370,27 @@ This interpretation provides deep insights into your personality traits, strengt
               <p className="text-center text-purple-300 text-sm mt-3">
                 Or <Link href="/subscription" className="text-yellow-400 hover:underline">upgrade to Premium</Link> to get interpretation included
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Human Design Chart - Beta */}
+        {humanDesignData && (
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 mt-8">
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-2xl font-bold text-white">Human Design Chart</h2>
+              <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-semibold rounded-full border border-yellow-500/30">
+                BETA
+              </span>
+            </div>
+            <div className="flex justify-center items-center bg-white/5 rounded-xl border border-white/10 p-4">
+              <HumanDesignChart
+                activeGates={humanDesignData.activeGates?.map(g => g.gate) || []}
+                definedCenters={humanDesignData.definedCenters || []}
+                activeChannels={humanDesignData.activeChannels || []}
+                activeGatesData={humanDesignData.activeGates || []}
+                mode="natal"
+              />
             </div>
           </div>
         )}
