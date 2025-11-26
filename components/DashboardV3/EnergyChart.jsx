@@ -214,14 +214,33 @@ export default function EnergyChart({
     { name: 'Mon', physical: 40, emotional: 60, spiritual: 30 },
     { name: 'Tue', physical: 80, emotional: 50, spiritual: 70 },
     { name: 'Wed', physical: 20, emotional: 90, spiritual: 40 },
+    { name: 'Thu', physical: 60, emotional: 70, spiritual: 50 },
+    { name: 'Fri', physical: 90, emotional: 40, spiritual: 80 },
+    { name: 'Sat', physical: 30, emotional: 80, spiritual: 60 },
+    { name: 'Sun', physical: 70, emotional: 50, spiritual: 70 },
   ];
 
   // Use dummy data if no real data
   const chartData = hasData && data.length > 0 ? data : generateDummyData();
   const isDummyData = !hasData;
   
+  // Ensure all data has 'name' property for X-axis and valid numeric values
+  const finalChartData = (chartData.length > 0 ? chartData : DUMMY_DATA).map(item => ({
+    ...item,
+    name: item.name || item.day || 'Mon',
+    physical: typeof item.physical === 'number' ? item.physical : 50,
+    emotional: typeof item.emotional === 'number' ? item.emotional : 50,
+    spiritual: typeof item.spiritual === 'number' ? item.spiritual : 50,
+  }));
+  
+  console.log('FINAL CHART DATA:', JSON.stringify(finalChartData, null, 2));
+  console.log('Chart data length:', finalChartData.length);
+  console.log('Has data:', hasData);
+  console.log('Is mounted:', isMounted);
+  console.log('First item sample:', finalChartData[0]);
+  
   // Get today's data for summary word
-  const todayData = chartData.find(d => d.isToday) || chartData[0];
+  const todayData = finalChartData.find(d => d.isToday) || finalChartData[0];
   const summaryWord = todayData?.summary_word || "Balanced";
 
   // Client-side guard: return loading placeholder if not mounted (SSR)
@@ -297,12 +316,17 @@ export default function EnergyChart({
       )}
 
       <div className="relative" role="img" aria-label="Weekly energy forecast chart">
-        <div className="h-[300px] w-full min-h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={DUMMY_DATA}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-            >
+        {finalChartData.length === 0 ? (
+          <div className="h-[300px] w-full flex items-center justify-center">
+            <p className="text-purple-200">No data available</p>
+          </div>
+        ) : (
+          <div className="h-[300px] w-full min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={finalChartData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
             <defs>
               {/* Physical: Red/Orange gradient */}
               <linearGradient id="colorPhysical" x1="0" y1="0" x2="0" y2="1">
@@ -476,9 +500,10 @@ export default function EnergyChart({
                 return null;
               }}
             />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
 
       {/* Action Button */}
