@@ -354,11 +354,8 @@ export default function EnergyChart({
               tick={{ fill: "#c4b5fd" }}
             />
             <YAxis
-              stroke="#a78bfa"
-              style={{ fontSize: "12px" }}
-              tick={{ fill: "#c4b5fd" }}
               domain={[0, 100]}
-              label={{ value: "Energy %", angle: -90, position: "insideLeft", fill: "#c4b5fd", style: { fontSize: "12px" } }}
+              hide
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend
