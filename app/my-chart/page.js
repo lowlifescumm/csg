@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BirthChartWheel from '@/components/BirthChartWheel';
@@ -14,11 +14,7 @@ export default function MyChartPage() {
   const [interpretation, setInterpretation] = useState(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchChart();
-  }, []);
-
-  const fetchChart = async () => {
+  const fetchChart = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/birth-chart');
@@ -48,7 +44,11 @@ export default function MyChartPage() {
       setError(err.message);
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    fetchChart();
+  }, [fetchChart]);
 
   if (loading) {
     return (
@@ -340,27 +340,6 @@ This interpretation provides deep insights into your personality traits, strengt
               <p className="text-center text-purple-300 text-sm mt-3">
                 Or <Link href="/subscription" className="text-yellow-400 hover:underline">upgrade to Premium</Link> to get interpretation included
               </p>
-            </div>
-          </div>
-        )}
-
-        {/* Human Design Chart - Beta */}
-        {humanDesignData && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 mt-8">
-            <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-2xl font-bold text-white">Human Design Chart</h2>
-              <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-semibold rounded-full border border-yellow-500/30">
-                BETA
-              </span>
-            </div>
-            <div className="flex justify-center items-center bg-white/5 rounded-xl border border-white/10 p-4">
-              <HumanDesignChart
-                activeGates={humanDesignData.activeGates?.map(g => g.gate) || []}
-                definedCenters={humanDesignData.definedCenters || []}
-                activeChannels={humanDesignData.activeChannels || []}
-                activeGatesData={humanDesignData.activeGates || []}
-                mode="natal"
-              />
             </div>
           </div>
         )}
