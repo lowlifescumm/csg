@@ -60,7 +60,7 @@ export async function GET(request) {
     // Generate weekly energy forecast
     const weeklyEnergy = generateWeeklyEnergy(natalChart);
 
-    // Format data for chart (add day labels)
+    // Format data for chart (add day labels and flatten scores)
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const today = new Date();
     const todayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1; // Convert Sunday=0 to Sunday=6
@@ -68,9 +68,18 @@ export async function GET(request) {
     const formattedData = weeklyEnergy.map((energy, index) => {
       const dayIndex = (todayIndex + index) % 7;
       return {
-        ...energy,
         day: days[dayIndex],
+        physical: energy.scores?.physical || energy.physical || 50,
+        emotional: energy.scores?.emotional || energy.emotional || 50,
+        spiritual: energy.scores?.spiritual || energy.spiritual || 50,
         isToday: index === 0,
+        contributors: energy.contributors || {
+          physical: [],
+          emotional: [],
+          spiritual: []
+        },
+        summary_word: energy.summary_word || "Balanced",
+        date: energy.date
       };
     });
 

@@ -197,6 +197,18 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             moonPhase={safeMoonPhase}
           />
 
+          {/* Energy Chart - Visual attention grabber */}
+          <EnergyChart 
+            userId={user?.id}
+          />
+
+          {/* Crystals Widget - Visual attention grabber */}
+          <CrystalsWidget 
+            moonPhase={safeMoonPhase}
+            userSign={userSign}
+            activeTransits={activeTransits}
+          />
+
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
             <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
@@ -515,18 +527,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
           {/* Compact Daily Streak - Replaces GrowthBar + DailyTasks for space saving */}
           {/* Note: Full DailyTasks component removed from main view, can be accessed via CompactDailyStreak if needed */}
-
-          {/* Energy Chart */}
-          <EnergyChart 
-            userId={user?.id}
-          />
-
-          {/* Crystals Widget */}
-          <CrystalsWidget 
-            moonPhase={safeMoonPhase}
-            userSign={userSign}
-            activeTransits={activeTransits}
-          />
 
           {/* Best Matches */}
           <BestMatches 

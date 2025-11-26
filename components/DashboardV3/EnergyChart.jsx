@@ -81,7 +81,22 @@ export default function EnergyChart({
         if (res.ok) {
           const result = await res.json();
           if (result.success && result.data && result.data.length > 0) {
-            setData(result.data);
+            // Ensure data has correct structure (flatten scores if needed)
+            const formattedData = result.data.map(item => ({
+              day: item.day,
+              physical: item.physical || item.scores?.physical || 50,
+              emotional: item.emotional || item.scores?.emotional || 50,
+              spiritual: item.spiritual || item.scores?.spiritual || 50,
+              isToday: item.isToday || false,
+              contributors: item.contributors || {
+                physical: [],
+                emotional: [],
+                spiritual: []
+              },
+              summary_word: item.summary_word || "Balanced",
+              date: item.date
+            }));
+            setData(formattedData);
             setHasData(true);
             setLoading(false);
             return;
