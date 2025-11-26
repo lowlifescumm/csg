@@ -350,11 +350,12 @@ export default function EnergyChart({
             }}
           >
             {isMounted ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={finalChartData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
+              <div style={{ width: '100%', height: '300px', position: 'relative', zIndex: 1 }}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart
+                    data={finalChartData}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  >
             <defs>
               {/* Physical: Red/Orange gradient */}
               <linearGradient id="colorPhysical" x1="0" y1="0" x2="0" y2="1">
@@ -404,10 +405,14 @@ export default function EnergyChart({
               stroke="#a78bfa"
               style={{ fontSize: "12px" }}
               tick={{ fill: "#c4b5fd" }}
+              height={30}
             />
             <YAxis
               domain={[0, 100]}
-              hide
+              stroke="#a78bfa"
+              style={{ fontSize: "12px" }}
+              tick={{ fill: "#c4b5fd" }}
+              width={40}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend
@@ -558,8 +563,9 @@ export default function EnergyChart({
               }}
               activeDot={{ r: 6, fill: "#a855f7" }}
             />
-                </AreaChart>
-              </ResponsiveContainer>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <p className="text-purple-200">Loading chart...</p>
