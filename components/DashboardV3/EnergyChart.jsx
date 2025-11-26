@@ -158,12 +158,19 @@ export default function EnergyChart({ userId = null }) {
             Test: Container visible. Data points: {displayData.length}
           </div>
           
+          {/* Test SVG to verify SVG rendering works */}
+          <svg width="100" height="100" className="absolute top-10 left-2 z-20" style={{ border: '1px solid red' }}>
+            <rect x="10" y="10" width="80" height="80" fill="red" opacity="0.5" />
+            <text x="50" y="50" fill="white" textAnchor="middle">SVG Test</text>
+          </svg>
+          
           <div style={{ width: '100%', height: '300px', position: 'relative', zIndex: 10 }}>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart
-                data={displayData}
-                margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
-              >
+            {isMounted && (
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart
+                  data={displayData}
+                  margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
+                >
               <defs>
                 <linearGradient id="colorPhysical" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
@@ -222,8 +229,9 @@ export default function EnergyChart({ userId = null }) {
                 fill="url(#colorSpiritual)"
                 name="Spiritual"
               />
-              </AreaChart>
-            </ResponsiveContainer>
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
