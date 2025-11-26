@@ -173,6 +173,61 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             moonPhase={safeMoonPhase}
           />
 
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Credits</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{totalCredits}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                  <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Readings</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{readingCount + chartCount}</p>
+                </div>
+              </div>
+            </div>
+
+            {safeStreak && safeStreak.currentStreak > 0 && (
+              <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-purple-200 font-medium">Streak</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-white truncate">{safeStreak.currentStreak} days</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Status</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">
+                    {isPremium ? "Premium" : "Free"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Why Us - Value Proposition */}
           <div className="glassmorphic rounded-3xl p-4 sm:p-6 md:p-8 apple-shadow-lg border border-white border-opacity-40 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10">
             <div className="text-center mb-4 sm:mb-6">
@@ -470,61 +525,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               console.log("Premium upgrade initiated");
             }}
           />
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                  <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Credits</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{totalCredits}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                  <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Readings</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{readingCount + chartCount}</p>
-                </div>
-              </div>
-            </div>
-
-            {safeStreak && safeStreak.currentStreak > 0 && (
-              <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm text-purple-200 font-medium">Streak</p>
-                    <p className="text-xl sm:text-2xl font-semibold text-white truncate">{safeStreak.currentStreak} days</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Status</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">
-                    {isPremium ? "Premium" : "Free"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Premium Banner */}
           {!isPremium && (
