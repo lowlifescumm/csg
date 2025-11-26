@@ -309,6 +309,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             {/* Quick Tarot Buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button
+                id="daily-tarot-button"
                 onClick={() => {
                   setTarotSelectorConfig({ spreadType: "daily", readingType: "daily" });
                   setShowTarotSelector(true);
