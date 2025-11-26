@@ -61,6 +61,8 @@ export default function EnergyChart({
   }, [userId, physical, emotional, spiritual, labels, isMounted]);
 
   const fetchEnergyData = async () => {
+    console.log('fetchEnergyData called with userId:', userId);
+    
     // If props are provided, use them (legacy support)
     if (physical && emotional && spiritual && labels) {
       const formattedData = labels.map((label, index) => ({
@@ -85,9 +87,14 @@ export default function EnergyChart({
     // Try to fetch calculated forecast data with contributors
     if (userId) {
       try {
+        console.log('Fetching energy forecast for userId:', userId);
         const res = await fetch("/api/energy/forecast");
+        console.log('Energy forecast response status:', res.status, res.statusText);
+        
         if (res.ok) {
           const result = await res.json();
+          console.log('Energy forecast API response:', JSON.stringify(result, null, 2));
+          
           if (result.success && result.data && result.data.length > 0) {
             // FLATTEN the nested scores object for Recharts
             const formattedData = result.data.map((day) => {
@@ -119,15 +126,20 @@ export default function EnergyChart({
               };
             });
             
-            console.log('ENERGY CHART DATA:', JSON.stringify(formattedData, null, 2));
+            console.log('ENERGY CHART FORMATTED DATA:', JSON.stringify(formattedData, null, 2));
             setData(formattedData);
             setHasData(true);
             setLoading(false);
             return;
+          } else {
+            console.warn('Energy forecast API returned empty or invalid data:', result);
           }
+        } else {
+          const errorText = await res.text();
+          console.error('Energy forecast API error:', res.status, errorText);
         }
       } catch (err) {
-        console.log("Could not fetch energy forecast, trying fallback:", err);
+        console.error("Could not fetch energy forecast, trying fallback:", err);
       }
 
       // Fallback to old API
