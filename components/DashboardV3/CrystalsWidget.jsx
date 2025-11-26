@@ -2,64 +2,40 @@
 import { useState, useEffect } from "react";
 import { Sparkles, Heart, X, Loader2, Info } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
-import * as Astronomy from 'astronomy-engine';
-
-/**
- * Check if Mercury is currently retrograde
- * @returns {boolean} True if Mercury is retrograde
- */
-function isMercuryRetrograde() {
-  const now = new Date();
-  const tomorrow = new Date(now.getTime() + 86400000); // +1 day
-  
-  const todayPos = Astronomy.GeoVector('Mercury', Astronomy.MakeTime(now), true);
-  const tomorrowPos = Astronomy.GeoVector('Mercury', Astronomy.MakeTime(tomorrow), true);
-  
-  const todayEcl = Astronomy.Ecliptic(todayPos);
-  const tomorrowEcl = Astronomy.Ecliptic(tomorrowPos);
-  
-  // If tomorrow's longitude is less than today's, planet is retrograde
-  let diff = tomorrowEcl.elon - todayEcl.elon;
-  if (diff > 180) diff -= 360;
-  if (diff < -180) diff += 360;
-  
-  return diff < 0;
-}
 
 /**
  * Get crystal recommendations based on active transits
  * @param {Array} activeTransits - Array of transit objects
+ * @param {boolean} mercuryRetrograde - Whether Mercury is currently retrograde
  * @returns {Object|null} Crystal recommendation with reason, or null if no match
  */
-function getCrystalsForTransits(activeTransits) {
-  if (!activeTransits || !Array.isArray(activeTransits)) {
-    return null;
-  }
-
+function getCrystalsForTransits(activeTransits, mercuryRetrograde = false) {
   // Check for Mars Square Saturn transit
-  const marsSquareSaturn = activeTransits.find(
-    transit => 
-      transit.transitPlanet?.toLowerCase() === 'mars' &&
-      transit.natalPlanet?.toLowerCase() === 'saturn' &&
-      transit.aspect?.toLowerCase() === 'square'
-  );
+  if (activeTransits && Array.isArray(activeTransits)) {
+    const marsSquareSaturn = activeTransits.find(
+      transit => 
+        transit.transitPlanet?.toLowerCase() === 'mars' &&
+        transit.natalPlanet?.toLowerCase() === 'saturn' &&
+        transit.aspect?.toLowerCase() === 'square'
+    );
 
-  if (marsSquareSaturn) {
-    return {
-      crystal: {
-        id: "red-jasper",
-        name: "Red Jasper",
-        description: "Grounds your fire energy and provides stability. Strengthens courage and determination. Perfect for navigating challenging Mars-Saturn transits that create tension between action and restriction.",
-        emoji: "🧱",
-        color: "#dc2626",
-      },
-      reason: "Mars Square Saturn transit is active. This challenging aspect creates tension between your drive (Mars) and limitations (Saturn). Red Jasper helps ground this energy and provides stability during this period.",
-      transitType: "Mars Square Saturn"
-    };
+    if (marsSquareSaturn) {
+      return {
+        crystal: {
+          id: "red-jasper",
+          name: "Red Jasper",
+          description: "Grounds your fire energy and provides stability. Strengthens courage and determination. Perfect for navigating challenging Mars-Saturn transits that create tension between action and restriction.",
+          emoji: "🧱",
+          color: "#dc2626",
+        },
+        reason: "Mars Square Saturn transit is active. This challenging aspect creates tension between your drive (Mars) and limitations (Saturn). Red Jasper helps ground this energy and provides stability during this period.",
+        transitType: "Mars Square Saturn"
+      };
+    }
   }
 
   // Check for Mercury Retrograde
-  if (isMercuryRetrograde()) {
+  if (mercuryRetrograde) {
     return {
       crystal: {
         id: "blue-lace-agate",
@@ -195,6 +171,7 @@ export default function CrystalsWidget({ moonPhase, userSign, activeTransits }) 
   const [showModal, setShowModal] = useState(false);
   const [favoriting, setFavoriting] = useState(false);
   const [favoriteStatus, setFavoriteStatus] = useState({});
+  const [isMercuryRetrograde, setIsMercuryRetrograde] = useState(false);
 
   // Safely extract moonPhase, ensuring we never render objects
   const safeMoonPhase = moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 ? moonPhase : null;
@@ -202,6 +179,20 @@ export default function CrystalsWidget({ moonPhase, userSign, activeTransits }) 
   useEffect(() => {
     fetchElementData();
   }, [safeMoonPhase, userSign]);
+
+  // Check Mercury retrograde status
+  useEffect(() => {
+    fetch('/api/mercury-retrograde')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setIsMercuryRetrograde(data.isRetrograde || false);
+        }
+      })
+      .catch(() => {
+        setIsMercuryRetrograde(false);
+      });
+  }, []);
 
   const fetchElementData = async () => {
     try {
@@ -321,7 +312,7 @@ export default function CrystalsWidget({ moonPhase, userSign, activeTransits }) 
   const element = elementData?.element || "Fire";
   
   // Get transit-based crystal recommendation
-  const transitCrystal = getCrystalsForTransits(activeTransits);
+  const transitCrystal = getCrystalsForTransits(activeTransits, isMercuryRetrograde);
   
   // Use transit-based crystal if available, otherwise fall back to element-based
   const crystals = transitCrystal 
