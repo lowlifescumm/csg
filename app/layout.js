@@ -21,7 +21,6 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Cosmic Spiritual Guide" />
-        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
         <AuthProviderWrapper>
