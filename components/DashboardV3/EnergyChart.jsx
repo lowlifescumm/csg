@@ -81,21 +81,37 @@ export default function EnergyChart({
         if (res.ok) {
           const result = await res.json();
           if (result.success && result.data && result.data.length > 0) {
-            // Ensure data has correct structure (flatten scores if needed)
-            const formattedData = result.data.map(item => ({
-              day: item.day,
-              physical: item.physical || item.scores?.physical || 50,
-              emotional: item.emotional || item.scores?.emotional || 50,
-              spiritual: item.spiritual || item.scores?.spiritual || 50,
-              isToday: item.isToday || false,
-              contributors: item.contributors || {
-                physical: [],
-                emotional: [],
-                spiritual: []
-              },
-              summary_word: item.summary_word || "Balanced",
-              date: item.date
-            }));
+            // FLATTEN the nested scores object for Recharts
+            const formattedData = result.data.map((day) => {
+              // Format date to short day name (e.g., "Mon", "Tue")
+              const dayName = day.day || (day.date 
+                ? new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })
+                : 'Mon');
+              
+              return {
+                // Use 'name' for X-axis (Recharts standard) but keep 'day' for compatibility
+                name: dayName,
+                day: dayName,
+                
+                // FLATTEN the scores so Recharts can find them
+                physical: day.scores?.physical ?? day.physical ?? 50,
+                emotional: day.scores?.emotional ?? day.emotional ?? 50,
+                spiritual: day.scores?.spiritual ?? day.spiritual ?? 50,
+                
+                // Keep the extra data for the tooltip
+                isToday: day.isToday || false,
+                contributors: day.contributors || {
+                  physical: [],
+                  emotional: [],
+                  spiritual: []
+                },
+                summary: day.summary_word || day.summary || "Balanced",
+                summary_word: day.summary_word || day.summary || "Balanced",
+                date: day.date
+              };
+            });
+            
+            console.log('ENERGY CHART DATA:', JSON.stringify(formattedData, null, 2));
             setData(formattedData);
             setHasData(true);
             setLoading(false);
@@ -307,7 +323,7 @@ export default function EnergyChart({
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" strokeOpacity={0.1} />
             <XAxis
-              dataKey="day"
+              dataKey="name"
               stroke="#a78bfa"
               style={{ fontSize: "12px" }}
               tick={{ fill: "#c4b5fd" }}
