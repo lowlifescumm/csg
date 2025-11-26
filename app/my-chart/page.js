@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BirthChartWheel from '@/components/BirthChartWheel';
-import HumanDesignChart from '@/src/components/visuals/HumanDesignChart';
 import { ArrowLeft, Loader2, Sparkles, Star } from 'lucide-react';
 
 export default function MyChartPage() {
@@ -14,7 +13,6 @@ export default function MyChartPage() {
   const [birthInfo, setBirthInfo] = useState(null);
   const [interpretation, setInterpretation] = useState(null);
   const [error, setError] = useState(null);
-  const [humanDesignData, setHumanDesignData] = useState(null);
 
   useEffect(() => {
     fetchChart();
@@ -44,34 +42,6 @@ export default function MyChartPage() {
       setChartData(data.chart);
       setBirthInfo(data.birthInfo);
       setInterpretation(data.interpretation);
-      
-      // Fetch human design data if available
-      if (data.birthInfo) {
-        try {
-          const hdResponse = await fetch('/api/birth-chart/human-design', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              birthDate: data.birthInfo.date,
-              birthTime: data.birthInfo.time,
-              latitude: parseFloat(data.birthInfo.latitude),
-              longitude: parseFloat(data.birthInfo.longitude),
-              chart: data.chart
-            })
-          });
-          
-          if (hdResponse.ok) {
-            const hdData = await hdResponse.json();
-            if (hdData.success && hdData.humanDesign) {
-              setHumanDesignData(hdData.humanDesign);
-            }
-          }
-        } catch (err) {
-          console.error('Error fetching human design data:', err);
-          // Continue without human design data
-        }
-      }
-      
       setLoading(false);
     } catch (err) {
       console.error('Error fetching chart:', err);
