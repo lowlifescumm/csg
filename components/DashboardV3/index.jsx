@@ -252,6 +252,11 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             </div>
           </div>
 
+          {/* Compact Daily Streak Widget */}
+          <div className="mb-8">
+            <CompactDailyStreak userId={user?.id} streak={safeStreak} />
+          </div>
+
           {/* Why Us - Value Proposition */}
           <div className="glassmorphic rounded-3xl p-4 sm:p-6 md:p-8 apple-shadow-lg border border-white border-opacity-40 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10">
             <div className="text-center mb-4 sm:mb-6">
@@ -342,11 +347,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 <span>Career Tarot</span>
                 <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
-            </div>
-
-            {/* Compact Daily Streak Widget */}
-            <div className="mt-6">
-              <CompactDailyStreak userId={user?.id} streak={safeStreak} />
             </div>
           </div>
 
