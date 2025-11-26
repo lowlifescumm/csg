@@ -2,8 +2,81 @@
 import { useState, useEffect } from "react";
 import { Sparkles, Heart, X, Loader2, Info } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
+import * as Astronomy from 'astronomy-engine';
 
-// Crystal data by element
+/**
+ * Check if Mercury is currently retrograde
+ * @returns {boolean} True if Mercury is retrograde
+ */
+function isMercuryRetrograde() {
+  const now = new Date();
+  const tomorrow = new Date(now.getTime() + 86400000); // +1 day
+  
+  const todayPos = Astronomy.GeoVector('Mercury', Astronomy.MakeTime(now), true);
+  const tomorrowPos = Astronomy.GeoVector('Mercury', Astronomy.MakeTime(tomorrow), true);
+  
+  const todayEcl = Astronomy.Ecliptic(todayPos);
+  const tomorrowEcl = Astronomy.Ecliptic(tomorrowPos);
+  
+  // If tomorrow's longitude is less than today's, planet is retrograde
+  let diff = tomorrowEcl.elon - todayEcl.elon;
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+  
+  return diff < 0;
+}
+
+/**
+ * Get crystal recommendations based on active transits
+ * @param {Array} activeTransits - Array of transit objects
+ * @returns {Object|null} Crystal recommendation with reason, or null if no match
+ */
+function getCrystalsForTransits(activeTransits) {
+  if (!activeTransits || !Array.isArray(activeTransits)) {
+    return null;
+  }
+
+  // Check for Mars Square Saturn transit
+  const marsSquareSaturn = activeTransits.find(
+    transit => 
+      transit.transitPlanet?.toLowerCase() === 'mars' &&
+      transit.natalPlanet?.toLowerCase() === 'saturn' &&
+      transit.aspect?.toLowerCase() === 'square'
+  );
+
+  if (marsSquareSaturn) {
+    return {
+      crystal: {
+        id: "red-jasper",
+        name: "Red Jasper",
+        description: "Grounds your fire energy and provides stability. Strengthens courage and determination. Perfect for navigating challenging Mars-Saturn transits that create tension between action and restriction.",
+        emoji: "🧱",
+        color: "#dc2626",
+      },
+      reason: "Mars Square Saturn transit is active. This challenging aspect creates tension between your drive (Mars) and limitations (Saturn). Red Jasper helps ground this energy and provides stability during this period.",
+      transitType: "Mars Square Saturn"
+    };
+  }
+
+  // Check for Mercury Retrograde
+  if (isMercuryRetrograde()) {
+    return {
+      crystal: {
+        id: "blue-lace-agate",
+        name: "Blue Lace Agate",
+        description: "Promotes peace and tranquility. Helps release emotional blocks and encourages self-expression. Ideal for Mercury retrograde periods when communication and technology can be disrupted.",
+        emoji: "💠",
+        color: "#3b82f6",
+      },
+      reason: "Mercury is currently retrograde. This period often brings communication challenges, technology glitches, and delays. Blue Lace Agate helps calm the mind and promotes clear communication during this time.",
+      transitType: "Mercury Retrograde"
+    };
+  }
+
+  return null;
+}
+
+// Crystal data by element (fallback for when no transit matches)
 const CRYSTALS_BY_ELEMENT = {
   Fire: [
     {
@@ -113,8 +186,9 @@ const ELEMENT_EXPLANATIONS = {
  * Props:
  * - moonPhase: Moon phase data (optional)
  * - userSign: User's zodiac sign (optional)
+ * - activeTransits: Array of active transit objects (optional)
  */
-export default function CrystalsWidget({ moonPhase, userSign }) {
+export default function CrystalsWidget({ moonPhase, userSign, activeTransits }) {
   const [elementData, setElementData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedCrystal, setSelectedCrystal] = useState(null);
@@ -245,7 +319,15 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
   }
 
   const element = elementData?.element || "Fire";
-  const crystals = CRYSTALS_BY_ELEMENT[element] || CRYSTALS_BY_ELEMENT["Fire"];
+  
+  // Get transit-based crystal recommendation
+  const transitCrystal = getCrystalsForTransits(activeTransits);
+  
+  // Use transit-based crystal if available, otherwise fall back to element-based
+  const crystals = transitCrystal 
+    ? [transitCrystal.crystal] 
+    : (CRYSTALS_BY_ELEMENT[element] || CRYSTALS_BY_ELEMENT["Fire"]);
+  
   const isFavorited = selectedCrystal ? favoriteStatus[selectedCrystal.id] : false;
 
   // Element icons
@@ -295,8 +377,28 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
 
         {/* Recommended Crystals */}
         <div>
-          <h4 className="text-lg font-semibold text-white mb-4">Recommended Crystals</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <h4 className="text-lg font-semibold text-white mb-4">
+            {transitCrystal ? "Recommended Crystal" : "Recommended Crystals"}
+          </h4>
+          
+          {/* Transit-based recommendation reason */}
+          {transitCrystal && (
+            <div className="mb-4 p-4 bg-blue-500/20 rounded-xl border border-blue-400/30">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-300 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-blue-200 font-medium text-sm mb-1">
+                    Recommended for: <span className="text-white">{transitCrystal.transitType}</span>
+                  </p>
+                  <p className="text-blue-200/90 text-sm leading-relaxed">
+                    {transitCrystal.reason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className={`grid gap-4 ${transitCrystal ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'}`}>
             {crystals.map((crystal) => (
               <div
                 key={crystal.id}
@@ -356,11 +458,30 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
             </div>
 
             <div className="mb-6">
-              <h4 className="text-lg font-semibold text-white mb-3">Why {selectedCrystal.name} for {element} Energy?</h4>
-              <p className="text-purple-200 leading-relaxed mb-4">{selectedCrystal.description}</p>
-              <p className="text-purple-200/80 text-sm leading-relaxed">
-                {elementData?.explanation || ELEMENT_EXPLANATIONS[element]} This crystal helps you align with today's {element.toLowerCase()} energy and maximize its benefits in your spiritual practice.
-              </p>
+              {transitCrystal && selectedCrystal.id === transitCrystal.crystal.id ? (
+                <>
+                  <h4 className="text-lg font-semibold text-white mb-3">
+                    Why {selectedCrystal.name} for {transitCrystal.transitType}?
+                  </h4>
+                  <div className="mb-4 p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
+                    <p className="text-blue-200 text-sm font-medium mb-2">
+                      Transit Recommendation
+                    </p>
+                    <p className="text-blue-100 text-sm leading-relaxed mb-3">
+                      {transitCrystal.reason}
+                    </p>
+                  </div>
+                  <p className="text-purple-200 leading-relaxed mb-4">{selectedCrystal.description}</p>
+                </>
+              ) : (
+                <>
+                  <h4 className="text-lg font-semibold text-white mb-3">Why {selectedCrystal.name} for {element} Energy?</h4>
+                  <p className="text-purple-200 leading-relaxed mb-4">{selectedCrystal.description}</p>
+                  <p className="text-purple-200/80 text-sm leading-relaxed">
+                    {elementData?.explanation || ELEMENT_EXPLANATIONS[element]} This crystal helps you align with today's {element.toLowerCase()} energy and maximize its benefits in your spiritual practice.
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="flex gap-3">

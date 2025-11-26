@@ -148,6 +148,9 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   // Get user's sun sign for Daily Horoscope
   const [userSign, setUserSign] = useState(null);
   
+  // Active transits for crystal recommendations
+  const [activeTransits, setActiveTransits] = useState([]);
+  
   useEffect(() => {
     if (user?.id) {
       fetch('/api/birth-chart')
@@ -160,6 +163,27 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
         .catch(() => {});
     }
   }, [user?.id]);
+
+  // Fetch active transits for crystal recommendations
+  useEffect(() => {
+    if (user?.id && hasBirthChart) {
+      fetch('/api/transits')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.transits) {
+            // Extract active transits from the response
+            const transits = Array.isArray(data.transits) 
+              ? data.transits 
+              : (data.transits.active || []);
+            setActiveTransits(transits);
+          }
+        })
+        .catch(() => {
+          // Silently fail - crystal widget will use fallback
+          setActiveTransits([]);
+        });
+    }
+  }, [user?.id, hasBirthChart]);
 
   return (
     <div className="w-full">
@@ -500,6 +524,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           {/* Crystals Widget */}
           <CrystalsWidget 
             moonPhase={safeMoonPhase}
+            userSign={userSign}
+            activeTransits={activeTransits}
           />
 
           {/* Best Matches */}
