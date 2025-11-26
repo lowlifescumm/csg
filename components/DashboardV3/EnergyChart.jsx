@@ -152,12 +152,18 @@ export default function EnergyChart({ userId = null }) {
         </div>
 
         {/* Chart Container */}
-        <div className="w-full" style={{ height: '300px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={displayData}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-            >
+        <div className="w-full" style={{ height: '300px', minHeight: '300px', position: 'relative', backgroundColor: 'rgba(139, 92, 246, 0.1)', border: '2px solid rgba(139, 92, 246, 0.5)' }}>
+          {/* Test: Simple div to verify container renders */}
+          <div className="absolute top-2 left-2 text-xs text-purple-300 z-20">
+            Test: Container visible. Data points: {displayData.length}
+          </div>
+          
+          <div style={{ width: '100%', height: '300px', position: 'relative', zIndex: 10 }}>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart
+                data={displayData}
+                margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
+              >
               <defs>
                 <linearGradient id="colorPhysical" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
@@ -216,8 +222,9 @@ export default function EnergyChart({ userId = null }) {
                 fill="url(#colorSpiritual)"
                 name="Spiritual"
               />
-            </AreaChart>
-          </ResponsiveContainer>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Action Button */}
