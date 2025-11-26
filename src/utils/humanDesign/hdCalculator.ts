@@ -229,9 +229,6 @@ export function calculateBodyGraph(
     };
   });
 
-  // Convert map to array
-  const activeGates = Array.from(activeGatesMap.values());
-
   // Get all unique gate numbers
   const gateNumbers = activeGates.map(g => g.gate);
 
