@@ -201,6 +201,13 @@ export default function EnergyChart({
     return null;
   };
 
+  // DEBUG: Create dummy data to test chart rendering
+  const DUMMY_DATA = [
+    { name: 'Mon', physical: 40, emotional: 60, spiritual: 30 },
+    { name: 'Tue', physical: 80, emotional: 50, spiritual: 70 },
+    { name: 'Wed', physical: 20, emotional: 90, spiritual: 40 },
+  ];
+
   // Use dummy data if no real data
   const chartData = hasData && data.length > 0 ? data : generateDummyData();
   const isDummyData = !hasData;
@@ -275,7 +282,7 @@ export default function EnergyChart({
       <div className="relative" role="img" aria-label="Weekly energy forecast chart">
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart
-            data={chartData}
+            data={DUMMY_DATA}
             margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
           >
             <defs>
