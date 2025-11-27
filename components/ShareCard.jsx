@@ -52,15 +52,12 @@ export default function ShareCard({ interpretation, readingId, cards = [], onSha
 
   // Main share handler using useSocialShare hook
   const handleShareReading = async () => {
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-    const shareUrl = `${baseUrl}/readings/${readingId}`;
-    
     // Extract card image URLs
     const imageUrls = cards && cards.length > 0 
       ? cards.map(card => card.image).filter(Boolean)
       : [];
 
-    // Create share text
+    // Create share text (no URL - reading URLs are blocked by permissions)
     const cardNames = getCardNames();
     const shareText = `✨ My Cosmic Guidance from Cosmic Spirit Guide! ${cardNames ? `\n\nCards: ${cardNames}` : ""}\n\n${powerMove}\n\nGet your reading at cosmicspiritguide.com`;
 
@@ -68,7 +65,7 @@ export default function ShareCard({ interpretation, readingId, cards = [], onSha
       await shareContent({
         title: "My Cosmic Guidance",
         text: shareText,
-        url: shareUrl,
+        url: "https://cosmicspiritguide.com", // Use main site URL instead of reading URL
         imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       });
     } catch (error) {
