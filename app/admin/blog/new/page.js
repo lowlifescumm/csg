@@ -11,6 +11,7 @@ export default function NewBlogPostPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [htmlMode, setHtmlMode] = useState(false);
   const [post, setPost] = useState({
     title: '',
     slug: '',

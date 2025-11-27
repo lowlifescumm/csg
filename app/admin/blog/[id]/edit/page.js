@@ -14,6 +14,7 @@ export default function EditBlogPostPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [htmlMode, setHtmlMode] = useState(false);
   const [post, setPost] = useState({
     title: '',
     slug: '',
