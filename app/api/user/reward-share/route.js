@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/lib/db';
@@ -16,7 +17,7 @@ import { addCreditsDirectly } from '@/lib/credit-engine';
 export async function POST(request) {
   try {
     // Get authenticated user
-    const cookieStore = await request.cookies;
+    const cookieStore = await cookies();
     const authResult = await getAuthenticatedUser(cookieStore, authOptions);
 
     if (!authResult) {
