@@ -53,8 +53,8 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 glassmorphic border-b border-white border-opacity-20">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <img src="/logo.png" alt="Cosmic Spiritual Guide" className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0" />
-            <span className="text-base sm:text-lg md:text-xl font-semibold gradient-text truncate">Cosmic Spiritual Guide</span>
+            <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0" />
+            <img src="/logo-text.svg" alt="Cosmic" className="h-5 sm:h-6 md:h-7 object-contain flex-shrink-0" />
           </div>
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <button onClick={() => router.push("/login")} className="text-sm sm:text-base text-gray-700 hover:text-purple-600 smooth-transition px-2 sm:px-0">
@@ -527,7 +527,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+                <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-8 h-8" />
                 <span className="font-semibold text-white">Cosmic Spiritual Guide</span>
               </div>
               <p className="text-sm text-gray-400">Guided by the stars, powered by insight.</p>

@@ -109,7 +109,10 @@ export default function LoginPage() {
         <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 w-full max-w-md">
           <div className="text-center">
             <div className="inline-block float-animation">
-              <img src="/logo.png" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-4 object-contain" />
+              <div className="flex flex-col items-center mb-4">
+                <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
+                <img src="/logo-text.svg" alt="Cosmic" className="h-8 object-contain" />
+              </div>
             </div>
             <p className="text-gray-600">Loading...</p>
           </div>

@@ -101,7 +101,10 @@ function ResetPasswordContent() {
       <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-block float-animation">
-            <img src="/logo.png" alt="Cosmic Spiritual Guide" className="w-20 h-20 mx-auto mb-4 object-contain" />
+            <div className="flex flex-col items-center mb-4">
+              <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
+              <img src="/logo-text.svg" alt="Cosmic" className="h-8 object-contain" />
+            </div>
           </div>
           <h1 className="text-3xl font-semibold gradient-text mb-2">
             {step === 'request' ? '🔮 Find Your Way Back' : '✨ Restore Your Path'}
@@ -273,7 +276,10 @@ export default function ResetPasswordPage() {
         <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 w-full max-w-md">
           <div className="text-center">
             <div className="inline-block float-animation">
-              <img src="/logo.png" alt="Cosmic Spiritual Guide" className="w-20 h-20 mx-auto mb-4 object-contain" />
+              <div className="flex flex-col items-center mb-4">
+              <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
+              <img src="/logo-text.svg" alt="Cosmic" className="h-8 object-contain" />
+            </div>
             </div>
             <h1 className="text-3xl font-semibold gradient-text mb-2">🔮 Loading Cosmic Guidance...</h1>
             <div className="flex items-center justify-center mt-4">
