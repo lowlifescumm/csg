@@ -54,6 +54,14 @@ export default function BlogPostPage() {
   const formatContent = (content) => {
     if (!content) return '';
     
+    // Check if content is already HTML (starts with HTML tag)
+    const isHTML = /^\s*</.test(content.trim());
+    
+    if (isHTML) {
+      // Content is already HTML - return as-is (trusted admin content)
+      return content;
+    }
+    
     // Convert plain text to HTML with proper formatting
     return content
       // Convert line breaks to <br> tags
@@ -203,7 +211,7 @@ export default function BlogPostPage() {
         {/* Article Content */}
         <article className="glassmorphic rounded-2xl p-8 apple-shadow-lg mb-8">
           <div 
-            className="prose prose-lg prose-gray max-w-none"
+            className="prose prose-lg prose-gray max-w-none prose-img:rounded-xl prose-img:shadow-lg prose-img:my-8 prose-a:text-purple-600 prose-a:hover:text-purple-700 prose-strong:text-gray-900 prose-headings:text-gray-900"
             dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
           />
         </article>

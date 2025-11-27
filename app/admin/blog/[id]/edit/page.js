@@ -102,6 +102,11 @@ export default function EditBlogPostPage() {
           meta_title: data.post.meta_title || '',
           meta_description: data.post.meta_description || ''
         });
+        
+        // Auto-detect HTML mode if content starts with HTML tag
+        if (data.post.content && /^\s*</.test(data.post.content.trim())) {
+          setHtmlMode(true);
+        }
       } else {
         console.error('Failed to fetch post:', data.error);
         alert('Failed to load post: ' + (data.error || 'Post not found'));
@@ -299,16 +304,42 @@ export default function EditBlogPostPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Content *
-                  </label>
-                  <textarea
-                    value={post.content}
-                    onChange={(e) => setPost(prev => ({ ...prev, content: e.target.value }))}
-                    placeholder="Write your post content here..."
-                    rows={12}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Content *
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setHtmlMode(!htmlMode)}
+                        className="text-xs px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                      >
+                        {htmlMode ? 'HTML Mode' : 'Text Mode'}
+                      </button>
+                    </div>
+                  </div>
+                  {htmlMode ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={post.content}
+                        onChange={(e) => setPost(prev => ({ ...prev, content: e.target.value }))}
+                        placeholder="Paste your HTML here... You can include images with &lt;img src=&quot;url&quot; /&gt; tags"
+                        rows={16}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                      />
+                      <p className="text-xs text-gray-500">
+                        💡 HTML Mode: Paste raw HTML with images. Images will be displayed as-is.
+                      </p>
+                    </div>
+                  ) : (
+                    <textarea
+                      value={post.content}
+                      onChange={(e) => setPost(prev => ({ ...prev, content: e.target.value }))}
+                      placeholder="Write your post content here... (Use HTML Mode to paste HTML with images)"
+                      rows={12}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  )}
                 </div>
               </div>
             </div>
