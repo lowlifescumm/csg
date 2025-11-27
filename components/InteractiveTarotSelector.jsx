@@ -189,6 +189,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           <ShareCard 
             interpretation={reading.interpretation} 
             readingId={reading.id}
+            cards={reading.cards}
             onShareComplete={(credits) => {
               // Optionally show a toast notification
               console.log(`${credits} credits awarded for sharing!`);

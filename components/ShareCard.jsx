@@ -1,22 +1,20 @@
 "use client";
-import { useRef, useState, useEffect } from "react";
-import { Share2, Instagram, Twitter, Copy, Check, Sparkles, Star } from "lucide-react";
-import html2canvas from "html2canvas";
-import MarkdownRenderer from "./MarkdownRenderer";
+import { useState } from "react";
+import { Share2, Instagram, Twitter, Copy, Check, Sparkles, Star, Loader2 } from "lucide-react";
+import { useSocialShare } from "@/src/hooks/useSocialShare";
 
 /**
- * ShareCard - Component for sharing tarot reading Power Move on social media
+ * ShareCard - Component for sharing tarot reading on social media
  * 
  * Props:
  * - interpretation: The full reading interpretation text
  * - readingId: The ID of the reading being shared
- * - onShareComplete: Callback when share is completed (to award credits)
+ * - cards: Array of card objects with { name, image, reversed } (optional, for image sharing)
+ * - onShareComplete: Callback when share is completed (deprecated - now handled by hook)
  */
-export default function ShareCard({ interpretation, readingId, onShareComplete }) {
-  const shareCardRef = useRef(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+export default function ShareCard({ interpretation, readingId, cards = [], onShareComplete }) {
+  const { shareContent, isSharing, platform } = useSocialShare();
   const [copied, setCopied] = useState(false);
-  const [creditsAwarded, setCreditsAwarded] = useState(false);
 
   // Extract Power Move from interpretation (typically the last paragraph)
   const extractPowerMove = (text) => {
@@ -43,68 +41,43 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
 
   const powerMove = extractPowerMove(interpretation);
 
-  // Generate image from share card
-  const generateImage = async () => {
-    if (!shareCardRef.current || isGenerating) return null;
+  // Extract card names for share text
+  const getCardNames = () => {
+    if (!cards || cards.length === 0) return "";
+    return cards.map((card, i) => {
+      const position = ["Past", "Present", "Future"][i] || `Position ${i + 1}`;
+      return `${position}: ${card.name}${card.reversed ? " (Reversed)" : ""}`;
+    }).join(", ");
+  };
 
-    setIsGenerating(true);
+  // Main share handler using useSocialShare hook
+  const handleShareReading = async () => {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const shareUrl = `${baseUrl}/readings/${readingId}`;
+    
+    // Extract card image URLs
+    const imageUrls = cards && cards.length > 0 
+      ? cards.map(card => card.image).filter(Boolean)
+      : [];
+
+    // Create share text
+    const cardNames = getCardNames();
+    const shareText = `✨ My Cosmic Guidance from Cosmic Spirit Guide! ${cardNames ? `\n\nCards: ${cardNames}` : ""}\n\n${powerMove}\n\nGet your reading at cosmicspiritguide.com`;
+
     try {
-      const canvas = await html2canvas(shareCardRef.current, {
-        backgroundColor: "#1e1b4b",
-        scale: 2,
-        logging: false,
-        useCORS: true,
-      });
-      
-      return new Promise((resolve) => {
-        canvas.toBlob((blob) => {
-          setIsGenerating(false);
-          resolve(blob);
-        }, "image/png", 1.0);
+      await shareContent({
+        title: "My Cosmic Guidance",
+        text: shareText,
+        url: shareUrl,
+        imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       });
     } catch (error) {
-      console.error("Error generating image:", error);
-      setIsGenerating(false);
-      return null;
+      console.error("[ShareCard] Share error:", error);
+      // Error handling is done in the hook
     }
   };
 
-  // Share to Instagram (download image for manual upload)
-  const handleShareInstagram = async () => {
-    const blob = await generateImage();
-    if (!blob) return;
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `cosmic-power-move-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    // Track share
-    await trackShare();
-  };
-
-  // Share to Twitter/X
-  const handleShareTwitter = async () => {
-    const blob = await generateImage();
-    if (!blob) return;
-
-    // Create share link with text (Twitter allows image upload via URL)
-    const shareText = encodeURIComponent("✨ My Cosmic Power Move from Cosmic Spirit Guide");
-    const shareUrl = `https://twitter.com/intent/tweet?text=${shareText}`;
-    
-    // For now, download image and open Twitter with text
-    // In production, you'd upload to a CDN and include image URL
-    window.open(shareUrl, "_blank");
-
-    // Track share
-    await trackShare();
-  };
-
-  // Copy link to clipboard
+  // Copy link to clipboard (fallback)
   const handleCopyLink = async () => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     const shareUrl = `${baseUrl}/readings/${readingId}`;
@@ -118,68 +91,26 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
     }
   };
 
-  // Track share and award credits
-  const trackShare = async () => {
-    if (creditsAwarded || !readingId) return;
-
-    try {
-      const response = await fetch("/api/share/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ readingId }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setCreditsAwarded(true);
-        if (onShareComplete) {
-          onShareComplete(3); // Award 3 credits
-        }
-      }
-    } catch (error) {
-      console.error("Error tracking share:", error);
-    }
+  // Desktop-specific share buttons (fallback for unsupported platforms)
+  const handleShareFacebook = () => {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const shareUrl = `${baseUrl}/readings/${readingId}`;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+    window.open(facebookUrl, "_blank", "width=600,height=400");
   };
 
-  // Handle "I've Shared" button for manual confirmation
-  const handleManualShare = async () => {
-    await trackShare();
+  const handleShareTwitter = () => {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const shareUrl = `${baseUrl}/readings/${readingId}`;
+    const shareText = encodeURIComponent("✨ My Cosmic Guidance from Cosmic Spirit Guide!");
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(twitterUrl, "_blank", "width=600,height=400");
   };
 
   if (!powerMove) return null;
 
   return (
     <div className="w-full max-w-full overflow-hidden mt-0">
-      {/* Share Card (for image generation) - Hidden but accessible to html2canvas */}
-      <div
-        ref={shareCardRef}
-        className="hidden"
-        style={{
-          width: "1200px",
-          height: "630px",
-          background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #7c3aed 100%)",
-          padding: "60px",
-          display: "none",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          position: "absolute",
-          left: "-9999px",
-          top: "-9999px",
-          overflow: "hidden",
-        }}
-      >
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500 opacity-10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-pink-500 opacity-10 rounded-full blur-3xl" />
-
-        {/* Content */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center items-center">
-          <div className="text-center text-purple-200 text-sm">
-            Get your reading at cosmicspiritguide.com
-          </div>
-        </div>
-      </div>
-
       {/* Visible Share Card (shown to users) */}
       <div className="bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900 rounded-3xl p-8 border border-white border-opacity-20 relative overflow-hidden w-full max-w-full">
         {/* Background decoration */}
@@ -197,60 +128,62 @@ export default function ShareCard({ interpretation, readingId, onShareComplete }
             </div>
           </div>
 
-          {/* Share Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Main Share Button - Uses useSocialShare hook */}
+          <button
+            onClick={handleShareReading}
+            disabled={isSharing}
+            className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-4 px-6 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-3"
+          >
+            {isSharing ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Preparing...
+              </>
+            ) : (
+              <>
+                <Share2 className="w-5 h-5" />
+                Share Reading
+              </>
+            )}
+          </button>
+
+          {/* Platform indicator */}
+          {platform && (
+            <div className="mb-3 text-center text-sm text-purple-200">
+              {platform === 'native' && '✓ Shared via native share'}
+              {platform === 'clipboard' && '✓ Copied to clipboard! Paste on your social media.'}
+            </div>
+          )}
+
+          {/* Desktop-specific share buttons (optional fallback) */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <button
-              onClick={handleShareInstagram}
-              disabled={isGenerating || creditsAwarded}
-              className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-4 px-6 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              onClick={handleShareFacebook}
+              disabled={isSharing}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-medium smooth-transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {isGenerating ? (
-                <>
-                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Instagram className="w-5 h-5" />
-                  Share Image
-                </>
-              )}
+              <Share2 className="w-4 h-4" />
+              Facebook
             </button>
 
             <button
               onClick={handleShareTwitter}
-              disabled={isGenerating || creditsAwarded}
-              className="flex-1 bg-black text-white py-4 px-6 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={isSharing}
+              className="flex-1 bg-black hover:bg-gray-900 text-white py-3 px-4 rounded-xl font-medium smooth-transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <Twitter className="w-5 h-5" />
-              Share on X
+              <Twitter className="w-4 h-4" />
+              X (Twitter)
             </button>
 
             <button
               onClick={handleCopyLink}
-              className="sm:w-auto px-6 py-4 bg-white bg-opacity-10 hover:bg-opacity-20 text-white rounded-xl font-medium smooth-transition border border-white border-opacity-30 flex items-center justify-center gap-2"
+              disabled={isSharing}
+              className="sm:w-auto px-4 py-3 bg-white bg-opacity-10 hover:bg-opacity-20 text-white rounded-xl font-medium smooth-transition border border-white border-opacity-30 flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? "Copied!" : "Copy Link"}
             </button>
           </div>
-
-          {/* Manual Share Confirmation (fallback) */}
-          {!creditsAwarded && (
-            <button
-              onClick={handleManualShare}
-              className="mt-4 w-full bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-6 rounded-xl font-medium smooth-transition border border-white border-opacity-30"
-            >
-              I've Shared! (Claim 3 Credits)
-            </button>
-          )}
-
-          {/* Success Message */}
-          {creditsAwarded && (
-            <div className="mt-4 p-4 bg-green-500 bg-opacity-20 border border-green-400 rounded-xl text-green-200 text-center">
-              ✓ 3 Credits Added to Your Account!
-            </div>
-          )}
         </div>
       </div>
     </div>
