@@ -152,10 +152,9 @@ export default function EnergyChart({ userId = null }) {
         </div>
 
         {/* Chart Container */}
-        <div className="w-full flex items-center justify-center" style={{ height: '300px', minHeight: '300px', position: 'relative' }}>
-          <div className="w-full h-full" style={{ maxWidth: '100%' }}>
-            {isMounted && (
-              <ResponsiveContainer width="100%" height="100%">
+        <div className="w-full" style={{ height: '300px', minHeight: '300px' }}>
+          {isMounted && (
+            <ResponsiveContainer width="100%" height={300}>
                 <AreaChart
                   data={displayData}
                   margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
@@ -218,10 +217,9 @@ export default function EnergyChart({ userId = null }) {
                 fill="url(#colorSpiritual)"
                 name="Spiritual"
               />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Action Button */}
