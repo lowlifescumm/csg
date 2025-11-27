@@ -48,30 +48,20 @@ export default function EnergyChart({
   const [isMounted, setIsMounted] = useState(false);
   const [chartWidth, setChartWidth] = useState(800);
 
-  // Client-side mount guard
+  // Client-side mount guard and calculate full-width chart
   useEffect(() => {
     setIsMounted(true);
-  }, []);
-
-  // Calculate responsive width based on data points
-  useEffect(() => {
-    if (!isMounted) return;
-    
     const updateWidth = () => {
       if (typeof window !== 'undefined') {
         const containerWidth = window.innerWidth;
-        // Use current data length (chartData is calculated from data/hasData)
-        const dataPoints = hasData && data.length > 0 ? data.length : 7; // Default to 7 for dummy data
-        // Calculate width based on number of data points (100px per day, min 400px, max 1200px)
-        const calculatedWidth = Math.max(400, Math.min(dataPoints * 100, 1200));
-        // Don't exceed container width minus padding
-        setChartWidth(Math.min(calculatedWidth, containerWidth - 100));
+        // Full width minus padding (container padding + margins)
+        setChartWidth(Math.max(600, containerWidth - 200));
       }
     };
     updateWidth();
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
-  }, [isMounted, data.length, hasData]);
+  }, []);
 
   useEffect(() => {
     if (isMounted) {
@@ -225,18 +215,35 @@ export default function EnergyChart({
               margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
             >
             <defs>
+              {/* Physical - Vibrant Red/Orange gradient */}
               <linearGradient id="colorPhysical" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
+                <stop offset="0%" stopColor="#ff4444" stopOpacity={1} />
+                <stop offset="30%" stopColor="#ff6b35" stopOpacity={0.9} />
+                <stop offset="70%" stopColor="#ff8c69" stopOpacity={0.5} />
+                <stop offset="100%" stopColor="#ff4444" stopOpacity={0} />
               </linearGradient>
+              {/* Emotional - Bright Cyan/Blue gradient */}
               <linearGradient id="colorEmotional" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
+                <stop offset="0%" stopColor="#00d9ff" stopOpacity={1} />
+                <stop offset="30%" stopColor="#3b82f6" stopOpacity={0.9} />
+                <stop offset="70%" stopColor="#60a5fa" stopOpacity={0.5} />
+                <stop offset="100%" stopColor="#00d9ff" stopOpacity={0} />
               </linearGradient>
+              {/* Spiritual - Rich Purple/Violet gradient */}
               <linearGradient id="colorSpiritual" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#a855f7" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#a855f7" stopOpacity={0.1} />
+                <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
+                <stop offset="30%" stopColor="#c084fc" stopOpacity={0.9} />
+                <stop offset="70%" stopColor="#d8b4fe" stopOpacity={0.5} />
+                <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
               </linearGradient>
+              {/* Glow filter for lines */}
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" strokeOpacity={0.1} />
             <XAxis
@@ -263,32 +270,35 @@ export default function EnergyChart({
             <Area
               type="monotone"
               dataKey="physical"
-              stroke="#ef4444"
-              strokeWidth={2}
-              fillOpacity={0.6}
+              stroke="#ff4444"
+              strokeWidth={4}
+              fillOpacity={0.7}
               fill="url(#colorPhysical)"
               name="Physical"
               aria-label="Physical energy level"
+              filter="url(#glow)"
             />
             <Area
               type="monotone"
               dataKey="emotional"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              fillOpacity={0.6}
+              stroke="#00d9ff"
+              strokeWidth={4}
+              fillOpacity={0.7}
               fill="url(#colorEmotional)"
               name="Emotional"
               aria-label="Emotional energy level"
+              filter="url(#glow)"
             />
             <Area
               type="monotone"
               dataKey="spiritual"
               stroke="#a855f7"
-              strokeWidth={2}
-              fillOpacity={0.6}
+              strokeWidth={4}
+              fillOpacity={0.7}
               fill="url(#colorSpiritual)"
               name="Spiritual"
               aria-label="Spiritual energy level"
+              filter="url(#glow)"
             />
             </AreaChart>
           </div>
