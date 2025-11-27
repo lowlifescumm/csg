@@ -340,29 +340,6 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="text-center">
-          <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-sm rounded-2xl p-8 border border-purple-400/30">
-            <h2 className="text-3xl font-bold text-white mb-4">Ready to Begin Your Journey?</h2>
-            <p className="text-xl text-purple-200 mb-6 max-w-2xl mx-auto">
-              Start with free daily credits or choose a subscription for unlimited access
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Link
-                href="/pricing"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition"
-              >
-                View Pricing
-              </Link>
-              <Link
-                href="/dashboard"
-                className="bg-white/10 text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/20 transition border border-white/20"
-              >
-                Get Started Free
-              </Link>
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   );

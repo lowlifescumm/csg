@@ -38,11 +38,6 @@ export default function DashboardLayoutShell({
     <div className="relative min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
         <BackgroundStars />
         
-        {/* Skip to main content link for screen readers */}
-        <a href="#dashboard-main" className="skip-to-main">
-          Skip to main content
-        </a>
-        
         {/* Aria live region for dynamic content updates */}
         <div aria-live="polite" aria-atomic="true" className="sr-only">
           {/* Screen reader only announcements */}

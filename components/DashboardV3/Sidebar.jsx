@@ -1,5 +1,5 @@
 "use client";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useEffect } from "react";
 import { 
@@ -16,7 +16,6 @@ import {
 
 export default function Sidebar({ user, onLinkClick }) {
   const pathname = usePathname();
-  const router = useRouter();
   const userName = user?.firstName || user?.email?.split("@")[0] || "there";
 
   // Close mobile sidebar when pathname changes
@@ -26,37 +25,6 @@ export default function Sidebar({ user, onLinkClick }) {
     }
   }, [pathname, onLinkClick]);
 
-  // Handle scroll to Daily Tarot button
-  const scrollToDailyTarot = () => {
-    if (pathname === "/dashboard") {
-      // Already on dashboard, scroll to the button
-      setTimeout(() => {
-        const element = document.getElementById("daily-tarot-button");
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "center" });
-          // Add a brief highlight effect
-          element.classList.add("ring-4", "ring-purple-400", "ring-opacity-50");
-          setTimeout(() => {
-            element.classList.remove("ring-4", "ring-purple-400", "ring-opacity-50");
-          }, 2000);
-        }
-      }, 100);
-    } else {
-      // Navigate to dashboard first, then scroll
-      router.push("/dashboard");
-      setTimeout(() => {
-        const element = document.getElementById("daily-tarot-button");
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "center" });
-          element.classList.add("ring-4", "ring-purple-400", "ring-opacity-50");
-          setTimeout(() => {
-            element.classList.remove("ring-4", "ring-purple-400", "ring-opacity-50");
-          }, 2000);
-        }
-      }, 500);
-    }
-  };
-
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/login";
@@ -64,13 +32,13 @@ export default function Sidebar({ user, onLinkClick }) {
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard", label: "Tarot Reading", icon: Sparkles, isTarot: true },
+    { href: "/dashboard", label: "Tarot Reading", icon: Sparkles },
     { href: "/birth-chart", label: "Birth Chart", icon: Star },
     { href: "/compatibility", label: "Compatibility", icon: Heart },
     // Meditation temporarily hidden
     // { href: "/coach", label: "Meditation", icon: Brain },
     { href: "/journal", label: "Spiritual Journal", icon: BookOpen },
-    { href: "/coach", label: "Live Advisors", icon: MessageCircle },
+    { href: "/coach", label: "Live Advisors", icon: MessageCircle, comingSoon: true },
   ];
 
   const isActive = (href) => {
@@ -94,30 +62,6 @@ export default function Sidebar({ user, onLinkClick }) {
           const Icon = item.icon;
           const active = isActive(item.href);
           
-          // Special handling for Tarot Reading button
-          if (item.isTarot) {
-            return (
-              <button
-                key={item.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToDailyTarot();
-                  if (onLinkClick && typeof window !== 'undefined' && window.innerWidth < 768) {
-                    onLinkClick();
-                  }
-                }}
-                className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl smooth-transition text-sm sm:text-base ${
-                  active
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                    : "text-purple-200 hover:bg-white hover:bg-opacity-10"
-                }`}
-              >
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                <span className="font-medium truncate">{item.label}</span>
-              </button>
-            );
-          }
-          
           return (
             <Link
               key={item.href}
@@ -135,6 +79,11 @@ export default function Sidebar({ user, onLinkClick }) {
             >
               <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span className="font-medium truncate">{item.label}</span>
+              {item.comingSoon && (
+                <span className="ml-auto text-xs text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">
+                  Coming Soon
+                </span>
+              )}
             </Link>
           );
         })}
