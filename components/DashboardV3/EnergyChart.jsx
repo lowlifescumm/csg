@@ -48,14 +48,21 @@ export default function EnergyChart({
   const [isMounted, setIsMounted] = useState(false);
   const [chartWidth, setChartWidth] = useState(800);
 
-  // Client-side mount guard and calculate responsive width based on data points
+  // Client-side mount guard
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  // Calculate responsive width based on data points
+  useEffect(() => {
+    if (!isMounted) return;
+    
     const updateWidth = () => {
       if (typeof window !== 'undefined') {
         const containerWidth = window.innerWidth;
+        // Use current data length (chartData is calculated from data/hasData)
+        const dataPoints = hasData && data.length > 0 ? data.length : 7; // Default to 7 for dummy data
         // Calculate width based on number of data points (100px per day, min 400px, max 1200px)
-        const dataPoints = chartData.length;
         const calculatedWidth = Math.max(400, Math.min(dataPoints * 100, 1200));
         // Don't exceed container width minus padding
         setChartWidth(Math.min(calculatedWidth, containerWidth - 100));
@@ -64,7 +71,7 @@ export default function EnergyChart({
     updateWidth();
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
-  }, [chartData.length]);
+  }, [isMounted, data.length, hasData]);
 
   useEffect(() => {
     if (isMounted) {
