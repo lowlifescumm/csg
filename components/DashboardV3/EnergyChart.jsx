@@ -118,6 +118,22 @@ export default function EnergyChart({
   const chartData = hasData && data.length > 0 ? data : generateDummyData();
   const isDummyData = !hasData;
 
+  // Calculate summary word based on today's energy (first day in chart)
+  const calculateSummaryWord = () => {
+    if (chartData.length === 0) return "Balanced";
+    const today = chartData[0];
+    const avgEnergy = (today.physical + today.emotional + today.spiritual) / 3;
+    
+    if (avgEnergy >= 80) return "Magnetic";
+    if (avgEnergy >= 70) return "Active";
+    if (avgEnergy >= 60) return "Steady";
+    if (avgEnergy >= 50) return "Calm";
+    if (avgEnergy >= 40) return "Restful";
+    return "Quiet";
+  };
+
+  const summaryWord = calculateSummaryWord();
+
   if (loading) {
     return (
       <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
@@ -129,8 +145,19 @@ export default function EnergyChart({
   }
 
   return (
-    <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10 blur-3xl" />
+      
+      <div className="relative z-10">
+        {/* Summary Word */}
+        <div className="mb-6 text-center">
+          <p className="text-purple-300/80 text-sm mb-2 uppercase tracking-wider">Today is</p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400">
+            {summaryWord}
+          </h1>
+        </div>
+
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Weekly Energy Forecast</h2>
           <p className="text-purple-200 text-sm sm:text-base">Track your physical, emotional, and spiritual energy</p>
@@ -167,11 +194,11 @@ export default function EnergyChart({
         </div>
       )}
 
-      <div className="relative w-full flex items-center justify-center" style={{ height: '300px', minHeight: '300px' }} role="img" aria-label="Weekly energy forecast chart">
+      <div className="relative w-full" style={{ height: '300px', minHeight: '300px' }} role="img" aria-label="Weekly energy forecast chart">
         {isMounted && (
-          <div className="w-full max-w-full overflow-x-auto">
+          <div className="w-full h-full flex items-center justify-center overflow-x-auto">
             <AreaChart
-              width={800}
+              width={Math.min(800, typeof window !== 'undefined' ? window.innerWidth - 100 : 800)}
               height={300}
               data={chartData}
               margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
@@ -252,8 +279,8 @@ export default function EnergyChart({
         )}
       </div>
 
-      {/* Action Button */}
-      <div className="mt-6 flex justify-center">
+        {/* Action Button */}
+        <div className="mt-6 flex justify-center">
         <Link
           href="/energy/log"
           className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 smooth-transition flex items-center gap-2 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
@@ -262,6 +289,7 @@ export default function EnergyChart({
           <Activity className="w-5 h-5" />
           <span>Log Your Energy</span>
         </Link>
+        </div>
       </div>
     </div>
   );
