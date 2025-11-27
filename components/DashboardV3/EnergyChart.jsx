@@ -46,10 +46,20 @@ export default function EnergyChart({
   const [loading, setLoading] = useState(true);
   const [hasData, setHasData] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [chartWidth, setChartWidth] = useState(800);
 
-  // Client-side mount guard
+  // Client-side mount guard and calculate responsive width
   useEffect(() => {
     setIsMounted(true);
+    const updateWidth = () => {
+      if (typeof window !== 'undefined') {
+        const containerWidth = window.innerWidth;
+        setChartWidth(Math.min(800, containerWidth - 100));
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
   useEffect(() => {
@@ -198,7 +208,7 @@ export default function EnergyChart({
         {isMounted && (
           <div className="w-full h-full flex items-center justify-center overflow-x-auto">
             <AreaChart
-              width={Math.min(800, typeof window !== 'undefined' ? window.innerWidth - 100 : 800)}
+              width={chartWidth}
               height={300}
               data={chartData}
               margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
