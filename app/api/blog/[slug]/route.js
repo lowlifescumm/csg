@@ -70,19 +70,42 @@ export async function GET(request, { params }) {
     const relatedResult = await pool.query(relatedQuery, [post.id, post.category, post.tags]);
 
     // Track view (simple IP-based tracking)
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                    request.headers.get('x-real-ip') || 
-                    'unknown';
+    // Extract IP from headers - x-forwarded-for can contain multiple IPs (client, proxy1, proxy2)
+    const forwardedFor = request.headers.get('x-forwarded-for') || '';
+    const realIP = request.headers.get('x-real-ip') || '';
+    
+    // Get the first IP from x-forwarded-for (real client IP, before proxies)
+    // Format: "client-ip, proxy1-ip, proxy2-ip" -> we want "client-ip"
+    let clientIP = forwardedFor.split(',')[0]?.trim() || realIP.trim() || null;
+    
+    // Validate IP format (basic check - must be a valid IPv4 or IPv6)
+    // PostgreSQL INET type requires valid IP format
+    if (clientIP && clientIP !== 'unknown') {
+      // Basic IP validation regex (IPv4 and IPv6)
+      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+      const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$/;
+      
+      if (!ipv4Regex.test(clientIP) && !ipv6Regex.test(clientIP)) {
+        // Invalid IP format, set to null to skip tracking
+        clientIP = null;
+      }
+    } else {
+      clientIP = null;
+    }
+    
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
-    try {
-      await pool.query(
-        'INSERT INTO blog_post_views (post_id, ip_address, user_agent) VALUES ($1, $2, $3)',
-        [post.id, clientIP, userAgent]
-      );
-    } catch (viewError) {
-      // Don't fail the request if view tracking fails
-      console.log('View tracking error:', viewError.message);
+    // Only track if we have a valid IP
+    if (clientIP) {
+      try {
+        await pool.query(
+          'INSERT INTO blog_post_views (post_id, ip_address, user_agent) VALUES ($1, $2, $3)',
+          [post.id, clientIP, userAgent]
+        );
+      } catch (viewError) {
+        // Don't fail the request if view tracking fails
+        console.log('View tracking error:', viewError.message);
+      }
     }
 
     return NextResponse.json({
