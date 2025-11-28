@@ -1,15 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 260" preserveAspectRatio="xMidYMid meet">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" preserveAspectRatio="xMidYMid meet">
   <defs>
     <style>
       .logo-text {
         font-family: 'Cormorant Garamond', 'Playfair Display', 'Times New Roman', serif;
         font-weight: 600;
-        font-size: 170px;
+        font-size: 120px;
         fill: #1f1f86;
-        letter-spacing: 2px;
+        letter-spacing: 1px;
         text-transform: lowercase;
       }
     </style>
   </defs>
-  <text x="20" y="180" class="logo-text" aria-label="cosmic spirit guide">cosmic spirit guide</text>
+  <text x="10" y="135" class="logo-text" aria-label="cosmic spirit guide">cosmic spirit guide</text>
 </svg>

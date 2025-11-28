@@ -4,9 +4,17 @@
 
 /* Logo sizing fix - preserve 10:3 aspect ratio */
 .logo-text {
-  width: clamp(160px, 24vw, 260px);
+  width: clamp(110px, 16vw, 180px);
   height: auto;
   aspect-ratio: 10 / 3;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.logo-eye {
+  width: clamp(32px, 5vw, 48px);
+  height: auto;
+  aspect-ratio: 1 / 1;
   object-fit: contain;
   flex-shrink: 0;
 }

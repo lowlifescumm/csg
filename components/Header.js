@@ -81,11 +81,11 @@ export default function Header() {
             <img 
               src="/logo-eye.svg" 
               alt="Cosmic Spirit Guide" 
-              className="w-10 h-10 md:w-12 md:h-12 object-contain flex-shrink-0 group-hover:scale-105 transition-transform duration-300" 
+              className="logo-eye group-hover:scale-105 transition-transform duration-300" 
             />
             <img 
               src="/logo-text.svg" 
-              alt="Cosmic" 
+              alt="Cosmic Spirit Guide wordmark" 
               className="logo-text" 
             />
           </Link>
