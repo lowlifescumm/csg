@@ -4,7 +4,7 @@
 
 /* Logo sizing fix - preserve 10:3 aspect ratio */
 .logo-text {
-  width: 200px;
+  width: 170px;
   height: auto;
   aspect-ratio: 10 / 3;
   object-fit: contain;
@@ -13,19 +13,19 @@
 
 @media (min-width: 640px) {
   .logo-text {
-    width: 220px;
+    width: 190px;
   }
 }
 
 @media (min-width: 768px) {
   .logo-text {
-    width: 240px;
+    width: 210px;
   }
 }
 
 @media (min-width: 1024px) {
   .logo-text {
-    width: 250px;
+    width: 230px;
   }
 }
 
