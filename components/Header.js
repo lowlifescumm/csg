@@ -86,7 +86,7 @@ export default function Header() {
             <img 
               src="/logo-text.svg" 
               alt="Cosmic" 
-              className="h-6 md:h-8 object-contain flex-shrink-0" 
+              className="logo-text" 
             />
           </Link>
 
