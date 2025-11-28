@@ -4,29 +4,11 @@
 
 /* Logo sizing fix - preserve 10:3 aspect ratio */
 .logo-text {
-  width: 170px;
+  width: clamp(160px, 24vw, 260px);
   height: auto;
   aspect-ratio: 10 / 3;
   object-fit: contain;
   flex-shrink: 0;
-}
-
-@media (min-width: 640px) {
-  .logo-text {
-    width: 190px;
-  }
-}
-
-@media (min-width: 768px) {
-  .logo-text {
-    width: 210px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .logo-text {
-    width: 230px;
-  }
 }
 
 /* Enhanced Design System */
