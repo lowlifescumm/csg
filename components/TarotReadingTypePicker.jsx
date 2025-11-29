@@ -12,6 +12,7 @@ const TYPES = [
   { key: "ppf", title: "Past Present Future", desc: "Three-card classic timeline.", spreadType: "ppf" },
   { key: "flirt", title: "Daily Flirt Tarot", desc: "Fun, light-hearted vibes.", spreadType: "flirt" },
   { key: "yin-yang", title: "Yin Yang Tarot", desc: "Balance opposing energies.", spreadType: "yin-yang" },
+  { key: "custom_spread", title: "1-10 Card Spread", desc: "Choose your own spread size (1 credit per card).", spreadType: "custom_spread", isCustom: true },
 ];
 
 export default function TarotReadingTypePicker({ onPick }) {

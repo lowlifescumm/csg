@@ -15,6 +15,7 @@ import ReadingHistory from "./ReadingHistory";
 import PremiumCard from "./PremiumCard";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
+import CardCountSelector from "@/components/CardCountSelector";
 import HelpSystem from "@/components/HelpSystem";
 import DailyHoroscope from "@/components/DailyHoroscope";
 // Meditation components temporarily hidden
@@ -45,6 +46,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });
   const [showTarotSelector, setShowTarotSelector] = useState(false);
   const [showTarotTypePicker, setShowTarotTypePicker] = useState(false);
+  const [showCardCountSelector, setShowCardCountSelector] = useState(false);
   const [tarotSelectorConfig, setTarotSelectorConfig] = useState({ spreadType: "three-card", readingType: "general" });
   const [hasBirthChart, setHasBirthChart] = useState(null); // null = checking, true/false = result
   // Meditation state temporarily hidden
@@ -148,9 +150,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   // Get user's sun sign for Daily Horoscope
   const [userSign, setUserSign] = useState(null);
   
-  // Active transits for crystal recommendations
-  const [activeTransits, setActiveTransits] = useState([]);
-  
   useEffect(() => {
     if (user?.id) {
       fetch('/api/birth-chart')
@@ -164,27 +163,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
     }
   }, [user?.id]);
 
-  // Fetch active transits for crystal recommendations
-  useEffect(() => {
-    if (user?.id && hasBirthChart) {
-      fetch('/api/transits')
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.transits) {
-            // Extract active transits from the response
-            const transits = Array.isArray(data.transits) 
-              ? data.transits 
-              : (data.transits.active || []);
-            setActiveTransits(transits);
-          }
-        })
-        .catch(() => {
-          // Silently fail - crystal widget will use fallback
-          setActiveTransits([]);
-        });
-    }
-  }, [user?.id, hasBirthChart]);
-
   return (
     <div className="w-full">
       {/* Main Content - No wrapper needed, layout shell handles it */}
@@ -196,66 +174,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             streak={safeStreak}
             moonPhase={safeMoonPhase}
           />
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                  <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Credits</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{totalCredits}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                  <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Readings</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{readingCount + chartCount}</p>
-                </div>
-              </div>
-            </div>
-
-            {safeStreak && safeStreak.currentStreak > 0 && (
-              <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm text-purple-200 font-medium">Streak</p>
-                    <p className="text-xl sm:text-2xl font-semibold text-white truncate">{safeStreak.currentStreak} days</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Status</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">
-                    {isPremium ? "Premium" : "Free"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Compact Daily Streak Widget */}
-          <div className="mb-8">
-            <CompactDailyStreak userId={user?.id} streak={safeStreak} />
-          </div>
 
           {/* Why Us - Value Proposition */}
           <div className="glassmorphic rounded-3xl p-4 sm:p-6 md:p-8 apple-shadow-lg border border-white border-opacity-40 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10">
@@ -287,18 +205,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             </div>
           </div>
 
-          {/* Energy Chart - Visual attention grabber */}
-          <EnergyChart 
-            userId={user?.id}
-          />
-
-          {/* Crystals Widget - Visual attention grabber */}
-          <CrystalsWidget 
-            moonPhase={safeMoonPhase}
-            userSign={userSign}
-            activeTransits={activeTransits}
-          />
-
           {/* Section A: Daily Guidance (Quick/Free Zone) */}
           <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40">
             <div className="mb-6">
@@ -314,7 +220,6 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             {/* Quick Tarot Buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button
-                id="daily-tarot-button"
                 onClick={() => {
                   setTarotSelectorConfig({ spreadType: "daily", readingType: "daily" });
                   setShowTarotSelector(true);
@@ -347,6 +252,11 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 <span>Career Tarot</span>
                 <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
+            </div>
+
+            {/* Compact Daily Streak Widget */}
+            <div className="mt-6">
+              <CompactDailyStreak userId={user?.id} streak={safeStreak} />
             </div>
           </div>
 
@@ -529,6 +439,16 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           {/* Compact Daily Streak - Replaces GrowthBar + DailyTasks for space saving */}
           {/* Note: Full DailyTasks component removed from main view, can be accessed via CompactDailyStreak if needed */}
 
+          {/* Energy Chart */}
+          <EnergyChart 
+            userId={user?.id}
+          />
+
+          {/* Crystals Widget */}
+          <CrystalsWidget 
+            moonPhase={safeMoonPhase}
+          />
+
           {/* Best Matches */}
           <BestMatches 
             userId={user?.id}
@@ -552,6 +472,61 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               console.log("Premium upgrade initiated");
             }}
           />
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Credits</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{totalCredits}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                  <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Readings</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{readingCount + chartCount}</p>
+                </div>
+              </div>
+            </div>
+
+            {safeStreak && safeStreak.currentStreak > 0 && (
+              <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-purple-200 font-medium">Streak</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-white truncate">{safeStreak.currentStreak} days</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Status</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">
+                    {isPremium ? "Premium" : "Free"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Premium Banner */}
           {!isPremium && (
@@ -635,13 +610,39 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               </div>
               <TarotReadingTypePicker
                 onPick={(type) => {
-                  setTarotSelectorConfig({ spreadType: type.spreadType, readingType: type.key });
-                  setShowTarotTypePicker(false);
-                  setShowTarotSelector(true);
+                  if (type.isCustom) {
+                    // Show card count selector for custom spread
+                    setShowTarotTypePicker(false);
+                    setShowCardCountSelector(true);
+                  } else {
+                    setTarotSelectorConfig({ spreadType: type.spreadType, readingType: type.key });
+                    setShowTarotTypePicker(false);
+                    setShowTarotSelector(true);
+                  }
                 }}
               />
             </div>
           </div>
+        )}
+
+        {/* Card Count Selector Modal */}
+        {showCardCountSelector && (
+          <CardCountSelector
+            onSelect={(config) => {
+              setTarotSelectorConfig({ 
+                spreadType: config.spreadType, 
+                readingType: "general",
+                cardCount: config.cardCount,
+                question: config.question,
+                spreadId: config.spreadId
+              });
+              setShowCardCountSelector(false);
+              setShowTarotSelector(true);
+            }}
+            onCancel={() => {
+              setShowCardCountSelector(false);
+            }}
+          />
         )}
 
         {/* Interactive Tarot Selector Modal */}
@@ -649,6 +650,9 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           <InteractiveTarotSelector
             spreadType={tarotSelectorConfig.spreadType}
             readingType={tarotSelectorConfig.readingType}
+            cardCount={tarotSelectorConfig.cardCount}
+            question={tarotSelectorConfig.question}
+            spreadId={tarotSelectorConfig.spreadId}
             onClose={() => {
               setShowTarotSelector(false);
               if (refetch) refetch();

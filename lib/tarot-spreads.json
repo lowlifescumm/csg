@@ -153,6 +153,24 @@
     },
     "prompt_template": "Draw two tarot cards to reveal playful romantic energy for the day. Positions: {{positions}}. Cards: {{cards}}. Question: {{question}}. Tone: playful, light-hearted. Interpret each card briefly and add a 1-sentence cheeky suggestion for flirting or social energy.",
     "example_prompt_use": "cards: Page of Cups, Knight of Wands; question: (optional); tone: playful, light-hearted"
+  },
+  {
+    "id": "custom_spread",
+    "display_name": "1-10 Card Spread",
+    "card_count": 1,
+    "allow_question": true,
+    "layout": ["Card 1"],
+    "ui": {
+      "required_selection_count": 1,
+      "selection_labels": ["Card"],
+      "selection_error_message": "Please select the correct number of cards.",
+      "hide_unused_slots": false,
+      "dynamic_card_count": true,
+      "min_cards": 1,
+      "max_cards": 10
+    },
+    "prompt_template": "Draw {{card_count}} tarot cards to provide comprehensive guidance. Cards: {{cards}}. Question: {{question}}. Tone: warm, mystical, insightful. Interpret each card in sequence, explaining its meaning and relevance to the user's question. For each card, provide: the card's meaning, how it relates to their situation, and practical guidance. Conclude with a synthesis that weaves together all {{card_count}} cards into a cohesive narrative and actionable advice.",
+    "example_prompt_use": "cards: The Fool, The Magician, The High Priestess; question: 'What path should I take?'; tone: warm, mystical, insightful"
   }
 ]
 

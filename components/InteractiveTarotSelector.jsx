@@ -7,13 +7,13 @@ import FocusModal from "@/components/FocusModal";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import ShareCard from "@/components/ShareCard";
 
-export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general" }) {
+export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general", cardCount = null, question: initialQuestion = "", spreadId = null }) {
   const [selectedCards, setSelectedCards] = useState([]);
   const [availableCards, setAvailableCards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showReading, setShowReading] = useState(false);
   const [reading, setReading] = useState(null);
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(initialQuestion);
   const [showFocusModal, setShowFocusModal] = useState(false);
   const [error, setError] = useState("");
   const [flashMismatch, setFlashMismatch] = useState(false);
@@ -32,9 +32,22 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       "ppf": "past_present_future",
       "flirt": "daily_flirt",
       "yin-yang": "yin_yang",
+      "custom_spread": "custom_spread",
     };
-    const id = map[spreadType] || spreadType;
-    return spreads.find(s => s.id === id) || spreads.find(s => s.id === "past_present_future");
+    const id = spreadId || map[spreadType] || spreadType;
+    const foundSpread = spreads.find(s => s.id === id) || spreads.find(s => s.id === "past_present_future");
+    
+    // For custom spread, update card_count and layout dynamically
+    if (id === "custom_spread" && cardCount !== null && cardCount >= 1 && cardCount <= 10) {
+      foundSpread.card_count = cardCount;
+      foundSpread.layout = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
+      if (foundSpread.ui) {
+        foundSpread.ui.required_selection_count = cardCount;
+        foundSpread.ui.selection_labels = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
+      }
+    }
+    
+    return foundSpread;
   })();
 
   const positions = spread.layout;
@@ -44,8 +57,13 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setSelectedCards([]);
     setError("");
     const shuffled = [...ALL_CARDS].sort(() => Math.random() - 0.5);
-    setAvailableCards(shuffled.slice(0, spread.card_count));
-  }, [spreadType]);
+    const cardCountToUse = (spreadType === "custom_spread" && cardCount !== null) ? cardCount : spread.card_count;
+    setAvailableCards(shuffled.slice(0, cardCountToUse));
+    // Set initial question if provided
+    if (initialQuestion) {
+      setQuestion(initialQuestion);
+    }
+  }, [spreadType, cardCount]);
 
   const handleCardClick = (index) => {
     // If card is already selected, don't do anything
@@ -106,7 +124,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           spreadType,
           readingType,
           specificCards: selectedCardsData,
-          spreadId: spread.id
+          spreadId: spread.id,
+          cardCount: (spreadType === "custom_spread" && cardCount !== null) ? cardCount : undefined
         }),
       });
 
