@@ -89,7 +89,15 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       return;
     }
 
-    // Open Focus Modal instead of calling API directly
+    // For custom spreads, if question is already provided, skip Focus Modal and go directly to API
+    const isCustomSpread = spreadType === "custom_spread";
+    if (isCustomSpread && question && question.trim()) {
+      // Use the existing question directly
+      handleFocusSubmit(question);
+      return;
+    }
+
+    // For other spreads or if no question provided, open Focus Modal
     setShowFocusModal(true);
   };
 

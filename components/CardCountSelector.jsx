@@ -8,6 +8,11 @@ export default function CardCountSelector({ onSelect, onCancel }) {
 
   const handleSubmit = () => {
     if (selectedCount >= 1 && selectedCount <= 10) {
+      // For 10-card spread, require a question
+      if (selectedCount === 10 && !question.trim()) {
+        alert("Please enter a question for your 10-card spread.");
+        return;
+      }
       onSelect({
         cardCount: selectedCount,
         question: question.trim(),
@@ -70,14 +75,15 @@ export default function CardCountSelector({ onSelect, onCancel }) {
           {/* Question Input */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-3">
-              Your Question (Optional)
+              Your Question {selectedCount === 10 ? "" : "(Optional)"}
             </label>
             <textarea
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               className="w-full p-4 rounded-xl border border-white border-opacity-20 bg-white bg-opacity-10 focus:border-purple-400 focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50 outline-none smooth-transition resize-none text-white placeholder-gray-400"
               rows={3}
-              placeholder="What guidance do you seek?"
+              placeholder={selectedCount === 10 ? "What guidance do you seek? (Required for 10-card spread)" : "What guidance do you seek?"}
+              required={selectedCount === 10}
             />
           </div>
 
