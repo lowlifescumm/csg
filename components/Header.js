@@ -69,7 +69,7 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 overflow-visible ${
         scrolled
           ? "bg-white/95 backdrop-blur-lg shadow-lg shadow-black/5 border-b border-gray-200/50"
           : "bg-white/90 backdrop-blur-md border-b border-gray-200/30"
@@ -77,16 +77,11 @@ export default function Header() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <Link href="/" className="flex items-center space-x-3 group">
+          <Link href="/" className="flex items-center group logo-wrapper">
             <img 
-              src="/logo-eye.svg" 
+              src="/logo.svg" 
               alt="Cosmic Spirit Guide" 
-              className="logo-eye group-hover:scale-105 transition-transform duration-300" 
-            />
-            <img 
-              src="/logo-text.svg" 
-              alt="Cosmic Spirit Guide wordmark" 
-              className="logo-text" 
+              className="flex-none h-8 w-auto group-hover:scale-105 transition-transform duration-300 block" 
             />
           </Link>
 
