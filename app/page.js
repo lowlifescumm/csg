@@ -1,13 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Stars, Heart, Users, BookOpen, ChevronRight, Check, Moon, Sun, Calendar } from "lucide-react";
+import { Sparkles, Star, Heart, Check, ChevronRight, Zap, Shield, Eye, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState("");
 
   useEffect(() => {
     checkAuth();
@@ -35,11 +34,6 @@ export default function HomePage() {
     }
   };
 
-  const handleEmailSignup = async (e) => {
-    e.preventDefault();
-    alert("Email signup coming soon! For now, click 'Start Your Free Reading' to create an account.");
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
@@ -50,485 +44,371 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
-      <header className="sticky top-0 z-50 glassmorphic border-b border-white border-opacity-20">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0" />
-            <img src="/logo-text.svg" alt="Cosmic" className="h-5 sm:h-6 md:h-7 object-contain flex-shrink-0" />
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-            <button onClick={() => router.push("/login")} className="text-sm sm:text-base text-gray-700 hover:text-purple-600 smooth-transition px-2 sm:px-0">
-              Log In
-            </button>
-            <button 
-              onClick={() => router.push("/login")}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl text-sm sm:text-base font-semibold smooth-transition hover:shadow-xl hover:scale-105 whitespace-nowrap"
-            >
-              Start Free Reading
-            </button>
-          </div>
-        </nav>
-      </header>
-
-      <section className="relative overflow-hidden py-12 sm:py-16 md:py-20 px-4 sm:px-6">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden py-16 sm:py-20 md:py-24 px-4 sm:px-6">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-10 w-48 sm:w-72 h-48 sm:h-72 bg-purple-500 rounded-full filter blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-pink-500 rounded-full filter blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
         </div>
         
-        <div className="max-w-6xl mx-auto text-center relative z-10">
-          <div className="inline-block float-animation mb-4 sm:mb-6">
-            <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-purple-600 mx-auto" />
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="inline-block float-animation mb-6">
+            <Eye className="w-16 h-16 sm:w-20 sm:h-20 text-purple-600 mx-auto" />
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 gradient-text px-2">
-            Discover Your Cosmic Path
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text px-2">
+            Connect With Your Cosmic Spirit Guide — Get Daily Tarot Insights for Free
           </h1>
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700 mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
-            Instant, personalized tarot and astrology insights—crafted for your question and your chart.
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-4 max-w-3xl mx-auto px-4">
+            Receive spiritually aligned tarot readings powered by advanced AI guidance.
+          </p>
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto px-4">
+            Clear answers. Gentle direction. <strong className="text-purple-600">3 free credits every single day.</strong>
           </p>
           
-          {/* Floating rating widget */}
-          <div className="inline-block mb-4 sm:mb-6 glassmorphic rounded-full px-4 sm:px-6 py-2 sm:py-3 border border-purple-200 border-opacity-50">
-            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-              <span className="font-bold text-base sm:text-lg text-gray-800">4.9/5</span>
-              <span className="text-yellow-400 text-sm sm:text-base">⭐⭐⭐⭐⭐</span>
-              <span className="text-xs sm:text-sm text-gray-600">Based on 2,847 reviews</span>
-            </div>
-          </div>
+          <button 
+            onClick={() => router.push("/login")}
+            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-semibold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105 mb-12"
+          >
+            Get Your Free Readings
+          </button>
+        </div>
+      </section>
+
+      {/* Social Proof / Trust */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 bg-white/50">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-lg sm:text-xl text-gray-700 mb-2">
+            Trusted by thousands seeking clarity, direction, and calm.
+          </p>
+          <p className="text-base sm:text-lg text-gray-600 mb-8">
+            Real guidance. Real insight. Zero guesswork.
+          </p>
           
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-4 sm:mb-6 px-4">
-            <button 
-              onClick={() => router.push("/login")}
-              className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-base sm:text-lg smooth-transition hover:shadow-2xl hover:scale-105 w-full sm:w-auto"
-            >
-              Start Your Free Reading
-            </button>
-            <button 
-              onClick={() => document.getElementById('services').scrollIntoView({behavior: 'smooth'})}
-              className="glassmorphic border border-purple-300 text-purple-700 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-base sm:text-lg smooth-transition hover:shadow-xl hover:scale-105 w-full sm:w-auto"
-            >
-              Explore Services
-            </button>
-          </div>
-          
-          {/* Trust badges below CTAs */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 sm:mb-16 px-4">
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <span>🔒</span>
-              <span>SSL Secured</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <span>⭐</span>
-              <span>10,000+ Happy Users</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <span>✅</span>
-              <span>Accuracy Guaranteed</span>
-            </div>
-          </div>
-          
-          {/* Testimonials section in hero */}
-          <div className="mt-8 sm:mt-12 md:mt-16">
-            <h3 className="text-xl sm:text-2xl font-semibold mb-6 sm:mb-8 text-gray-800 px-4">What Our Users Experience</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto px-4">
-              {/* Testimonial 1 */}
-              <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold">
-                    SM
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-800">Sarah M.</div>
-                    <div className="text-sm text-gray-500">Los Angeles</div>
-                  </div>
-                </div>
-                <div className="flex gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Stars key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-700 text-sm">
-                  &quot;The tarot reading was incredibly accurate. It helped me see the situation with my career change from a new perspective. I made the decision with confidence and haven&apos;t looked back since.&quot;
-                </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
+              <div className="flex gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                ))}
               </div>
-              
-              {/* Testimonial 2 */}
-              <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold">
-                    JT
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-800">James T.</div>
-                    <div className="text-sm text-gray-500">New York</div>
-                  </div>
-                </div>
-                <div className="flex gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Stars key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-700 text-sm">
-                  &quot;My relationship was at a crossroads. The compatibility report showed us our strengths and where we needed work. We&apos;re stronger than ever now. This service truly saved our relationship.&quot;
-                </p>
+              <p className="text-gray-700 italic mb-3">
+                &quot;Shockingly accurate. The readings felt like they were written for my soul.&quot;
+              </p>
+            </div>
+            
+            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
+              <div className="flex gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                ))}
               </div>
-              
-              {/* Testimonial 3 */}
-              <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white font-bold">
-                    EP
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-800">Elena P.</div>
-                    <div className="text-sm text-gray-500">Chicago</div>
-                  </div>
-                </div>
-                <div className="flex gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Stars key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-700 text-sm">
-                  &quot;The premium features are worth every penny. Daily personalized guidance has helped me navigate difficult family dynamics with grace. I finally found the clarity I was seeking for years.&quot;
-                </p>
-              </div>
+              <p className="text-gray-700 italic mb-3">
+                &quot;The daily free credits keep me grounded — it&apos;s part of my morning ritual now.&quot;
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="services" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8 sm:mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">What We Offer</h2>
-            <p className="text-gray-600 text-base sm:text-lg px-4">Human-calibrated interpretations. No fluff.</p>
+      {/* What You Receive */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
+              Your Cosmic Spirit Guide gives you:
+            </h2>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-            <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
-                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Personal tarot readings</h3>
+                  <p className="text-gray-600">Tailored to your energy and intention</p>
+                </div>
               </div>
-              <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">AI-Enhanced Tarot Readings</h3>
-              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-                Straight answers with compassionate guidance for love, career, and life decisions.
-              </p>
-              <button 
-                onClick={() => router.push("/login")}
-                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition text-sm sm:text-base"
-              >
-                Get Started <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
             </div>
-
-            <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-500 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
-                <Stars className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            
+            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-blue-500 to-purple-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Eye className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Clear explanations</h3>
+                  <p className="text-gray-600">Not vague symbolism</p>
+                </div>
               </div>
-              <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Birth Chart Reports</h3>
-              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-                Understand your strengths, lessons, and timing through your natal blueprint.
-              </p>
-              <button 
-                onClick={() => router.push("/login")}
-                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition text-sm sm:text-base"
-              >
-                Get My Chart <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
             </div>
-
-            <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="bg-gradient-to-br from-pink-500 to-purple-500 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
-                <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            
+            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-pink-500 to-purple-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Action-focused guidance</h3>
+                  <p className="text-gray-600">You can use right now</p>
+                </div>
               </div>
-              <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Compatibility Readings</h3>
-              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-                See how your energies align and where growth is possible.
-              </p>
-              <button 
-                onClick={() => router.push("/login")}
-                className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition text-sm sm:text-base"
-              >
-                Check Compatibility <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
             </div>
+            
+            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-purple-500 to-blue-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Emotionally supportive messages</h3>
+                  <p className="text-gray-600">Designed to bring clarity and calm</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 sm:p-8 text-center border border-purple-200">
+            <p className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
+              3 free credits every day — no commitment, no tricks
+            </p>
+            <p className="text-gray-600">
+              Every reading blends timeless tarot symbolism with advanced AI interpretation to create messages uniquely aligned to you.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-purple-100 to-pink-100">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8 sm:mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">How It Works</h2>
-            <p className="text-gray-600 text-base sm:text-lg px-4">Get clarity in three simple steps</p>
+      {/* How It Works */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
+              How It Works
+            </h2>
+            <p className="text-lg text-gray-600">
+              Simple, soulful, and always available.
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div className="text-center">
               <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
                 1
               </div>
-              <h3 className="text-xl font-semibold mb-3">Share Your Details</h3>
-              <p className="text-gray-600">Ask your question or provide your birth information</p>
+              <h3 className="text-xl font-semibold mb-3">Set Your Intention</h3>
+              <p className="text-gray-600">Love, purpose, healing, direction, or &quot;open reading.&quot;</p>
             </div>
 
             <div className="text-center">
               <div className="bg-gradient-to-br from-blue-500 to-purple-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
                 2
               </div>
-              <h3 className="text-xl font-semibold mb-3">We Interpret</h3>
-              <p className="text-gray-600">Your spread and chart are analyzed with care</p>
+              <h3 className="text-xl font-semibold mb-3">Your AI Spirit Guide Interprets Your Cards</h3>
+              <p className="text-gray-600">The system channels tarot meaning, intuition modeling, and spiritual archetypes to deliver a personalized message.</p>
             </div>
 
             <div className="text-center">
               <div className="bg-gradient-to-br from-pink-500 to-purple-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
                 3
               </div>
-              <h3 className="text-xl font-semibold mb-3">Get Your Reading</h3>
-              <p className="text-gray-600">Receive clear, actionable insights instantly</p>
+              <h3 className="text-xl font-semibold mb-3">Receive Your Reading Instantly</h3>
+              <p className="text-gray-600">A beautifully written, easy-to-understand insight based on your current energy and chosen focus.</p>
             </div>
-          </div>
-
-          <div className="text-center mt-8 sm:mt-12 px-4">
-            <button 
-              onClick={() => router.push("/login")}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-base sm:text-lg smooth-transition hover:shadow-2xl hover:scale-105 w-full sm:w-auto"
-            >
-              Get My Reading
-            </button>
           </div>
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
+      {/* Why People Love This */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8 sm:mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">Why Trust Us</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
+              Why People Love This
+            </h2>
+            <p className="text-lg text-gray-600 mb-8">
+              You don&apos;t need to be a tarot expert.<br />
+              Your guide interprets everything for you with clarity and heart.
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            <div className="text-center">
-              <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Check className="w-8 h-8 text-purple-600" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {[
+              "Helps reduce anxiety and overthinking",
+              "Offers direction when life feels uncertain",
+              "Creates daily grounding and reflection",
+              "Makes decision-making easier",
+              "Feels personal — not random or generic"
+            ].map((benefit, i) => (
+              <div key={i} className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
+                <div className="flex items-start gap-3">
+                  <Check className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
+                  <p className="text-gray-700 font-medium">{benefit}</p>
+                </div>
               </div>
-              <h3 className="font-semibold mb-2">Thousands of Readings</h3>
-              <p className="text-gray-600 text-sm">Delivered with care and accuracy</p>
-            </div>
-
-            <div className="text-center">
-              <div className="bg-pink-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Stars className="w-8 h-8 text-pink-600" />
-              </div>
-              <h3 className="font-semibold mb-2">5-Star Feedback</h3>
-              <p className="text-gray-600 text-sm">Consistent positive reviews</p>
-            </div>
-
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="font-semibold mb-2">Clear Interpretations</h3>
-              <p className="text-gray-600 text-sm">No jargon, just clarity</p>
-            </div>
-
-            <div className="text-center">
-              <div className="bg-indigo-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-indigo-600" />
-              </div>
-              <h3 className="font-semibold mb-2">Private & Confidential</h3>
-              <p className="text-gray-600 text-sm">Your information stays safe</p>
-            </div>
-          </div>
-
-          <p className="text-center text-gray-600 mt-12 max-w-2xl mx-auto">
-            We combine years of spiritual wisdom with modern technology to provide insights you can trust and act on.
-          </p>
-        </div>
-      </section>
-
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8 sm:mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">What People Say</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-            <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Stars key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 italic">
-                &quot;It felt personal and spot-on. I made a tough decision with confidence.&quot;
-              </p>
-              <p className="text-sm text-gray-500">— Sarah, CA</p>
-            </div>
-
-            <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Stars key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 italic">
-                &quot;My birth chart report explained patterns I&apos;ve felt for years.&quot;
-              </p>
-              <p className="text-sm text-gray-500">— Lucas, UK</p>
-            </div>
-
-            <div className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Stars key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 italic">
-                &quot;The compatibility reading helped us understand each other better.&quot;
-              </p>
-              <p className="text-sm text-gray-500">— Maya, NYC</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8 sm:mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">Featured Articles</h2>
-            <p className="text-gray-600 text-sm sm:text-base px-4">Deepen your spiritual knowledge</p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-            <div className="glassmorphic rounded-2xl overflow-hidden apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="h-48 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                <Moon className="w-20 h-20 text-white" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-3">What the High Priestess Means in Love</h3>
-                <p className="text-gray-600 mb-4">Discover the mysteries of intuition and deep connection in relationships.</p>
-                <button className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition">
-                  Read more <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="glassmorphic rounded-2xl overflow-hidden apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="h-48 bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center">
-                <Sun className="w-20 h-20 text-white" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-3">Moon Sign: Your Emotional Compass</h3>
-                <p className="text-gray-600 mb-4">Learn how your moon sign shapes your emotional world and reactions.</p>
-                <button className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition">
-                  Read more <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="glassmorphic rounded-2xl overflow-hidden apple-shadow border border-white border-opacity-40 smooth-transition hover:scale-105">
-              <div className="h-48 bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center">
-                <Calendar className="w-20 h-20 text-white" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-3">Choosing the Right Tarot Spread</h3>
-                <p className="text-gray-600 mb-4">Match your question to the perfect spread for the clearest answers.</p>
-                <button className="text-purple-600 font-semibold flex items-center gap-2 hover:gap-3 smooth-transition">
-                  Read more <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <p className="text-center mt-8 text-gray-600">
-            Ready for your personalized reading? <button onClick={() => router.push("/login")} className="text-purple-600 font-semibold underline">Try it free</button>
-          </p>
-        </div>
-      </section>
-
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-purple-100 to-pink-100">
+      {/* Sample Reading Snippet */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8 sm:mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-3 sm:mb-4 px-4">Common Questions</h2>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold gradient-text mb-4">
+              Sample Reading Snippet
+            </h2>
           </div>
           
-          <div className="space-y-4 sm:space-y-6">
-            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-              <summary className="font-semibold text-lg cursor-pointer">How accurate are the readings?</summary>
-              <p className="mt-4 text-gray-600">Our readings combine traditional tarot and astrology wisdom with AI to provide personalized, meaningful insights. While we can&apos;t predict the future, we help you see patterns and possibilities clearly.</p>
-            </details>
-
-            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-              <summary className="font-semibold text-lg cursor-pointer">Do I need my exact birth time?</summary>
-              <p className="mt-4 text-gray-600">For the most accurate birth chart, yes! But if you don&apos;t know it, you can still get valuable insights from your sun and moon signs.</p>
-            </details>
-
-            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-              <summary className="font-semibold text-lg cursor-pointer">Is my information private?</summary>
-              <p className="mt-4 text-gray-600">Absolutely. We never share your personal details or readings with anyone. Your privacy is sacred to us.</p>
-            </details>
-
-            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
-              <summary className="font-semibold text-lg cursor-pointer">Can I ask about love, career, or timing?</summary>
-              <p className="mt-4 text-gray-600">Yes! Our readings cover all areas of life—love, career, finances, timing, and personal growth. Ask anything that&apos;s on your mind.</p>
-            </details>
+          <div className="glassmorphic rounded-3xl p-8 sm:p-12 border border-white border-opacity-40 text-center">
+            <div className="inline-block mb-6">
+              <Sparkles className="w-12 h-12 text-purple-600" />
+            </div>
+            <blockquote className="text-lg sm:text-xl md:text-2xl text-gray-700 italic leading-relaxed">
+              &quot;Your energy shows a shift from hesitation toward quiet inner strength. The card speaks of a path opening — one you may not fully trust yet. Your guide encourages you to step into it with patience and confidence. What you seek is seeking you as well.&quot;
+            </blockquote>
           </div>
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="glassmorphic rounded-3xl p-6 sm:p-8 md:p-12 text-center apple-shadow-lg border border-white border-opacity-40">
-            <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-purple-600 mx-auto mb-4 sm:mb-6" />
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Free 3-Card Daily Reading</h2>
-            <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">Get personalized daily insight delivered to your inbox every morning</p>
+      {/* Ethics & Transparency */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
+              Ethics & Transparency
+            </h2>
+            <p className="text-xl text-gray-700 mb-8">
+              We believe spiritual tools should empower you — not scare you.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
+              <div className="flex items-start gap-3 mb-4">
+                <Shield className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">No fear-based predictions</h3>
+                  <h3 className="font-semibold text-lg mb-2">No harmful messages</h3>
+                  <h3 className="font-semibold text-lg mb-2">No judgment</h3>
+                </div>
+              </div>
+              <p className="text-gray-600">Always uplifting and supportive</p>
+            </div>
             
-            <form onSubmit={handleEmailSignup} className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto">
-              <label htmlFor="dailyEmail" className="sr-only">Email address for daily insights</label>
-              <input
-                id="dailyEmail"
-                name="dailyEmail"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Your email address"
-                className="flex-1 px-6 py-3 rounded-xl border border-gray-300 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition"
-                required
-                autoComplete="email"
-              />
-              <button 
-                type="submit"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold smooth-transition hover:shadow-xl hover:scale-105"
-              >
-                Send Me Daily Insight
-              </button>
-            </form>
-            <p className="text-sm text-gray-500 mt-4">No spam. Unsubscribe anytime.</p>
+            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
+              <div className="flex items-start gap-3">
+                <Eye className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-gray-700 mb-3">
+                    <strong>Fully upfront:</strong> your readings are generated by advanced AI trained on tarot wisdom, symbolism, and intuitive language
+                  </p>
+                  <p className="text-gray-600">
+                    You stay in control of your spiritual journey
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <p className="text-xl text-gray-700 font-semibold">
+              This is modern spirituality: mystical + honest + accessible.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white">
+      {/* FAQ */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
+              FAQ
+            </h2>
+          </div>
+          
+          <div className="space-y-4">
+            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
+              <summary className="font-semibold text-lg cursor-pointer flex items-center justify-between">
+                <span>Is this AI or spiritual?</span>
+                <ChevronRight className="w-5 h-5 transform transition-transform group-open:rotate-90" />
+              </summary>
+              <p className="mt-4 text-gray-600">
+                It&apos;s a blend. The readings come from an AI system trained on tarot, archetypes, and spiritual interpretation. The goal is clarity, empowerment, and emotional resonance.
+              </p>
+            </details>
+
+            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
+              <summary className="font-semibold text-lg cursor-pointer flex items-center justify-between">
+                <span>How personalized are the readings?</span>
+                <ChevronRight className="w-5 h-5 transform transition-transform group-open:rotate-90" />
+              </summary>
+              <p className="mt-4 text-gray-600">
+                Each reading responds to your intention, your situation, and the energy you bring at that moment.
+              </p>
+            </details>
+
+            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
+              <summary className="font-semibold text-lg cursor-pointer flex items-center justify-between">
+                <span>Do I really get 3 free credits daily?</span>
+                <ChevronRight className="w-5 h-5 transform transition-transform group-open:rotate-90" />
+              </summary>
+              <p className="mt-4 text-gray-600">
+                Yes. Every day your account refreshes automatically — no card required.
+              </p>
+            </details>
+
+            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
+              <summary className="font-semibold text-lg cursor-pointer flex items-center justify-between">
+                <span>How fast do I receive the reading?</span>
+                <ChevronRight className="w-5 h-5 transform transition-transform group-open:rotate-90" />
+              </summary>
+              <p className="mt-4 text-gray-600">
+                Instantly. No waiting, no appointments.
+              </p>
+            </details>
+
+            <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
+              <summary className="font-semibold text-lg cursor-pointer flex items-center justify-between">
+                <span>Can I use it multiple times a day?</span>
+                <ChevronRight className="w-5 h-5 transform transition-transform group-open:rotate-90" />
+              </summary>
+              <p className="mt-4 text-gray-600">
+                Yes — use your free credits daily, or get additional readings anytime.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 sm:py-24 md:py-28 px-4 sm:px-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 px-4">Your clarity is one reading away</h2>
-          <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-purple-200 px-4">Join thousands who&apos;ve found their path through the stars</p>
+          <Eye className="w-16 h-16 sm:w-20 sm:h-20 text-white mx-auto mb-6" />
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 px-4">
+            Experience Your First Reading Now
+          </h2>
+          <p className="text-lg sm:text-xl md:text-2xl mb-8 text-purple-200 px-4">
+            Connect with your Cosmic Spirit Guide and receive your daily guidance — instantly and free.
+          </p>
           <button 
             onClick={() => router.push("/login")}
-            className="bg-white text-purple-900 px-6 sm:px-10 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg smooth-transition hover:shadow-2xl hover:scale-105 w-full sm:w-auto"
+            className="bg-white text-purple-900 px-10 sm:px-12 py-4 sm:py-5 rounded-2xl font-bold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105"
           >
-            Start Your Free Reading
+            Get Your Free Readings
           </button>
         </div>
       </section>
 
-      <footer className="bg-gray-900 text-gray-300 py-8 sm:py-12 px-4 sm:px-6">
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-8 h-8" />
-                <span className="font-semibold text-white">Cosmic Spiritual Guide</span>
+                <img src="/logo.svg" alt="Cosmic Spirit Guide" className="h-8 w-auto" />
               </div>
               <p className="text-sm text-gray-400">Guided by the stars, powered by insight.</p>
             </div>
@@ -539,7 +419,6 @@ export default function HomePage() {
                 <li><button onClick={() => router.push("/dashboard")} className="hover:text-white smooth-transition">Tarot Readings</button></li>
                 <li><button onClick={() => router.push("/birth-chart")} className="hover:text-white smooth-transition">Birth Charts</button></li>
                 <li><button onClick={() => router.push("/compatibility")} className="hover:text-white smooth-transition">Compatibility</button></li>
-                <li><button onClick={() => router.push("/moon-reading")} className="hover:text-white smooth-transition">Moon Readings</button></li>
               </ul>
             </div>
             
@@ -562,7 +441,7 @@ export default function HomePage() {
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-500">
-            <p>&copy; 2025 Cosmic Spiritual Guide. All rights reserved.</p>
+            <p>&copy; 2025 Cosmic Spirit Guide. All rights reserved.</p>
           </div>
         </div>
       </footer>
