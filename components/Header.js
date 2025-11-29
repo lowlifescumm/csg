@@ -81,7 +81,7 @@ export default function Header() {
             <img 
               src="/Ethereal Celestial Eye Logo (292 x 110 px).png" 
               alt="Cosmic Spirit Guide" 
-              className="flex-none h-8 w-auto group-hover:scale-105 transition-transform duration-300 block" 
+              className="flex-none h-10 w-auto group-hover:scale-105 transition-transform duration-300 block" 
             />
           </Link>
 
