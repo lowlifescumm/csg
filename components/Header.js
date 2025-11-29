@@ -79,7 +79,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href="/" className="flex items-center group logo-wrapper">
             <img 
-              src="/logo.png" 
+              src="/Ethereal Celestial Eye Logo (292 x 110 px).png" 
               alt="Cosmic Spirit Guide" 
               className="flex-none h-8 w-auto group-hover:scale-105 transition-transform duration-300 block" 
             />
