@@ -21,6 +21,24 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Cosmic Spiritual Guide" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://cosmicspiritguide.com" />
+        <meta property="og:title" content="Cosmic Spiritual Guide - Tarot & Astrology Insights" />
+        <meta property="og:description" content="Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance. 3 free credits every day." />
+        <meta property="og:image" content="https://cosmicspiritguide.com/CSG_Logo.svg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Cosmic Spiritual Guide" />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://cosmicspiritguide.com" />
+        <meta property="twitter:title" content="Cosmic Spiritual Guide - Tarot & Astrology Insights" />
+        <meta property="twitter:description" content="Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance. 3 free credits every day." />
+        <meta property="twitter:image" content="https://cosmicspiritguide.com/CSG_Logo.svg" />
+        
         <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
