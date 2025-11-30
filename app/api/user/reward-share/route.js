@@ -35,6 +35,19 @@ export async function POST(request) {
     try {
       await client.query('BEGIN');
 
+      // Check if column exists, if not add it
+      try {
+        await client.query(`
+          ALTER TABLE users 
+          ADD COLUMN IF NOT EXISTS has_rewarded_share BOOLEAN DEFAULT false
+        `);
+      } catch (colError) {
+        // Column might already exist or other error - continue
+        if (!colError.message.includes('already exists') && !colError.code === '42710') {
+          console.warn('[Share Reward] Column check warning:', colError.message);
+        }
+      }
+
       // Check if user has already been rewarded
       const userCheck = await client.query(
         'SELECT has_rewarded_share FROM users WHERE id = $1',
@@ -49,7 +62,7 @@ export async function POST(request) {
         );
       }
 
-      const hasRewardedShare = userCheck.rows[0].has_rewarded_share;
+      const hasRewardedShare = userCheck.rows[0].has_rewarded_share ?? false;
 
       if (hasRewardedShare) {
         await client.query('ROLLBACK');
