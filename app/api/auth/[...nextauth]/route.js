@@ -15,6 +15,12 @@ if (!process.env.NEXTAUTH_SECRET) {
   console.error('[NextAuth] Authentication will fail!');
 }
 
+if (!process.env.NEXTAUTH_URL) {
+  console.error('[NextAuth] WARNING: NEXTAUTH_URL is not set!');
+  console.error('[NextAuth] In production, this should be set to https://cosmicspiritguide.com');
+  console.error('[NextAuth] OAuth callbacks may fail without this!');
+}
+
 if (!process.env.JWT_SECRET) {
   console.error('[NextAuth] WARNING: JWT_SECRET is not set!');
   console.error('[NextAuth] JWT token generation will fail!');
@@ -59,7 +65,8 @@ export const authOptions = {
           console.log('[NextAuth] Upserting user for:', user.email);
 
           // Use INSERT with ON CONFLICT to handle both new and existing users
-          // Handle both password_hash nullable and non-nullable schemas
+          // Note: password_hash is not included - it should be NULL for OAuth users
+          // If this fails, the Google OAuth migration may not have been run
           const result = await pool.query(
             `INSERT INTO users (email, first_name, last_name, google_id, avatar_url, created_at)
              VALUES ($1, $2, $3, $4, $5, NOW())
@@ -114,8 +121,18 @@ export const authOptions = {
           message: error.message,
           code: error.code,
           detail: error.detail,
-          hint: error.hint
+          hint: error.hint,
+          constraint: error.constraint
         });
+        
+        // Check if this is a NOT NULL constraint error on password_hash
+        if (error.message && error.message.includes('password_hash') && 
+            (error.message.includes('null value') || error.message.includes('NOT NULL'))) {
+          console.error("[NextAuth] CRITICAL: password_hash column is still NOT NULL!");
+          console.error("[NextAuth] The Google OAuth migration has not been run.");
+          console.error("[NextAuth] Please run: node scripts/run-google-oauth-migration.js");
+        }
+        
         return false;
       }
     },

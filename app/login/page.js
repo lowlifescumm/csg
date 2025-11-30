@@ -20,6 +20,23 @@ export default function LoginPage() {
   // Ensure component is mounted before using NextAuth functions (important for mobile)
   useEffect(() => {
     setMounted(true);
+    
+    // Check for error in URL query parameters (from NextAuth redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorParam = urlParams.get('error');
+    if (errorParam) {
+      let errorMessage = 'Authentication failed. Please try again.';
+      if (errorParam === 'google') {
+        errorMessage = 'Google sign-in failed. Please check that Google OAuth is properly configured.';
+      } else if (errorParam === 'Configuration') {
+        errorMessage = 'Authentication configuration error. Please contact support.';
+      } else if (errorParam === 'AccessDenied') {
+        errorMessage = 'Access denied. Please try again or use email/password.';
+      } else if (errorParam === 'Verification') {
+        errorMessage = 'Verification failed. Please try again.';
+      }
+      setError(errorMessage);
+    }
   }, []);
 
   const handleGoogleSignIn = async () => {

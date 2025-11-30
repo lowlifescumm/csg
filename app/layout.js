@@ -18,6 +18,8 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#8B5CF6" />
         <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
+        {/* Mobile Web App Capable - Updated to new standard */}
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Cosmic Spiritual Guide" />
@@ -39,7 +41,7 @@ export default function RootLayout({ children }) {
         <meta property="twitter:description" content="Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance. 3 free credits every day." />
         <meta property="twitter:image" content="https://cosmicspiritguide.com/CSG_LOGO.svg" />
         
-        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
+        {/* Tailwind CSS is configured as a PostCSS plugin, so CDN is not needed */}
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
         <AuthProviderWrapper>

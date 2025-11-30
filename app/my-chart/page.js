@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BirthChartWheel from '@/components/BirthChartWheel';
@@ -14,7 +14,11 @@ export default function MyChartPage() {
   const [interpretation, setInterpretation] = useState(null);
   const [error, setError] = useState(null);
 
-  const fetchChart = useCallback(async () => {
+  useEffect(() => {
+    fetchChart();
+  }, []);
+
+  const fetchChart = async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/birth-chart');
@@ -44,11 +48,7 @@ export default function MyChartPage() {
       setError(err.message);
       setLoading(false);
     }
-  }, [router]);
-
-  useEffect(() => {
-    fetchChart();
-  }, [fetchChart]);
+  };
 
   if (loading) {
     return (

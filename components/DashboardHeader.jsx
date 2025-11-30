@@ -112,117 +112,115 @@ export default function DashboardHeader({
           )}
         </div>
 
-        {/* Right: Horizontal Stack of 4 Stat Cards - Hidden for now */}
-        {false && (
-          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 justify-end flex-wrap w-full md:w-auto">
-            {/* Energy Level Card */}
-            <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
-              <div className="flex items-center gap-2 mb-2">
-                <Sun className="w-4 h-4 text-yellow-400" aria-hidden="true" />
-                <h4 className="text-white font-semibold text-xs">Energy</h4>
-              </div>
-              <div className="progress-bar-container relative">
-                <div 
-                  className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-1"
-                  role="progressbar"
-                  aria-valuenow={energy}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={`Energy level: ${energy}%`}
-                >
-                  <div 
-                    className={`progress-bar h-full progress-bar-glow rounded-full ${animateProgress ? 'animate' : ''}`}
-                    style={{ 
-                      // @ts-ignore
-                      '--target-width': `${energy}%`
-                    }}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white font-semibold text-xs">{energy}%</span>
-                  <span className="text-green-400 text-xs flex items-center gap-0.5">
-                    <TrendingUp className="w-3 h-3" aria-hidden="true" />
-                    ↑{energyChange}%
-                  </span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Love Reading Card */}
-            <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5">
-                  <Heart className="w-4 h-4 text-pink-400" aria-hidden="true" />
-                  <h4 className="text-white font-semibold text-xs">Love</h4>
-                </div>
-                <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-pink-500/20 text-pink-200">
-                  Today
-                </span>
-              </div>
-              <p className="text-xs truncate" style={{ color: 'var(--muted-text)' }}>Venus aligns</p>
-              <Link 
-                href="/dashboard#tarot-section"
-                className="text-[10px] font-medium smooth-transition mt-1 inline-block"
-                style={{ color: 'var(--accent-1)' }}
-                onMouseEnter={(e) => e.target.style.color = 'var(--accent-2)'}
-                onMouseLeave={(e) => e.target.style.color = 'var(--accent-1)'}
+        {/* Right: Horizontal Stack of 4 Stat Cards */}
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 justify-end flex-wrap w-full md:w-auto">
+          {/* Energy Level Card */}
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
+            <div className="flex items-center gap-2 mb-2">
+              <Sun className="w-4 h-4 text-yellow-400" aria-hidden="true" />
+              <h4 className="text-white font-semibold text-xs">Energy</h4>
+            </div>
+            <div className="progress-bar-container relative">
+              <div 
+                className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-1"
+                role="progressbar"
+                aria-valuenow={energy}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Energy level: ${energy}%`}
               >
-                View &gt;
-              </Link>
-            </Card>
-
-            {/* Spiritual Growth Card */}
-            <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className="text-sm">🕉️</span>
-                <h4 className="text-white font-semibold text-xs">Growth</h4>
-              </div>
-              <div className="progress-bar-container relative mb-1">
                 <div 
-                  className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden"
-                  role="progressbar"
-                  aria-valuenow={Math.round(spiritualGrowthPercentage)}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={`Spiritual growth: ${Math.round(spiritualGrowthPercentage)}% (Level ${level})`}
-                >
-                  <div 
-                    className={`progress-bar h-full progress-bar-glow rounded-full ${animateProgress ? 'animate' : ''}`}
-                    style={{ 
-                      // @ts-ignore
-                      '--target-width': `${spiritualGrowthPercentage}%`
-                    }}
-                  />
-                </div>
+                  className={`progress-bar h-full progress-bar-glow rounded-full ${animateProgress ? 'animate' : ''}`}
+                  style={{ 
+                    // @ts-ignore
+                    '--target-width': `${energy}%`
+                  }}
+                />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px]" style={{ color: 'var(--muted-text)' }}>{xpCurrent.toLocaleString()}/{xpTarget.toLocaleString()}</span>
-                <span className="text-white font-semibold text-xs">Lv.{level}</span>
+                <span className="text-white font-semibold text-xs">{energy}%</span>
+                <span className="text-green-400 text-xs flex items-center gap-0.5">
+                  <TrendingUp className="w-3 h-3" aria-hidden="true" />
+                  ↑{energyChange}%
+                </span>
               </div>
-            </Card>
+            </div>
+          </Card>
 
-            {/* Daily Bonus Card */}
-            <Card size="sm" className="header-stat-card flex-shrink-0 relative w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
-              <span className="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-yellow-500 text-purple-900">
-                NEW
-              </span>
-              <div className="flex items-center gap-1.5 mb-2">
-                <Gift className="w-4 h-4 text-yellow-400" aria-hidden="true" />
-                <h4 className="text-white font-semibold text-xs">Bonus</h4>
+          {/* Love Reading Card */}
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <Heart className="w-4 h-4 text-pink-400" aria-hidden="true" />
+                <h4 className="text-white font-semibold text-xs">Love</h4>
               </div>
-              <p className="text-xs truncate mb-1" style={{ color: 'var(--muted-text)' }}>Free reading</p>
-              <Link 
-                href="/dashboard#tarot-section"
-                className="text-[10px] font-medium smooth-transition inline-block"
-                style={{ color: 'var(--accent-1)' }}
-                onMouseEnter={(e) => e.target.style.color = 'var(--accent-2)'}
-                onMouseLeave={(e) => e.target.style.color = 'var(--accent-1)'}
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-pink-500/20 text-pink-200">
+                Today
+              </span>
+            </div>
+            <p className="text-xs truncate" style={{ color: 'var(--muted-text)' }}>Venus aligns</p>
+            <Link 
+              href="/dashboard#tarot-section"
+              className="text-[10px] font-medium smooth-transition mt-1 inline-block"
+              style={{ color: 'var(--accent-1)' }}
+              onMouseEnter={(e) => e.target.style.color = 'var(--accent-2)'}
+              onMouseLeave={(e) => e.target.style.color = 'var(--accent-1)'}
+            >
+              View &gt;
+            </Link>
+          </Card>
+
+          {/* Spiritual Growth Card */}
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className="text-sm">🕉️</span>
+              <h4 className="text-white font-semibold text-xs">Growth</h4>
+            </div>
+            <div className="progress-bar-container relative mb-1">
+              <div 
+                className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden"
+                role="progressbar"
+                aria-valuenow={Math.round(spiritualGrowthPercentage)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Spiritual growth: ${Math.round(spiritualGrowthPercentage)}% (Level ${level})`}
               >
-                Claim &gt;
-              </Link>
-            </Card>
-          </div>
-        )}
+                <div 
+                  className={`progress-bar h-full progress-bar-glow rounded-full ${animateProgress ? 'animate' : ''}`}
+                  style={{ 
+                    // @ts-ignore
+                    '--target-width': `${spiritualGrowthPercentage}%`
+                  }}
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px]" style={{ color: 'var(--muted-text)' }}>{xpCurrent.toLocaleString()}/{xpTarget.toLocaleString()}</span>
+              <span className="text-white font-semibold text-xs">Lv.{level}</span>
+            </div>
+          </Card>
+
+          {/* Daily Bonus Card */}
+          <Card size="sm" className="header-stat-card flex-shrink-0 relative w-full sm:w-[160px] md:w-[180px] lg:w-[200px]">
+            <span className="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-yellow-500 text-purple-900">
+              NEW
+            </span>
+            <div className="flex items-center gap-1.5 mb-2">
+              <Gift className="w-4 h-4 text-yellow-400" aria-hidden="true" />
+              <h4 className="text-white font-semibold text-xs">Bonus</h4>
+            </div>
+            <p className="text-xs truncate mb-1" style={{ color: 'var(--muted-text)' }}>Free reading</p>
+            <Link 
+              href="/dashboard#tarot-section"
+              className="text-[10px] font-medium smooth-transition inline-block"
+              style={{ color: 'var(--accent-1)' }}
+              onMouseEnter={(e) => e.target.style.color = 'var(--accent-2)'}
+              onMouseLeave={(e) => e.target.style.color = 'var(--accent-1)'}
+            >
+              Claim &gt;
+            </Link>
+          </Card>
+        </div>
       </div>
     </>
   );
