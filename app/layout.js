@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
         <meta property="og:url" content="https://cosmicspiritguide.com" />
         <meta property="og:title" content="Cosmic Spiritual Guide - Tarot & Astrology Insights" />
         <meta property="og:description" content="Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance. 3 free credits every day." />
-        <meta property="og:image" content="https://cosmicspiritguide.com/CSG_Logo.svg" />
+        <meta property="og:image" content="https://cosmicspiritguide.com/CSG_LOGO.svg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Cosmic Spiritual Guide" />
@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
         <meta property="twitter:url" content="https://cosmicspiritguide.com" />
         <meta property="twitter:title" content="Cosmic Spiritual Guide - Tarot & Astrology Insights" />
         <meta property="twitter:description" content="Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance. 3 free credits every day." />
-        <meta property="twitter:image" content="https://cosmicspiritguide.com/CSG_Logo.svg" />
+        <meta property="twitter:image" content="https://cosmicspiritguide.com/CSG_LOGO.svg" />
         
         <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
       </head>
