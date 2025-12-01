@@ -306,6 +306,7 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 
   // Cookie configuration to fix OAuth state cookie issues
+  // The state cookie is critical for OAuth security - it must be set correctly
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
@@ -314,6 +315,7 @@ export const authOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.cosmicspiritguide.com' : undefined,
       },
     },
     callbackUrl: {
@@ -323,6 +325,7 @@ export const authOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.cosmicspiritguide.com' : undefined,
       },
     },
     csrfToken: {
@@ -332,6 +335,7 @@ export const authOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.cosmicspiritguide.com' : undefined,
       },
     },
     pkceCodeVerifier: {
@@ -341,6 +345,7 @@ export const authOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.cosmicspiritguide.com' : undefined,
         maxAge: 60 * 15, // 15 minutes
       },
     },
@@ -351,6 +356,7 @@ export const authOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.cosmicspiritguide.com' : undefined,
         maxAge: 60 * 15, // 15 minutes
       },
     },
