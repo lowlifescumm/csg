@@ -38,8 +38,9 @@ export const authOptions = {
           response_type: "code"
         }
       },
-      // Ensure callback URL matches exactly
-      checks: ["state", "pkce"],
+      // Use PKCE without state to avoid state cookie issues blocking login
+      // PKCE still provides strong CSRF protection for the OAuth flow
+      checks: ["pkce"],
     }),
   ],
 
