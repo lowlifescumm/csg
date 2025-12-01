@@ -305,6 +305,12 @@ export const authOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
 
+  // Trust host in production to ensure cookies work correctly
+  trustHost: true,
+
+  // Use secure cookies in production
+  useSecureCookies: process.env.NODE_ENV === 'production',
+
   // Cookie configuration to fix OAuth state cookie issues
   // The state cookie is critical for OAuth security - it must be set correctly
   // Note: Not setting domain allows cookies to work on the exact domain
