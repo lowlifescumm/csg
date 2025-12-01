@@ -37,7 +37,9 @@ export const authOptions = {
           access_type: "offline",
           response_type: "code"
         }
-      }
+      },
+      // Ensure callback URL matches exactly
+      checks: ["state", "pkce"],
     }),
   ],
 
@@ -313,14 +315,14 @@ export const authOptions = {
 
   // Cookie configuration to fix OAuth state cookie issues
   // The state cookie is critical for OAuth security - it must be set correctly
-  // Note: Not setting domain allows cookies to work on the exact domain
-  // Setting domain with leading dot (.domain.com) is only needed for subdomain sharing
+  // Using 'none' for sameSite in production to handle cross-site redirects
+  // This is required when OAuth provider redirects from a different domain
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
       },
@@ -329,7 +331,7 @@ export const authOptions = {
       name: `next-auth.callback-url`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
       },
@@ -338,7 +340,7 @@ export const authOptions = {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
       },
@@ -347,7 +349,7 @@ export const authOptions = {
       name: `next-auth.pkce.code_verifier`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 15, // 15 minutes
@@ -357,12 +359,12 @@ export const authOptions = {
       name: `next-auth.state`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 15, // 15 minutes
-        // Ensure state cookie is set with proper attributes
-        // Don't set domain - let it default to current domain
+        // Using 'none' for sameSite in production to ensure cookies work
+        // across the OAuth redirect flow (Google -> Your Site)
       },
     },
   },
