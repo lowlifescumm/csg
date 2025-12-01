@@ -56,14 +56,21 @@ export const authOptions = {
           family_name: profile?.family_name 
         });
 
-        // Validate required data
+        // IMPORTANT: During initial OAuth redirect, account might be null
+        // Only validate when we actually have account data (after callback)
+        if (!account) {
+          console.log('[NextAuth] No account yet - this is the initial redirect, allowing it');
+          return true; // Allow the redirect to Google to proceed
+        }
+
+        // Validate required data only after we have account (during callback)
         if (!user || !user.email) {
           console.error('[NextAuth] Missing user or user.email');
           return false;
         }
 
-        if (!account || account.provider !== 'google') {
-          console.error('[NextAuth] Invalid account or provider');
+        if (account.provider !== 'google') {
+          console.error('[NextAuth] Invalid provider:', account.provider);
           return false;
         }
 
@@ -272,6 +279,9 @@ export const authOptions = {
     signIn: '/login',
     error: '/login',
   },
+
+  // Add error handler to catch and log OAuth errors
+  debug: process.env.NODE_ENV === 'development' || true, // Enable debug in production temporarily
 
   events: {
     async signIn({ user, account, profile, isNewUser }) {
