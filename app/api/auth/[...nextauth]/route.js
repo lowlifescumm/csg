@@ -44,7 +44,25 @@ export const authOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
-        console.log('[NextAuth] signIn callback triggered for:', user.email);
+        console.log('[NextAuth] signIn callback triggered');
+        console.log('[NextAuth] User:', { email: user?.email, name: user?.name });
+        console.log('[NextAuth] Account:', { provider: account?.provider, type: account?.type });
+        console.log('[NextAuth] Profile:', { 
+          sub: profile?.sub, 
+          given_name: profile?.given_name, 
+          family_name: profile?.family_name 
+        });
+
+        // Validate required data
+        if (!user || !user.email) {
+          console.error('[NextAuth] Missing user or user.email');
+          return false;
+        }
+
+        if (!account || account.provider !== 'google') {
+          console.error('[NextAuth] Invalid account or provider');
+          return false;
+        }
 
         // Normalize email to lowercase to prevent case-sensitivity issues
         const normalizedEmail = user.email.toLowerCase().trim();
@@ -59,10 +77,19 @@ export const authOptions = {
 
         if (existingUsers.length === 0) {
           // Create new user or update if exists (upsert pattern)
-          const firstName = profile.given_name || user.name?.split(' ')[0] || '';
-          const lastName = profile.family_name || user.name?.split(' ').slice(1).join(' ') || '';
+          const firstName = profile?.given_name || user.name?.split(' ')[0] || '';
+          const lastName = profile?.family_name || user.name?.split(' ').slice(1).join(' ') || '';
+          const googleId = profile?.sub || account.providerAccountId || null;
+          const avatarUrl = user.image || profile?.picture || null;
 
           console.log('[NextAuth] Upserting user for:', user.email);
+          console.log('[NextAuth] User data:', { firstName, lastName, googleId, avatarUrl });
+
+          // Validate googleId exists
+          if (!googleId) {
+            console.error('[NextAuth] Missing Google ID (profile.sub or account.providerAccountId)');
+            return false;
+          }
 
           // Use INSERT with ON CONFLICT to handle both new and existing users
           // Note: password_hash is not included - it should be NULL for OAuth users
@@ -79,8 +106,8 @@ export const authOptions = {
               normalizedEmail,
               firstName,
               lastName,
-              profile.sub, // Google user ID
-              user.image || profile.picture
+              googleId,
+              avatarUrl
             ]
           );
           const userId = result.rows[0].id;
@@ -103,14 +130,21 @@ export const authOptions = {
           // Update existing user with Google info if not already set
           console.log('[NextAuth] Updating existing user for:', user.email);
 
-          await pool.query(
-            `UPDATE users
-             SET google_id = COALESCE(google_id, $1),
-                 avatar_url = COALESCE(avatar_url, $2),
-                 updated_at = NOW()
-             WHERE LOWER(email) = $3`,
-            [profile.sub, user.image || profile.picture, normalizedEmail]
-          );
+          const googleId = profile?.sub || account.providerAccountId || null;
+          const avatarUrl = user.image || profile?.picture || null;
+
+          if (googleId) {
+            await pool.query(
+              `UPDATE users
+               SET google_id = COALESCE(google_id, $1),
+                   avatar_url = COALESCE(avatar_url, $2),
+                   updated_at = NOW()
+               WHERE LOWER(email) = $3`,
+              [googleId, avatarUrl, normalizedEmail]
+            );
+          } else {
+            console.warn('[NextAuth] No Google ID available for existing user update');
+          }
         }
 
         console.log('[NextAuth] signIn callback successful for:', user.email);
@@ -234,6 +268,34 @@ export const authOptions = {
   pages: {
     signIn: '/login',
     error: '/login',
+  },
+
+  events: {
+    async signIn({ user, account, profile, isNewUser }) {
+      console.log('[NextAuth] signIn event triggered:', { 
+        email: user?.email, 
+        provider: account?.provider,
+        isNewUser 
+      });
+    },
+    async signOut({ session, token }) {
+      console.log('[NextAuth] signOut event triggered');
+    },
+    async createUser({ user }) {
+      console.log('[NextAuth] createUser event triggered:', user?.email);
+    },
+    async updateUser({ user }) {
+      console.log('[NextAuth] updateUser event triggered:', user?.email);
+    },
+    async linkAccount({ user, account, profile }) {
+      console.log('[NextAuth] linkAccount event triggered:', { 
+        email: user?.email, 
+        provider: account?.provider 
+      });
+    },
+    async session({ session, token }) {
+      console.log('[NextAuth] session event triggered');
+    },
   },
 
   session: {
