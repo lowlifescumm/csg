@@ -9,6 +9,16 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const parseJsonSafely = (payload, label) => {
+  if (!payload) return null;
+  try {
+    return JSON.parse(payload);
+  } catch (error) {
+    console.error(`[Transit Interpretation] Failed to parse ${label}:`, error);
+    return null;
+  }
+};
+
 export async function POST(req) {
   try {
     const cookieStore = await cookies();
@@ -98,15 +108,20 @@ Make the interpretation personalized, insightful, and actionable. Consider the i
 
   const content = completion.choices[0].message.content.trim();
 
-  try {
-    return JSON.parse(content);
-  } catch (parseError) {
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    throw new Error('Failed to parse AI response');
+  const parsed = parseJsonSafely(content, 'full completion');
+  if (parsed) {
+    return parsed;
   }
+
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    const fallback = parseJsonSafely(jsonMatch[0], 'fallback completion');
+    if (fallback) {
+      return fallback;
+    }
+  }
+
+  throw new Error('Failed to parse AI response');
 }
 
 
