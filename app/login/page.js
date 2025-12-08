@@ -39,7 +39,7 @@ export default function LoginPage() {
     }
   }, []);
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     // Wait for component to mount and SessionProvider to be ready
     if (!mounted) {
       setError("Please wait, initializing...");
@@ -49,41 +49,21 @@ export default function LoginPage() {
     setGoogleLoading(true);
     setError("");
     
-    try {
-      // Check if signIn function is available
-      if (typeof signIn !== 'function') {
-        throw new Error('Authentication system not ready');
-      }
-
-      // First attempt: controlled login without redirect to catch errors
-      const result = await signIn("google", {
-        callbackUrl: "/dashboard",
-        redirect: false
-      });
-
-      if (result?.error) {
-        // Fallback: try default redirect-based flow handled by NextAuth
-        const redirectAttempt = await signIn("google", {
-          callbackUrl: "/dashboard"
-        });
-        // If NextAuth handles redirect, we won't get here. If we do, show error:
-        if (!redirectAttempt) {
-          setError("Failed to sign in with Google. Please try again.");
-          setGoogleLoading(false);
-        }
-      } else if (result?.ok) {
-        // Success - NextAuth will handle redirect
-        router.push("/dashboard");
-        router.refresh();
-      } else {
-        // Last-resort fallback: direct navigation to provider route
-        window.location.href = "/api/auth/signin/google?callbackUrl=%2Fdashboard";
-      }
-    } catch (err) {
-      console.error("Google sign-in error:", err);
-      setError("Failed to sign in with Google. Please try again or use email/password.");
-      setGoogleLoading(false);
-    }
+    // Use public origin to ensure we hit the correct domain
+    const callbackUrl = `${window.location.origin}/dashboard`;
+    
+    console.log('[Login] Initiating Google sign-in with callbackUrl:', callbackUrl);
+    
+    // Let NextAuth handle the redirect - this will navigate to Google OAuth
+    // The redirect: true (default) will cause a full page navigation to Google
+    signIn("google", {
+      callbackUrl: callbackUrl,
+      redirect: true  // Explicitly enable redirect to prevent cancelled requests
+    });
+    
+    // Note: We don't set loading to false here because the page will redirect
+    // If the redirect fails, NextAuth will redirect back with an error parameter
+    // which is handled by the useEffect hook above
   };
 
   const handleSubmit = async (e) => {
