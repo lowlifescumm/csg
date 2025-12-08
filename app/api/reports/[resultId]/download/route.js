@@ -8,6 +8,17 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/lib/db.js';
 
+const parseContentJson = (content) => {
+  if (!content) return null;
+  if (typeof content !== 'string') return content;
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('[ReportDownload] Failed to parse content_json:', error);
+    return null;
+  }
+};
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -43,9 +54,11 @@ export async function GET(request, { params }) {
     }
     
     const result = rows[0];
-    const contentJson = typeof result.content_json === 'string' 
-      ? JSON.parse(result.content_json) 
-      : result.content_json;
+    const contentJson = parseContentJson(result.content_json);
+    
+    if (!contentJson) {
+      return NextResponse.json({ error: 'Report content is corrupted' }, { status: 500 });
+    }
     
     // Check if HTML is stored in content_json
     let html = contentJson.html || contentJson.content_html;

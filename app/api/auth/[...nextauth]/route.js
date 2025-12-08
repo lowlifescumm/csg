@@ -4,26 +4,44 @@ import { pool } from "@/lib/db";
 import jwt from "jsonwebtoken";
 import { initializeUserCreditsOnSignup, refreshDailyCredits } from "@/lib/credits";
 
-// Validate required environment variables
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  console.error('[NextAuth] WARNING: Google OAuth credentials are not set!');
-  console.error('[NextAuth] Google sign-in will not work without GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET');
+const sanitizeEnv = (value) => {
+  if (!value) return "";
+  return value.trim().replace(/\r?\n/g, "");
+};
+
+const GOOGLE_CLIENT_ID = sanitizeEnv(process.env.GOOGLE_CLIENT_ID);
+const GOOGLE_CLIENT_SECRET = sanitizeEnv(process.env.GOOGLE_CLIENT_SECRET);
+const NEXTAUTH_SECRET = sanitizeEnv(process.env.NEXTAUTH_SECRET);
+const NEXTAUTH_URL = sanitizeEnv(process.env.NEXTAUTH_URL);
+const JWT_SECRET = sanitizeEnv(process.env.JWT_SECRET);
+
+// Preserve sanitized values so downstream imports reading process.env get the clean version
+if (GOOGLE_CLIENT_ID) process.env.GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID;
+if (GOOGLE_CLIENT_SECRET) process.env.GOOGLE_CLIENT_SECRET = GOOGLE_CLIENT_SECRET;
+if (NEXTAUTH_SECRET) process.env.NEXTAUTH_SECRET = NEXTAUTH_SECRET;
+if (NEXTAUTH_URL) process.env.NEXTAUTH_URL = NEXTAUTH_URL;
+if (JWT_SECRET) process.env.JWT_SECRET = JWT_SECRET;
+
+// Validate required environment variables after sanitization
+if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+  console.error('[NextAuth] WARNING: Google OAuth credentials are not set (or blank after trimming)!');
+  console.error('[NextAuth] Google sign-in will not work without valid GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET');
 }
 
-if (!process.env.NEXTAUTH_SECRET) {
+if (!NEXTAUTH_SECRET) {
   console.error('[NextAuth] ERROR: NEXTAUTH_SECRET is not set!');
   console.error('[NextAuth] Authentication will fail!');
 }
 
-if (!process.env.NEXTAUTH_URL) {
+if (!NEXTAUTH_URL) {
   console.error('[NextAuth] ERROR: NEXTAUTH_URL is not set!');
   console.error('[NextAuth] This is required for OAuth callbacks to work correctly!');
   console.error('[NextAuth] Set NEXTAUTH_URL to your production URL (e.g., https://cosmicspiritguide.com)');
 } else {
-  console.log('[NextAuth] NEXTAUTH_URL is set to:', process.env.NEXTAUTH_URL);
+  console.log('[NextAuth] NEXTAUTH_URL is set to:', NEXTAUTH_URL);
 }
 
-if (!process.env.JWT_SECRET) {
+if (!JWT_SECRET) {
   console.error('[NextAuth] WARNING: JWT_SECRET is not set!');
   console.error('[NextAuth] JWT token generation will fail!');
 }
@@ -34,8 +52,8 @@ export const authOptions = {
   
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           prompt: "consent",
@@ -235,7 +253,7 @@ export const authOptions = {
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
 
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: NEXTAUTH_SECRET,
 
   // Cookie configuration to fix OAuth state cookie issues on Render
   cookies: {
