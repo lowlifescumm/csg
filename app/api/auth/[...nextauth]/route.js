@@ -62,18 +62,17 @@ if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
 }
 
 console.log('[NextAuth] Initializing GoogleProvider with clientId:', GOOGLE_CLIENT_ID.substring(0, 20) + '...');
+console.log('[NextAuth] Using GOOGLE_CLIENT_ID length:', GOOGLE_CLIENT_ID.length);
+console.log('[NextAuth] Using GOOGLE_CLIENT_SECRET length:', GOOGLE_CLIENT_SECRET.length);
 
 export const authOptions = {
   // Trust host for Render.com proxy setup (required for Render's proxy)
   trustHost: true,
   
-  // Explicitly set the base URL to ensure callbacks work correctly
-  ...(NEXTAUTH_URL && { baseUrl: NEXTAUTH_URL }),
-  
   providers: [
     GoogleProvider({
-      clientId: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           prompt: "consent",
@@ -349,8 +348,8 @@ console.log('[NextAuth] Creating NextAuth handler...');
 console.log('[NextAuth] Provider count:', authOptions.providers.length);
 console.log('[NextAuth] trustHost:', authOptions.trustHost);
 console.log('[NextAuth] NEXTAUTH_URL:', NEXTAUTH_URL);
-console.log('[NextAuth] GoogleProvider clientId present:', !!authOptions.providers[0]?.clientId);
-console.log('[NextAuth] GoogleProvider clientSecret present:', !!authOptions.providers[0]?.clientSecret);
+console.log('[NextAuth] GoogleProvider clientId length (env):', process.env.GOOGLE_CLIENT_ID?.length || 0);
+console.log('[NextAuth] GoogleProvider clientSecret length (env):', process.env.GOOGLE_CLIENT_SECRET?.length || 0);
 
 const handler = NextAuth(authOptions);
 console.log('[NextAuth] Handler created successfully');
