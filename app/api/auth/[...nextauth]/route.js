@@ -354,4 +354,24 @@ console.log('[NextAuth] GoogleProvider clientSecret length (env):', process.env.
 const handler = NextAuth(authOptions);
 console.log('[NextAuth] Handler created successfully');
 
-export { handler as GET, handler as POST };
+export const GET = async (req, ctx) => {
+  console.log('[NextAuth][GET] Incoming request', {
+    url: req.url,
+    host: req.headers.get('host'),
+    forwardedHost: req.headers.get('x-forwarded-host'),
+    forwardedProto: req.headers.get('x-forwarded-proto'),
+    userAgent: req.headers.get('user-agent'),
+  });
+  return handler(req, ctx);
+};
+
+export const POST = async (req, ctx) => {
+  console.log('[NextAuth][POST] Incoming request', {
+    url: req.url,
+    host: req.headers.get('host'),
+    forwardedHost: req.headers.get('x-forwarded-host'),
+    forwardedProto: req.headers.get('x-forwarded-proto'),
+    userAgent: req.headers.get('user-agent'),
+  });
+  return handler(req, ctx);
+};
