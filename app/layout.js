@@ -40,8 +40,6 @@ export default function RootLayout({ children }) {
         <meta property="twitter:title" content="Cosmic Spiritual Guide - Tarot & Astrology Insights" />
         <meta property="twitter:description" content="Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance. 3 free credits every day." />
         <meta property="twitter:image" content="https://cosmicspiritguide.com/CSG_LOGO.svg" />
-        
-        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
       </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
         <AuthProviderWrapper>

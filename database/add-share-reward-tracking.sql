@@ -10,3 +10,7 @@ CREATE INDEX IF NOT EXISTS idx_users_has_rewarded_share ON users(has_rewarded_sh
 -- Add comment for documentation
 COMMENT ON COLUMN users.has_rewarded_share IS 'Tracks if user has claimed their first share reward (3 credits)';
 
+
+
+
+

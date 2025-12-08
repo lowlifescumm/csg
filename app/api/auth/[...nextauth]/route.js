@@ -16,9 +16,11 @@ if (!process.env.NEXTAUTH_SECRET) {
 }
 
 if (!process.env.NEXTAUTH_URL) {
-  console.error('[NextAuth] WARNING: NEXTAUTH_URL is not set!');
-  console.error('[NextAuth] In production, this should be set to https://cosmicspiritguide.com');
-  console.error('[NextAuth] OAuth callbacks may fail without this!');
+  console.error('[NextAuth] ERROR: NEXTAUTH_URL is not set!');
+  console.error('[NextAuth] This is required for OAuth callbacks to work correctly!');
+  console.error('[NextAuth] Set NEXTAUTH_URL to your production URL (e.g., https://cosmicspiritguide.com)');
+} else {
+  console.log('[NextAuth] NEXTAUTH_URL is set to:', process.env.NEXTAUTH_URL);
 }
 
 if (!process.env.JWT_SECRET) {
@@ -27,6 +29,9 @@ if (!process.env.JWT_SECRET) {
 }
 
 export const authOptions = {
+  // Trust host for Render.com proxy setup
+  trustHost: true,
+  
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -37,42 +42,14 @@ export const authOptions = {
           access_type: "offline",
           response_type: "code"
         }
-      },
-      // Use PKCE without state to avoid state cookie issues blocking login
-      // PKCE still provides strong CSRF protection for the OAuth flow
-      checks: ["pkce"],
+      }
     }),
   ],
 
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
-        console.log('[NextAuth] signIn callback triggered');
-        console.log('[NextAuth] User:', { email: user?.email, name: user?.name });
-        console.log('[NextAuth] Account:', { provider: account?.provider, type: account?.type });
-        console.log('[NextAuth] Profile:', { 
-          sub: profile?.sub, 
-          given_name: profile?.given_name, 
-          family_name: profile?.family_name 
-        });
-
-        // IMPORTANT: During initial OAuth redirect, account might be null
-        // Only validate when we actually have account data (after callback)
-        if (!account) {
-          console.log('[NextAuth] No account yet - this is the initial redirect, allowing it');
-          return true; // Allow the redirect to Google to proceed
-        }
-
-        // Validate required data only after we have account (during callback)
-        if (!user || !user.email) {
-          console.error('[NextAuth] Missing user or user.email');
-          return false;
-        }
-
-        if (account.provider !== 'google') {
-          console.error('[NextAuth] Invalid provider:', account.provider);
-          return false;
-        }
+        console.log('[NextAuth] signIn callback triggered for:', user.email);
 
         // Normalize email to lowercase to prevent case-sensitivity issues
         const normalizedEmail = user.email.toLowerCase().trim();
@@ -87,23 +64,13 @@ export const authOptions = {
 
         if (existingUsers.length === 0) {
           // Create new user or update if exists (upsert pattern)
-          const firstName = profile?.given_name || user.name?.split(' ')[0] || '';
-          const lastName = profile?.family_name || user.name?.split(' ').slice(1).join(' ') || '';
-          const googleId = profile?.sub || account.providerAccountId || null;
-          const avatarUrl = user.image || profile?.picture || null;
+          const firstName = profile.given_name || user.name?.split(' ')[0] || '';
+          const lastName = profile.family_name || user.name?.split(' ').slice(1).join(' ') || '';
 
           console.log('[NextAuth] Upserting user for:', user.email);
-          console.log('[NextAuth] User data:', { firstName, lastName, googleId, avatarUrl });
-
-          // Validate googleId exists
-          if (!googleId) {
-            console.error('[NextAuth] Missing Google ID (profile.sub or account.providerAccountId)');
-            return false;
-          }
 
           // Use INSERT with ON CONFLICT to handle both new and existing users
-          // Note: password_hash is not included - it should be NULL for OAuth users
-          // If this fails, the Google OAuth migration may not have been run
+          // Handle both password_hash nullable and non-nullable schemas
           const result = await pool.query(
             `INSERT INTO users (email, first_name, last_name, google_id, avatar_url, created_at)
              VALUES ($1, $2, $3, $4, $5, NOW())
@@ -116,8 +83,8 @@ export const authOptions = {
               normalizedEmail,
               firstName,
               lastName,
-              googleId,
-              avatarUrl
+              profile.sub, // Google user ID
+              user.image || profile.picture
             ]
           );
           const userId = result.rows[0].id;
@@ -140,21 +107,14 @@ export const authOptions = {
           // Update existing user with Google info if not already set
           console.log('[NextAuth] Updating existing user for:', user.email);
 
-          const googleId = profile?.sub || account.providerAccountId || null;
-          const avatarUrl = user.image || profile?.picture || null;
-
-          if (googleId) {
-            await pool.query(
-              `UPDATE users
-               SET google_id = COALESCE(google_id, $1),
-                   avatar_url = COALESCE(avatar_url, $2),
-                   updated_at = NOW()
-               WHERE LOWER(email) = $3`,
-              [googleId, avatarUrl, normalizedEmail]
-            );
-          } else {
-            console.warn('[NextAuth] No Google ID available for existing user update');
-          }
+          await pool.query(
+            `UPDATE users
+             SET google_id = COALESCE(google_id, $1),
+                 avatar_url = COALESCE(avatar_url, $2),
+                 updated_at = NOW()
+             WHERE LOWER(email) = $3`,
+            [profile.sub, user.image || profile.picture, normalizedEmail]
+          );
         }
 
         console.log('[NextAuth] signIn callback successful for:', user.email);
@@ -165,18 +125,8 @@ export const authOptions = {
           message: error.message,
           code: error.code,
           detail: error.detail,
-          hint: error.hint,
-          constraint: error.constraint
+          hint: error.hint
         });
-        
-        // Check if this is a NOT NULL constraint error on password_hash
-        if (error.message && error.message.includes('password_hash') && 
-            (error.message.includes('null value') || error.message.includes('NOT NULL'))) {
-          console.error("[NextAuth] CRITICAL: password_hash column is still NOT NULL!");
-          console.error("[NextAuth] The Google OAuth migration has not been run.");
-          console.error("[NextAuth] Please run: node scripts/run-google-oauth-migration.js");
-        }
-        
         return false;
       }
     },
@@ -280,37 +230,6 @@ export const authOptions = {
     error: '/login',
   },
 
-  // Add error handler to catch and log OAuth errors
-  debug: process.env.NODE_ENV === 'development' || true, // Enable debug in production temporarily
-
-  events: {
-    async signIn({ user, account, profile, isNewUser }) {
-      console.log('[NextAuth] signIn event triggered:', { 
-        email: user?.email, 
-        provider: account?.provider,
-        isNewUser 
-      });
-    },
-    async signOut({ session, token }) {
-      console.log('[NextAuth] signOut event triggered');
-    },
-    async createUser({ user }) {
-      console.log('[NextAuth] createUser event triggered:', user?.email);
-    },
-    async updateUser({ user }) {
-      console.log('[NextAuth] updateUser event triggered:', user?.email);
-    },
-    async linkAccount({ user, account, profile }) {
-      console.log('[NextAuth] linkAccount event triggered:', { 
-        email: user?.email, 
-        provider: account?.provider 
-      });
-    },
-    async session({ session, token }) {
-      console.log('[NextAuth] session event triggered');
-    },
-  },
-
   session: {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60, // 7 days
@@ -318,31 +237,23 @@ export const authOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
 
-  // Trust host in production to ensure cookies work correctly
-  trustHost: true,
-
-  // Use secure cookies in production
-  useSecureCookies: process.env.NODE_ENV === 'production',
-
-  // Cookie configuration to fix OAuth state cookie issues
-  // The state cookie is critical for OAuth security - it must be set correctly
-  // Using 'none' for sameSite in production to handle cross-site redirects
-  // This is required when OAuth provider redirects from a different domain
+  // Cookie configuration to fix OAuth state cookie issues on Render
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        // Don't set domain - let browser handle it for Render's proxy
       },
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
       },
@@ -351,7 +262,7 @@ export const authOptions = {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
       },
@@ -360,22 +271,21 @@ export const authOptions = {
       name: `next-auth.pkce.code_verifier`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        sameSite: 'lax', // Changed from 'strict' to 'lax' for OAuth redirects
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 15, // 15 minutes
+        // Don't set domain - let browser handle it for Render's proxy
       },
     },
     state: {
       name: `next-auth.state`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        sameSite: 'lax', // Changed from 'strict' to 'lax' for OAuth redirects
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 15, // 15 minutes
-        // Using 'none' for sameSite in production to ensure cookies work
-        // across the OAuth redirect flow (Google -> Your Site)
       },
     },
   },
