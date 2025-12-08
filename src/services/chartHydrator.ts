@@ -578,6 +578,30 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       // Calculate relationship matrix scores (ensure it's never null)
       const matrixScores = calculateRelationshipMatrix(userChart, partnerChartData);
 
+      // CRITICAL VALIDATION: Ensure partner signs are calculated, not "Unknown"
+      if (partnerChartData.sunSign === "Unknown" || partnerChartData.moonSign === "Unknown") {
+        throw new Error(
+          `[chartHydrator] CRITICAL: Partner chart calculated but Sun/Moon signs are Unknown. ` +
+          `Sun: ${partnerChartData.sunSign}, Moon: ${partnerChartData.moonSign}. ` +
+          `Check partner birth data: ${input.partnerBirthDate} ${input.partnerBirthTime}`
+        );
+      }
+
+      // CRITICAL VALIDATION: Ensure matrix_scores are not all defaults (50)
+      const allDefaults = matrixScores.emotional === 50 && 
+                         matrixScores.communication === 50 && 
+                         matrixScores.spiritual === 50 && 
+                         matrixScores.stability === 50 && 
+                         matrixScores.physical === 50;
+      if (allDefaults) {
+        console.warn(
+          `[chartHydrator] Matrix scores are all 50 (defaults). ` +
+          `This may indicate synastry calculation failed. ` +
+          `User chart: ${userChart.sunSign}/${userChart.moonSign}, ` +
+          `Partner chart: ${partnerChartData.sunSign}/${partnerChartData.moonSign}`
+        );
+      }
+
       // Explicit Return Structure (include Essential data from userChart)
       return {
         ...userChart, // Spread to include tarot_spread, moon_data, short_transits
