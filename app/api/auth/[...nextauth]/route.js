@@ -26,11 +26,20 @@ if (JWT_SECRET) process.env.JWT_SECRET = JWT_SECRET;
 if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
   console.error('[NextAuth] WARNING: Google OAuth credentials are not set (or blank after trimming)!');
   console.error('[NextAuth] Google sign-in will not work without valid GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET');
+  console.error('[NextAuth] GOOGLE_CLIENT_ID length:', GOOGLE_CLIENT_ID?.length || 0);
+  console.error('[NextAuth] GOOGLE_CLIENT_SECRET length:', GOOGLE_CLIENT_SECRET?.length || 0);
+} else {
+  console.log('[NextAuth] Google OAuth credentials validated:');
+  console.log('[NextAuth] GOOGLE_CLIENT_ID length:', GOOGLE_CLIENT_ID.length);
+  console.log('[NextAuth] GOOGLE_CLIENT_SECRET length:', GOOGLE_CLIENT_SECRET.length);
+  console.log('[NextAuth] GOOGLE_CLIENT_ID starts with:', GOOGLE_CLIENT_ID.substring(0, 20) + '...');
 }
 
 if (!NEXTAUTH_SECRET) {
   console.error('[NextAuth] ERROR: NEXTAUTH_SECRET is not set!');
   console.error('[NextAuth] Authentication will fail!');
+} else {
+  console.log('[NextAuth] NEXTAUTH_SECRET is set (length:', NEXTAUTH_SECRET.length, ')');
 }
 
 if (!NEXTAUTH_URL) {
@@ -46,9 +55,20 @@ if (!JWT_SECRET) {
   console.error('[NextAuth] JWT token generation will fail!');
 }
 
+// Validate provider configuration before creating authOptions
+if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+  console.error('[NextAuth] CRITICAL: Cannot initialize GoogleProvider - credentials missing!');
+  throw new Error('Google OAuth credentials are required but not configured');
+}
+
+console.log('[NextAuth] Initializing GoogleProvider with clientId:', GOOGLE_CLIENT_ID.substring(0, 20) + '...');
+
 export const authOptions = {
-  // Trust host for Render.com proxy setup
+  // Trust host for Render.com proxy setup (required for Render's proxy)
   trustHost: true,
+  
+  // Explicitly set the base URL to ensure callbacks work correctly
+  ...(NEXTAUTH_URL && { baseUrl: NEXTAUTH_URL }),
   
   providers: [
     GoogleProvider({
@@ -309,8 +329,30 @@ export const authOptions = {
   },
 
   debug: process.env.NODE_ENV === 'development',
+  
+  // Add error handling
+  events: {
+    async signIn({ user, account, profile }) {
+      console.log('[NextAuth] signIn event triggered for:', user?.email);
+    },
+    async error({ error }) {
+      console.error('[NextAuth] Error event:', error);
+      console.error('[NextAuth] Error name:', error?.name);
+      console.error('[NextAuth] Error message:', error?.message);
+      console.error('[NextAuth] Error stack:', error?.stack);
+    },
+  },
 };
 
+// Validate configuration before creating handler
+console.log('[NextAuth] Creating NextAuth handler...');
+console.log('[NextAuth] Provider count:', authOptions.providers.length);
+console.log('[NextAuth] trustHost:', authOptions.trustHost);
+console.log('[NextAuth] NEXTAUTH_URL:', NEXTAUTH_URL);
+console.log('[NextAuth] GoogleProvider clientId present:', !!authOptions.providers[0]?.clientId);
+console.log('[NextAuth] GoogleProvider clientSecret present:', !!authOptions.providers[0]?.clientSecret);
+
 const handler = NextAuth(authOptions);
+console.log('[NextAuth] Handler created successfully');
 
 export { handler as GET, handler as POST };
