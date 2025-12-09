@@ -3,6 +3,51 @@ import { calculateSynastryScore, calculateSynastryAspects } from "@/lib/compatib
 import { calculateBodyGraph } from "@/src/utils/humanDesign/hdCalculator";
 import * as Astronomy from 'astronomy-engine';
 
+// ---------------------------------------------------------------------------
+// Aspect calculation helper (adds explicit planetary relationships)
+// ---------------------------------------------------------------------------
+const ASPECTS = {
+  Conjunction: { angle: 0, orb: 8 },
+  Opposition: { angle: 180, orb: 8 },
+  Trine: { angle: 120, orb: 8 },
+  Square: { angle: 90, orb: 8 },
+  Sextile: { angle: 60, orb: 6 },
+};
+
+function calculateAspects(planets: Record<string, any>) {
+  const aspects: Array<{ planet1: string; planet2: string; type: string; angle: number }> = [];
+  if (!planets || Object.keys(planets).length === 0) return aspects;
+
+  const planetNames = Object.keys(planets);
+
+  for (let i = 0; i < planetNames.length; i++) {
+    for (let j = i + 1; j < planetNames.length; j++) {
+      const p1 = planets[planetNames[i]];
+      const p2 = planets[planetNames[j]];
+
+      if (!p1?.longitude || !p2?.longitude) continue;
+
+      // Calculate absolute difference
+      let diff = Math.abs(p1.longitude - p2.longitude);
+      if (diff > 180) diff = 360 - diff; // Handle circular wrap
+
+      // Check against aspect definitions
+      for (const [name, data] of Object.entries(ASPECTS)) {
+        if (Math.abs(diff - data.angle) <= data.orb) {
+          aspects.push({
+            planet1: p1.name,
+            planet2: p2.name,
+            type: name,
+            angle: parseFloat(diff.toFixed(1)),
+          });
+        }
+      }
+    }
+  }
+
+  return aspects;
+}
+
 type BirthChartResult = ReturnType<typeof calculateBirthChart>;
 
 export interface UserInput {
@@ -18,6 +63,7 @@ export interface UserInput {
   partnerBirthCity?: string;
   partnerBirthLatitude?: number;
   partnerBirthLongitude?: number;
+  partnerName?: string; // CRITICAL: Partner's name (separate from user name)
 }
 
 export interface Coordinates {
@@ -89,6 +135,12 @@ export interface CalculatedChartData {
     exactDate: Date | string;
     orb: number;
     strengthScore: number;
+  }>;
+  aspects?: Array<{
+    planet1: string;
+    planet2: string;
+    type: string;
+    angle: number;
   }>;
   // Partner data (if provided)
   partner?: CalculatedChartData | null;
@@ -493,6 +545,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   const { northNode, southNode } = extractNodes(chart);
   const aspectMatrix = buildAspectMatrix(chart.aspects || []);
   const houses = chart.houses || {};
+  const calculatedAspects = calculateAspects(planets);
 
   // Calculate Human Design Body Graph
   const humanDesignData = await calculateHumanDesign(chart, input.birthDate, input.birthTime, coordinates.latitude, coordinates.longitude);
@@ -512,6 +565,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     southNode,
     planetaryPositions,
     aspectMatrix,
+    aspects: calculatedAspects,
     planets,
     houses,
     isSaturnReturn: Boolean((chart as any)?.isSaturnReturn),
@@ -558,10 +612,19 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       const partnerNodes = extractNodes(partnerChart);
       const partnerAspectMatrix = buildAspectMatrix(partnerChart.aspects || []);
       const partnerHouses = partnerChart.houses || {};
+      const partnerAspects = calculateAspects(partnerPlanets);
+
+      // CRITICAL: Fix Identity Theft Bug - Prevent partner from using user's name
+      // If partnerName is missing or identical to userName, use safe default
+      const userName = input.name || 'User';
+      const providedPartnerName = input.partnerName || '';
+      const safePartnerName = (providedPartnerName && providedPartnerName !== userName && providedPartnerName.trim() !== '')
+        ? providedPartnerName
+        : 'The Partner'; // Safe default - NEVER use userName
 
       const partnerChartData: CalculatedChartData = {
         input: {
-          name: input.name + " (Partner)",
+          name: safePartnerName, // Use safe partner name, never user's name
           birthDate: input.partnerBirthDate,
           birthTime: input.partnerBirthTime,
           birthCity: input.partnerBirthCity,
@@ -576,6 +639,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
         southNode: partnerNodes.southNode,
         planetaryPositions: partnerPlanetaryPositions,
         aspectMatrix: partnerAspectMatrix,
+        aspects: partnerAspects,
         planets: partnerPlanets,
         houses: partnerHouses,
         isSaturnReturn: Boolean((partnerChart as any)?.isSaturnReturn),
@@ -623,7 +687,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
           rising: partnerChartData.risingSign || partnerChart.ascendant,
           planets: partnerChartData.planets || partnerChart.planets,
           houses: partnerChartData.houses || partnerChart.houses,
-          name: input.partnerBirthCity ? `${input.name} (Partner)` : "Partner",
+          name: safePartnerName, // CRITICAL: Use safe partner name, never user's name
           birth_date: input.partnerBirthDate,
           // Include full partner chart data for compatibility
           ...partnerChartData,

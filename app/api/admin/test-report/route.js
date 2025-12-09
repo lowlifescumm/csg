@@ -72,14 +72,26 @@ export async function POST(request) {
     
     const partnerSource = root.compatibility_data?.partner || root.partner;
 
-    // CRITICAL: Log partner date detection for debugging
+    // AGGRESSIVE Partner Name Extraction - Check ALL possible paths (CRITICAL FIX)
+    const partnerName = 
+      root.compatibility_data?.partner?.name ||        // Nested Master Payload
+      root.partner_name ||                             // Flat Payload
+      root.partnerName ||                              // Camel Case
+      root.partner?.name ||                            // Partner object
+      (partnerSource?.name) ||                         // From partnerSource
+      'The Partner';                                   // Safe Default (NEVER use root.name or user name)
+
+    // CRITICAL: Log partner date and name detection for debugging
     console.log('🔍 DETECTED PARTNER DATE:', partnerBirthDate);
+    console.log('🔍 DETECTED PARTNER NAME:', partnerName);
     console.log('🔍 Partner Source Found:', !!partnerSource);
     console.log('🔍 Partner Data Paths Checked:', {
       'compatibility_data.partner.birth_date': root.compatibility_data?.partner?.birth_date,
+      'compatibility_data.partner.name': root.compatibility_data?.partner?.name,
       'partner_birth_date': root.partner_birth_date,
+      'partner_name': root.partner_name,
       'partner.birthDate': root.partner?.birthDate,
-      'partner.birth_date': root.partner?.birth_date,
+      'partner.name': root.partner?.name,
     });
 
     // ============================================
@@ -101,6 +113,7 @@ export async function POST(request) {
         partnerBirthCity: partnerSource?.location || partnerSource?.partnerCity || partnerSource?.partnerLocation,
         partnerBirthLatitude: partnerSource?.latitude || partnerSource?.partnerLat,
         partnerBirthLongitude: partnerSource?.longitude || partnerSource?.partnerLng,
+        partnerName: partnerName, // CRITICAL: Pass partner name explicitly
       }),
     };
 
@@ -201,9 +214,12 @@ export async function POST(request) {
       if (calculatedData.partner) {
         sampleData.partner = calculatedData.partner;
         sampleData.chart2 = calculatedData.partner;
+        // CRITICAL: Pass partner name explicitly for prompt generation
+        sampleData.partner_name = calculatedData.partner.name || hydrationInput.partnerName || 'The Partner';
         sampleData.compatibility_data = {
           ...sampleData.compatibility_data,
           partner: calculatedData.partner,
+          partner_name: calculatedData.partner.name || hydrationInput.partnerName || 'The Partner', // Explicit partner name
           user: calculatedData.user || natalChart,
         };
       }
@@ -226,6 +242,15 @@ export async function POST(request) {
 
       // Add chartData for prompt generation (full structure)
       sampleData.chartData = calculatedData;
+
+      // CRITICAL: Ensure aspects are available for all report types
+      if (calculatedData.user?.aspects) {
+        sampleData.aspects = calculatedData.user.aspects;
+        // Also add to natalChart for backward compatibility
+        if (sampleData.natalChart) {
+          sampleData.natalChart.aspects = calculatedData.user.aspects;
+        }
+      }
 
       // Map Essential Report data from hydrator to report generator format
       if (report_type === 'ESSENTIAL' && calculatedData.user) {
@@ -260,7 +285,16 @@ export async function POST(request) {
             date_range: `Next 14 days from ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
             transits: calculatedData.user.short_transits,
             short_transits: calculatedData.user.short_transits, // Also include for prompt compatibility
+            natalChart: natalChart, // Include natalChart for extended transit calculations
           };
+        }
+
+        // CRITICAL: Ensure Essential report has all calculated data
+        // Add aspects to Essential report data if available
+        if (calculatedData.user.aspects) {
+          if (sampleData.tarot_data) sampleData.tarot_data.aspects = calculatedData.user.aspects;
+          if (sampleData.moon_data) sampleData.moon_data.aspects = calculatedData.user.aspects;
+          if (sampleData.transit_data) sampleData.transit_data.aspects = calculatedData.user.aspects;
         }
       }
     }
