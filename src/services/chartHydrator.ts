@@ -195,11 +195,12 @@ function drawTarotSpread(count: number = 3): Array<{
 
 /**
  * Calculate current moon phase using astronomy-engine
- * @returns Moon phase data
+ * @returns Moon phase data with current moon sign
  */
 function calculateCurrentMoonPhase(): {
   phase_name: string;
   illumination: string;
+  sign: string;
 } {
   const now = new Date();
   const time = Astronomy.MakeTime(now);
@@ -245,9 +246,17 @@ function calculateCurrentMoonPhase(): {
     phaseName = 'New Moon';
   }
 
+  // Calculate current moon sign from longitude
+  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 
+                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const normalizedLon = moonLon % 360;
+  const signIndex = Math.floor(normalizedLon / 30);
+  const currentMoonSign = signs[signIndex] || 'Unknown';
+
   return {
     phase_name: phaseName,
     illumination: `${illuminationPercent}%`,
+    sign: currentMoonSign,
   };
 }
 
@@ -513,8 +522,9 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     moon_data: {
       phase_name: moonPhase.phase_name,
       illumination: moonPhase.illumination,
-      sun_sign: chart.planets?.sun?.sign ?? "Unknown",
-      moon_sign: chart.planets?.moon?.sign ?? "Unknown",
+      moon_sign: moonPhase.sign, // Current transit moon sign
+      sun_sign: chart.planets?.sun?.sign ?? "Unknown", // User's natal sun sign
+      natal_moon_sign: chart.planets?.moon?.sign ?? "Unknown", // User's natal moon sign
     },
     short_transits: shortTransits,
   };

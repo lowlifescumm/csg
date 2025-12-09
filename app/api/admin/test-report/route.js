@@ -38,15 +38,49 @@ export async function POST(request) {
     }
 
     // ============================================
-    // STEP 1: UNWRAP THE PAYLOAD (Input Layer)
+    // STEP 1: UNWRAP THE PAYLOAD (Input Layer) - AGGRESSIVE DATA EXTRACTION
     // ============================================
     const root = body.data || body;
 
-    // Check for user data in birth_chart_data or user
+    // AGGRESSIVE User Data Extraction - Check ALL possible paths
     const userSource = root.birth_chart_data || root.user || root;
+    const userBirthDate = root.birth_chart_data?.birth_date || 
+                          root.birth_date || 
+                          root.user?.birthDate || 
+                          root.user?.birth_date ||
+                          userSource.birth_date || 
+                          userSource.birthDate;
     
-    // Check for partner data in compatibility_data.partner or partner
+    // AGGRESSIVE Partner Data Extraction - Check ALL possible paths (CRITICAL FIX)
+    const partnerBirthDate = root.compatibility_data?.partner?.birth_date || 
+                             root.compatibility_data?.partner?.birthDate ||
+                             root.partner_birth_date ||
+                             root.partner?.birthDate ||
+                             root.partner?.birth_date ||
+                             root.partner_birthDate ||
+                             (root.compatibility_data?.partner ? root.compatibility_data.partner.birth_date || root.compatibility_data.partner.birthDate : null) ||
+                             (root.partner ? root.partner.birth_date || root.partner.birthDate : null);
+    
+    const partnerBirthTime = root.compatibility_data?.partner?.birth_time ||
+                             root.compatibility_data?.partner?.birthTime ||
+                             root.partner_birth_time ||
+                             root.partner?.birthTime ||
+                             root.partner?.birth_time ||
+                             root.partner_birthTime ||
+                             (root.compatibility_data?.partner ? root.compatibility_data.partner.birth_time || root.compatibility_data.partner.birthTime : null) ||
+                             (root.partner ? root.partner.birth_time || root.partner.birthTime : null);
+    
     const partnerSource = root.compatibility_data?.partner || root.partner;
+
+    // CRITICAL: Log partner date detection for debugging
+    console.log('🔍 DETECTED PARTNER DATE:', partnerBirthDate);
+    console.log('🔍 Partner Source Found:', !!partnerSource);
+    console.log('🔍 Partner Data Paths Checked:', {
+      'compatibility_data.partner.birth_date': root.compatibility_data?.partner?.birth_date,
+      'partner_birth_date': root.partner_birth_date,
+      'partner.birthDate': root.partner?.birthDate,
+      'partner.birth_date': root.partner?.birth_date,
+    });
 
     // ============================================
     // STEP 2: MAP TO STANDARD INTERFACE
@@ -54,19 +88,19 @@ export async function POST(request) {
     const hydrationInput = {
       // User fields
       name: userSource.name,
-      birthDate: userSource.birth_date || userSource.birthDate,
+      birthDate: userBirthDate,
       birthTime: userSource.birth_time || userSource.birthTime,
       birthCity: userSource.location || userSource.birthCity,
       birthLatitude: userSource.latitude || userSource.lat,
       birthLongitude: userSource.longitude || userSource.lng,
 
       // Partner fields (only if partner data exists)
-      ...(partnerSource && {
-        partnerBirthDate: partnerSource.birth_date || partnerSource.partnerBirthDate || partnerSource.birthDate,
-        partnerBirthTime: partnerSource.birth_time || partnerSource.partnerBirthTime || partnerSource.birthTime,
-        partnerBirthCity: partnerSource.location || partnerSource.partnerCity || partnerSource.partnerLocation,
-        partnerBirthLatitude: partnerSource.latitude || partnerSource.partnerLat,
-        partnerBirthLongitude: partnerSource.longitude || partnerSource.partnerLng,
+      ...(partnerBirthDate && {
+        partnerBirthDate: partnerBirthDate,
+        partnerBirthTime: partnerBirthTime || partnerSource?.birth_time || partnerSource?.birthTime,
+        partnerBirthCity: partnerSource?.location || partnerSource?.partnerCity || partnerSource?.partnerLocation,
+        partnerBirthLatitude: partnerSource?.latitude || partnerSource?.partnerLat,
+        partnerBirthLongitude: partnerSource?.longitude || partnerSource?.partnerLng,
       }),
     };
 
@@ -119,6 +153,26 @@ export async function POST(request) {
 
     console.log("✅ DATA VALIDATION PASSED. Partner Sun Sign:", calculatedData.partner?.sun?.sign);
     console.log("✅ Matrix Scores:", calculatedData.matrix_scores ? JSON.stringify(calculatedData.matrix_scores) : 'null');
+
+    // ============================================
+    // STEP 4.5: CRITICAL VALIDATION GATE (Safety Net)
+    // ============================================
+    // Stop the report if data is missing (especially for MASTER reports)
+    if (report_type === 'MASTER' && hydrationInput.partnerBirthDate && !calculatedData.partner?.sun?.sign) {
+      throw new Error(
+        "Pipeline Error: Partner date provided, but Partner Sun Sign was not calculated. " +
+        `Partner Date: ${hydrationInput.partnerBirthDate}, ` +
+        `Partner Sun: ${calculatedData.partner?.sun?.sign || 'MISSING'}`
+      );
+    }
+
+    // Additional validation for any report type with partner data
+    if (hydrationInput.partnerBirthDate && !calculatedData.partner) {
+      throw new Error(
+        "Pipeline Error: Partner date provided, but Partner chart was not calculated. " +
+        `Partner Date: ${hydrationInput.partnerBirthDate}`
+      );
+    }
 
     // ============================================
     // STEP 5: PREPARE DATA FOR REPORT GENERATION
