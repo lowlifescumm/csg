@@ -252,6 +252,15 @@ export async function POST(request) {
         }
       }
 
+      // CRITICAL: Pass composite chart data to compatibility prompts
+      if (calculatedData.composite) {
+        sampleData.composite = calculatedData.composite;
+        // Also add to compatibility_data for backward compatibility
+        if (sampleData.compatibility_data) {
+          sampleData.compatibility_data.composite = calculatedData.composite;
+        }
+      }
+
       // Map Essential Report data from hydrator to report generator format
       if (report_type === 'ESSENTIAL' && calculatedData.user) {
         // Map tarot_spread to tarot_data.card_spread

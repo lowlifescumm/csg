@@ -1,4 +1,4 @@
-import { calculateBirthChart } from "@/lib/astrology";
+import { calculateBirthChart, degreesToSign } from "@/lib/astrology";
 import { calculateSynastryScore, calculateSynastryAspects } from "@/lib/compatibility";
 import { calculateBodyGraph } from "@/src/utils/humanDesign/hdCalculator";
 import * as Astronomy from 'astronomy-engine';
@@ -46,6 +46,150 @@ function calculateAspects(planets: Record<string, any>) {
   }
 
   return aspects;
+}
+
+// ---------------------------------------------------------------------------
+// Composite Chart Calculator (Midpoint-based)
+// ---------------------------------------------------------------------------
+
+/**
+ * Calculate midpoint between two longitudes using shortest arc rule
+ * @param p1 - First longitude (0-360)
+ * @param p2 - Second longitude (0-360)
+ * @returns Midpoint longitude (0-360)
+ */
+function calculateMidpoint(p1: number, p2: number): number {
+  // Normalize to 0-360
+  let lon1 = ((p1 % 360) + 360) % 360;
+  let lon2 = ((p2 % 360) + 360) % 360;
+
+  // Calculate difference taking shortest arc
+  let diff = lon2 - lon1;
+  if (Math.abs(diff) > 180) {
+    // Take the shorter arc by adjusting direction
+    diff = diff > 0 ? diff - 360 : diff + 360;
+  }
+
+  // Calculate midpoint
+  let mid = lon1 + diff / 2;
+  
+  // Normalize result to 0-360
+  mid = ((mid % 360) + 360) % 360;
+  
+  return mid;
+}
+
+/**
+ * Calculate which house (1-12) a planet falls into using equal house system
+ * @param planetLongitude - Planet's longitude (0-360)
+ * @param ascendantLongitude - Composite Ascendant longitude (0-360)
+ * @returns House number (1-12)
+ */
+function getHouseForLongitude(planetLongitude: number, ascendantLongitude: number): number {
+  // Normalize to 0-360
+  let planetLon = ((planetLongitude % 360) + 360) % 360;
+  let ascLon = ((ascendantLongitude % 360) + 360) % 360;
+
+  // Calculate difference (handling wrap-around)
+  let diff = planetLon - ascLon;
+  if (diff < 0) diff += 360;
+
+  // Each house is 30 degrees in equal house system
+  const house = Math.floor(diff / 30) + 1;
+  
+  // Ensure house is between 1-12
+  return ((house - 1) % 12) + 1;
+}
+
+/**
+ * Calculate Composite Chart from user and partner charts
+ * Uses midpoint method with shortest arc rule and equal house system
+ */
+function calculateCompositeChart(
+  userChart: CalculatedChartData,
+  partnerChart: CalculatedChartData
+): {
+  sun: { sign: string; house: number };
+  moon: { sign: string; house: number };
+  mercury: { sign: string; house: number };
+  venus: { sign: string; house: number };
+  mars: { sign: string; house: number };
+  jupiter: { sign: string; house: number };
+  saturn: { sign: string; house: number };
+  rising: { sign: string };
+} {
+  try {
+    // Get planetary longitudes from both charts
+    const userPlanets = userChart.planets || {};
+    const partnerPlanets = partnerChart.planets || {};
+
+    // Helper to get longitude safely
+    const getLongitude = (planetKey: string, planets: Record<string, any>): number | null => {
+      const planet = planets[planetKey.toLowerCase()] || planets[planetKey];
+      if (!planet) return null;
+      return planet.longitude ?? planet.eclipticLongitude ?? null;
+    };
+
+    // Calculate Composite Ascendant (midpoint of ascendants)
+    const userAscendant = userChart.houses?.[1]?.longitude ?? 
+                          (userChart.rawChart as any)?.ascendant?.longitude ?? null;
+    const partnerAscendant = partnerChart.houses?.[1]?.longitude ?? 
+                             (partnerChart.rawChart as any)?.ascendant?.longitude ?? null;
+
+    if (userAscendant === null || partnerAscendant === null) {
+      throw new Error("Cannot calculate composite chart: missing ascendant data");
+    }
+
+    const compositeAscendant = calculateMidpoint(userAscendant, partnerAscendant);
+    const compositeAscendantSign = degreesToSign(compositeAscendant);
+
+    // Calculate composite planets (midpoints)
+    const compositePlanets: Record<string, { longitude: number; sign: string; house: number }> = {};
+    
+    const planetKeys = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn'];
+    
+    for (const planetKey of planetKeys) {
+      const userLon = getLongitude(planetKey, userPlanets);
+      const partnerLon = getLongitude(planetKey, partnerPlanets);
+
+      if (userLon !== null && partnerLon !== null) {
+        const compositeLon = calculateMidpoint(userLon, partnerLon);
+        const compositeSign = degreesToSign(compositeLon);
+        const compositeHouse = getHouseForLongitude(compositeLon, compositeAscendant);
+
+        compositePlanets[planetKey] = {
+          longitude: compositeLon,
+          sign: compositeSign,
+          house: compositeHouse,
+        };
+      }
+    }
+
+    // Return structured composite chart data
+    return {
+      sun: compositePlanets.sun || { sign: 'Unknown', house: 0 },
+      moon: compositePlanets.moon || { sign: 'Unknown', house: 0 },
+      mercury: compositePlanets.mercury || { sign: 'Unknown', house: 0 },
+      venus: compositePlanets.venus || { sign: 'Unknown', house: 0 },
+      mars: compositePlanets.mars || { sign: 'Unknown', house: 0 },
+      jupiter: compositePlanets.jupiter || { sign: 'Unknown', house: 0 },
+      saturn: compositePlanets.saturn || { sign: 'Unknown', house: 0 },
+      rising: { sign: compositeAscendantSign },
+    };
+  } catch (error) {
+    console.error('[calculateCompositeChart] Error:', error);
+    // Return safe defaults on error
+    return {
+      sun: { sign: 'Unknown', house: 0 },
+      moon: { sign: 'Unknown', house: 0 },
+      mercury: { sign: 'Unknown', house: 0 },
+      venus: { sign: 'Unknown', house: 0 },
+      mars: { sign: 'Unknown', house: 0 },
+      jupiter: { sign: 'Unknown', house: 0 },
+      saturn: { sign: 'Unknown', house: 0 },
+      rising: { sign: 'Unknown' },
+    };
+  }
 }
 
 type BirthChartResult = ReturnType<typeof calculateBirthChart>;
@@ -652,6 +796,9 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       // Calculate relationship matrix scores (ensure it's never null)
       const matrixScores = calculateRelationshipMatrix(userChart, partnerChartData);
 
+      // Calculate Composite Chart (midpoint-based)
+      const compositeChart = calculateCompositeChart(userChart, partnerChartData);
+
       // CRITICAL VALIDATION: Ensure partner signs are calculated, not "Unknown"
       if (partnerChartData.sunSign === "Unknown" || partnerChartData.moonSign === "Unknown") {
         throw new Error(
@@ -694,6 +841,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
         },
         matrix_scores: matrixScores, // Real numbers (0-100) based on aspects
         compatibility_score: compatibilityScore,
+        composite: compositeChart, // Composite chart data for relationship analysis
       };
     } catch (error) {
       console.error("[chartHydrator] Error calculating partner chart:", error);
