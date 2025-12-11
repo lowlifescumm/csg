@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PremiumReportInputForm from "@/components/PremiumReportInputForm";
@@ -276,6 +276,10 @@ export default function TestReportsPage() {
   const [editingReport, setEditingReport] = useState(null);
   const [customDataError, setCustomDataError] = useState(null);
   const [formData, setFormData] = useState({});
+  const [engine, setEngine] = useState('puppeteer');
+  const [templateId, setTemplateId] = useState('');
+  const [templates, setTemplates] = useState([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
 
   const handleTestReport = async (reportType) => {
     setTesting(reportType);
@@ -960,6 +964,73 @@ export default function TestReportsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Engine & Template Selection */}
+        <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">PDF Generation Engine</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Engine
+              </label>
+              <select
+                value={engine}
+                onChange={(e) => {
+                  setEngine(e.target.value);
+                  if (e.target.value === 'template') {
+                    fetchTemplates();
+                  }
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="puppeteer">Puppeteer (Default HTML)</option>
+                <option value="template">Template Engine (pdfme)</option>
+              </select>
+              <p className="mt-1 text-sm text-gray-500">
+                {engine === 'puppeteer' 
+                  ? 'Uses the standard HTML-to-PDF pipeline'
+                  : 'Uses WYSIWYG templates from the template library'}
+              </p>
+            </div>
+            
+            {engine === 'template' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Template (Optional - auto-selects if not specified)
+                </label>
+                {loadingTemplates ? (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading templates...
+                  </div>
+                ) : (
+                  <>
+                    <select
+                      value={templateId}
+                      onChange={(e) => setTemplateId(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                      <option value="">Auto-select (use default for report type)</option>
+                      {templates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name} ({template.report_type || 'N/A'})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Leave empty to auto-select a template for the report type, or choose a specific template.
+                    </p>
+                    {templates.length === 0 && (
+                      <p className="mt-2 text-sm text-amber-600">
+                        No templates found. <Link href="/admin/report-templates" className="underline">Create one here</Link>.
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Report Type Buttons */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Individual Reports</h2>

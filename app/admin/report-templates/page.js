@@ -397,7 +397,24 @@ export default function ReportTemplatesAdminPage() {
                   {templates.map((template) => (
                     <tr key={template.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4 text-sm text-gray-600 font-mono">
-                        {template.id.substring(0, 8)}...
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs">{template.id}</span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(template.id);
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 2000);
+                            }}
+                            className="text-purple-600 hover:text-purple-700"
+                            title="Copy template ID"
+                          >
+                            {copied ? (
+                              <Check className="w-4 h-4" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-sm font-medium text-gray-900">
                         {template.name}
