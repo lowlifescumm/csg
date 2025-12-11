@@ -178,12 +178,26 @@ export async function POST(request) {
           owner_id TEXT,
           template_json JSONB NOT NULL,
           preview_html TEXT,
+          report_type TEXT,
           created_at TIMESTAMPTZ DEFAULT now(),
           updated_at TIMESTAMPTZ DEFAULT now()
         );
         
         CREATE INDEX IF NOT EXISTS idx_report_templates_owner ON report_templates(owner_id);
         CREATE INDEX IF NOT EXISTS idx_report_templates_name ON report_templates(name);
+      `);
+      
+      // Add report_type column if it doesn't exist (for existing tables)
+      await client.query(`
+        DO $$ 
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'report_templates' AND column_name = 'report_type'
+          ) THEN
+            ALTER TABLE report_templates ADD COLUMN report_type TEXT;
+          END IF;
+        END $$;
       `);
 
       // Determine owner_id - use authenticated user's ID if not provided
@@ -200,13 +214,14 @@ export async function POST(request) {
         // Update existing template
         const result = await client.query(
           `UPDATE report_templates 
-           SET name = $1, template_json = $2, preview_html = $3, updated_at = now()
-           WHERE id = $4
+           SET name = $1, template_json = $2, preview_html = $3, report_type = $4, updated_at = now()
+           WHERE id = $5
            RETURNING id, name, created_at, owner_id`,
           [
             name.trim(),
             sanitizedTemplate,
             preview_html ? sanitizeTemplate({ preview_html }).preview_html : null,
+            report_type || null,
             templateId,
           ]
         );
@@ -226,14 +241,15 @@ export async function POST(request) {
       } else {
         // Insert new template with sanitized JSON
         const result = await client.query(
-          `INSERT INTO report_templates (name, owner_id, template_json, preview_html)
-           VALUES ($1, $2, $3, $4)
+          `INSERT INTO report_templates (name, owner_id, template_json, preview_html, report_type)
+           VALUES ($1, $2, $3, $4, $5)
            RETURNING id, name, created_at, owner_id`,
           [
             name.trim(),
             finalOwnerId,
             sanitizedTemplate,
             preview_html ? sanitizeTemplate({ preview_html }).preview_html : null,
+            report_type || null,
           ]
         );
 
