@@ -204,10 +204,15 @@ export async function POST(request) {
       `);
 
       // Determine owner_id - use authenticated user's ID if not provided
-      const finalOwnerId = owner_id || userId || 'internal';
+      // Non-admin users: always use their own userId (ignore provided owner_id)
+      // Admins: can set owner_id to any value, default to userId if not provided
+      const finalOwnerId = isAdmin 
+        ? (owner_id || userId || 'internal')
+        : (userId || 'internal');
       
-      // Non-admin users cannot set owner_id to someone else
-      if (!isAdmin && owner_id && owner_id !== userId) {
+      // Non-admin users cannot explicitly set owner_id to someone else's ID
+      // (This check is now redundant since we override it above, but kept for clarity)
+      if (!isAdmin && owner_id && owner_id !== userId && owner_id !== 'internal') {
         return NextResponse.json({ 
           error: 'Forbidden - You cannot create templates for other users' 
         }, { status: 403 });
