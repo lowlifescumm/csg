@@ -371,15 +371,35 @@ export async function POST(request) {
       // Use HTML template rendering with renderFromTemplate
       console.log('[Test Report] Using template engine (renderFromTemplate)');
       
-      // Validate templateId is required
-      if (!templateId) {
-        return NextResponse.json(
-          { 
-            error: 'templateId required when using engine=template',
-            hint: 'Add ?templateId=<id> to the URL'
-          },
-          { status: 400 }
-        );
+      // If templateId not provided, try to get default template for this report type
+      let finalTemplateId = templateId;
+      if (!finalTemplateId) {
+        try {
+          const defaultTemplate = await getDefaultTemplate(report_type.toUpperCase());
+          if (defaultTemplate) {
+            finalTemplateId = defaultTemplate.id;
+            console.log('[Test Report] Using default template:', finalTemplateId);
+          } else {
+            return NextResponse.json(
+              {
+                error: 'templateId required when using engine=template',
+                hint: 'Add ?templateId=<id> to the URL, or create a default template for this report type',
+                suggestion: 'GET /api/admin/templates to see available templates'
+              },
+              { status: 400 }
+            );
+          }
+        } catch (error) {
+          console.error('[Test Report] Error fetching default template:', error);
+          return NextResponse.json(
+            {
+              error: 'templateId required when using engine=template',
+              hint: 'Add ?templateId=<id> to the URL',
+              suggestion: 'GET /api/admin/templates to see available templates'
+            },
+            { status: 400 }
+          );
+        }
       }
       
       // 1) Hydrate data (already done above in calculatedData and sampleData)
@@ -403,8 +423,8 @@ export async function POST(request) {
       // Flatten data for template (using existing flattenReportData if needed, or use hydration directly)
       const flattenedData = flattenReportData(hydration);
       
-      // Get template from database
-      const template = await getTemplate(templateId, report_type.toUpperCase());
+      // Get template from database (use finalTemplateId which may be default)
+      const template = await getTemplate(finalTemplateId, report_type.toUpperCase());
       if (!template) {
         return NextResponse.json(
           { error: `Template not found: ${templateId}` },
@@ -418,7 +438,7 @@ export async function POST(request) {
         : template.template_json;
       
       // Generate cache key for identical payloads (skip if regenerate=true)
-      const cacheKey = regenerate ? null : generateCacheKey(templateId, flattenedData);
+      const cacheKey = regenerate ? null : generateCacheKey(finalTemplateId, flattenedData);
       
       // Render HTML from template (with caching and image inlining)
       const html = await renderFromTemplate(templateJson, flattenedData, {
@@ -439,9 +459,10 @@ export async function POST(request) {
       return NextResponse.json({
         url: pdfUrl,
         engine: 'template',
-        template_id: templateId,
+        template_id: finalTemplateId,
         template_name: template.name || 'Unknown',
         report_type,
+        used_default: !templateId, // Indicate if default template was used
       });
     } else {
       // Use default Puppeteer pipeline (existing behavior)
