@@ -96,6 +96,9 @@ export async function POST(request) {
 
     const isAdmin = authResult.role === 'admin';
     const userId = authResult.userId?.toString();
+    
+    // Allow any authenticated user to create templates (not just admins)
+    // Admins can create templates for others, regular users can only create for themselves
 
     const body = await request.json();
     const { name, template_json, report_type, owner_id, preview_html, id: templateId } = body;
