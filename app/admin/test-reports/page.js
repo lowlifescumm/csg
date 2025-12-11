@@ -281,6 +281,31 @@ export default function TestReportsPage() {
   const [templates, setTemplates] = useState([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
 
+  // Fetch templates when component mounts or engine changes
+  const fetchTemplates = async () => {
+    if (engine === 'template') {
+      setLoadingTemplates(true);
+      try {
+        const response = await fetch('/api/admin/templates');
+        const data = await response.json();
+        if (response.ok && data.templates) {
+          setTemplates(data.templates);
+        }
+      } catch (error) {
+        console.error('Failed to fetch templates:', error);
+      } finally {
+        setLoadingTemplates(false);
+      }
+    }
+  };
+
+  // Load templates when engine is set to 'template'
+  useEffect(() => {
+    if (engine === 'template') {
+      fetchTemplates();
+    }
+  }, [engine]);
+
   const handleTestReport = async (reportType) => {
     setTesting(reportType);
     setResult(null);
