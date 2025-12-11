@@ -1,15 +1,22 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { generateReportContent, generatePDF, generatePremiumReport } from '@/lib/pdf-generator.js';
+import { generateReportContent, generatePDF, generatePremiumReport, generatePdfFromHtml, uploadPdfToCloudinary } from '@/lib/pdf-generator.js';
 import { hydrateReportData, buildNatalChartPayload } from '@/src/services/chartHydrator';
+import { renderTemplatePDF, getDefaultTemplate, getTemplate, renderFromTemplate, flattenReportData } from '@/lib/template-renderer.js';
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter.js';
+import { generateCacheKey } from '@/lib/template-cache.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
  * Admin endpoint to test report generation
- * POST /api/admin/test-report
+ * POST /api/admin/test-report?engine=puppeteer|template&templateId=<id>
+ * 
+ * Query Parameters:
+ *   - engine: 'puppeteer' (default) or 'template' to use pdfme templates
+ *   - templateId: Template ID or slug (required if engine=template)
  * 
  * Body: {
  *   report_type: 'tarot' | 'moon_reading' | 'birth_chart' | 'compatibility' | etc.
@@ -20,6 +27,35 @@ export async function POST(request) {
   try {
     // Authenticate user - allow admin or authenticated users for testing
     const authResult = await getAuthenticatedUser(request.cookies, authOptions);
+    const isAuthenticated = !!authResult;
+    const isAdmin = authResult?.role === 'admin';
+    const userId = authResult?.userId?.toString() || null;
+    
+    // Rate limiting for unauthenticated requests
+    if (!isAuthenticated) {
+      const clientId = getClientIdentifier(request, userId);
+      const rateLimit = checkRateLimit(clientId, 5, 60000); // 5 requests per minute for unauthenticated
+      
+      if (!rateLimit.allowed) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded',
+            message: 'Too many requests. Please authenticate or wait before trying again.',
+            retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000),
+          },
+          { 
+            status: 429,
+            headers: {
+              'Retry-After': Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString(),
+              'X-RateLimit-Limit': '5',
+              'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+              'X-RateLimit-Reset': rateLimit.resetAt.toString(),
+            },
+          }
+        );
+      }
+    }
+    
     if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -29,6 +65,20 @@ export async function POST(request) {
     // if (authResult.role !== 'admin') {
     //   return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
     // }
+
+    // Get query parameters for engine selection
+    // Priority: 1. Query param ?engine=... 2. Environment variable REPORT_ENGINE 3. Default 'puppeteer'
+    const { searchParams } = new URL(request.url);
+    const engineOverride = searchParams.get('engine');
+    const defaultEngine = process.env.REPORT_ENGINE || 'puppeteer';
+    const engine = engineOverride || defaultEngine;
+    const templateId = searchParams.get('templateId');
+    
+    console.log('[Test Report] Engine selection:', {
+      override: engineOverride,
+      envDefault: defaultEngine,
+      selected: engine,
+    });
 
     const body = await request.json();
     const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
@@ -314,18 +364,109 @@ export async function POST(request) {
 
     let result;
 
-    // Handle premium reports
-    if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
-      const tier = report_type.replace('premium-', '').toUpperCase();
-      result = await generatePremiumReport(tier, sampleData, progressCallback);
-    } else {
-      // Regular reports
-      result = await generateReportContent(report_type, sampleData, progressCallback);
+    // ============================================
+    // ENGINE SELECTION: puppeteer (default) or template (HTML template rendering)
+    // ============================================
+    if (engine === 'template') {
+      // Use HTML template rendering with renderFromTemplate
+      console.log('[Test Report] Using template engine (renderFromTemplate)');
       
-      if (generate_html || generate_pdf) {
-        const pdfResult = await generatePDF(report_type, sampleData, result);
-        result.html = pdfResult.html;
-        result.pdfUrl = pdfResult.pdfUrl;
+      // Validate templateId is required
+      if (!templateId) {
+        return NextResponse.json(
+          { 
+            error: 'templateId required when using engine=template',
+            hint: 'Add ?templateId=<id> to the URL'
+          },
+          { status: 400 }
+        );
+      }
+      
+      // 1) Hydrate data (already done above in calculatedData and sampleData)
+      // 2) Generate content via existing OpenAI step
+      let contentResult;
+      if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+        const tier = report_type.replace('premium-', '').toUpperCase();
+        contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
+      } else {
+        contentResult = await generateReportContent(report_type, sampleData, progressCallback);
+      }
+      
+      // Merge content into sampleData for template rendering
+      const hydration = {
+        ...sampleData,
+        ...calculatedData,
+        content: contentResult.content,
+        sections: contentResult.sections,
+      };
+      
+      // Flatten data for template (using existing flattenReportData if needed, or use hydration directly)
+      const flattenedData = flattenReportData(hydration);
+      
+      // Get template from database
+      const template = await getTemplate(templateId, report_type.toUpperCase());
+      if (!template) {
+        return NextResponse.json(
+          { error: `Template not found: ${templateId}` },
+          { status: 404 }
+        );
+      }
+      
+      // Parse template_json if it's a string
+      const templateJson = typeof template.template_json === 'string'
+        ? JSON.parse(template.template_json)
+        : template.template_json;
+      
+      // Generate cache key for identical payloads (skip if regenerate=true)
+      const cacheKey = regenerate ? null : generateCacheKey(templateId, flattenedData);
+      
+      // Render HTML from template (with caching and image inlining)
+      const html = await renderFromTemplate(templateJson, flattenedData, {
+        cacheKey,
+        inlineImages: true, // Inline external images to base64
+      });
+      
+      // Generate PDF from HTML using Puppeteer
+      const pdfBuffer = await generatePdfFromHtml(html);
+      
+      // Upload to Cloudinary
+      const pdfUrl = await uploadPdfToCloudinary(pdfBuffer, report_type, {
+        folder: 'reports',
+        public_id: `report-${report_type}-template-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      });
+      
+      // Return simplified response matching expected format
+      return NextResponse.json({
+        url: pdfUrl,
+        engine: 'template',
+        template_id: templateId,
+        template_name: template.name || 'Unknown',
+        report_type,
+      });
+    } else {
+      // Use default Puppeteer pipeline (existing behavior)
+      console.log('[Test Report] Using Puppeteer engine (default)');
+      
+      // Handle premium reports
+      if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+        const tier = report_type.replace('premium-', '').toUpperCase();
+        result = await generatePremiumReport(tier, sampleData, progressCallback);
+      } else {
+        // Regular reports
+        result = await generateReportContent(report_type, sampleData, progressCallback);
+        
+        if (generate_html || generate_pdf) {
+          const pdfResult = await generatePDF(report_type, sampleData, result);
+          result.html = pdfResult.html;
+          result.pdfUrl = pdfResult.pdfUrl;
+        }
+      }
+      
+      // Add engine metadata
+      if (result.metadata) {
+        result.metadata.engine = 'puppeteer';
+      } else {
+        result.metadata = { engine: 'puppeteer' };
       }
     }
 

@@ -14,7 +14,8 @@ import {
   Calendar,
   LogOut,
   FileText,
-  Settings
+  Settings,
+  Layout
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -195,6 +196,17 @@ export default function AdminDashboard() {
               <div className="text-left">
                 <p className="font-semibold">Test Reports</p>
                 <p className="text-sm opacity-90">Generate and verify report quality</p>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => router.push('/admin/report-templates')}
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-xl hover:from-violet-600 hover:to-purple-600 smooth-transition hover:scale-[1.02] apple-shadow"
+            >
+              <Layout className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">Report Templates</p>
+                <p className="text-sm opacity-90">Manage PDF templates</p>
               </div>
             </button>
           </div>
