@@ -239,18 +239,19 @@ export async function POST(request) {
 
         const template = result.rows[0];
 
-      console.log('[Admin Templates] Template saved:', {
-        id: template.id,
-        name: template.name,
-      });
+        console.log('[Admin Templates] Template saved:', {
+          id: template.id,
+          name: template.name,
+        });
 
-      return NextResponse.json({
-        success: true,
-        id: template.id,
-        name: template.name,
-        created_at: template.created_at,
-        message: 'Template saved successfully',
-      });
+        return NextResponse.json({
+          success: true,
+          id: template.id,
+          name: template.name,
+          created_at: template.created_at,
+          message: 'Template saved successfully',
+        });
+      }
     } finally {
       client.release();
     }
