@@ -7,7 +7,7 @@ import { sanitizeTemplate, validateTemplateSize } from '@/lib/template-sanitizer
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const MAX_TEMPLATE_SIZE_KB = 500;
+const MAX_TEMPLATE_SIZE_KB = 1000; // Increased to 1MB to accommodate larger templates
 
 /**
  * GET /api/admin/templates
