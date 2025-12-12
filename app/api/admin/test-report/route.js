@@ -441,10 +441,17 @@ export async function POST(request) {
       const cacheKey = regenerate ? null : generateCacheKey(finalTemplateId, flattenedData);
       
       // Render HTML from template (with caching and image inlining)
+      console.log('[Test Report] Rendering template with data keys:', Object.keys(flattenedData).slice(0, 20));
       const html = await renderFromTemplate(templateJson, flattenedData, {
         cacheKey,
         inlineImages: true, // Inline external images to base64
       });
+      
+      console.log('[Test Report] Generated HTML length:', html.length, 'characters');
+      if (html.length < 1000) {
+        console.warn('[Test Report] WARNING: HTML is very short, template might not be rendering correctly');
+        console.log('[Test Report] HTML preview (first 1000 chars):', html.substring(0, 1000));
+      }
       
       // Generate PDF from HTML using Puppeteer
       const pdfBuffer = await generatePdfFromHtml(html);
