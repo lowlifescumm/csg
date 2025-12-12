@@ -412,12 +412,52 @@ export async function POST(request) {
         contentResult = await generateReportContent(report_type, sampleData, progressCallback);
       }
       
+      // Extract chart SVG from sections if available
+      let chartSvgFromSection = null;
+      let matrixChartSvgFromSection = null;
+      
+      if (contentResult.sections) {
+        // Find birth_chart section and extract chart SVG
+        const birthChartSection = contentResult.sections.find(s => s.type === 'birth_chart');
+        if (birthChartSection?.chartImage) {
+          // Try to extract SVG from data URL
+          if (birthChartSection.chartImage.startsWith('data:image/svg+xml')) {
+            const base64Match = birthChartSection.chartImage.match(/base64,(.+)/);
+            if (base64Match) {
+              try {
+                chartSvgFromSection = Buffer.from(base64Match[1], 'base64').toString('utf-8');
+                // Ensure xmlns is present
+                if (chartSvgFromSection && !chartSvgFromSection.includes('xmlns=')) {
+                  chartSvgFromSection = chartSvgFromSection.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+                }
+              } catch (e) {
+                console.warn('[Test Report] Could not decode chart SVG from data URL');
+              }
+            }
+          }
+        }
+        
+        // Find matrix section and extract chart SVG
+        const matrixSection = contentResult.sections.find(s => s.type === 'matrix');
+        if (matrixSection?.matrixChartSVG) {
+          matrixChartSvgFromSection = matrixSection.matrixChartSVG;
+          // Ensure xmlns is present
+          if (matrixChartSvgFromSection && !matrixChartSvgFromSection.includes('xmlns=')) {
+            matrixChartSvgFromSection = matrixChartSvgFromSection.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+          }
+        }
+      }
+      
       // Merge content into sampleData for template rendering
       const hydration = {
         ...sampleData,
         ...calculatedData,
         content: contentResult.content,
         sections: contentResult.sections,
+        // Add chart SVGs directly to hydration
+        chartSvg: chartSvgFromSection,
+        chartSVG: chartSvgFromSection,
+        matrixChartSVG: matrixChartSvgFromSection,
       };
       
       // Flatten data for template (using existing flattenReportData if needed, or use hydration directly)
