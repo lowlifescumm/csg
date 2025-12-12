@@ -5,7 +5,7 @@ import { generateReportContent, generatePDF, generatePremiumReport, generatePdfF
 import { hydrateReportData, buildNatalChartPayload } from '@/src/services/chartHydrator';
 import { renderTemplatePDF, getDefaultTemplate, getTemplate, renderFromTemplate, flattenReportData } from '@/lib/template-renderer.js';
 import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter.js';
-import { generateCacheKey } from '@/lib/template-cache.js';
+import { generateCacheKey, getCachedHtml, setCachedHtml } from '@/lib/template-cache.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
