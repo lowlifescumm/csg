@@ -239,7 +239,7 @@ export default function HumanDesignChart({
 
   // Render channels between gates
   const renderChannels = () => {
-    const channels: JSX.Element[] = [];
+    const channels: React.ReactElement[] = [];
 
     // All possible channels (from hdCalculator)
     const allChannels = [
