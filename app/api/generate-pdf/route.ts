@@ -149,7 +149,9 @@ export async function POST(request: NextRequest) {
       await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
 
       // CRITICAL: Wait for fonts to load
-      await page.evaluate(() => document.fonts.ready);
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+      });
       // Additional wait to ensure fonts are rendered
       await new Promise(resolve => setTimeout(resolve, 1000));
 
