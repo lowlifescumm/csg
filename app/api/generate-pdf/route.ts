@@ -4,9 +4,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import React from 'react';
-import ReactDOMServer from 'react-dom/server';
-import { MasterReport } from '@/components/pdf/MasterReport';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -62,6 +59,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Dynamically import React and ReactDOMServer to avoid Next.js build restrictions
+    const React = await import('react');
+    const ReactDOMServer = await import('react-dom/server');
+    const { default: MasterReport } = await import('@/components/pdf/MasterReport');
+    
     // Render React component to HTML
     const htmlContent = ReactDOMServer.renderToStaticMarkup(
       React.createElement(MasterReport, { userData })
