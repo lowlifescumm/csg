@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import '../styles/PrintReport.css';
+// CSS is inlined in the HTML document by premium-pdf-generator.js
+// No need to import here as styles are injected server-side
 
 interface UserData {
   name: string;
