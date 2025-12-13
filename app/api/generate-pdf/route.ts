@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
     // Dynamically import React and ReactDOMServer to avoid Next.js build restrictions
     const React = await import('react');
     const ReactDOMServer = await import('react-dom/server');
-    const { default: MasterReport } = await import('@/components/pdf/MasterReport');
+    // Use relative path for dynamic import to avoid TypeScript module resolution issues
+    const { default: MasterReport } = await import('../../components/pdf/MasterReport');
     
     // Render React component to HTML
     const htmlContent = ReactDOMServer.renderToStaticMarkup(
