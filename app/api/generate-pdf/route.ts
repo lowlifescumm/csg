@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
       await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
 
       // CRITICAL: Wait for fonts to load
+      // @ts-ignore - TypeScript has issues with evaluate overloads for async functions
       await page.evaluate(async () => {
         await document.fonts.ready;
       });
