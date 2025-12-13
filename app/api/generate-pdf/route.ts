@@ -60,12 +60,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Dynamically import React and ReactDOMServer to avoid Next.js build restrictions
+    // @ts-ignore - react-dom/server types are included in @types/react-dom but TypeScript can't resolve dynamically
     const React = await import('react');
-    // Type assertion for react-dom/server to handle TypeScript strict mode
-    const ReactDOMServer = await import('react-dom/server') as typeof import('react-dom/server');
-    // Use path alias with type assertion to avoid TypeScript module resolution issues
-    const MasterReportModule = await import('@/components/pdf/MasterReport') as { default: React.ComponentType<{ userData: any }> };
-    const MasterReport = MasterReportModule.default;
+    // @ts-ignore - react-dom/server types are included in @types/react-dom but TypeScript can't resolve dynamically
+    const ReactDOMServer = await import('react-dom/server');
+    // Use correct relative path (3 levels up from app/api/generate-pdf to root, then into components)
+    // @ts-ignore - Dynamic import with path alias requires runtime resolution
+    const { default: MasterReport } = await import('../../../components/pdf/MasterReport');
     
     // Render React component to HTML
     const htmlContent = ReactDOMServer.renderToStaticMarkup(
