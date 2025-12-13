@@ -318,7 +318,18 @@ export default function TestReportsPage() {
         parsedCustomData = customDataMap[reportType];
       }
 
-      const response = await fetch("/api/admin/test-report", {
+      // Build query params for engine selection
+      const queryParams = new URLSearchParams();
+      if (engine === 'template') {
+        queryParams.set('engine', 'template');
+        if (templateId) {
+          queryParams.set('templateId', templateId);
+        }
+      } else if (engine === 'premium') {
+        queryParams.set('engine', 'premium');
+      }
+
+      const response = await fetch(`/api/admin/test-report?${queryParams.toString()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1009,11 +1020,14 @@ export default function TestReportsPage() {
               >
                 <option value="puppeteer">Puppeteer (Default HTML)</option>
                 <option value="template">Template Engine (pdfme)</option>
+                <option value="premium">Premium E-book Generator (React + Print CSS)</option>
               </select>
               <p className="mt-1 text-sm text-gray-500">
                 {engine === 'puppeteer' 
                   ? 'Uses the standard HTML-to-PDF pipeline'
-                  : 'Uses WYSIWYG templates from the template library'}
+                  : engine === 'template'
+                  ? 'Uses WYSIWYG templates from the template library'
+                  : 'Uses React component with premium print styling'}
               </p>
             </div>
             

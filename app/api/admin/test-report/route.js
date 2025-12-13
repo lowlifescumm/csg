@@ -73,11 +73,13 @@ export async function POST(request) {
     const defaultEngine = process.env.REPORT_ENGINE || 'puppeteer';
     const engine = engineOverride || defaultEngine;
     const templateId = searchParams.get('templateId');
+    const usePremiumGenerator = searchParams.get('premium') === 'true' || engine === 'premium';
     
     console.log('[Test Report] Engine selection:', {
       override: engineOverride,
       envDefault: defaultEngine,
       selected: engine,
+      usePremiumGenerator,
     });
 
     const body = await request.json();
@@ -510,6 +512,88 @@ export async function POST(request) {
         template_name: template.name || 'Unknown',
         report_type,
         used_default: !templateId, // Indicate if default template was used
+      });
+    } else if (engine === 'premium') {
+      // Use new premium e-book quality PDF generator (React component)
+      console.log('[Test Report] Using Premium E-book PDF generator');
+      
+      // Generate premium report content first
+      let contentResult;
+      if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+        const tier = report_type.replace('premium-', '').toUpperCase();
+        contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
+      } else {
+        contentResult = await generateReportContent(report_type, sampleData, progressCallback);
+      }
+      
+      // Extract chart SVG from sections
+      let birthChartSvg = null;
+      let compatibilityChartSvg = null;
+      
+      if (contentResult.sections) {
+        const birthChartSection = contentResult.sections.find(s => s.type === 'birth_chart');
+        if (birthChartSection?.chartImage) {
+          if (birthChartSection.chartImage.startsWith('data:image/svg+xml')) {
+            const base64Match = birthChartSection.chartImage.match(/base64,(.+)/);
+            if (base64Match) {
+              try {
+                birthChartSvg = Buffer.from(base64Match[1], 'base64').toString('utf-8');
+                if (!birthChartSvg.includes('xmlns=')) {
+                  birthChartSvg = birthChartSvg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+                }
+              } catch (e) {
+                console.warn('[Test Report] Could not decode birth chart SVG');
+              }
+            }
+          }
+        }
+        
+        const matrixSection = contentResult.sections.find(s => s.type === 'matrix');
+        if (matrixSection?.matrixChartSVG) {
+          compatibilityChartSvg = matrixSection.matrixChartSVG;
+          if (!compatibilityChartSvg.includes('xmlns=')) {
+            compatibilityChartSvg = compatibilityChartSvg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+          }
+        }
+      }
+      
+      // Prepare userData for premium generator
+      const userData = {
+        name: sampleData.name || hydrationInput.name || 'Test User',
+        birthDate: sampleData.birth_date || hydrationInput.birth_date || '',
+        birthTime: sampleData.birth_time || hydrationInput.birth_time || '',
+        location: sampleData.location || hydrationInput.location || '',
+        sunSign: calculatedData?.user?.sunSign || calculatedData?.rawChart?.sun?.sign,
+        moonSign: calculatedData?.user?.moonSign || calculatedData?.rawChart?.moon?.sign,
+        risingSign: calculatedData?.user?.risingSign || calculatedData?.rawChart?.rising?.sign || calculatedData?.rawChart?.ascendant?.sign,
+        birthChartSvg: birthChartSvg,
+        compatibilityChartSvg: compatibilityChartSvg,
+        sections: contentResult.sections?.map(s => ({
+          type: s.type,
+          title: s.title,
+          content: typeof s.content === 'string' ? s.content : (s.content?.content || ''),
+        })) || [],
+        compatibilityScores: sampleData.matrix_scores || sampleData.chartData?.matrix_scores || calculatedData?.partner?.matrix_scores,
+      };
+      
+      // Import premium PDF generator directly instead of internal fetch
+      // This avoids network calls and works better in serverless environments
+      const { generatePremiumPdf } = await import('@/lib/premium-pdf-generator.js');
+      
+      // Generate PDF directly using the premium generator
+      const pdfBuffer = await generatePremiumPdf(userData);
+      
+      // Upload to Cloudinary
+      const pdfUrl = await uploadPdfToCloudinary(pdfBuffer, report_type, {
+        folder: 'reports',
+        public_id: `report-${report_type}-premium-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      });
+      
+      return NextResponse.json({
+        url: pdfUrl,
+        engine: 'premium',
+        report_type,
+        generated_at: new Date().toISOString(),
       });
     } else {
       // Use default Puppeteer pipeline (existing behavior)
