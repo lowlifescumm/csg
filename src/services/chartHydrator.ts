@@ -605,8 +605,8 @@ function calculateRelationshipMatrix(
     const neptuneAspects = synastryAspects.filter(
       (a) => a.person1Planet === "Neptune" || a.person2Planet === "Neptune"
     );
-    const user12thHouse = userChart.houses?.[12];
-    const partner12thHouse = partnerChart.houses?.[12];
+    const user12thHouse = (userChart.houses as any)?.[12];
+    const partner12thHouse = (partnerChart.houses as any)?.[12];
     const has12thHouseActivity = Boolean(user12thHouse || partner12thHouse);
 
     neptuneAspects.forEach((aspect) => {
