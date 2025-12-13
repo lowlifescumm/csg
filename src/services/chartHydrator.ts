@@ -417,7 +417,7 @@ function calculateCurrentMoonPhase(): {
   if (phaseAngle < 0) phaseAngle += 360;
 
   // Get illumination percentage
-  const illumination = Astronomy.Illumination('Moon', time);
+  const illumination = Astronomy.Illumination(Body.Moon, time);
   const illuminationPercent = Math.round(illumination.phase_fraction * 100);
 
   // Determine phase name
