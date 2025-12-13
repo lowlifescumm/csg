@@ -182,8 +182,8 @@ export async function POST(request: NextRequest) {
 
       await browser.close();
 
-      // Return PDF as response
-      return new NextResponse(pdfBuffer, {
+      // Return PDF as response (convert Buffer to acceptable type)
+      return new NextResponse(pdfBuffer as any, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="master-report-${userData.name.replace(/\s+/g, '-').toLowerCase()}.pdf"`,
