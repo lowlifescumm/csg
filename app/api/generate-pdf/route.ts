@@ -114,14 +114,21 @@ export async function POST(request: NextRequest) {
     // Use Chromium executable path if available (for production/Render.com)
     if (chromium) {
       try {
+        const chromiumAny = chromium as any;
         // @ts-ignore - setGraphicsMode may not exist in all versions of @sparticuz/chromium
-        if (typeof (chromium as any).setGraphicsMode === 'function') {
-          (chromium as any).setGraphicsMode(false);
+        if (typeof chromiumAny.setGraphicsMode === 'function') {
+          chromiumAny.setGraphicsMode(false);
         }
-        launchOptions.executablePath = await chromium.executablePath();
-        launchOptions.args = chromium.args;
-        launchOptions.defaultViewport = chromium.defaultViewport;
-        launchOptions.headless = chromium.headless;
+        // @ts-ignore - executablePath may be a function or property depending on chromium version
+        const executablePath = typeof chromiumAny.executablePath === 'function' 
+          ? await chromiumAny.executablePath() 
+          : chromiumAny.executablePath;
+        if (executablePath) {
+          launchOptions.executablePath = executablePath;
+          launchOptions.args = chromiumAny.args || launchOptions.args;
+          launchOptions.defaultViewport = chromiumAny.defaultViewport || launchOptions.defaultViewport;
+          launchOptions.headless = chromiumAny.headless !== false;
+        }
       } catch (error) {
         console.warn('[PDF Generator] Chromium executablePath failed, using system Chrome:', error);
       }
