@@ -1330,11 +1330,14 @@ async function getCurrentTransitPositions(date: Date = new Date()): Promise<Arra
   });
 
   // Other planets
+  const planetBodies = [Body.Moon, Body.Mercury, Body.Venus, Body.Mars, Body.Jupiter, Body.Saturn, Body.Uranus, Body.Neptune, Body.Pluto];
   const planetNames = ['Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
   
-  for (const planetName of planetNames) {
+  for (let i = 0; i < planetBodies.length; i++) {
+    const body = planetBodies[i];
+    const planetName = planetNames[i];
     try {
-      const geoVector = Astronomy.GeoVector(planetName, time, false);
+      const geoVector = Astronomy.GeoVector(body, time, false);
       const ecliptic = Astronomy.Ecliptic(geoVector);
       planets.push({
         planet: planetName,
