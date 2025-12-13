@@ -2,6 +2,7 @@ import { calculateBirthChart, degreesToSign } from "@/lib/astrology";
 import { calculateSynastryScore, calculateSynastryAspects } from "@/lib/compatibility";
 import { calculateBodyGraph } from "@/src/utils/humanDesign/hdCalculator";
 import * as Astronomy from 'astronomy-engine';
+import { Body } from 'astronomy-engine';
 
 // ---------------------------------------------------------------------------
 // Aspect calculation helper (adds explicit planetary relationships)
@@ -402,8 +403,8 @@ function calculateCurrentMoonPhase(): {
   const time = Astronomy.MakeTime(now);
 
   // Get Sun and Moon positions
-  const sunVec = Astronomy.GeoVector('Sun', time, true);
-  const moonVec = Astronomy.GeoVector('Moon', time, true);
+  const sunVec = Astronomy.GeoVector(Body.Sun, time, true);
+  const moonVec = Astronomy.GeoVector(Body.Moon, time, true);
 
   const sunEcl = Astronomy.Ecliptic(sunVec);
   const moonEcl = Astronomy.Ecliptic(moonVec);
