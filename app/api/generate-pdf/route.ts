@@ -114,8 +114,9 @@ export async function POST(request: NextRequest) {
     // Use Chromium executable path if available (for production/Render.com)
     if (chromium) {
       try {
-        if (typeof chromium.setGraphicsMode === 'function') {
-          chromium.setGraphicsMode(false);
+        // @ts-ignore - setGraphicsMode may not exist in all versions of @sparticuz/chromium
+        if (typeof (chromium as any).setGraphicsMode === 'function') {
+          (chromium as any).setGraphicsMode(false);
         }
         launchOptions.executablePath = await chromium.executablePath();
         launchOptions.args = chromium.args;
