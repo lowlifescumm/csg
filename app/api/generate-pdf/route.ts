@@ -67,6 +67,14 @@ export async function POST(request: NextRequest) {
       React.createElement(MasterReport, { userData })
     );
 
+    // Read CSS file
+    const fs = await import('fs');
+    const path = await import('path');
+    const cssPath = path.join(process.cwd(), 'styles', 'PrintReport.css');
+    const cssContent = fs.existsSync(cssPath)
+      ? fs.readFileSync(cssPath, 'utf-8')
+      : '/* CSS file not found */';
+
     // Create full HTML document with styles
     const fullHtml = `
 <!DOCTYPE html>
@@ -79,12 +87,7 @@ export async function POST(request: NextRequest) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    ${await import('fs').then((fs) =>
-      fs.promises.readFile(
-        require.resolve('@/styles/PrintReport.css'),
-        'utf-8'
-      )
-    )}
+    ${cssContent}
   </style>
 </head>
 <body>
