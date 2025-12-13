@@ -703,8 +703,8 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   const userChart: CalculatedChartData = {
     input,
     coordinates,
-    sunSign: chart.planets?.sun?.sign ?? "Unknown",
-    moonSign: chart.planets?.moon?.sign ?? "Unknown",
+    sunSign: (chart.planets as any)?.sun?.sign ?? "Unknown",
+    moonSign: (chart.planets as any)?.moon?.sign ?? "Unknown",
     risingSign: chart.ascendant ?? houses?.[1]?.sign ?? "Unknown",
     northNode,
     southNode,
