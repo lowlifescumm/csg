@@ -19,6 +19,7 @@ interface UserData {
   compatibilityChartSvg?: string;
   sections?: ReportSection[];
   compatibilityScores?: CompatibilityScores;
+  base64BackgroundImage?: string; // Base64 string for watermark/cover background
 }
 
 interface ReportSection {
@@ -52,6 +53,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
     compatibilityChartSvg,
     sections = [],
     compatibilityScores,
+    base64BackgroundImage,
   } = userData;
 
   // Helper to render section content
@@ -71,8 +73,12 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
     return sections.find((s) => s.type === type);
   };
 
+  // Find sections by type (in the order they will be rendered)
   const birthChartSection = getSectionByType('birth_chart');
+  const coreIdentitySection = getSectionByType('core_identity') || getSectionByType('identity') || getSectionByType('synthesis');
+  const planetaryAnalysisSection = getSectionByType('planetary_analysis') || getSectionByType('planetary') || getSectionByType('planets');
   const compatibilitySection = getSectionByType('compatibility');
+  const relationshipMatrixSection = getSectionByType('relationship_matrix') || getSectionByType('matrix');
   const transitSection = getSectionByType('transit');
   const destinySection = getSectionByType('destiny_path');
   const karmicSection = getSectionByType('karmic');
@@ -80,8 +86,29 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
 
   return (
     <div className="master-report">
-      {/* Cover Page */}
-      <div className="cover-page">
+      {/* Watermark for all pages (faded) */}
+      {base64BackgroundImage && (
+        <div 
+          className="watermark" 
+          style={{
+            backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
+            backgroundSize: '80%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+      )}
+
+      {/* Cover Page - Title Page with full opacity background */}
+      <div 
+        className="cover-page"
+        style={base64BackgroundImage ? {
+          backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        } : {}}
+      >
         <h1 className="cover-title">Cosmic Spiritual Guide</h1>
         <h2 className="cover-subtitle">Master Report</h2>
         <div className="metadata" style={{ marginTop: '20mm' }}>
@@ -96,24 +123,43 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       </div>
 
-      {/* Birth Chart Section */}
-      {birthChartSection && (
+      {/* Birth Chart Section - ISOLATED ON PAGE 2 */}
+      {birthChartSvg && (
+        <div className="birth-chart-isolated">
+          <div className="chart-container chart-page-only">
+            <div dangerouslySetInnerHTML={{ __html: birthChartSvg }} />
+          </div>
+        </div>
+      )}
+
+      {/* Core Identity Synthesis */}
+      {coreIdentitySection && (
         <div className="content-section">
-          <h2 className="section-header">Your Natal Chart</h2>
-          <p style={{ textAlign: 'center', marginBottom: '10mm' }}>
-            A map of the heavens at the exact moment you took your first breath.
-          </p>
+          <h2 className="section-header">{coreIdentitySection.title}</h2>
+          <div className="analysis-block">
+            <div dangerouslySetInnerHTML={{ __html: coreIdentitySection.content }} />
+          </div>
+        </div>
+      )}
 
-          {birthChartSvg && (
-            <div className="chart-container">
-              <div dangerouslySetInnerHTML={{ __html: birthChartSvg }} />
-            </div>
-          )}
+      {/* Planetary Analysis */}
+      {planetaryAnalysisSection && (
+        <div className="content-section">
+          <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
+          <div className="analysis-block">
+            <div dangerouslySetInnerHTML={{ __html: planetaryAnalysisSection.content }} />
+          </div>
+        </div>
+      )}
 
+      {/* Birth Chart Analysis (if separate from isolated chart) */}
+      {birthChartSection && birthChartSection.type === 'birth_chart' && (
+        <div className="content-section">
+          <h2 className="section-header">{birthChartSection.title || 'Your Natal Chart'}</h2>
           {(sunSign || moonSign || risingSign) && (
             <div
               className="metadata"
-              style={{ textAlign: 'center', marginTop: '10mm' }}
+              style={{ textAlign: 'center', marginBottom: '10mm' }}
             >
               <p>
                 <strong>Sun:</strong> {sunSign || 'N/A'} •{' '}
@@ -122,89 +168,175 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
               </p>
             </div>
           )}
-
-          <div className="analysis-block" style={{ marginTop: '10mm' }}>
+          <div className="analysis-block">
             <div dangerouslySetInnerHTML={{ __html: birthChartSection.content }} />
           </div>
         </div>
       )}
 
-      {/* Compatibility Section */}
-      {compatibilitySection && (
+      {/* Relationship Matrix & Compatibility */}
+      {(relationshipMatrixSection || compatibilitySection || compatibilityChartSvg || compatibilityScores) && (
         <div className="content-section">
-          <h2 className="section-header">Compatibility Analysis</h2>
-
-          {compatibilityChartSvg && (
-            <div className="chart-container">
-              <div dangerouslySetInnerHTML={{ __html: compatibilityChartSvg }} />
-            </div>
+          {relationshipMatrixSection && (
+            <>
+              <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
+              <div className="analysis-block">
+                <div dangerouslySetInnerHTML={{ __html: relationshipMatrixSection.content }} />
+              </div>
+            </>
           )}
 
-          {compatibilityScores && (
-            <table style={{ marginTop: '10mm' }}>
-              <thead>
-                <tr>
-                  <th>Dimension</th>
-                  <th style={{ textAlign: 'right' }}>Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {compatibilityScores.emotional !== undefined && (
-                  <tr>
-                    <td>Emotional Connection</td>
-                    <td style={{ textAlign: 'right' }}>
-                      {compatibilityScores.emotional}%
-                    </td>
-                  </tr>
-                )}
-                {compatibilityScores.communication !== undefined && (
-                  <tr>
-                    <td>Communication</td>
-                    <td style={{ textAlign: 'right' }}>
-                      {compatibilityScores.communication}%
-                    </td>
-                  </tr>
-                )}
-                {compatibilityScores.spiritual !== undefined && (
-                  <tr>
-                    <td>Spiritual Connection</td>
-                    <td style={{ textAlign: 'right' }}>
-                      {compatibilityScores.spiritual}%
-                    </td>
-                  </tr>
-                )}
-                {compatibilityScores.stability !== undefined && (
-                  <tr>
-                    <td>Stability</td>
-                    <td style={{ textAlign: 'right' }}>
-                      {compatibilityScores.stability}%
-                    </td>
-                  </tr>
-                )}
-                {compatibilityScores.physical !== undefined && (
-                  <tr>
-                    <td>Physical Chemistry</td>
-                    <td style={{ textAlign: 'right' }}>
-                      {compatibilityScores.physical}%
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          {compatibilitySection && (
+            <>
+              <h2 className="section-header">{compatibilitySection.title || 'Compatibility Analysis'}</h2>
+
+              {compatibilityChartSvg && (
+                <div className="chart-container">
+                  <div dangerouslySetInnerHTML={{ __html: compatibilityChartSvg }} />
+                </div>
+              )}
+
+              {compatibilityScores && (
+                <table style={{ marginTop: '10mm' }}>
+                  <thead>
+                    <tr>
+                      <th>Dimension</th>
+                      <th style={{ textAlign: 'right' }}>Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {compatibilityScores.emotional !== undefined && (
+                      <tr>
+                        <td>Emotional Connection</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.emotional}%
+                        </td>
+                      </tr>
+                    )}
+                    {compatibilityScores.communication !== undefined && (
+                      <tr>
+                        <td>Communication</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.communication}%
+                        </td>
+                      </tr>
+                    )}
+                    {compatibilityScores.spiritual !== undefined && (
+                      <tr>
+                        <td>Spiritual Connection</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.spiritual}%
+                        </td>
+                      </tr>
+                    )}
+                    {compatibilityScores.stability !== undefined && (
+                      <tr>
+                        <td>Stability</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.stability}%
+                        </td>
+                      </tr>
+                    )}
+                    {compatibilityScores.physical !== undefined && (
+                      <tr>
+                        <td>Physical Chemistry</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.physical}%
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+
+              <div className="analysis-block" style={{ marginTop: '10mm' }}>
+                <div dangerouslySetInnerHTML={{ __html: compatibilitySection.content }} />
+              </div>
+            </>
           )}
 
-          <div className="analysis-block" style={{ marginTop: '10mm' }}>
-            <div dangerouslySetInnerHTML={{ __html: compatibilitySection.content }} />
-          </div>
+          {/* Compatibility Scores Table (if no section but we have scores) */}
+          {!compatibilitySection && compatibilityScores && (
+            <>
+              <h2 className="section-header">Compatibility Analysis</h2>
+              {compatibilityChartSvg && (
+                <div className="chart-container">
+                  <div dangerouslySetInnerHTML={{ __html: compatibilityChartSvg }} />
+                </div>
+              )}
+              {compatibilityScores && (
+                <table style={{ marginTop: '10mm' }}>
+                  <thead>
+                    <tr>
+                      <th>Dimension</th>
+                      <th style={{ textAlign: 'right' }}>Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {compatibilityScores.emotional !== undefined && (
+                      <tr>
+                        <td>Emotional Connection</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.emotional}%
+                        </td>
+                      </tr>
+                    )}
+                    {compatibilityScores.communication !== undefined && (
+                      <tr>
+                        <td>Communication</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.communication}%
+                        </td>
+                      </tr>
+                    )}
+                    {compatibilityScores.spiritual !== undefined && (
+                      <tr>
+                        <td>Spiritual Connection</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.spiritual}%
+                        </td>
+                      </tr>
+                    )}
+                    {compatibilityScores.stability !== undefined && (
+                      <tr>
+                        <td>Stability</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.stability}%
+                        </td>
+                      </tr>
+                    )}
+                    {compatibilityScores.physical !== undefined && (
+                      <tr>
+                        <td>Physical Chemistry</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {compatibilityScores.physical}%
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
         </div>
       )}
 
-      {/* Transit Forecast Section */}
+      {/* Forecasts (Annual + Transit) */}
       {transitSection && (
         <div className="content-section">
           <h2 className="section-header">Extended Transit Forecast</h2>
           <div className="analysis-block">
             <div dangerouslySetInnerHTML={{ __html: transitSection.content }} />
+          </div>
+        </div>
+      )}
+
+      {/* Karmic/Shadow Work */}
+      {karmicSection && (
+        <div className="content-section">
+          <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
+          <div className="analysis-block">
+            <div dangerouslySetInnerHTML={{ __html: karmicSection.content }} />
           </div>
         </div>
       )}
@@ -219,16 +351,6 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       )}
 
-      {/* Karmic Reading Section */}
-      {karmicSection && (
-        <div className="content-section">
-          <h2 className="section-header">Karmic & Shadow Work</h2>
-          <div className="analysis-block">
-            <div dangerouslySetInnerHTML={{ __html: karmicSection.content }} />
-          </div>
-        </div>
-      )}
-
       {/* Closing Blessing */}
       {closingSection && (
         <div className="content-section">
@@ -239,13 +361,13 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       )}
 
-      {/* Render any additional sections */}
+      {/* Render any additional sections not already covered */}
       {sections
         .filter(
           (s) =>
-            !['birth_chart', 'compatibility', 'transit', 'destiny_path', 'karmic', 'closing'].includes(
-              s.type
-            )
+            !['birth_chart', 'compatibility', 'transit', 'destiny_path', 'karmic', 'closing', 
+              'core_identity', 'identity', 'synthesis', 'planetary_analysis', 'planetary', 'planets',
+              'relationship_matrix', 'matrix'].includes(s.type)
         )
         .map((section, index) => renderSection(section, index + 100))}
     </div>

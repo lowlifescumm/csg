@@ -31,10 +31,12 @@
     color: var(--print-text-light);
     font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 11pt;
-    line-height: 1.6;
+    line-height: 1.8; /* Industry standard for easy reading */
     text-align: justify;
     margin: 0;
     padding: 0;
+    orphans: 3; /* Prevent single lines at bottom */
+    widows: 3; /* Prevent single lines at top */
   }
 
   /* Headers */
@@ -43,6 +45,7 @@
     color: var(--print-accent-gold);
     page-break-after: avoid;
     break-after: avoid;
+    break-inside: avoid; /* Prevent headers from being split */
     margin-top: 8mm;
     margin-bottom: 4mm;
   }
@@ -71,9 +74,10 @@
   p {
     orphans: 3;
     widows: 3;
-    margin-bottom: 4mm;
+    margin-bottom: 2em; /* Increased spacing for readability */
     text-align: justify;
     hyphens: auto;
+    break-inside: avoid; /* Prevent paragraph from splitting across pages */
   }
 
   /* Prevent breaking inside containers */
@@ -87,6 +91,22 @@
   table {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  /* Watermark for all pages (faded background) */
+  .watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    opacity: 0.05; /* Very faint watermark */
+    z-index: -1000;
+    pointer-events: none;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
   }
 
   /* Prevent breaking after headers */
@@ -105,7 +125,7 @@
     break-before: avoid;
   }
 
-  /* Cover page - full height */
+  /* Cover page - full height with background image (fully opaque) */
   .cover-page {
     height: 100vh;
     min-height: 297mm; /* A4 height */
@@ -115,10 +135,15 @@
     justify-content: center;
     align-items: center;
     background-color: var(--print-bg-dark);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     page-break-after: always;
     break-after: page;
     padding: 20mm;
     text-align: center;
+    position: relative;
+    z-index: 1; /* Above watermark */
   }
 
   .cover-title {
@@ -144,8 +169,10 @@
     color: var(--print-text-light);
     padding: 15mm;
     min-height: 257mm; /* A4 height minus margins */
-    page-break-after: always;
-    break-after: page;
+    max-width: 80%; /* Wider, more elegant margins */
+    margin: 0 auto; /* Center the content */
+    page-break-after: auto; /* Allow natural flow, not forced */
+    break-after: auto;
   }
 
   /* Section headers with gold underline */
@@ -171,6 +198,28 @@
     break-inside: avoid;
   }
 
+  /* Birth Chart Isolation - Dedicated Page 2 */
+  .birth-chart-isolated {
+    page-break-before: always;
+    break-before: page;
+    page-break-after: always;
+    break-after: page;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--print-bg-dark);
+    position: relative;
+    z-index: 1; /* Above watermark */
+  }
+
+  .chart-page-only {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 20mm;
+  }
+
   .chart-container svg {
     max-width: 100%;
     height: auto;
@@ -179,7 +228,7 @@
     border-radius: 2mm;
   }
 
-  /* Analysis blocks */
+  /* Analysis blocks - Optional 2-column layout for longer content */
   .analysis-block {
     margin: 8mm 0;
     padding: 6mm;
@@ -187,6 +236,11 @@
     border-left: 3px solid var(--print-accent-gold);
     page-break-inside: avoid;
     break-inside: avoid;
+    max-width: 100%;
+    /* Optional: Uncomment for 2-column magazine-style layout on long sections */
+    /* column-count: 2;
+    column-gap: 1cm;
+    column-fill: balance; */
   }
 
   /* Tables */
