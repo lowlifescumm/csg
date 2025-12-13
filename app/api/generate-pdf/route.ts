@@ -149,9 +149,9 @@ export async function POST(request: NextRequest) {
       await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
 
       // CRITICAL: Wait for fonts to load
-      await page.evaluateHandle('document.fonts.ready');
+      await page.evaluate(() => document.fonts.ready);
       // Additional wait to ensure fonts are rendered
-      await page.waitForTimeout(1000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Generate PDF with proper options
       const pdfBuffer = await page.pdf({
