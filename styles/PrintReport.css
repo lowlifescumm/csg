@@ -194,11 +194,72 @@
     break-before: page;
   }
 
-  /* Cover page - force to its own page */
+
+  /* Cover page - MUST be on its own page */
   .cover-page {
+    page-break-before: always !important;
+    break-before: page !important;
+    page-break-after: always !important;
+    break-after: page !important;
+      /* Ensure cover page is truly isolated */
+  .cover-page {
+    position: relative !important;
+    z-index: 1000 !important;
+  }
+
+page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+    
+  
+  /* Hide watermark on chart pages - watermark is fixed so we need to override it */
+  .birth-chart-isolated,
+  .chart-page-container {
+    /* Ensure no watermark shows through */
+    background-color: var(--print-bg-dark) !important;
+    background-image: none !important;
+  }
+  
+  /* The watermark-layer is fixed, so we can't easily hide it per-page */
+  /* Instead, ensure chart pages have solid background that covers it */
+  .birth-chart-isolated::before,
+  .chart-page-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--print-bg-dark);
+    z-index: -1;
+  }
+
+  }
+
+
+  /* Alternative: Hide watermark when chart pages are active */
+  body:has(.birth-chart-isolated) .watermark-layer,
+  body:has(.chart-page-container) .watermark-layer {
+    display: none !important;
+  }
+
+  /* Chart pages should have NO background watermark */
+  .birth-chart-isolated,
+  .chart-page-container {
+    background-color: var(--print-bg-dark) !important;
+    background-image: none !important;
+  }
+
+  /* Ensure chart pages are isolated */
+  .birth-chart-isolated,
+  .chart-page-container {
+    page-break-before: always !important;
+    break-before: page !important;
     page-break-after: always !important;
     break-after: page !important;
   }
+  
 
   /* Sections with SVG graphics get their own page */
   .content-section:has(.chart-container svg),
@@ -563,6 +624,12 @@
     background-color: var(--print-bg-dark);
   }
 }
+
+
+
+
+
+
 
 
 
