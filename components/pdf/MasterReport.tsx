@@ -196,6 +196,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
+                backgroundAttachment: 'fixed',
               }
             : {}
         }
