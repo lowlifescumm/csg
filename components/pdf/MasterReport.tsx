@@ -40,6 +40,12 @@ interface MasterReportProps {
   userData: UserData;
 }
 
+const ensurePreserveAspectRatio = (svgString?: string) => {
+  if (!svgString) return undefined;
+  if (/preserveAspectRatio=/i.test(svgString)) return svgString;
+  return svgString.replace('<svg', '<svg preserveAspectRatio="xMidYMid meet"');
+};
+
 export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
   const {
     name,
@@ -56,12 +62,15 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
     base64BackgroundImage,
   } = userData;
 
+  const processedBirthChartSvg = ensurePreserveAspectRatio(birthChartSvg);
+  const processedCompatibilityChartSvg = ensurePreserveAspectRatio(compatibilityChartSvg);
+
   // Helper to render section content
   const renderSection = (section: ReportSection, index: number) => {
     return (
       <div key={index} className="content-section">
         <h2 className="section-header">{section.title}</h2>
-        <div className="analysis-block">
+        <div className="analysis-block report-text-body">
           <div dangerouslySetInnerHTML={{ __html: section.content }} />
         </div>
       </div>
@@ -86,19 +95,6 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
 
   return (
     <div className="master-report">
-      {/* Watermark for all pages (faded) */}
-      {base64BackgroundImage && (
-        <div 
-          className="watermark" 
-          style={{
-            backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
-            backgroundSize: '80%',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        />
-      )}
-
       {/* Cover Page - Title Page with full opacity background */}
       <div 
         className="cover-page"
@@ -123,11 +119,24 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       </div>
 
+      {/* Watermark for subsequent pages (faded, outside normal flow) */}
+      {base64BackgroundImage && (
+        <div 
+          className="watermark-overlay" 
+          style={{
+            backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
+            backgroundSize: '80%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+      )}
+
       {/* Birth Chart Section - ISOLATED ON PAGE 2 */}
-      {birthChartSvg && (
-        <div className="birth-chart-isolated">
+      {processedBirthChartSvg && (
+        <div className="birth-chart-isolated chart-page-container">
           <div className="chart-container chart-page-only">
-            <div dangerouslySetInnerHTML={{ __html: birthChartSvg }} />
+            <div dangerouslySetInnerHTML={{ __html: processedBirthChartSvg }} />
           </div>
         </div>
       )}
@@ -136,7 +145,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {coreIdentitySection && (
         <div className="content-section">
           <h2 className="section-header">{coreIdentitySection.title}</h2>
-          <div className="analysis-block">
+          <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: coreIdentitySection.content }} />
           </div>
         </div>
@@ -146,7 +155,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {planetaryAnalysisSection && (
         <div className="content-section">
           <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
-          <div className="analysis-block">
+          <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: planetaryAnalysisSection.content }} />
           </div>
         </div>
@@ -168,19 +177,19 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
               </p>
             </div>
           )}
-          <div className="analysis-block">
+          <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: birthChartSection.content }} />
           </div>
         </div>
       )}
 
       {/* Relationship Matrix & Compatibility */}
-      {(relationshipMatrixSection || compatibilitySection || compatibilityChartSvg || compatibilityScores) && (
+      {(relationshipMatrixSection || compatibilitySection || processedCompatibilityChartSvg || compatibilityScores) && (
         <div className="content-section">
           {relationshipMatrixSection && (
             <>
               <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
-              <div className="analysis-block">
+              <div className="analysis-block report-text-body">
                 <div dangerouslySetInnerHTML={{ __html: relationshipMatrixSection.content }} />
               </div>
             </>
@@ -190,9 +199,9 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
             <>
               <h2 className="section-header">{compatibilitySection.title || 'Compatibility Analysis'}</h2>
 
-              {compatibilityChartSvg && (
+              {processedCompatibilityChartSvg && (
                 <div className="chart-container">
-                  <div dangerouslySetInnerHTML={{ __html: compatibilityChartSvg }} />
+                  <div dangerouslySetInnerHTML={{ __html: processedCompatibilityChartSvg }} />
                 </div>
               )}
 
@@ -249,7 +258,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
                 </table>
               )}
 
-              <div className="analysis-block" style={{ marginTop: '10mm' }}>
+              <div className="analysis-block report-text-body" style={{ marginTop: '10mm' }}>
                 <div dangerouslySetInnerHTML={{ __html: compatibilitySection.content }} />
               </div>
             </>
@@ -259,9 +268,9 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
           {!compatibilitySection && compatibilityScores && (
             <>
               <h2 className="section-header">Compatibility Analysis</h2>
-              {compatibilityChartSvg && (
+              {processedCompatibilityChartSvg && (
                 <div className="chart-container">
-                  <div dangerouslySetInnerHTML={{ __html: compatibilityChartSvg }} />
+                  <div dangerouslySetInnerHTML={{ __html: processedCompatibilityChartSvg }} />
                 </div>
               )}
               {compatibilityScores && (
@@ -325,7 +334,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {transitSection && (
         <div className="content-section">
           <h2 className="section-header">Extended Transit Forecast</h2>
-          <div className="analysis-block">
+          <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: transitSection.content }} />
           </div>
         </div>
@@ -335,7 +344,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {karmicSection && (
         <div className="content-section">
           <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
-          <div className="analysis-block">
+          <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: karmicSection.content }} />
           </div>
         </div>
@@ -345,7 +354,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {destinySection && (
         <div className="content-section">
           <h2 className="section-header">{destinySection.title}</h2>
-          <div className="analysis-block">
+          <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: destinySection.content }} />
           </div>
         </div>
@@ -355,7 +364,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {closingSection && (
         <div className="content-section">
           <h2 className="section-header">{closingSection.title}</h2>
-          <div className="analysis-block">
+          <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: closingSection.content }} />
           </div>
         </div>

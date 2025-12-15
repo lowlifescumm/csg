@@ -28,7 +28,7 @@
   /* Base typography */
   body {
     background-color: var(--print-bg-dark);
-    color: var(--print-text-light);
+    color: #e0e0e0;
     font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 11pt;
     line-height: 1.8; /* Industry standard for easy reading */
@@ -46,8 +46,8 @@
     page-break-after: avoid;
     break-after: avoid;
     break-inside: avoid; /* Prevent headers from being split */
-    margin-top: 8mm;
-    margin-bottom: 4mm;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
   }
 
   h1 {
@@ -74,10 +74,12 @@
   p {
     orphans: 3;
     widows: 3;
-    margin-bottom: 2em; /* Increased spacing for readability */
+    margin-bottom: 1.5rem; /* Distinct gap between thoughts */
     text-align: justify;
     hyphens: auto;
     break-inside: avoid; /* Prevent paragraph from splitting across pages */
+    line-height: 1.8; /* Airy reading experience */
+    font-size: 11pt;
   }
 
   /* Prevent breaking inside containers */
@@ -94,14 +96,14 @@
   }
 
   /* Watermark for all pages (faded background) */
-  .watermark {
+  .watermark-overlay {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 80%;
     height: 80%;
-    opacity: 0.05; /* Very faint watermark */
+    opacity: 0.03; /* Very faint watermark */
     z-index: -1000;
     pointer-events: none;
     background-size: contain;
@@ -198,6 +200,16 @@
     break-inside: avoid;
   }
 
+  /* Dedicated chart page container to avoid SVG distortion */
+  .chart-page-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; /* PREVENTS STRETCHING */
+    height: 100vh;
+    page-break-after: always;
+  }
+
   /* Birth Chart Isolation - Dedicated Page 2 */
   .birth-chart-isolated {
     page-break-before: always;
@@ -223,9 +235,17 @@
   .chart-container svg {
     max-width: 100%;
     height: auto;
+    max-height: 90vh; /* Ensure it fits on page */
     background-color: rgba(255, 255, 255, 0.05);
     padding: 5mm;
     border-radius: 2mm;
+  }
+
+  /* Constrain body copy width for readability */
+  .analysis-block,
+  .report-text-body {
+    max-width: 65ch;
+    margin: 0 auto;
   }
 
   /* Analysis blocks - Optional 2-column layout for longer content */
