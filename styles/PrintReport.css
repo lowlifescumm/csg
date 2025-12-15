@@ -272,6 +272,12 @@
     margin: 0 auto;
   }
 
+  /* Ensure sub-sections don’t collapse into walls of text */
+  .report-text-body > * {
+    margin-bottom: 1.5rem;
+    break-inside: avoid;
+  }
+
   /* Analysis blocks - Optional 2-column layout for longer content */
   .analysis-block {
     margin: 8mm 0;
