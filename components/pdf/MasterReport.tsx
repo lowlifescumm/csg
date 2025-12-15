@@ -227,7 +227,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {/* 3. Core Identity & Planetary Analysis */}
       <div className="page-break" />
       {coreIdentitySection && (
-        <div className="content-section">
+        <div className="content-section section-core-identity">
           <h2 className="section-header">{coreIdentitySection.title}</h2>
           <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(coreIdentitySection.content) }} />
@@ -246,7 +246,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {/* 4. Relationship Matrix & Compatibility */}
       <div className="page-break" />
       {(relationshipMatrixSection || compatibilitySection || processedCompatibilityChartSvg || compatibilityScores) && (
-        <div className="content-section relationship-matrix-section">
+        <div className="content-section section-relationship-matrix relationship-matrix-section">
           {relationshipMatrixSection && (
             <>
               <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
@@ -393,7 +393,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {/* 5. Forecasts (Transit THEN Annual) */}
       <div className="page-break" />
       {transitSection && (
-        <div className="content-section">
+        <div className="content-section section-forecasts">
           <h2 className="section-header">Extended Transit Forecast</h2>
           <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(transitSection.content) }} />
@@ -413,7 +413,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {/* 6. Karmic Work */}
       <div className="page-break" />
       {karmicSection && (
-        <div className="content-section">
+        <div className="content-section section-karmic">
           <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
           <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(karmicSection.content) }} />
@@ -424,7 +424,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {/* 7. Closing Blessing */}
       <div className="page-break" />
       {closingSection && (
-        <div className="content-section">
+        <div className="content-section section-closing">
           <h2 className="section-header">{closingSection.title}</h2>
           <div className="analysis-block report-text-body">
             <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingSection.content) }} />
@@ -463,6 +463,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
 };
 
 export default MasterReport;
+
 
 
 

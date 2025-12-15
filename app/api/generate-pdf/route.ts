@@ -197,17 +197,9 @@ export async function POST(request: NextRequest) {
       const pdfBuffer = await page.pdf({
         format: 'a4',
         printBackground: true,
-        displayHeaderFooter: true,
-        headerTemplate: `
-          <div style="font-size: 8pt; color: #d4af37; text-align: center; width: 100%; font-family: 'Cinzel', serif;">
-            COSMIC SPIRITUAL GUIDE // PREPARED FOR <span class="title">${userData.name}</span>
-          </div>
-        `,
-        footerTemplate: `
-          <div style="font-size: 8pt; color: #d4af37; text-align: right; width: 100%; font-family: 'Cinzel', serif; padding-right: 20mm;">
-            Page <span class="pageNumber"></span>
-          </div>
-        `,
+        displayHeaderFooter: false,
+        
+        
         margin: {
           top: '20mm',
           right: '0mm',
@@ -241,6 +233,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

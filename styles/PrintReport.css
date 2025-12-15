@@ -129,7 +129,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.15;
+    opacity: 0.15;`n    background-attachment: fixed;
     pointer-events: none;
   }
 
@@ -161,7 +161,7 @@
     background-color: var(--print-bg-dark);
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat;`n    background-attachment: fixed;`n    background-color: transparent;
     page-break-after: always;
     break-after: page;
     padding: 20mm;
@@ -188,11 +188,26 @@
   }
 
 
-  /* Force major sections to start on new pages */
-  .content-section {
-    page-break-before: always;
-    break-before: page;
+  
+  /* Force each major section to start on its own page */
+  .section-core-identity,
+  .section-relationship-matrix,
+  .section-forecasts,
+  .section-karmic,
+  .section-closing {
+    page-break-before: always !important;
+    break-before: page !important;
   }
+
+  /* Ensure page-break divs work */
+  .page-break {
+    page-break-after: always !important;
+    break-after: page !important;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
 
 
   /* Cover page - MUST be on its own page */
@@ -623,6 +638,8 @@ page-break-inside: avoid !important;
     background-color: var(--print-bg-dark);
   }
 }
+
+
 
 
 
