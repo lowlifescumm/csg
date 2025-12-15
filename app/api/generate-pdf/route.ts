@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Premium PDF Generation API Route
  * Uses Puppeteer to render React component and generate e-book quality PDF
  */
@@ -69,19 +69,40 @@ export async function POST(request: NextRequest) {
     // @ts-ignore - Dynamic import with path alias requires runtime resolution
     const { default: MasterReport } = await import('../../../components/pdf/MasterReport');
     
-    // Fallback: load default background image if none provided
+        // Fallback: load default background image if none provided
     try {
       if (!userData.base64BackgroundImage) {
         const fs = await import('fs');
         const path = await import('path');
-        const bgPath = path.join(process.cwd(), 'docs', 'Nebula.jpg');
-        if (fs.existsSync(bgPath)) {
+        
+        // Try multiple possible paths (for different deployment environments)
+        const possiblePaths = [
+          path.join(process.cwd(), 'docs', 'Nebula.jpg'),
+          path.join(process.cwd(), 'csg', 'docs', 'Nebula.jpg'),
+        ];
+        
+        let bgPath = null;
+        for (const testPath of possiblePaths) {
+          if (fs.existsSync(testPath)) {
+            bgPath = testPath;
+            console.log('[PDF Generator] Found background image at:', bgPath);
+            break;
+          }
+        }
+        
+        if (bgPath) {
           const base64 = fs.readFileSync(bgPath).toString('base64');
           userData.base64BackgroundImage = `data:image/jpeg;base64,${base64}`;
+          console.log('[PDF Generator] Loaded default background image, size:', base64.length, 'chars');
+        } else {
+          console.warn('[PDF Generator] Background image not found in any of these paths:', possiblePaths);
         }
+      } else {
+        console.log('[PDF Generator] Using provided background image');
       }
     } catch (err) {
-      console.warn('[PDF Generator] Could not load default background image', err);
+      console.error('[PDF Generator] Error loading default background image:', err);
+    }
     }
 
     // Render React component to HTML
@@ -220,4 +241,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
