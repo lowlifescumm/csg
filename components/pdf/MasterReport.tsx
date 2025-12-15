@@ -19,7 +19,7 @@ interface UserData {
   compatibilityChartSvg?: string;
   sections?: ReportSection[];
   compatibilityScores?: CompatibilityScores;
-  base64BackgroundImage?: string; // Base64 string for watermark/cover background
+  base64BackgroundImage?: string; // Base64 string (with or without data: prefix) for watermark/cover background
 }
 
 interface ReportSection {
@@ -46,6 +46,11 @@ const ensurePreserveAspectRatio = (svgString?: string) => {
   return svgString.replace('<svg', '<svg preserveAspectRatio="xMidYMid meet"');
 };
 
+const toDataUrl = (img?: string) => {
+  if (!img) return undefined;
+  return img.startsWith('data:image') ? img : `data:image/png;base64,${img}`;
+};
+
 export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
   const {
     name,
@@ -64,6 +69,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
 
   const processedBirthChartSvg = ensurePreserveAspectRatio(birthChartSvg);
   const processedCompatibilityChartSvg = ensurePreserveAspectRatio(compatibilityChartSvg);
+  const backgroundImageUrl = toDataUrl(base64BackgroundImage);
 
   // Helper to render section content
   const renderSection = (section: ReportSection, index: number) => {
@@ -105,7 +111,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         <div
           className="watermark-layer"
           style={{
-            backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
+            backgroundImage: backgroundImageUrl ? `url(${backgroundImageUrl})` : undefined,
           }}
         />
       )}
@@ -114,9 +120,9 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       <div
         className="cover-page"
         style={
-          base64BackgroundImage
+          backgroundImageUrl
             ? {
-                backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
+                backgroundImage: `url(${backgroundImageUrl})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',

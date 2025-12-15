@@ -44,6 +44,7 @@ interface GeneratePDFRequest {
       stability?: number;
       physical?: number;
     };
+    base64BackgroundImage?: string;
   };
 }
 
@@ -68,6 +69,21 @@ export async function POST(request: NextRequest) {
     // @ts-ignore - Dynamic import with path alias requires runtime resolution
     const { default: MasterReport } = await import('../../../components/pdf/MasterReport');
     
+    // Fallback: load default background image if none provided
+    try {
+      if (!userData.base64BackgroundImage) {
+        const fs = await import('fs');
+        const path = await import('path');
+        const bgPath = path.join(process.cwd(), 'docs', 'Nebula.jpg');
+        if (fs.existsSync(bgPath)) {
+          const base64 = fs.readFileSync(bgPath).toString('base64');
+          userData.base64BackgroundImage = `data:image/jpeg;base64,${base64}`;
+        }
+      }
+    } catch (err) {
+      console.warn('[PDF Generator] Could not load default background image', err);
+    }
+
     // Render React component to HTML
     const htmlContent = ReactDOMServer.renderToStaticMarkup(
       React.createElement(MasterReport, { userData })
