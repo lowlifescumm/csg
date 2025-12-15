@@ -187,7 +187,44 @@
     margin-bottom: 20mm;
   }
 
-  /* Content pages */
+
+  /* Force major sections to start on new pages */
+  .content-section {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  /* Cover page - force to its own page */
+  .cover-page {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  /* Sections with SVG graphics get their own page */
+  .content-section:has(.chart-container svg),
+  .content-section:has(.chart-container) {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  
+  /* Relationship Matrix - SVG and table share same page */
+  .relationship-matrix-section {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .relationship-matrix-section .chart-container {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .relationship-matrix-section table {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+
+
   .content-section {
     background-color: var(--print-bg-dark);
     color: var(--print-text-light);
@@ -526,5 +563,8 @@
     background-color: var(--print-bg-dark);
   }
 }
+
+
+
 
 

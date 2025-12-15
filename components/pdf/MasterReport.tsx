@@ -246,7 +246,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       {/* 4. Relationship Matrix & Compatibility */}
       <div className="page-break" />
       {(relationshipMatrixSection || compatibilitySection || processedCompatibilityChartSvg || compatibilityScores) && (
-        <div className="content-section">
+        <div className="content-section relationship-matrix-section">
           {relationshipMatrixSection && (
             <>
               <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
@@ -463,6 +463,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
 };
 
 export default MasterReport;
+
 
 
 
