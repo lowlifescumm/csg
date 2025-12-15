@@ -223,8 +223,7 @@ page-break-inside: avoid !important;
   
   /* The watermark-layer is fixed, so we can't easily hide it per-page */
   /* Instead, ensure chart pages have solid background that covers it */
-  .birth-chart-isolated::before,
-  .chart-page-container::before {
+  .birth-chart-isolated,\n  .chart-page-container {\n    position: relative !important;\n  }\n\n  .birth-chart-isolated::before,\n  .chart-page-container::before {
     content: "";
     position: absolute;
     top: 0;
@@ -624,6 +623,7 @@ page-break-inside: avoid !important;
     background-color: var(--print-bg-dark);
   }
 }
+
 
 
 
