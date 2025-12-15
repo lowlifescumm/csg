@@ -18,6 +18,11 @@
    PRINT MEDIA QUERIES
    ============================================ */
 @media print {
+  @page {
+    margin: 0;
+    size: A4;
+  }
+
   /* Force exact color rendering */
   * {
     print-color-adjust: exact;
@@ -27,7 +32,9 @@
 
   /* Base typography */
   body {
-    background-color: var(--print-bg-dark);
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: #050505 !important;
     color: #e0e0e0;
     font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 11pt;
@@ -109,6 +116,21 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+  }
+
+  /* Full-page watermark layer */
+  .watermark-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -999;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.15;
+    pointer-events: none;
   }
 
   /* Prevent breaking after headers */
@@ -207,7 +229,9 @@
     justify-content: center;
     align-items: center; /* PREVENTS STRETCHING */
     height: 100vh;
-    page-break-after: always;
+    width: 100%;
+    page-break-before: always; /* Force it onto a new sheet */
+    page-break-after: always;  /* Force the text to the next sheet */
   }
 
   /* Birth Chart Isolation - Dedicated Page 2 */
@@ -233,9 +257,9 @@
   }
 
   .chart-container svg {
-    max-width: 100%;
-    height: auto;
-    max-height: 90vh; /* Ensure it fits on page */
+    width: 80% !important;
+    height: auto !important;
+    max-height: 80vh;
     background-color: rgba(255, 255, 255, 0.05);
     padding: 5mm;
     border-radius: 2mm;
@@ -337,11 +361,6 @@
   }
 
   /* Ensure full bleed backgrounds */
-  @page {
-    size: A4;
-    margin: 20mm 0mm; /* Top/bottom for header/footer, no side margins */
-  }
-
   /* First page (cover) - no header/footer */
   @page :first {
     margin: 0;

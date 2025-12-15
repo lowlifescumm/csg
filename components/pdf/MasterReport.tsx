@@ -89,21 +89,40 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
   const compatibilitySection = getSectionByType('compatibility');
   const relationshipMatrixSection = getSectionByType('relationship_matrix') || getSectionByType('matrix');
   const transitSection = getSectionByType('transit');
-  const destinySection = getSectionByType('destiny_path');
+  const annualSection =
+    getSectionByType('annual_forecast') ||
+    getSectionByType('annual') ||
+    getSectionByType('forecast') ||
+    getSectionByType('yearly') ||
+    getSectionByType('destiny_path');
   const karmicSection = getSectionByType('karmic');
   const closingSection = getSectionByType('closing');
 
   return (
-    <div className="master-report">
-      {/* Cover Page - Title Page with full opacity background */}
-      <div 
+    <div className="report-container">
+      {/* Global watermark layer */}
+      {base64BackgroundImage && (
+        <div
+          className="watermark-layer"
+          style={{
+            backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
+          }}
+        />
+      )}
+
+      {/* 1. Title Page */}
+      <div
         className="cover-page"
-        style={base64BackgroundImage ? {
-          backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        } : {}}
+        style={
+          base64BackgroundImage
+            ? {
+                backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }
+            : {}
+        }
       >
         <h1 className="cover-title">Cosmic Spiritual Guide</h1>
         <h2 className="cover-subtitle">Master Report</h2>
@@ -119,20 +138,8 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       </div>
 
-      {/* Watermark for subsequent pages (faded, outside normal flow) */}
-      {base64BackgroundImage && (
-        <div 
-          className="watermark-overlay" 
-          style={{
-            backgroundImage: `url(data:image/png;base64,${base64BackgroundImage})`,
-            backgroundSize: '80%',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        />
-      )}
-
-      {/* Birth Chart Section - ISOLATED ON PAGE 2 */}
+      {/* 2. Birth Chart (forced to its own page) */}
+      <div className="page-break" />
       {processedBirthChartSvg && (
         <div className="birth-chart-isolated chart-page-container">
           <div className="chart-container chart-page-only">
@@ -141,7 +148,8 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       )}
 
-      {/* Core Identity Synthesis */}
+      {/* 3. Core Identity & Planetary Analysis */}
+      <div className="page-break" />
       {coreIdentitySection && (
         <div className="content-section">
           <h2 className="section-header">{coreIdentitySection.title}</h2>
@@ -150,8 +158,6 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
           </div>
         </div>
       )}
-
-      {/* Planetary Analysis */}
       {planetaryAnalysisSection && (
         <div className="content-section">
           <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
@@ -161,29 +167,8 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       )}
 
-      {/* Birth Chart Analysis (if separate from isolated chart) */}
-      {birthChartSection && birthChartSection.type === 'birth_chart' && (
-        <div className="content-section">
-          <h2 className="section-header">{birthChartSection.title || 'Your Natal Chart'}</h2>
-          {(sunSign || moonSign || risingSign) && (
-            <div
-              className="metadata"
-              style={{ textAlign: 'center', marginBottom: '10mm' }}
-            >
-              <p>
-                <strong>Sun:</strong> {sunSign || 'N/A'} •{' '}
-                <strong>Moon:</strong> {moonSign || 'N/A'} •{' '}
-                <strong>Rising:</strong> {risingSign || 'N/A'}
-              </p>
-            </div>
-          )}
-          <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: birthChartSection.content }} />
-          </div>
-        </div>
-      )}
-
-      {/* Relationship Matrix & Compatibility */}
+      {/* 4. Relationship Matrix & Compatibility */}
+      <div className="page-break" />
       {(relationshipMatrixSection || compatibilitySection || processedCompatibilityChartSvg || compatibilityScores) && (
         <div className="content-section">
           {relationshipMatrixSection && (
@@ -264,7 +249,6 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
             </>
           )}
 
-          {/* Compatibility Scores Table (if no section but we have scores) */}
           {!compatibilitySection && compatibilityScores && (
             <>
               <h2 className="section-header">Compatibility Analysis</h2>
@@ -330,7 +314,8 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       )}
 
-      {/* Forecasts (Annual + Transit) */}
+      {/* 5. Forecasts (Transit THEN Annual) */}
+      <div className="page-break" />
       {transitSection && (
         <div className="content-section">
           <h2 className="section-header">Extended Transit Forecast</h2>
@@ -339,8 +324,18 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
           </div>
         </div>
       )}
+      <div className="page-break" />
+      {annualSection && (
+        <div className="content-section">
+          <h2 className="section-header">{annualSection.title}</h2>
+          <div className="analysis-block report-text-body">
+            <div dangerouslySetInnerHTML={{ __html: annualSection.content }} />
+          </div>
+        </div>
+      )}
 
-      {/* Karmic/Shadow Work */}
+      {/* 6. Karmic Work */}
+      <div className="page-break" />
       {karmicSection && (
         <div className="content-section">
           <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
@@ -350,17 +345,8 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       )}
 
-      {/* Destiny Path Section */}
-      {destinySection && (
-        <div className="content-section">
-          <h2 className="section-header">{destinySection.title}</h2>
-          <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: destinySection.content }} />
-          </div>
-        </div>
-      )}
-
-      {/* Closing Blessing */}
+      {/* 7. Closing Blessing */}
+      <div className="page-break" />
       {closingSection && (
         <div className="content-section">
           <h2 className="section-header">{closingSection.title}</h2>
@@ -370,13 +356,30 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       )}
 
-      {/* Render any additional sections not already covered */}
+      {/* Render any additional sections not already covered (after closing) */}
       {sections
         .filter(
           (s) =>
-            !['birth_chart', 'compatibility', 'transit', 'destiny_path', 'karmic', 'closing', 
-              'core_identity', 'identity', 'synthesis', 'planetary_analysis', 'planetary', 'planets',
-              'relationship_matrix', 'matrix'].includes(s.type)
+            ![
+              'birth_chart',
+              'compatibility',
+              'transit',
+              'destiny_path',
+              'annual_forecast',
+              'annual',
+              'forecast',
+              'yearly',
+              'karmic',
+              'closing',
+              'core_identity',
+              'identity',
+              'synthesis',
+              'planetary_analysis',
+              'planetary',
+              'planets',
+              'relationship_matrix',
+              'matrix',
+            ].includes(s.type)
         )
         .map((section, index) => renderSection(section, index + 100))}
     </div>
