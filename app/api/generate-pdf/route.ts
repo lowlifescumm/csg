@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('[PDF Generator] Error loading default background image:', err);
     }
-    }
+    
 
     // Render React component to HTML
     const htmlContent = ReactDOMServer.renderToStaticMarkup(
@@ -241,5 +241,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
