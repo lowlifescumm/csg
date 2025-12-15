@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Premium Master Report Component
  * Renders a flowing, semantic document structure for PDF generation
  */
@@ -40,6 +40,76 @@ interface MasterReportProps {
   userData: UserData;
 }
 
+
+/**
+ * Convert markdown-like text to properly formatted HTML
+ * Handles headings, bold, italic, lists, paragraphs, and horizontal rules
+ */
+const convertMarkdownToHtml = (text: string): string => {
+  if (!text) return '';
+  
+  // Check if content is already HTML (starts with HTML tag)
+  const isHTML = /^\s*</.test(text.trim());
+  if (isHTML) {
+    // Content is already HTML - return as-is but ensure proper structure
+    return text;
+  }
+  
+  let html = text;
+  
+  // Convert horizontal rules (---)
+  html = html.replace(/^---$/gm, '<hr />');
+  
+  // Convert headings (## Heading -> <h2>, ### Heading -> <h3>, etc.)
+  html = html.replace(/^#### (.*)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+  
+  // Convert bold (**text** or __text__)
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+  
+  // Convert italic (*text* or _text_)
+  html = html.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+  html = html.replace(/(?<!_)_(?!_)(.*?)(?<!_)_(?!_)/g, '<em>$1</em>');
+  
+  // Convert unordered lists (- item or * item)
+  html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+  // Wrap consecutive <li> tags in <ul>
+  html = html.replace(/(<li>.*?<\/li>(?:\s*<li>.*?<\/li>)*)/gs, '<ul>$1</ul>');
+  
+  // Convert ordered lists (1. item)
+  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  // Wrap consecutive numbered <li> tags in <ol> (simplified - assumes they're ordered)
+  // Note: This is a simplified approach. For complex cases, a proper parser would be better.
+  
+  // Convert double newlines to paragraph breaks
+  html = html.split(/\n\n+/).map(para => {
+    const trimmed = para.trim();
+    if (!trimmed) return '';
+    // Don't wrap headings, lists, or HRs in paragraphs
+    if (/^<(h[1-6]|ul|ol|li|hr)/i.test(trimmed)) {
+      return trimmed;
+    }
+    return `<p>${trimmed}</p>`;
+  }).join('\n');
+  
+  // Clean up empty paragraphs
+  html = html.replace(/<p>\s*<\/p>/g, '');
+  html = html.replace(/<p>(<h[1-6])/g, '$1');
+  html = html.replace(/(<\/h[1-6]>)<\/p>/g, '$1');
+  html = html.replace(/<p>(<ul|<ol)/g, '$1');
+  html = html.replace(/(<\/ul>|<\/ol>)<\/p>/g, '$1');
+  html = html.replace(/<p>(<hr)/g, '$1');
+  html = html.replace(/(<\/hr>)<\/p>/g, '$1');
+  
+  // Ensure proper spacing between elements
+  html = html.replace(/(<\/p>)\s*(<p>)/g, '$1\n$2');
+  html = html.replace(/(<\/h[1-6]>)\s*(<p>)/g, '$1\n$2');
+  
+  return html;
+};
 const ensurePreserveAspectRatio = (svgString?: string) => {
   if (!svgString) return undefined;
   if (/preserveAspectRatio=/i.test(svgString)) return svgString;
@@ -77,7 +147,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
       <div key={index} className="content-section">
         <h2 className="section-header">{section.title}</h2>
         <div className="analysis-block report-text-body">
-          <div dangerouslySetInnerHTML={{ __html: section.content }} />
+          <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(section.content) }} />
         </div>
       </div>
     );
@@ -138,7 +208,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
             {name}
           </p>
           <p style={{ marginTop: '10mm' }}>
-            {birthDate} • {birthTime}
+            {birthDate} â€¢ {birthTime}
           </p>
           <p>{location}</p>
         </div>
@@ -160,7 +230,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         <div className="content-section">
           <h2 className="section-header">{coreIdentitySection.title}</h2>
           <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: coreIdentitySection.content }} />
+            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(coreIdentitySection.content) }} />
           </div>
         </div>
       )}
@@ -168,7 +238,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         <div className="content-section">
           <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
           <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: planetaryAnalysisSection.content }} />
+            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(planetaryAnalysisSection.content) }} />
           </div>
         </div>
       )}
@@ -181,7 +251,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
             <>
               <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
               <div className="analysis-block report-text-body">
-                <div dangerouslySetInnerHTML={{ __html: relationshipMatrixSection.content }} />
+                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(relationshipMatrixSection.content) }} />
               </div>
             </>
           )}
@@ -250,7 +320,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
               )}
 
               <div className="analysis-block report-text-body" style={{ marginTop: '10mm' }}>
-                <div dangerouslySetInnerHTML={{ __html: compatibilitySection.content }} />
+                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(compatibilitySection.content) }} />
               </div>
             </>
           )}
@@ -326,7 +396,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         <div className="content-section">
           <h2 className="section-header">Extended Transit Forecast</h2>
           <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: transitSection.content }} />
+            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(transitSection.content) }} />
           </div>
         </div>
       )}
@@ -335,7 +405,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         <div className="content-section">
           <h2 className="section-header">{annualSection.title}</h2>
           <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: annualSection.content }} />
+            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(annualSection.content) }} />
           </div>
         </div>
       )}
@@ -346,7 +416,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         <div className="content-section">
           <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
           <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: karmicSection.content }} />
+            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(karmicSection.content) }} />
           </div>
         </div>
       )}
@@ -357,7 +427,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         <div className="content-section">
           <h2 className="section-header">{closingSection.title}</h2>
           <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: closingSection.content }} />
+            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingSection.content) }} />
           </div>
         </div>
       )}
@@ -393,4 +463,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
 };
 
 export default MasterReport;
+
+
+
 

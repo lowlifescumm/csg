@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Premium E-book Quality Print Styles for Cosmic Spiritual Guide Reports
  * Designed for dark cosmic theme with gold accents
  */
@@ -272,7 +272,7 @@
     margin: 0 auto;
   }
 
-  /* Ensure sub-sections don’t collapse into walls of text */
+  /* Ensure sub-sections donâ€™t collapse into walls of text */
   .report-text-body > * {
     margin-bottom: 1.5rem;
     break-inside: avoid;
@@ -316,6 +316,132 @@
     font-size: 10pt;
   }
 
+
+  /* Format HTML elements inside report-text-body sections */
+  .report-text-body {
+    /* Ensure all direct children have proper spacing */
+    > * {
+      margin-bottom: 1.5rem;
+      break-inside: avoid;
+    }
+
+    /* Nested headings inside sections */
+    h2, h3, h4, h5, h6 {
+      font-family: 'Cinzel', 'Georgia', serif;
+      color: var(--print-accent-gold);
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      page-break-after: avoid;
+      break-after: avoid;
+      break-inside: avoid;
+      font-weight: 500;
+    }
+
+    h2 {
+      font-size: 20pt;
+      border-bottom: 2px solid var(--print-border-gold);
+      padding-bottom: 3mm;
+      margin-top: 3rem;
+    }
+
+    h3 {
+      font-size: 16pt;
+      border-bottom: 1px solid var(--print-border-gold);
+      padding-bottom: 2mm;
+      margin-top: 2rem;
+    }
+
+    h4 {
+      font-size: 14pt;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Paragraphs inside sections */
+    p {
+      margin-bottom: 1.5rem;
+      line-height: 1.8;
+      text-align: justify;
+      break-inside: avoid;
+      orphans: 3;
+      widows: 3;
+    }
+
+    /* Ensure paragraphs after headings have proper spacing */
+    h2 + p, h3 + p, h4 + p {
+      margin-top: 1rem;
+    }
+
+    /* Lists inside sections */
+    ul, ol {
+      margin: 1.5rem 0;
+      padding-left: 8mm;
+      break-inside: avoid;
+    }
+
+    li {
+      margin-bottom: 1rem;
+      line-height: 1.8;
+      break-inside: avoid;
+    }
+
+    /* Nested lists */
+    li ul, li ol {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Strong/bold text */
+    strong, b {
+      font-weight: 600;
+      color: var(--print-text-light);
+    }
+
+    /* Emphasis */
+    em, i {
+      font-style: italic;
+    }
+
+    /* Horizontal rules (dividers) */
+    hr {
+      border: none;
+      border-top: 1px solid var(--print-border-gold);
+      margin: 2rem 0;
+      break-inside: avoid;
+    }
+
+    /* Tables inside sections */
+    table {
+      margin: 1.5rem 0;
+      break-inside: avoid;
+    }
+
+    /* Blockquotes */
+    blockquote {
+      margin: 1.5rem 0;
+      padding-left: 8mm;
+      border-left: 3px solid var(--print-accent-gold);
+      font-style: italic;
+      break-inside: avoid;
+    }
+
+    /* Code blocks */
+    pre, code {
+      font-family: 'Courier New', monospace;
+      background-color: rgba(212, 175, 55, 0.1);
+      padding: 2mm;
+      border-radius: 2mm;
+      break-inside: avoid;
+    }
+
+    /* Ensure proper spacing between different element types */
+    p + ul, p + ol,
+    ul + p, ol + p,
+    h2 + ul, h2 + ol,
+    h3 + ul, h3 + ol {
+      margin-top: 1rem;
+    }
+  }
   /* Lists */
   ul, ol {
     margin: 4mm 0;
@@ -400,4 +526,5 @@
     background-color: var(--print-bg-dark);
   }
 }
+
 
