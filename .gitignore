@@ -91,3 +91,5 @@ fix_static_assets.patch
 docs/
 meditations/
 artifacts/
+# Cursor rules - should not be committed
+.cursor/rules/
