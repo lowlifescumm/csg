@@ -129,7 +129,8 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.15;`n    background-attachment: fixed;
+    background-attachment: fixed;
+    opacity: 0.15;
     pointer-events: none;
   }
 
@@ -158,16 +159,21 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: var(--print-bg-dark);
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;`n    background-attachment: fixed;`n    background-color: transparent;
-    page-break-after: always;
-    break-after: page;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: transparent;
+    page-break-before: always !important;
+    break-before: page !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
     padding: 20mm;
     text-align: center;
-    position: relative;
-    z-index: 1; /* Above watermark */
+    position: relative !important;
+    z-index: 1000 !important;
   }
 
   .cover-title {
@@ -194,9 +200,18 @@
   .section-relationship-matrix,
   .section-forecasts,
   .section-karmic,
-  .section-closing {
+  .section-closing,
+  .section-compatibility {
     page-break-before: always !important;
     break-before: page !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Ensure compatibility subsections stay together */
+  .section-compatibility .content-section {
+    page-break-before: avoid;
+    break-before: avoid;
   }
 
   /* Ensure page-break divs work */
@@ -206,24 +221,7 @@
     height: 0;
     margin: 0;
     padding: 0;
-  }
-
-
-
-  /* Cover page - MUST be on its own page */
-  .cover-page {
-    page-break-before: always !important;
-    break-before: page !important;
-    page-break-after: always !important;
-    break-after: page !important;
-      /* Ensure cover page is truly isolated */
-  .cover-page {
-    position: relative !important;
-    z-index: 1000 !important;
-  }
-
-page-break-inside: avoid !important;
-    break-inside: avoid !important;
+    display: block;
   }
 
     
@@ -234,11 +232,13 @@ page-break-inside: avoid !important;
     /* Ensure no watermark shows through */
     background-color: var(--print-bg-dark) !important;
     background-image: none !important;
+    position: relative !important;
   }
   
   /* The watermark-layer is fixed, so we can't easily hide it per-page */
   /* Instead, ensure chart pages have solid background that covers it */
-  .birth-chart-isolated,\n  .chart-page-container {\n    position: relative !important;\n  }\n\n  .birth-chart-isolated::before,\n  .chart-page-container::before {
+  .birth-chart-isolated::before,
+  .chart-page-container::before {
     content: "";
     position: absolute;
     top: 0;
@@ -247,8 +247,6 @@ page-break-inside: avoid !important;
     bottom: 0;
     background-color: var(--print-bg-dark);
     z-index: -1;
-  }
-
   }
 
 
@@ -309,6 +307,20 @@ page-break-inside: avoid !important;
     margin: 0 auto; /* Center the content */
     page-break-after: auto; /* Allow natural flow, not forced */
     break-after: auto;
+    position: relative;
+    z-index: 1; /* Above watermark */
+  }
+  
+  /* Ensure content sections have background to cover watermark */
+  .content-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--print-bg-dark);
+    z-index: -1;
   }
 
   /* Section headers with gold underline */
