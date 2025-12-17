@@ -517,14 +517,13 @@ export async function POST(request) {
       // Use new premium e-book quality PDF generator (React component)
       console.log('[Test Report] Using Premium E-book PDF generator');
       
-      // Generate premium report content first (but we'll ignore its PDF and use premium-pdf-generator instead)
+      // Generate premium report content first (skip PDF generation since we'll use premium-pdf-generator)
       let contentResult;
       if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
         const tier = report_type.replace('premium-', '').toUpperCase();
-        contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
-        // NOTE: generatePremiumReport generates a PDF internally, but we'll ignore it and use premium-pdf-generator instead
-        // This ensures we only get ONE premium ebook PDF, not two
-        console.log('[Test Report] Ignoring PDF from generatePremiumReport, will use premium-pdf-generator instead');
+        // Pass skipPdf: true to prevent duplicate PDF generation
+        contentResult = await generatePremiumReport(tier, { ...sampleData, skipPdf: true }, progressCallback);
+        console.log('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
       } else {
         contentResult = await generateReportContent(report_type, sampleData, progressCallback);
       }
