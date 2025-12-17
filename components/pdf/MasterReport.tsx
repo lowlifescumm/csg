@@ -204,94 +204,87 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         />
       )}
 
-      {/* 1. Title Page */}
-      <div
-        className="cover-page"
-        style={
-          backgroundImageUrl
-            ? {
-                backgroundImage: `url(${backgroundImageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundAttachment: 'fixed',
-              }
-            : {}
-        }
-      >
-        <h1 className="cover-title">Cosmic Spiritual Guide</h1>
-        <h2 className="cover-subtitle">Master Report</h2>
-        <div className="metadata" style={{ marginTop: '20mm' }}>
-          <p>Prepared for</p>
-          <p style={{ fontSize: '18pt', color: '#d4af37', marginTop: '5mm' }}>
-            {name}
-          </p>
-          <p style={{ marginTop: '10mm' }}>
-            {birthDate} â€¢ {birthTime}
-          </p>
-          <p>{location}</p>
+      {/* Section 1: Title Page */}
+      <div className="print-section-wrapper">
+        <div
+          className="cover-page"
+          style={
+            backgroundImageUrl
+              ? {
+                  backgroundImage: `url(${backgroundImageUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundAttachment: 'fixed',
+                }
+              : {}
+          }
+        >
+          <h1 className="cover-title">Cosmic Spiritual Guide</h1>
+          <h2 className="cover-subtitle">Master Report</h2>
+          <div className="metadata" style={{ marginTop: '20mm' }}>
+            <p>Prepared for</p>
+            <p style={{ fontSize: '18pt', color: '#d4af37', marginTop: '5mm' }}>
+              {name}
+            </p>
+            <p style={{ marginTop: '10mm' }}>
+              {birthDate} â€¢ {birthTime}
+            </p>
+            <p>{location}</p>
+          </div>
         </div>
       </div>
 
-      {/* FORCE BREAK - Nuclear Option */}
-      <div className="page-break-force" />
-
-      {/* 2. Birth Chart (forced to its own page) */}
+      {/* Section 2: Birth Chart */}
       {finalBirthChartSvg && (
-        <>
+        <div className="print-section-wrapper">
           <div className="birth-chart-isolated chart-page-container">
             <div className="chart-container chart-page-only">
               <div dangerouslySetInnerHTML={{ __html: finalBirthChartSvg }} />
             </div>
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
 
-      {/* 3. Core Identity & Planetary Analysis */}
+      {/* Section 3: Core Identity */}
       {coreIdentitySection && (
-        <>
+        <div className="print-section-wrapper">
           <div className="content-section section-core-identity">
             <h2 className="section-header">{coreIdentitySection.title}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(coreIdentitySection.content) }} />
             </div>
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
+
+      {/* Section 4: Planetary Analysis */}
       {planetaryAnalysisSection && (
-        <>
+        <div className="print-section-wrapper">
           <div className="content-section">
             <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(planetaryAnalysisSection.content) }} />
             </div>
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
 
-      {/* 4. Relationship Matrix */}
+      {/* Section 5: Relationship Matrix */}
       {relationshipMatrixSection && (
-        <>
+        <div className="print-section-wrapper">
           <div className="content-section section-relationship-matrix relationship-matrix-section">
             <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(relationshipMatrixSection.content) }} />
             </div>
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
 
-      {/* 5. Compatibility Analysis */}
+      {/* Section 6: Compatibility Analysis */}
       {(compatibilitySection || finalCompatibilityChartSvg || compatibilityScores) && (
-        <>
+        <div className="print-section-wrapper">
           <div className="content-section section-compatibility">
 
             {compatibilitySection ? (
@@ -424,65 +417,55 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
               </>
             )}
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
 
-      {/* 6. Transit Forecast */}
+      {/* Section 7: Transit Forecast */}
       {transitSection && (
-        <>
+        <div className="print-section-wrapper">
           <div className="content-section section-forecasts">
             <h2 className="section-header">Extended Transit Forecast</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(transitSection.content) }} />
             </div>
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
       
-      {/* 7. Annual Forecast */}
+      {/* Section 8: Annual Forecast */}
       {annualSection && (
-        <>
+        <div className="print-section-wrapper">
           <div className="content-section">
             <h2 className="section-header">{annualSection.title}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(annualSection.content) }} />
             </div>
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
 
-      {/* 8. Karmic Work */}
+      {/* Section 9: Karmic Work */}
       {karmicSection && (
-        <>
+        <div className="print-section-wrapper">
           <div className="content-section section-karmic">
             <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(karmicSection.content) }} />
             </div>
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
 
-      {/* 9. Closing Blessing */}
+      {/* Section 10: Closing Blessing */}
       {closingSection && (
-        <>
+        <div className="print-section-wrapper">
           <div className="content-section section-closing">
             <h2 className="section-header">{closingSection.title}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingSection.content) }} />
             </div>
           </div>
-          {/* FORCE BREAK - Nuclear Option */}
-          <div className="page-break-force" />
-        </>
+        </div>
       )}
 
       {/* Render any additional sections not already covered (after closing) */}
@@ -510,7 +493,11 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
               'matrix',
             ].includes(s.type)
         )
-        .map((section, index) => renderSection(section, index + 100))}
+        .map((section, index) => (
+          <div key={index + 100} className="print-section-wrapper">
+            {renderSection(section, index + 100)}
+          </div>
+        ))}
     </div>
   );
 };

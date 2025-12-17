@@ -23,14 +23,19 @@
     size: A4;
   }
 
-  /* 1. Reset Global Layout for Print - NUCLEAR OPTION */
-  html, body {
+  /* RESET ALL ROOTS - WRAPPER STRATEGY */
+  /* Force the entire DOM tree to be block-level for printing */
+  html, body, #__next, #root, main {
+    display: block !important;
     height: auto !important;
     overflow: visible !important;
-    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important; /* Critical: fixed/absolute positions kill page breaks */
   }
 
-  /* 2. Fix the Container (CRITICAL) - NUCLEAR OPTION */
+  /* Fix the Container (CRITICAL) */
   /* This MUST be display: block. If it is flex/grid, page breaks get ignored. */
   .report-container {
     display: block !important;
@@ -40,8 +45,24 @@
     float: none !important;
   }
 
-  /* 3. The Nuclear Breaker Class */
-  /* An invisible physical element to force the layout engine to cut the page */
+  /* CLASS FOR EACH MAJOR SECTION WRAPPER */
+  /* Wrapper method: treats every chapter as a distinct block element that must be followed by a page cut */
+  .print-section-wrapper {
+    display: block !important;
+    page-break-after: always !important; /* Force cut after every section */
+    break-after: page !important;
+    page-break-inside: avoid !important; /* Try to keep section internal content together */
+    min-height: 1px !important; /* Ensure browser sees it as content */
+    position: relative !important;
+  }
+  
+  /* REMOVE BREAK FROM LAST SECTION */
+  .print-section-wrapper:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* Legacy breaker class (kept for backwards compatibility, but wrapper strategy is preferred) */
   .page-break-force {
     display: block !important;
     page-break-before: always !important;
