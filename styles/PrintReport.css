@@ -23,6 +23,38 @@
     size: A4;
   }
 
+  /* 1. Reset Global Layout for Print - NUCLEAR OPTION */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* 2. Fix the Container (CRITICAL) - NUCLEAR OPTION */
+  /* This MUST be display: block. If it is flex/grid, page breaks get ignored. */
+  .report-container {
+    display: block !important;
+    position: relative !important;
+    overflow: visible !important;
+    height: auto !important;
+    float: none !important;
+  }
+
+  /* 3. The Nuclear Breaker Class */
+  /* An invisible physical element to force the layout engine to cut the page */
+  .page-break-force {
+    display: block !important;
+    page-break-before: always !important;
+    break-before: page !important;
+    height: 1px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    visibility: hidden !important;
+    clear: both !important;
+    border: none !important;
+  }
+
   /* Force exact color rendering */
   * {
     print-color-adjust: exact;

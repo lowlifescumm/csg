@@ -233,52 +233,65 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
         </div>
       </div>
 
+      {/* FORCE BREAK - Nuclear Option */}
+      <div className="page-break-force" />
+
       {/* 2. Birth Chart (forced to its own page) */}
       {finalBirthChartSvg && (
         <>
-          <div className="page-break" />
           <div className="birth-chart-isolated chart-page-container">
             <div className="chart-container chart-page-only">
               <div dangerouslySetInnerHTML={{ __html: finalBirthChartSvg }} />
             </div>
           </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
         </>
       )}
 
       {/* 3. Core Identity & Planetary Analysis */}
-      <div className="page-break" />
       {coreIdentitySection && (
-        <div className="content-section section-core-identity">
-          <h2 className="section-header">{coreIdentitySection.title}</h2>
-          <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(coreIdentitySection.content) }} />
+        <>
+          <div className="content-section section-core-identity">
+            <h2 className="section-header">{coreIdentitySection.title}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(coreIdentitySection.content) }} />
+            </div>
           </div>
-        </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
+        </>
       )}
       {planetaryAnalysisSection && (
-        <div className="content-section">
-          <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
-          <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(planetaryAnalysisSection.content) }} />
+        <>
+          <div className="content-section">
+            <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(planetaryAnalysisSection.content) }} />
+            </div>
           </div>
-        </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
+        </>
       )}
 
       {/* 4. Relationship Matrix */}
-      <div className="page-break" />
       {relationshipMatrixSection && (
-        <div className="content-section section-relationship-matrix relationship-matrix-section">
-          <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
-          <div className="analysis-block report-text-body">
-            <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(relationshipMatrixSection.content) }} />
+        <>
+          <div className="content-section section-relationship-matrix relationship-matrix-section">
+            <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(relationshipMatrixSection.content) }} />
+            </div>
           </div>
-        </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
+        </>
       )}
 
       {/* 5. Compatibility Analysis */}
       {(compatibilitySection || finalCompatibilityChartSvg || compatibilityScores) && (
         <>
-          <div className="page-break" />
           <div className="content-section section-compatibility">
 
             {compatibilitySection ? (
@@ -411,58 +424,64 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData }) => {
               </>
             )}
           </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
         </>
       )}
 
       {/* 6. Transit Forecast */}
       {transitSection && (
         <>
-          <div className="page-break" />
           <div className="content-section section-forecasts">
             <h2 className="section-header">Extended Transit Forecast</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(transitSection.content) }} />
             </div>
           </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
         </>
       )}
       
       {/* 7. Annual Forecast */}
       {annualSection && (
         <>
-          <div className="page-break" />
           <div className="content-section">
             <h2 className="section-header">{annualSection.title}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(annualSection.content) }} />
             </div>
           </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
         </>
       )}
 
       {/* 8. Karmic Work */}
       {karmicSection && (
         <>
-          <div className="page-break" />
           <div className="content-section section-karmic">
             <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(karmicSection.content) }} />
             </div>
           </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
         </>
       )}
 
       {/* 9. Closing Blessing */}
       {closingSection && (
         <>
-          <div className="page-break" />
           <div className="content-section section-closing">
             <h2 className="section-header">{closingSection.title}</h2>
             <div className="analysis-block report-text-body">
               <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingSection.content) }} />
             </div>
           </div>
+          {/* FORCE BREAK - Nuclear Option */}
+          <div className="page-break-force" />
         </>
       )}
 
