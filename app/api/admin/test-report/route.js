@@ -652,8 +652,13 @@ export async function POST(request) {
         }
       }
       
-      // Prepare userData for premium generator
-      const userData = {
+      // Check cache for userData (if not already loaded above)
+      if (!cachedPremiumData && useCache && !regenerate) {
+        cachedPremiumData = getCachedReportData(report_type);
+      }
+      
+      // Prepare userData for premium generator (use cached if available)
+      const userData = cachedPremiumData?.userData || {
         name: sampleData.name || hydrationInput.name || 'Test User',
         birthDate: sampleData.birth_date || hydrationInput.birth_date || '',
         birthTime: sampleData.birth_time || hydrationInput.birth_time || '',
