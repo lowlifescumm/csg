@@ -197,41 +197,34 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
   const renderSingleSection = (sectionName: string) => {
     switch (sectionName) {
       case 'cover':
+        const currentDate = new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        
         return (
-          <div className="report-container">
-            {base64BackgroundImage && (
-              <div
-                className="watermark-layer"
-                style={{
-                  backgroundImage: backgroundImageUrl ? `url(${backgroundImageUrl})` : undefined,
-                }}
-              />
-            )}
-            <div
-              className="cover-page"
-              style={
-                backgroundImageUrl
-                  ? {
-                      backgroundImage: `url(${backgroundImageUrl})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundAttachment: 'fixed',
-                    }
-                  : {}
-              }
-            >
-              <h1 className="cover-title">Cosmic Spiritual Guide</h1>
-              <h2 className="cover-subtitle">Master Report</h2>
-              <div className="metadata" style={{ marginTop: '20mm' }}>
-                <p>Prepared for</p>
-                <p style={{ fontSize: '18pt', color: '#d4af37', marginTop: '5mm' }}>
-                  {name}
-                </p>
-                <p style={{ marginTop: '10mm' }}>
-                  {birthDate} â€¢ {birthTime}
-                </p>
-                <p>{location}</p>
+          <div className="cover-page-container" style={{
+            backgroundImage: backgroundImageUrl ? `url(${backgroundImageUrl})` : undefined,
+            height: '100vh',
+            width: '100vw',
+            margin: 0,
+            padding: 0,
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            {/* Dark overlay gradient for readability */}
+            <div className="cover-overlay" />
+            
+            {/* Content container */}
+            <div className="cover-content">
+              <h1 className="cover-main-title">COSMIC SPIRIT GUIDE</h1>
+              <h2 className="cover-subtitle">MASTER REPORT</h2>
+              <div className="cover-divider">✦</div>
+              <p className="cover-prepared-for">Prepared for</p>
+              <h3 className="cover-user-name">{name}</h3>
+              <div className="cover-footer">
+                Generated on {currentDate}
               </div>
             </div>
           </div>
