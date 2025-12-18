@@ -516,16 +516,10 @@
     z-index: 1; /* Above watermark */
   }
   
-  /* Ensure content sections have background to cover watermark */
+  /* Remove solid background overlay - allow watermark to show through */
+  /* Text remains readable due to watermark's low opacity (0.08) */
   .content-section::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--print-bg-dark);
-    z-index: -1;
+    display: none !important; /* Remove background overlay to allow watermark visibility */
   }
 
   /* Section headers with gold underline */
