@@ -205,6 +205,7 @@
   }
 
   /* Full-page watermark layer - CSG Stationery effect */
+  /* Opacity set low enough that text remains perfectly readable */
   .watermark-layer {
     position: fixed !important;
     top: 0 !important;
@@ -216,7 +217,7 @@
     background-position: center center !important;
     background-repeat: no-repeat !important;
     background-attachment: fixed !important;
-    opacity: 0.12 !important; /* Subtle stationery watermark - visible but not distracting */
+    opacity: 0.08 !important; /* Very subtle - text remains perfectly readable */
     pointer-events: none !important;
   }
 
