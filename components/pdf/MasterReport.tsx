@@ -198,6 +198,24 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
   const karmicSection = getSectionByType('karmic');
   const closingSection = getSectionByType('closing');
 
+  // Helper function to wrap content sections with watermark (stationery effect)
+  const wrapWithStationery = (content: React.ReactElement) => {
+    return (
+      <div className="report-container">
+        {/* CSG Stationery watermark - appears on all content pages */}
+        {backgroundImageUrl && (
+          <div
+            className="watermark-layer"
+            style={{
+              backgroundImage: `url(${backgroundImageUrl})`,
+            }}
+          />
+        )}
+        {content}
+      </div>
+    );
+  };
+
   // Helper function to render individual sections for stitch strategy
   const renderSingleSection = (sectionName: string) => {
     switch (sectionName) {
@@ -241,6 +259,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
 
       case 'birth_chart':
         if (!finalBirthChartSvg) return null;
+        // Chart pages: NO watermark (clean background)
         return (
           <div className="report-container">
             <div className="birth-chart-isolated chart-page-container">
@@ -253,48 +272,41 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
 
       case 'core_identity':
         if (!coreIdentitySection) return null;
-        return (
-          <div className="report-container">
-            <div className="content-section section-core-identity">
-              <h2 className="section-header">{coreIdentitySection.title}</h2>
-              <div className="analysis-block report-text-body">
-                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(coreIdentitySection.content) }} />
-              </div>
+        return wrapWithStationery(
+          <div className="content-section section-core-identity">
+            <h2 className="section-header">{coreIdentitySection.title}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(coreIdentitySection.content) }} />
             </div>
           </div>
         );
 
       case 'planetary_analysis':
         if (!planetaryAnalysisSection) return null;
-        return (
-          <div className="report-container">
-            <div className="content-section">
-              <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
-              <div className="analysis-block report-text-body">
-                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(planetaryAnalysisSection.content) }} />
-              </div>
+        return wrapWithStationery(
+          <div className="content-section">
+            <h2 className="section-header">{planetaryAnalysisSection.title}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(planetaryAnalysisSection.content) }} />
             </div>
           </div>
         );
 
       case 'relationship_matrix':
         if (!relationshipMatrixSection) return null;
-        return (
-          <div className="report-container">
-            <div className="content-section section-relationship-matrix relationship-matrix-section">
-              <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
-              <div className="analysis-block report-text-body">
-                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(relationshipMatrixSection.content) }} />
-              </div>
+        return wrapWithStationery(
+          <div className="content-section section-relationship-matrix relationship-matrix-section">
+            <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(relationshipMatrixSection.content) }} />
             </div>
           </div>
         );
 
       case 'compatibility':
         if (!compatibilitySection && !finalCompatibilityChartSvg && !compatibilityScores) return null;
-        return (
-          <div className="report-container">
-            <div className="content-section section-compatibility">
+        return wrapWithStationery(
+          <div className="content-section section-compatibility">
               {compatibilitySection ? (
                 <>
                   <h2 className="section-header">{compatibilitySection.title || 'Compatibility Analysis'}</h2>
@@ -402,57 +414,48 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
                 </>
               )}
             </div>
-          </div>
         );
 
       case 'transit':
         if (!transitSection) return null;
-        return (
-          <div className="report-container">
-            <div className="content-section section-forecasts">
-              <h2 className="section-header">Extended Transit Forecast</h2>
-              <div className="analysis-block report-text-body">
-                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(transitSection.content) }} />
-              </div>
+        return wrapWithStationery(
+          <div className="content-section section-forecasts">
+            <h2 className="section-header">Extended Transit Forecast</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(transitSection.content) }} />
             </div>
           </div>
         );
 
       case 'annual':
         if (!annualSection) return null;
-        return (
-          <div className="report-container">
-            <div className="content-section">
-              <h2 className="section-header">{annualSection.title}</h2>
-              <div className="analysis-block report-text-body">
-                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(annualSection.content) }} />
-              </div>
+        return wrapWithStationery(
+          <div className="content-section">
+            <h2 className="section-header">{annualSection.title}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(annualSection.content) }} />
             </div>
           </div>
         );
 
       case 'karmic':
         if (!karmicSection) return null;
-        return (
-          <div className="report-container">
-            <div className="content-section section-karmic">
-              <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
-              <div className="analysis-block report-text-body">
-                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(karmicSection.content) }} />
-              </div>
+        return wrapWithStationery(
+          <div className="content-section section-karmic">
+            <h2 className="section-header">{karmicSection.title || 'Karmic & Shadow Work'}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(karmicSection.content) }} />
             </div>
           </div>
         );
 
       case 'closing':
         if (!closingSection) return null;
-        return (
-          <div className="report-container">
-            <div className="content-section section-closing">
-              <h2 className="section-header">{closingSection.title}</h2>
-              <div className="analysis-block report-text-body">
-                <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingSection.content) }} />
-              </div>
+        return wrapWithStationery(
+          <div className="content-section section-closing">
+            <h2 className="section-header">{closingSection.title}</h2>
+            <div className="analysis-block report-text-body">
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingSection.content) }} />
             </div>
           </div>
         );
