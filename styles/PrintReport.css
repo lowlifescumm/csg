@@ -91,12 +91,27 @@
     color: #e0e0e0;
     font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 11pt;
-    line-height: 1.8; /* Industry standard for easy reading */
-    text-align: justify;
+    line-height: 1.8; /* Increased for professional readability */
+    text-align: justify; /* Crisp, blocky newspaper look */
     margin: 0;
     padding: 0;
     orphans: 3; /* Prevent single lines at bottom */
     widows: 3; /* Prevent single lines at top */
+  }
+  
+  /* Content container with safe margins (full-bleed background, padded text) */
+  .report-container,
+  .content-section {
+    padding: 60px 50px !important; /* Safe margins for text content */
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Ensure background images remain full-bleed */
+  .cover-page-container,
+  .watermark-layer {
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Headers */
@@ -473,8 +488,9 @@
     font-family: 'Cinzel', serif;
     font-size: 20pt;
     color: var(--print-accent-gold);
-    border-bottom: 2px solid var(--print-accent-gold);
-    padding-bottom: 3mm;
+    border-bottom: 1px solid var(--print-accent-gold) !important; /* Professional gold border */
+    padding-bottom: 0.5rem !important;
+    margin-top: 2rem !important; /* Clear separation */
     margin-bottom: 8mm;
     margin-top: 0;
     page-break-after: avoid;
