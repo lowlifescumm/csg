@@ -119,7 +119,12 @@ const ensurePreserveAspectRatio = (svgString?: string) => {
 
 const toDataUrl = (img?: string) => {
   if (!img) return undefined;
-  return img.startsWith('data:image') ? img : `data:image/png;base64,${img}`;
+  // If it's already a data URL, return as-is
+  if (img.startsWith('data:image')) return img;
+  // If it's a Cloudinary URL or any HTTP(S) URL, return as-is (Puppeteer will fetch it)
+  if (img.startsWith('http://') || img.startsWith('https://')) return img;
+  // Otherwise, assume it's base64 and convert to data URL
+  return `data:image/png;base64,${img}`;
 };
 
 export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSection }) => {
