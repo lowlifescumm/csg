@@ -570,15 +570,55 @@ export async function POST(request) {
       // Use new premium e-book quality PDF generator (React component)
       console.log('[Test Report] Using Premium E-book PDF generator');
       
-      // Generate premium report content first (skip PDF generation since we'll use premium-pdf-generator)
+      // Check cache for premium generator path
       let contentResult;
-      if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
-        const tier = report_type.replace('premium-', '').toUpperCase();
-        // Pass skipPdf: true to prevent duplicate PDF generation
-        contentResult = await generatePremiumReport(tier, { ...sampleData, skipPdf: true }, progressCallback);
-        console.log('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
+      if (useCache && !regenerate) {
+        const cachedData = getCachedReportData(report_type);
+        if (cachedData && cachedData.contentResult) {
+          console.log(`[Test Report] ✓ Using cached contentResult for premium generator (cached at ${cachedData.cachedAt})`);
+          contentResult = cachedData.contentResult;
+          // Restore sampleData if cached
+          if (cachedData.sampleData) {
+            Object.assign(sampleData, cachedData.sampleData);
+          }
+        } else {
+          // Generate new content
+          console.log(`[Test Report] No cache found, generating new content for premium generator...`);
+          if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+            const tier = report_type.replace('premium-', '').toUpperCase();
+            // Pass skipPdf: true to prevent duplicate PDF generation
+            contentResult = await generatePremiumReport(tier, { ...sampleData, skipPdf: true }, progressCallback);
+            console.log('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
+          } else {
+            contentResult = await generateReportContent(report_type, sampleData, progressCallback);
+          }
+          
+          // Cache the generated content
+          setCachedReportData(report_type, {
+            contentResult,
+            sampleData,
+            calculatedData,
+          });
+        }
       } else {
-        contentResult = await generateReportContent(report_type, sampleData, progressCallback);
+        // Generate new content (cache disabled or regenerate requested)
+        if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+          const tier = report_type.replace('premium-', '').toUpperCase();
+          // Pass skipPdf: true to prevent duplicate PDF generation
+          contentResult = await generatePremiumReport(tier, { ...sampleData, skipPdf: true }, progressCallback);
+          console.log('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
+        } else {
+          contentResult = await generateReportContent(report_type, sampleData, progressCallback);
+        }
+        
+        // Cache the generated content (unless regenerate is true)
+        if (!regenerate) {
+          setCachedReportData(report_type, {
+            contentResult,
+            sampleData,
+            calculatedData,
+          });
+        }
       }
       
       // Extract chart SVG from sections
