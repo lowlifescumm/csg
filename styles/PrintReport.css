@@ -107,11 +107,18 @@
   }
   
   /* Content container with safe margins (full-bleed background, padded text) */
-  .report-container,
+  .report-container {
+    position: relative;
+    z-index: 1; /* Ensure content is above watermark */
+  }
+  
   .content-section {
     padding: 60px 50px !important; /* Safe margins for text content */
     max-width: 100%;
     box-sizing: border-box;
+    position: relative;
+    z-index: 1; /* Ensure content is above watermark */
+    /* No background-color - allows watermark to show through while text remains readable */
   }
   
   /* Ensure background images remain full-bleed */
@@ -504,8 +511,8 @@
 
 
   .content-section {
-    background-color: var(--print-bg-dark);
-    color: var(--print-text-light);
+    /* No background-color - allows watermark to show through */
+    color: var(--print-text-light); /* Text color unchanged - remains perfectly readable */
     padding: 15mm;
     min-height: 257mm; /* A4 height minus margins */
     max-width: 80%; /* Wider, more elegant margins */
