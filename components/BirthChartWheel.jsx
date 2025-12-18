@@ -722,6 +722,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           👑=Domicile ↑=Exalted ↓=Detriment ×=Fall
         </text>
       </svg>
+      </div>
       
       <div className="flex gap-3">
         <button
