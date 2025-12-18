@@ -121,7 +121,7 @@
     page-break-after: avoid;
     break-after: avoid;
     break-inside: avoid; /* Prevent headers from being split */
-    margin-top: 3rem;
+    margin-top: 2rem !important; /* Clear separation between topics */
     margin-bottom: 1rem;
   }
 
@@ -130,12 +130,23 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 2pt;
+    border-bottom: 1px solid var(--print-accent-gold) !important; /* Subtle gold border */
+    padding-bottom: 0.5rem !important;
   }
 
   h2 {
     font-size: 24pt;
     font-weight: 500;
     letter-spacing: 1.5pt;
+    border-bottom: 1px solid var(--print-accent-gold) !important; /* Subtle gold border */
+    padding-bottom: 0.4rem !important;
+  }
+  
+  h3 {
+    font-size: 18pt;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.5) !important; /* Lighter gold border */
+    padding-bottom: 0.3rem !important;
   }
 
   h3 {
