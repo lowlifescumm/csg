@@ -582,16 +582,31 @@
     width: 100%;
     max-width: 100%;
     margin: 0;
-    padding: 20mm;
+    padding: 10mm; /* Reduced padding to give more room */
+    box-sizing: border-box;
+    overflow: hidden; /* Prevent overflow */
+  }
+
+  .chart-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .chart-container svg {
-    width: 80% !important;
+    width: 100% !important;
     height: auto !important;
-    max-height: 80vh;
+    max-width: 100% !important;
+    max-height: 100vh !important;
     background-color: rgba(255, 255, 255, 0.05);
-    padding: 5mm;
+    padding: 0;
     border-radius: 2mm;
+    display: block;
+    margin: 0 auto;
+    box-sizing: border-box;
   }
 
   /* Constrain body copy width for readability */
