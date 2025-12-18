@@ -6,6 +6,7 @@ import { hydrateReportData, buildNatalChartPayload } from '@/src/services/chartH
 import { renderTemplatePDF, getDefaultTemplate, getTemplate, renderFromTemplate, flattenReportData } from '@/lib/template-renderer.js';
 import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter.js';
 import { generateCacheKey, getCachedHtml, setCachedHtml } from '@/lib/template-cache.js';
+import { getCachedReportData, setCachedReportData, hasCachedReportData, clearCachedReportData } from '@/lib/report-data-cache.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -83,7 +84,16 @@ export async function POST(request) {
     });
 
     const body = await request.json();
-    const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false } = body;
+    const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false, useCache = true, clearCache = false } = body;
+    
+    // Handle cache clearing
+    if (clearCache) {
+      clearCachedReportData(report_type);
+      return NextResponse.json({ 
+        success: true, 
+        message: `Cache cleared for ${report_type}` 
+      });
+    }
 
     if (!report_type) {
       return NextResponse.json({ error: 'report_type is required' }, { status: 400 });
@@ -405,13 +415,56 @@ export async function POST(request) {
       }
       
       // 1) Hydrate data (already done above in calculatedData and sampleData)
-      // 2) Generate content via existing OpenAI step
+      // 2) Generate content via existing OpenAI step (or use cache)
       let contentResult;
-      if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
-        const tier = report_type.replace('premium-', '').toUpperCase();
-        contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
+      
+      // Check cache first if useCache is true
+      if (useCache && !regenerate) {
+        const cachedData = getCachedReportData(report_type);
+        if (cachedData && cachedData.contentResult) {
+          console.log(`[Test Report] ✓ Using cached report data for ${report_type} (cached at ${cachedData.cachedAt})`);
+          contentResult = cachedData.contentResult;
+          // Also restore sampleData and calculatedData if cached
+          if (cachedData.sampleData) {
+            Object.assign(sampleData, cachedData.sampleData);
+          }
+          if (cachedData.calculatedData) {
+            Object.assign(calculatedData, cachedData.calculatedData);
+          }
+        } else {
+          // Generate new content
+          console.log(`[Test Report] No cache found for ${report_type}, generating new content...`);
+          if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+            const tier = report_type.replace('premium-', '').toUpperCase();
+            contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
+          } else {
+            contentResult = await generateReportContent(report_type, sampleData, progressCallback);
+          }
+          
+          // Cache the generated data
+          setCachedReportData(report_type, {
+            contentResult,
+            sampleData,
+            calculatedData,
+          });
+        }
       } else {
-        contentResult = await generateReportContent(report_type, sampleData, progressCallback);
+        // Generate new content (cache disabled or regenerate requested)
+        if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+          const tier = report_type.replace('premium-', '').toUpperCase();
+          contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
+        } else {
+          contentResult = await generateReportContent(report_type, sampleData, progressCallback);
+        }
+        
+        // Cache the generated data (unless regenerate is true)
+        if (!regenerate) {
+          setCachedReportData(report_type, {
+            contentResult,
+            sampleData,
+            calculatedData,
+          });
+        }
       }
       
       // Extract chart SVG from sections if available
