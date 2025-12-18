@@ -572,14 +572,16 @@ export async function POST(request) {
       
       // Check cache for premium generator path
       let contentResult;
+      let cachedPremiumData = null; // Initialize here
+      
       if (useCache && !regenerate) {
-        const cachedData = getCachedReportData(report_type);
-        if (cachedData && cachedData.contentResult) {
-          console.log(`[Test Report] ✓ Using cached contentResult for premium generator (cached at ${cachedData.cachedAt})`);
-          contentResult = cachedData.contentResult;
+        cachedPremiumData = getCachedReportData(report_type);
+        if (cachedPremiumData && cachedPremiumData.contentResult) {
+          console.log(`[Test Report] ✓ Using cached contentResult for premium generator (cached at ${cachedPremiumData.cachedAt})`);
+          contentResult = cachedPremiumData.contentResult;
           // Restore sampleData if cached
-          if (cachedData.sampleData) {
-            Object.assign(sampleData, cachedData.sampleData);
+          if (cachedPremiumData.sampleData) {
+            Object.assign(sampleData, cachedPremiumData.sampleData);
           }
         } else {
           // Generate new content
@@ -652,7 +654,7 @@ export async function POST(request) {
         }
       }
       
-      // Check cache for userData (if not already loaded above)
+      // Check cache for userData if not already loaded
       if (!cachedPremiumData && useCache && !regenerate) {
         cachedPremiumData = getCachedReportData(report_type);
       }
