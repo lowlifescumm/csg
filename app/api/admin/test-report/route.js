@@ -638,6 +638,12 @@ export async function POST(request) {
                 if (!birthChartSvg.includes('xmlns=')) {
                   birthChartSvg = birthChartSvg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
                 }
+                
+                // Fix: Update viewBox if it's the old one (0 0 1000 800) to new one (0 0 1400 1000)
+                if (birthChartSvg.includes('viewBox="0 0 1000 800"')) {
+                  birthChartSvg = birthChartSvg.replace(/viewBox="0 0 1000 800"/g, 'viewBox="0 0 1400 1000"');
+                  console.log('[Test Report] Updated cached SVG viewBox from "0 0 1000 800" to "0 0 1400 1000"');
+                }
               } catch (e) {
                 console.warn('[Test Report] Could not decode birth chart SVG');
               }
@@ -680,10 +686,21 @@ export async function POST(request) {
       
       // Import premium PDF generator directly instead of internal fetch
       // This avoids network calls and works better in serverless environments
-      const { generatePremiumPdf } = await import('@/lib/premium-pdf-generator.js');
+      let generatePremiumPdf;
+      try {
+        const pdfGeneratorModule = await import('@/lib/premium-pdf-generator.js');
+        generatePremiumPdf = pdfGeneratorModule.generatePremiumPdf;
+      } catch (importError) {
+        throw importError;
+      }
       
       // Generate PDF directly using the premium generator
-      const pdfBuffer = await generatePremiumPdf(userData);
+      let pdfBuffer;
+      try {
+        pdfBuffer = await generatePremiumPdf(userData);
+      } catch (pdfError) {
+        throw pdfError;
+      }
       
       // Upload to Cloudinary
       const pdfUrl = await uploadPdfToCloudinary(pdfBuffer, report_type, {
