@@ -1391,6 +1391,12 @@ export default function TestReportsPage() {
                           [field]: value,
                         },
                       }));
+                    }, {
+                      geocoding,
+                      locationCoords,
+                      locationErrors,
+                      geocodeLocation,
+                      setLocationCoords,
                     })}
                   </div>
                   
@@ -1458,7 +1464,9 @@ function reportIdToName(reportId) {
   return match ? match.name : reportId;
 }
 
-function renderFormFields(reportId, formValues, onChange) {
+function renderFormFields(reportId, formValues, onChange, geocodingHelpers = {}) {
+  const { geocoding = {}, locationCoords = {}, locationErrors = {}, geocodeLocation, setLocationCoords } = geocodingHelpers;
+  
   const handleChange = (field) => (e) => {
     const value = e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
     onChange(field, value);
@@ -1708,7 +1716,9 @@ function renderFormFields(reportId, formValues, onChange) {
                   value={formValues.user_location || ''}
                   onChange={(e) => {
                     handleChange('user_location')(e);
-                    setLocationCoords(prev => ({ ...prev, user: null })); // Reset coordinates when location changes
+                    if (setLocationCoords) {
+                      setLocationCoords(prev => ({ ...prev, user: null })); // Reset coordinates when location changes
+                    }
                   }}
                   className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   placeholder="e.g., New York, USA"
@@ -1774,7 +1784,9 @@ function renderFormFields(reportId, formValues, onChange) {
                   value={formValues.partner_location || ''}
                   onChange={(e) => {
                     handleChange('partner_location')(e);
-                    setLocationCoords(prev => ({ ...prev, partner: null })); // Reset coordinates when location changes
+                    if (setLocationCoords) {
+                      setLocationCoords(prev => ({ ...prev, partner: null })); // Reset coordinates when location changes
+                    }
                   }}
                   className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   placeholder="e.g., Los Angeles, USA"
