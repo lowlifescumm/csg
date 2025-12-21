@@ -131,21 +131,128 @@ export async function POST(request) {
       const root = body.data || body;
       const userSource = root.birth_chart_data || root.user || root;
       
+      // Extract user and partner birth data
+      const userBirthDate = userSource.birth_date || userSource.birthDate || root.birth_date || root.birthDate;
+      const userBirthTime = userSource.birth_time || userSource.birthTime || root.birth_time || root.birthTime;
+      const userLatitude = userSource.latitude || userSource.lat || root.latitude || root.lat;
+      const userLongitude = userSource.longitude || userSource.lng || root.longitude || root.lng;
+      
+      // Extract partner data (for compatibility reports)
+      const partnerBirthDate = root.compatibility_data?.partner?.birth_date || 
+                               root.compatibility_data?.partner?.birthDate ||
+                               root.partner_birth_date ||
+                               root.partner?.birthDate ||
+                               root.partner?.birth_date ||
+                               root.partner_birthDate;
+      const partnerBirthTime = root.compatibility_data?.partner?.birth_time ||
+                               root.compatibility_data?.partner?.birthTime ||
+                               root.partner_birth_time ||
+                               root.partner?.birthTime ||
+                               root.partner?.birth_time ||
+                               root.partner_birthTime;
+      const partnerLatitude = root.compatibility_data?.partner?.latitude ||
+                              root.compatibility_data?.partner?.lat ||
+                              root.partner_latitude ||
+                              root.partner?.latitude ||
+                              root.partner?.lat;
+      const partnerLongitude = root.compatibility_data?.partner?.longitude ||
+                               root.compatibility_data?.partner?.lng ||
+                               root.partner_longitude ||
+                               root.partner?.longitude ||
+                               root.partner?.lng;
+      const partnerName = root.compatibility_data?.partner?.name ||
+                         root.partner_name ||
+                         root.partnerName ||
+                         root.partner?.name ||
+                         'The Partner';
+      
+      // Check if we need to generate compatibility content
+      const hasPreGeneratedSections = root.sections && root.sections.length > 0;
+      const hasPartnerData = partnerBirthDate && partnerBirthTime && partnerLatitude && partnerLongitude;
+      
+      let sections = root.sections || data?.sections || [];
+      let compatibilityScores = root.compatibilityScores || root.compatibility_scores || data?.compatibilityScores;
+      let compatibilityChartSvg = root.compatibilityChartSvg || root.compatibility_chart_svg || data?.compatibilityChartSvg;
+      
+      // If sections are missing but we have partner data, generate compatibility report
+      if (!hasPreGeneratedSections && hasPartnerData && userBirthDate && userBirthTime && userLatitude && userLongitude) {
+        console.log('[Test Report] Generating compatibility report content...');
+        
+        try {
+          // Import required functions
+          const { hydrateReportData } = await import('@/src/services/chartHydrator');
+          const { generateCompatibilityReport } = await import('@/lib/compatibility');
+          
+          // Hydrate both charts
+          const chart1Hydrated = await hydrateReportData({
+            name: userSource.name || root.name || 'Person 1',
+            birthDate: userBirthDate,
+            birthTime: userBirthTime,
+            birthLatitude: parseFloat(userLatitude),
+            birthLongitude: parseFloat(userLongitude),
+          });
+          
+          const chart2Hydrated = await hydrateReportData({
+            name: partnerName,
+            birthDate: partnerBirthDate,
+            birthTime: partnerBirthTime,
+            birthLatitude: parseFloat(partnerLatitude),
+            birthLongitude: parseFloat(partnerLongitude),
+          });
+          
+          const chart1 = chart1Hydrated.rawChart;
+          const chart2 = chart2Hydrated.rawChart;
+          
+          // Generate compatibility report
+          const compatibilityResult = await generateCompatibilityReport(
+            chart1,
+            chart2,
+            userSource.name || root.name || 'Person 1',
+            partnerName
+          );
+          
+          // Build sections array from generated report
+          sections = [
+            {
+              type: 'compatibility',
+              title: 'Compatibility Analysis',
+              content: compatibilityResult.report || '',
+            },
+            {
+              type: 'closing',
+              title: 'Closing Blessing',
+              content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
+            },
+          ];
+          
+          // Set compatibility scores
+          compatibilityScores = compatibilityResult.scores;
+          
+          console.log('[Test Report] ✓ Compatibility report generated:', {
+            sectionsCount: sections.length,
+            hasScores: !!compatibilityScores,
+            overallScore: compatibilityScores?.overall,
+          });
+        } catch (genError) {
+          console.error('[Test Report] Failed to generate compatibility content:', genError);
+          // Continue with empty sections - will still generate cover page
+        }
+      }
+      
       // Build userData structure expected by generatePremiumPdf
-      // Note: This expects data to be pre-hydrated or passed in the correct format
       const userData = {
         name: userSource.name || root.name || 'User',
-        birthDate: userSource.birth_date || userSource.birthDate || root.birth_date || root.birthDate,
-        birthTime: userSource.birth_time || userSource.birthTime || root.birth_time || root.birthTime,
+        birthDate: userBirthDate,
+        birthTime: userBirthTime,
         location: userSource.location || root.location || '',
         sunSign: userSource.sunSign || root.sunSign,
         moonSign: userSource.moonSign || root.moonSign,
         risingSign: userSource.risingSign || root.risingSign,
         reportType: 'compatibility', // Set report type for dynamic title (TASK 1)
         reportTitle: 'COMPATIBILITY REPORT', // Explicit title for cover page
-        sections: root.sections || data?.sections || [],
-        compatibilityScores: root.compatibilityScores || root.compatibility_scores || data?.compatibilityScores,
-        compatibilityChartSvg: root.compatibilityChartSvg || root.compatibility_chart_svg || data?.compatibilityChartSvg,
+        sections: sections,
+        compatibilityScores: compatibilityScores,
+        compatibilityChartSvg: compatibilityChartSvg,
         base64BackgroundImage: root.base64BackgroundImage || root.backgroundImageUrl || data?.base64BackgroundImage,
       };
       
@@ -153,6 +260,7 @@ export async function POST(request) {
         name: userData.name,
         reportType: userData.reportType,
         hasSections: !!userData.sections?.length,
+        sectionsCount: userData.sections?.length || 0,
         hasCompatibilityScores: !!userData.compatibilityScores,
         hasCompatibilityChartSvg: !!userData.compatibilityChartSvg,
       });
