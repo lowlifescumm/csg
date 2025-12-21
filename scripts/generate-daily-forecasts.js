@@ -87,9 +87,14 @@ async function generateForecastForUser(user, date) {
     
     console.log(`[${user.id}] ✓ Forecast generated successfully (ID: ${forecastId})`);
     
-    // TODO: Send email notification if email_enabled
+    // NOTE: Email notifications are planned but not yet implemented.
+    // This feature will send daily forecast emails to users who have opted in.
+    // Implementation requires:
+    // 1. Email service integration (Resend API is available in lib/email.ts)
+    // 2. Email template design
+    // 3. User preference management for email frequency
     if (prefs.email_enabled) {
-      console.log(`[${user.id}] TODO: Send email notification`);
+      console.log(`[${user.id}] NOTE: Email notifications not yet implemented`);
     }
     
     return { status: 'success', forecastId };
