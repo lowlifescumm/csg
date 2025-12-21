@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Premium Master Report Component
  * Renders a flowing, semantic document structure for PDF generation
  */
@@ -20,6 +20,8 @@ interface UserData {
   sections?: ReportSection[];
   compatibilityScores?: CompatibilityScores;
   base64BackgroundImage?: string; // Base64 string (with or without data: prefix) for watermark/cover background
+  reportTitle?: string; // TASK 1: Dynamic report title (ESSENTIAL REPORT, ADVANCED REPORT, etc.)
+  reportType?: string; // Report type (essential, advanced, compatibility, master)
 }
 
 interface ReportSection {
@@ -43,8 +45,24 @@ interface MasterReportProps {
 
 
 /**
+ * TASK 2: Utility function to replace placeholder text with "Cosmic Spirit Guide"
+ * Replaces [Your Spiritual Guide], [Your Name], and similar placeholders
+ */
+const sanitizeSignOffs = (text: string): string => {
+  if (!text) return '';
+  // Replace various placeholder patterns with "Cosmic Spirit Guide"
+  return text
+    .replace(/\[Your Spiritual Guide\]/gi, 'Cosmic Spirit Guide')
+    .replace(/\[Your Name\]/gi, 'Cosmic Spirit Guide')
+    .replace(/\[Your Name Here\]/gi, 'Cosmic Spirit Guide')
+    .replace(/\[Name\]/gi, 'Cosmic Spirit Guide')
+    .replace(/\[Guide Name\]/gi, 'Cosmic Spirit Guide');
+};
+
+/**
  * Convert markdown-like text to properly formatted HTML
  * Handles headings, bold, italic, lists, paragraphs, and horizontal rules
+ * TASK 2: Also sanitizes sign-off placeholders
  */
 const convertMarkdownToHtml = (text: string): string => {
   if (!text) return '';
@@ -109,6 +127,9 @@ const convertMarkdownToHtml = (text: string): string => {
   html = html.replace(/(<\/p>)\s*(<p>)/g, '$1\n$2');
   html = html.replace(/(<\/h[1-6]>)\s*(<p>)/g, '$1\n$2');
   
+  // TASK 2: Sanitize sign-off placeholders before returning
+  html = sanitizeSignOffs(html);
+  
   return html;
 };
 const ensurePreserveAspectRatio = (svgString?: string) => {
@@ -141,6 +162,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
     sections = [],
     compatibilityScores,
     base64BackgroundImage,
+    reportTitle = 'MASTER REPORT', // TASK 1: Default to MASTER REPORT if not provided
   } = userData;
 
   const processedBirthChartSvg = ensurePreserveAspectRatio(birthChartSvg);
@@ -246,8 +268,9 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
             {/* Content container */}
             <div className="cover-content">
               <h1 className="cover-main-title">COSMIC SPIRIT GUIDE</h1>
-              <h2 className="cover-subtitle">MASTER REPORT</h2>
-              <div className="cover-divider">✦</div>
+              {/* TASK 1: Dynamic report title based on reportType */}
+              <h2 className="cover-subtitle">{reportTitle}</h2>
+              <div className="cover-divider">?</div>
               <p className="cover-prepared-for">Prepared for</p>
               <h3 className="cover-user-name">{name}</h3>
               <div className="cover-footer">
@@ -260,6 +283,33 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
       case 'birth_chart':
         if (!finalBirthChartSvg) return null;
         // Chart pages: NO watermark (clean background)
+        
+        // #region agent log
+        if (typeof window === 'undefined') {
+          const fs = require('fs');
+          try {
+            const logPath = 'e:\\merge2\\.cursor\\debug.log';
+            const svgMatch = finalBirthChartSvg?.match(/<svg[^>]*>/);
+            const viewBoxMatch = svgMatch?.[0]?.match(/viewBox="([^"]+)"/);
+            const logEntry = JSON.stringify({
+              location: 'MasterReport.tsx:260',
+              message: 'Birth chart section rendered',
+              data: {
+                svgLength: finalBirthChartSvg?.length,
+                hasSvg: !!svgMatch,
+                viewBox: viewBoxMatch?.[1],
+                svgPreview: svgMatch?.[0]?.substring(0, 150)
+              },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'A,B'
+            }) + '\n';
+            fs.appendFileSync(logPath, logEntry, 'utf-8');
+          } catch (e) {}
+        }
+        // #endregion
+        
         return (
           <div className="report-container">
             <div className="birth-chart-isolated chart-page-container">
@@ -451,12 +501,24 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
 
       case 'closing':
         if (!closingSection) return null;
+        // TASK 2: Sanitize closing content and ensure signature is present
+        const closingContent = sanitizeSignOffs(closingSection.content);
+        const hasSignature = closingContent.toLowerCase().includes('cosmic spirit guide') || 
+                            closingContent.toLowerCase().includes('in spiritual harmony');
+        
         return wrapWithStationery(
           <div className="content-section section-closing">
             <h2 className="section-header">{closingSection.title}</h2>
             <div className="analysis-block report-text-body">
-              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingSection.content) }} />
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingContent) }} />
             </div>
+            {/* TASK 2: Always include signature if not already present */}
+            {!hasSignature && (
+              <div className="signature" style={{ marginTop: '10mm', textAlign: 'center' }}>
+                <p style={{ marginBottom: '5mm', fontStyle: 'italic' }}>In Spiritual Harmony,</p>
+                <h3 style={{ color: '#d4af37', fontSize: '18pt', fontWeight: 'bold', margin: 0 }}>Cosmic Spirit Guide</h3>
+              </div>
+            )}
           </div>
         );
 
@@ -499,14 +561,15 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
           }
         >
           <h1 className="cover-title">Cosmic Spiritual Guide</h1>
-          <h2 className="cover-subtitle">Master Report</h2>
+          {/* TASK 1: Dynamic report title based on reportType */}
+          <h2 className="cover-subtitle">{reportTitle}</h2>
           <div className="metadata" style={{ marginTop: '20mm' }}>
             <p>Prepared for</p>
             <p style={{ fontSize: '18pt', color: '#d4af37', marginTop: '5mm' }}>
               {name}
             </p>
             <p style={{ marginTop: '10mm' }}>
-              {birthDate} â€¢ {birthTime}
+              {birthDate} • {birthTime}
             </p>
             <p>{location}</p>
           </div>
@@ -740,7 +803,13 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
           <div className="content-section section-closing">
             <h2 className="section-header">{closingSection.title}</h2>
             <div className="analysis-block report-text-body">
-              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(closingSection.content) }} />
+              {/* TASK 2: Sanitize closing content */}
+              <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(sanitizeSignOffs(closingSection.content)) }} />
+            </div>
+            {/* TASK 2: Always include signature */}
+            <div className="signature" style={{ marginTop: '10mm', textAlign: 'center' }}>
+              <p style={{ marginBottom: '5mm', fontStyle: 'italic' }}>In Spiritual Harmony,</p>
+              <h3 style={{ color: '#d4af37', fontSize: '18pt', fontWeight: 'bold', margin: 0 }}>Cosmic Spirit Guide</h3>
             </div>
           </div>
         </div>

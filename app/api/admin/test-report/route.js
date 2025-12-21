@@ -100,6 +100,86 @@ export async function POST(request) {
     }
 
     // ============================================
+    // COMPATIBILITY REPORT OVERRIDE - Force Premium Puppeteer Engine
+    // ============================================
+    // TASK: INTERCEPT COMPATIBILITY REQUESTS - Always use generatePremiumPdf
+    // This bypasses the legacy template engine check that requires templateId
+    // Check if the request is for a compatibility report (case-insensitive)
+    const normalizedReportType = (report_type || '').toLowerCase();
+    const isCompatibilityReport = normalizedReportType === 'compatibility' || 
+                                   normalizedReportType === 'compatibility_report' ||
+                                   normalizedReportType === 'relationship';
+    
+    if (isCompatibilityReport) {
+      console.log('[Test Report] ✓ Compatibility report detected - forcing Premium Puppeteer engine (ignoring engine parameter)');
+      
+      // Import premium PDF generator
+      let generatePremiumPdf;
+      try {
+        const pdfGeneratorModule = await import('@/lib/premium-pdf-generator.js');
+        generatePremiumPdf = pdfGeneratorModule.generatePremiumPdf;
+      } catch (importError) {
+        console.error('[Test Report] Failed to import premium PDF generator:', importError);
+        return NextResponse.json(
+          { error: 'Failed to import premium PDF generator', details: importError.message },
+          { status: 500 }
+        );
+      }
+      
+      // Prepare userData for compatibility report
+      // Extract compatibility data from the request body (supports multiple data structures)
+      const root = body.data || body;
+      const userSource = root.birth_chart_data || root.user || root;
+      
+      // Build userData structure expected by generatePremiumPdf
+      // Note: This expects data to be pre-hydrated or passed in the correct format
+      const userData = {
+        name: userSource.name || root.name || 'User',
+        birthDate: userSource.birth_date || userSource.birthDate || root.birth_date || root.birthDate,
+        birthTime: userSource.birth_time || userSource.birthTime || root.birth_time || root.birthTime,
+        location: userSource.location || root.location || '',
+        sunSign: userSource.sunSign || root.sunSign,
+        moonSign: userSource.moonSign || root.moonSign,
+        risingSign: userSource.risingSign || root.risingSign,
+        reportType: 'compatibility', // Set report type for dynamic title (TASK 1)
+        reportTitle: 'COMPATIBILITY REPORT', // Explicit title for cover page
+        sections: root.sections || data?.sections || [],
+        compatibilityScores: root.compatibilityScores || root.compatibility_scores || data?.compatibilityScores,
+        compatibilityChartSvg: root.compatibilityChartSvg || root.compatibility_chart_svg || data?.compatibilityChartSvg,
+        base64BackgroundImage: root.base64BackgroundImage || root.backgroundImageUrl || data?.base64BackgroundImage,
+      };
+      
+      console.log('[Test Report] Generating compatibility PDF with userData:', {
+        name: userData.name,
+        reportType: userData.reportType,
+        hasSections: !!userData.sections?.length,
+        hasCompatibilityScores: !!userData.compatibilityScores,
+        hasCompatibilityChartSvg: !!userData.compatibilityChartSvg,
+      });
+      
+      // Generate PDF using premium generator (bypasses template engine entirely)
+      try {
+        const pdfBuffer = await generatePremiumPdf(userData);
+        
+        console.log('[Test Report] ✓ Compatibility PDF generated successfully, size:', pdfBuffer.length, 'bytes');
+        
+        // Return PDF directly
+        return new NextResponse(pdfBuffer, {
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="compatibility-report-${userData.name.replace(/\s+/g, '-').toLowerCase()}.pdf"`,
+          },
+        });
+      } catch (pdfError) {
+        console.error('[Test Report] Premium PDF generation failed:', pdfError);
+        return NextResponse.json(
+          { error: 'Failed to generate compatibility PDF', details: pdfError.message },
+          { status: 500 }
+        );
+      }
+    }
+
+    // ============================================
     // STEP 1: UNWRAP THE PAYLOAD (Input Layer) - AGGRESSIVE DATA EXTRACTION
     // ============================================
     const root = body.data || body;
@@ -387,16 +467,58 @@ export async function POST(request) {
       let finalTemplateId = templateId;
       if (!finalTemplateId) {
         try {
-          const defaultTemplate = await getDefaultTemplate(report_type.toUpperCase());
+          // Normalize report type for template lookup
+          // Map common report types to their template report_type values
+          const reportTypeMap = {
+            'compatibility': 'COMPATIBILITY',
+            'compatibility_report': 'COMPATIBILITY',
+            'birth_chart': 'BIRTH_CHART',
+            'tarot': 'TAROT',
+            'moon_reading': 'MOON_READING',
+            'forecast': 'FORECAST',
+            'transit': 'TRANSIT',
+          };
+          
+          const normalizedReportType = reportTypeMap[report_type?.toLowerCase()] || report_type.toUpperCase();
+          
+          const defaultTemplate = await getDefaultTemplate(normalizedReportType);
           if (defaultTemplate) {
             finalTemplateId = defaultTemplate.id;
             console.log('[Test Report] Using default template:', finalTemplateId);
           } else {
+            // Try to find any template for this report type (not just default)
+            const { pool } = await import('@/lib/db.js');
+            const anyTemplateResult = await pool.query(
+              `SELECT id, name, slug FROM report_templates 
+               WHERE report_type = $1 
+               ORDER BY created_at DESC LIMIT 5`,
+              [normalizedReportType]
+            );
+            
+            // Also check legacy table
+            const legacyTemplateResult = await pool.query(
+              `SELECT id, name, slug FROM pdf_templates 
+               WHERE report_type = $1 AND is_active = true 
+               ORDER BY created_at DESC LIMIT 5`,
+              [normalizedReportType]
+            );
+            
+            const availableTemplates = [
+              ...anyTemplateResult.rows.map(t => ({ id: t.id, name: t.name, slug: t.slug })),
+              ...legacyTemplateResult.rows.map(t => ({ id: t.id, name: t.name, slug: t.slug }))
+            ];
+            
             return NextResponse.json(
               {
                 error: 'templateId required when using engine=template',
-                hint: 'Add ?templateId=<id> to the URL, or create a default template for this report type',
-                suggestion: 'GET /api/admin/templates to see available templates'
+                report_type: report_type,
+                normalized_report_type: normalizedReportType,
+                hint: `No default template found for report type "${report_type}" (normalized: "${normalizedReportType}")`,
+                suggestion: availableTemplates.length > 0
+                  ? `Available templates for this report type: ${availableTemplates.map(t => t.id || t.slug).join(', ')}. Add ?templateId=<id> to the URL.`
+                  : `No templates found for this report type. Create a template first, or use engine=puppeteer instead.`,
+                available_templates: availableTemplates.length > 0 ? availableTemplates : null,
+                alternative: 'Use engine=puppeteer (default) instead, or create a template via POST /api/admin/templates'
               },
               { status: 400 }
             );
@@ -406,7 +528,9 @@ export async function POST(request) {
           return NextResponse.json(
             {
               error: 'templateId required when using engine=template',
-              hint: 'Add ?templateId=<id> to the URL',
+              report_type: report_type,
+              details: error.message,
+              hint: `Add ?templateId=<id> to the URL, or use engine=puppeteer instead`,
               suggestion: 'GET /api/admin/templates to see available templates'
             },
             { status: 400 }
