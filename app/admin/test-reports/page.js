@@ -617,19 +617,13 @@ export default function TestReportsPage() {
         partner_birth_date: sample.compatibility_data?.partner?.birth_date || '',
         partner_birth_time: sample.compatibility_data?.partner?.birth_time || '',
         partner_location: sample.compatibility_data?.partner?.location || '',
-        compatibility_score: sample.compatibility_data?.compatibility_score || 0,
+        // compatibility_score will be calculated from birth charts
         transit_name: sample.transit_data?.name || '',
         transit_date_range: sample.transit_data?.date_range || '',
         destiny_cycle_name: sample.destiny_data?.cycle_name || '',
         destiny_start_date: sample.destiny_data?.start_date || '',
         destiny_end_date: sample.destiny_data?.end_date || '',
-        matrix_user_sun: sample.matrix_data?.pair?.user?.sun || '',
-        matrix_partner_sun: sample.matrix_data?.pair?.partner?.sun || '',
-        matrix_emotional: sample.matrix_data?.matrix_scores?.emotional || 0,
-        matrix_communication: sample.matrix_data?.matrix_scores?.communication || 0,
-        matrix_spiritual: sample.matrix_data?.matrix_scores?.spiritual || 0,
-        matrix_stability: sample.matrix_data?.matrix_scores?.stability || 0,
-        matrix_physical: sample.matrix_data?.matrix_scores?.physical || 0,
+        // matrix_user_sun, matrix_partner_sun, and matrix scores will be calculated from birth data
         karmic_north_node: sample.karmic_data?.nodes?.north_node || '',
         karmic_south_node: sample.karmic_data?.nodes?.south_node || '',
       };
@@ -649,8 +643,7 @@ export default function TestReportsPage() {
         name: formValues.name || 'Test User',
         moon_phase: formValues.moon_phase || '',
         phase_energy: formValues.phase_energy || '',
-        sun_sign: formValues.sun_sign || '',
-        moon_sign: formValues.moon_sign || '',
+        // sun_sign, moon_sign will be calculated from birth data
       };
     } else if (reportId === 'birth_chart') {
       return {
@@ -660,9 +653,7 @@ export default function TestReportsPage() {
         location: formValues.location || '',
         latitude: parseFloat(formValues.latitude) || 0,
         longitude: parseFloat(formValues.longitude) || 0,
-        sun: formValues.sun || '',
-        moon: formValues.moon || '',
-        rising: formValues.rising || '',
+        // sun, moon, rising will be calculated from birth data
         planets: {},
         houses: {},
         aspects: [],
@@ -682,7 +673,7 @@ export default function TestReportsPage() {
           location: formValues.partner_location || '',
         },
         aspects: [],
-        compatibility_score: parseInt(formValues.compatibility_score) || 0,
+        // compatibility_score will be calculated from birth charts
       };
     } else if (reportId === 'transit_forecast_short' || reportId === 'transit_forecast_extended') {
       return {
@@ -708,9 +699,7 @@ export default function TestReportsPage() {
           location: formValues.birth_location || '',
           latitude: parseFloat(formValues.birth_latitude) || 0,
           longitude: parseFloat(formValues.birth_longitude) || 0,
-          sun: formValues.birth_sun || '',
-          moon: formValues.birth_moon || '',
-          rising: formValues.birth_rising || '',
+          // sun, moon, rising will be calculated from birth data
           planets: {},
           houses: {},
           aspects: [],
@@ -729,7 +718,7 @@ export default function TestReportsPage() {
             location: formValues.partner_location || '',
           },
           aspects: [],
-          compatibility_score: parseInt(formValues.compatibility_score) || 0,
+          // compatibility_score will be calculated from birth charts
         },
         transit_data: {
           name: formValues.transit_name || formValues.name || 'Test User',
@@ -747,9 +736,7 @@ export default function TestReportsPage() {
           location: formValues.birth_location || '',
           latitude: parseFloat(formValues.birth_latitude) || 0,
           longitude: parseFloat(formValues.birth_longitude) || 0,
-          sun: formValues.birth_sun || '',
-          moon: formValues.birth_moon || '',
-          rising: formValues.birth_rising || '',
+          // sun, moon, rising will be calculated from birth data
           planets: {},
           houses: {},
           aspects: [],
@@ -768,7 +755,7 @@ export default function TestReportsPage() {
             location: formValues.partner_location || '',
           },
           aspects: [],
-          compatibility_score: parseInt(formValues.compatibility_score) || 0,
+          // compatibility_score will be calculated from birth charts
         },
         transit_data: {
           name: formValues.transit_name || formValues.name || 'Test User',
@@ -783,15 +770,10 @@ export default function TestReportsPage() {
         },
         matrix_data: {
           pair: {
-            user: { sun: formValues.matrix_user_sun || 'Gemini' },
-            partner: { sun: formValues.matrix_partner_sun || 'Scorpio' },
+            // user and partner sun signs will be calculated from birth data
           },
           matrix_scores: {
-            emotional: parseInt(formValues.matrix_emotional) || 0,
-            communication: parseInt(formValues.matrix_communication) || 0,
-            spiritual: parseInt(formValues.matrix_spiritual) || 0,
-            stability: parseInt(formValues.matrix_stability) || 0,
-            physical: parseInt(formValues.matrix_physical) || 0,
+            // matrix scores will be calculated from birth charts
           },
         },
         karmic_data: {
@@ -1502,33 +1484,10 @@ function renderFormFields(reportId, formValues, onChange) {
             placeholder="Growth and intention setting"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
-            <select
-              value={formValues.sun_sign || ''}
-              onChange={handleChange('sun_sign')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
-            <select
-              value={formValues.moon_sign || ''}
-              onChange={handleChange('moon_sign')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Sun and Moon signs will be calculated automatically from birth date, time, and location.
+          </p>
         </div>
       </>
     );
@@ -1604,46 +1563,10 @@ function renderFormFields(reportId, formValues, onChange) {
             />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
-            <select
-              value={formValues.sun || ''}
-              onChange={handleChange('sun')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
-            <select
-              value={formValues.moon || ''}
-              onChange={handleChange('moon')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rising Sign</label>
-            <select
-              value={formValues.rising || ''}
-              onChange={handleChange('rising')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Sun, Moon, and Rising signs will be calculated automatically from birth date, time, and location.
+          </p>
         </div>
       </>
     );
@@ -1740,16 +1663,10 @@ function renderFormFields(reportId, formValues, onChange) {
             </div>
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Compatibility Score (0-100)</label>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            value={formValues.compatibility_score || 0}
-            onChange={handleChange('compatibility_score')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-          />
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Compatibility score will be calculated automatically from birth chart data.
+          </p>
         </div>
       </>
     );
@@ -1965,44 +1882,10 @@ function renderFormFields(reportId, formValues, onChange) {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
-              <select
-                value={formValues.birth_sun || ''}
-                onChange={handleChange('birth_sun')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="">Select...</option>
-                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                  <option key={sign} value={sign}>{sign}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
-              <select
-                value={formValues.birth_moon || ''}
-                onChange={handleChange('birth_moon')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="">Select...</option>
-                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                  <option key={sign} value={sign}>{sign}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rising Sign</label>
-              <select
-                value={formValues.birth_rising || ''}
-                onChange={handleChange('birth_rising')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="">Select...</option>
-                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                  <option key={sign} value={sign}>{sign}</option>
-                ))}
-              </select>
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> Sun, Moon, and Rising signs will be calculated automatically from birth date, time, and location.
+              </p>
             </div>
           </div>
         </div>
@@ -2089,17 +1972,11 @@ function renderFormFields(reportId, formValues, onChange) {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Compatibility Score (0-100)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={formValues.compatibility_score || 0}
-                onChange={handleChange('compatibility_score')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
-            </div>
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> Compatibility score will be calculated automatically from birth chart data.
+            </p>
           </div>
         </div>
 
@@ -2163,50 +2040,10 @@ function renderFormFields(reportId, formValues, onChange) {
             </div>
             <div className="border-t border-gray-200 pt-4 mt-4">
               <h4 className="font-semibold text-gray-900 mb-3">Relationship Matrix Data</h4>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">User Sun Sign <span className="text-red-500">*</span></label>
-                  <select
-                    value={formValues.matrix_user_sun || ''}
-                    onChange={handleChange('matrix_user_sun')}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    required
-                  >
-                    <option value="">Select...</option>
-                    {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                      <option key={sign} value={sign}>{sign}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Partner Sun Sign <span className="text-red-500">*</span></label>
-                  <select
-                    value={formValues.matrix_partner_sun || ''}
-                    onChange={handleChange('matrix_partner_sun')}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    required
-                  >
-                    <option value="">Select...</option>
-                    {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                      <option key={sign} value={sign}>{sign}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-5 gap-4">
-                {['emotional', 'communication', 'spiritual', 'stability', 'physical'].map(scoreType => (
-                  <div key={scoreType}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">{scoreType} (0-100)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formValues[`matrix_${scoreType}`] || 0}
-                      onChange={handleChange(`matrix_${scoreType}`)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    />
-                  </div>
-                ))}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> Sun signs and relationship matrix scores (emotional, communication, spiritual, stability, physical) will be calculated automatically from birth chart data.
+                </p>
               </div>
             </div>
             <div className="border-t border-gray-200 pt-4 mt-4">
