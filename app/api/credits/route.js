@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

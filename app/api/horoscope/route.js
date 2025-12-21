@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCachedHoroscope, generateDailyHoroscope, saveHoroscope } from '@/lib/horoscope';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { pool } from '@/lib/db';

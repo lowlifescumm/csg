@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { pool } from '@/lib/db.js';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getForecastPreferences } from '@/lib/forecast-engine.js';
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserReadings, getUserBirthCharts, getUserStats } from "@/lib/db";
 import { cookies } from "next/headers";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth-config';
 
 export async function GET(request) {
   try {

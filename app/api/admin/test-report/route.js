@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { generateReportContent, generatePDF, generatePremiumReport, generatePdfFromHtml, uploadPdfToCloudinary } from '@/lib/pdf-generator.js';
 import { hydrateReportData, buildNatalChartPayload } from '@/src/services/chartHydrator';
 import { renderTemplatePDF, getDefaultTemplate, getTemplate, renderFromTemplate, flattenReportData } from '@/lib/template-renderer.js';

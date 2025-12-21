@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { createJobRecord, findJobByIdempotency, markJobQueued, markJobChargeFailed, getJobById } from '@/lib/reading-jobs.js';
 import { consumeCredits } from '@/lib/credit-engine.js';
 import { getReadingCost } from '@/lib/pricing.js';

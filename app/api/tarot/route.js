@@ -1,7 +1,7 @@
 // /app/api/tarot/route.js
 import { NextResponse } from "next/server";
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { drawCards } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
 import { generateTarotReading } from "@/lib/openai";

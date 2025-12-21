@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getSubscriptionStatus } from '@/lib/subscription-service.js';
 import { pool } from '@/lib/db.js';

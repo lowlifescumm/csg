@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth-config';
 import { zodiacSigns } from "@/lib/zodiac-data";
 import { pool } from "@/lib/db";
 import * as Astronomy from "astronomy-engine";

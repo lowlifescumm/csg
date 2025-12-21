@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Premium PDF Generation API Route
  * Uses Puppeteer to render React component and generate e-book quality PDF
  */
@@ -201,9 +201,9 @@ export async function POST(request: NextRequest) {
         
         
         margin: {
-          top: '20mm',
+          top: '0mm',
           right: '0mm',
-          bottom: '20mm',
+          bottom: '0mm',
           left: '0mm',
         },
         preferCSSPageSize: false,

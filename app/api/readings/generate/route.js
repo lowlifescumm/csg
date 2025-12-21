@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth-config';
 import { drawCards } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
 import { generateTarotReading } from "@/lib/openai";
