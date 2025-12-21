@@ -280,6 +280,10 @@ export default function TestReportsPage() {
   const [templateId, setTemplateId] = useState('');
   const [templates, setTemplates] = useState([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
+  // Location geocoding state for compatibility form
+  const [locationCoords, setLocationCoords] = useState({});
+  const [geocoding, setGeocoding] = useState({ user: false, partner: false });
+  const [locationErrors, setLocationErrors] = useState({ user: '', partner: '' });
 
   // Fetch templates when component mounts or engine changes
   const fetchTemplates = async () => {
@@ -659,18 +663,26 @@ export default function TestReportsPage() {
         aspects: [],
       };
     } else if (reportId === 'compatibility') {
+      // Include coordinates if available
+      const userCoords = locationCoords.user;
+      const partnerCoords = locationCoords.partner;
+      
       return {
         user: {
           name: formValues.user_name || 'Person One',
           birth_date: formValues.user_birth_date || '',
           birth_time: formValues.user_birth_time || '',
           location: formValues.user_location || '',
+          latitude: userCoords?.latitude,
+          longitude: userCoords?.longitude,
         },
         partner: {
           name: formValues.partner_name || 'Person Two',
           birth_date: formValues.partner_birth_date || '',
           birth_time: formValues.partner_birth_time || '',
           location: formValues.partner_location || '',
+          latitude: partnerCoords?.latitude,
+          longitude: partnerCoords?.longitude,
         },
         aspects: [],
         // compatibility_score will be calculated from birth charts
@@ -956,6 +968,86 @@ export default function TestReportsPage() {
     if (editingReport === reportId) {
       setEditingReport(null);
       setCustomDataError(null);
+    }
+    // Clear location coordinates when removing custom data
+    setLocationCoords({});
+    setLocationErrors({ user: '', partner: '' });
+  };
+
+  // Geocode location for compatibility form
+  const geocodeLocation = async (location, type) => {
+    if (!location || location.trim() === '') {
+      setLocationErrors(prev => ({ ...prev, [type]: 'Location is required' }));
+      return null;
+    }
+
+    setGeocoding(prev => ({ ...prev, [type]: true }));
+    setLocationErrors(prev => ({ ...prev, [type]: '' }));
+
+    try {
+      // Try Google Maps Geocoding API first
+      const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      
+      if (googleApiKey) {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${googleApiKey}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            const loc = data.results[0].geometry.location;
+            const coords = {
+              latitude: loc.lat,
+              longitude: loc.lng
+            };
+            setLocationCoords(prev => ({ ...prev, [type]: coords }));
+            setLocationErrors(prev => ({ ...prev, [type]: '' }));
+            setGeocoding(prev => ({ ...prev, [type]: false }));
+            return coords;
+          }
+        }
+      }
+
+      // Fallback to OpenStreetMap
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'CosmicSpiritualGuide/1.0'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.length > 0) {
+          const coords = {
+            latitude: parseFloat(data[0].lat),
+            longitude: parseFloat(data[0].lon)
+          };
+          setLocationCoords(prev => ({ ...prev, [type]: coords }));
+          setLocationErrors(prev => ({ ...prev, [type]: '' }));
+          setGeocoding(prev => ({ ...prev, [type]: false }));
+          return coords;
+        }
+      }
+
+      // All services failed
+      setLocationErrors(prev => ({ 
+        ...prev, 
+        [type]: `Could not find "${location}". Please try a major city name (e.g., "New York, USA" or "London, UK")` 
+      }));
+      setGeocoding(prev => ({ ...prev, [type]: false }));
+      return null;
+    } catch (error) {
+      console.error(`Geocoding error for ${type}:`, error);
+      setLocationErrors(prev => ({ 
+        ...prev, 
+        [type]: 'Geocoding service unavailable. Please try again.' 
+      }));
+      setGeocoding(prev => ({ ...prev, [type]: false }));
+      return null;
     }
   };
 
@@ -1610,12 +1702,34 @@ function renderFormFields(reportId, formValues, onChange) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                value={formValues.user_location || ''}
-                onChange={handleChange('user_location')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formValues.user_location || ''}
+                  onChange={(e) => {
+                    handleChange('user_location')(e);
+                    setLocationCoords(prev => ({ ...prev, user: null })); // Reset coordinates when location changes
+                  }}
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="e.g., New York, USA"
+                />
+                <button
+                  type="button"
+                  onClick={() => geocodeLocation(formValues.user_location || '', 'user')}
+                  disabled={!formValues.user_location || geocoding.user}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {geocoding.user ? 'Searching...' : 'Search'}
+                </button>
+              </div>
+              {locationErrors.user && (
+                <p className="mt-1 text-sm text-red-600">{locationErrors.user}</p>
+              )}
+              {locationCoords.user && !locationErrors.user && (
+                <p className="mt-1 text-sm text-green-600">
+                  ✓ Location found: {locationCoords.user.latitude.toFixed(4)}°, {locationCoords.user.longitude.toFixed(4)}°
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -1654,12 +1768,34 @@ function renderFormFields(reportId, formValues, onChange) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                value={formValues.partner_location || ''}
-                onChange={handleChange('partner_location')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formValues.partner_location || ''}
+                  onChange={(e) => {
+                    handleChange('partner_location')(e);
+                    setLocationCoords(prev => ({ ...prev, partner: null })); // Reset coordinates when location changes
+                  }}
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="e.g., Los Angeles, USA"
+                />
+                <button
+                  type="button"
+                  onClick={() => geocodeLocation(formValues.partner_location || '', 'partner')}
+                  disabled={!formValues.partner_location || geocoding.partner}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {geocoding.partner ? 'Searching...' : 'Search'}
+                </button>
+              </div>
+              {locationErrors.partner && (
+                <p className="mt-1 text-sm text-red-600">{locationErrors.partner}</p>
+              )}
+              {locationCoords.partner && !locationErrors.partner && (
+                <p className="mt-1 text-sm text-green-600">
+                  ✓ Location found: {locationCoords.partner.latitude.toFixed(4)}°, {locationCoords.partner.longitude.toFixed(4)}°
+                </p>
+              )}
             </div>
           </div>
         </div>
