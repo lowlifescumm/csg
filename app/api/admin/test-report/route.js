@@ -344,12 +344,39 @@ export async function POST(request) {
                 title: 'Compatibility Analysis',
                 content: fallbackResult.report || '',
               },
-              {
-                type: 'closing',
-                title: 'Closing Blessing',
-                content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
-              },
             ];
+            
+            // Generate Relationship Matrix section even in fallback case
+            console.log('[Test Report] Generating relationship matrix (fallback case)...');
+            try {
+              const relationshipMatrixResult = await generateReportContent('relationship_matrix', {
+                user: chart1Hydrated.user || chart1Hydrated.rawChart,
+                partner: chart2Hydrated.user || chart2Hydrated.rawChart,
+                pair: {
+                  user: chart1Hydrated.user || chart1Hydrated.rawChart,
+                  partner: chart2Hydrated.user || chart2Hydrated.rawChart,
+                },
+                matrix_scores: fallbackResult.scores || chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+              });
+              
+              if (relationshipMatrixResult && relationshipMatrixResult.content) {
+                sections.push({
+                  type: 'relationship_matrix',
+                  title: 'Relationship Matrix',
+                  content: relationshipMatrixResult.content || '',
+                });
+              }
+            } catch (matrixError) {
+              console.error('[Test Report] Failed to generate relationship matrix in fallback:', matrixError);
+              // Continue without relationship matrix
+            }
+            
+            sections.push({
+              type: 'closing',
+              title: 'Closing Blessing',
+              content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
+            });
+            
             compatibilityScores = fallbackResult.scores;
           } else {
             // Build sections array matching master report format
@@ -360,16 +387,49 @@ export async function POST(request) {
                 title: 'Compatibility Analysis',
                 content: compatibilityResult.content || '',
               },
-              {
-                type: 'closing',
-                title: 'Closing Blessing',
-                content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
-              },
             ];
+            
+            // Generate Relationship Matrix section (required for compatibility reports per REPORT_RECIPES)
+            console.log('[Test Report] Generating relationship matrix...');
+            const matrixStart = Date.now();
+            try {
+              const relationshipMatrixResult = await generateReportContent('relationship_matrix', {
+                user: chart1Hydrated.user || chart1Hydrated.rawChart,
+                partner: chart2Hydrated.user || chart2Hydrated.rawChart,
+                pair: {
+                  user: chart1Hydrated.user || chart1Hydrated.rawChart,
+                  partner: chart2Hydrated.user || chart2Hydrated.rawChart,
+                },
+                matrix_scores: chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+              }, (progress, message) => {
+                console.log(`[Test Report] relationship_matrix progress: ${progress}% - ${message}`);
+              });
+              
+              if (relationshipMatrixResult && relationshipMatrixResult.content) {
+                sections.push({
+                  type: 'relationship_matrix',
+                  title: 'Relationship Matrix',
+                  content: relationshipMatrixResult.content || '',
+                });
+                console.log('[Test Report] Relationship matrix generated, elapsed:', Date.now() - matrixStart, 'ms');
+              } else {
+                console.warn('[Test Report] Relationship matrix returned empty, skipping');
+              }
+            } catch (matrixError) {
+              console.error('[Test Report] Failed to generate relationship matrix:', matrixError);
+              // Continue without relationship matrix - compatibility section is more important
+            }
+            
+            // Add closing section
+            sections.push({
+              type: 'closing',
+              title: 'Closing Blessing',
+              content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
+            });
             
             // #region agent log (production-safe)
             if (typeof fetch !== 'undefined') {
-              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:320',message:'H6: Sections built from generateReportContent',data:{sectionsCount:sections.length,firstSectionContentLength:sections[0]?.content?.length||0,secondSectionContentLength:sections[1]?.content?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
+              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:370',message:'H8: Sections built including relationship matrix',data:{sectionsCount:sections.length,sectionsTypes:sections.map(s=>s.type),hasCompatibility:!!sections.find(s=>s.type==='compatibility'),hasRelationshipMatrix:!!sections.find(s=>s.type==='relationship_matrix'),hasClosing:!!sections.find(s=>s.type==='closing')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H8'})}).catch(()=>{});
             }
             // #endregion
             
