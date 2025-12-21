@@ -132,34 +132,46 @@ export async function POST(request) {
       const userSource = root.birth_chart_data || root.user || root;
       
       // Extract user and partner birth data
-      const userBirthDate = userSource.birth_date || userSource.birthDate || root.birth_date || root.birthDate;
-      const userBirthTime = userSource.birth_time || userSource.birthTime || root.birth_time || root.birthTime;
-      const userLatitude = userSource.latitude || userSource.lat || root.latitude || root.lat;
-      const userLongitude = userSource.longitude || userSource.lng || root.longitude || root.lng;
+      // Support multiple data structure formats (compatibility API, test-report, etc.)
+      const userBirthDate = userSource.birth_date || userSource.birthDate || root.birth_date || root.birthDate || root.person1BirthDate;
+      const userBirthTime = userSource.birth_time || userSource.birthTime || root.birth_time || root.birthTime || root.person1BirthTime;
+      const userLatitude = userSource.latitude || userSource.lat || root.latitude || root.lat || root.person1Latitude || 
+                          (userSource.location && typeof userSource.location === 'object' ? userSource.location.latitude : null);
+      const userLongitude = userSource.longitude || userSource.lng || root.longitude || root.lng || root.person1Longitude ||
+                           (userSource.location && typeof userSource.location === 'object' ? userSource.location.longitude : null);
       
       // Extract partner data (for compatibility reports)
+      // Support multiple formats: compatibility_data.partner, partner object, person2 fields, etc.
       const partnerBirthDate = root.compatibility_data?.partner?.birth_date || 
                                root.compatibility_data?.partner?.birthDate ||
                                root.partner_birth_date ||
                                root.partner?.birthDate ||
                                root.partner?.birth_date ||
-                               root.partner_birthDate;
+                               root.partner_birthDate ||
+                               root.person2BirthDate;
       const partnerBirthTime = root.compatibility_data?.partner?.birth_time ||
                                root.compatibility_data?.partner?.birthTime ||
                                root.partner_birth_time ||
                                root.partner?.birthTime ||
                                root.partner?.birth_time ||
-                               root.partner_birthTime;
+                               root.partner_birthTime ||
+                               root.person2BirthTime;
       const partnerLatitude = root.compatibility_data?.partner?.latitude ||
                               root.compatibility_data?.partner?.lat ||
                               root.partner_latitude ||
                               root.partner?.latitude ||
-                              root.partner?.lat;
+                              root.partner?.lat ||
+                              root.person2Latitude ||
+                              (root.compatibility_data?.partner?.location && typeof root.compatibility_data.partner.location === 'object' ? root.compatibility_data.partner.location.latitude : null) ||
+                              (root.partner?.location && typeof root.partner.location === 'object' ? root.partner.location.latitude : null);
       const partnerLongitude = root.compatibility_data?.partner?.longitude ||
                                root.compatibility_data?.partner?.lng ||
                                root.partner_longitude ||
                                root.partner?.longitude ||
-                               root.partner?.lng;
+                               root.partner?.lng ||
+                               root.person2Longitude ||
+                               (root.compatibility_data?.partner?.location && typeof root.compatibility_data.partner.location === 'object' ? root.compatibility_data.partner.location.longitude : null) ||
+                               (root.partner?.location && typeof root.partner.location === 'object' ? root.partner.location.longitude : null);
       const partnerName = root.compatibility_data?.partner?.name ||
                          root.partner_name ||
                          root.partnerName ||
@@ -173,7 +185,7 @@ export async function POST(request) {
       
       // #region agent log (production-safe)
       if (typeof fetch !== 'undefined') {
-        fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:172',message:'H6: Checking section generation conditions',data:{hasPreGeneratedSections,hasPartnerData,hasUserData,partnerBirthDate:!!partnerBirthDate,partnerBirthTime:!!partnerBirthTime,partnerLatitude:!!partnerLatitude,partnerLongitude:!!partnerLongitude,userBirthDate:!!userBirthDate,userBirthTime:!!userBirthTime,userLatitude:!!userLatitude,userLongitude:!!userLongitude,rootSectionsCount:root.sections?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:172',message:'H6: Checking section generation conditions',data:{hasPreGeneratedSections,hasPartnerData,hasUserData,partnerBirthDate:!!partnerBirthDate,partnerBirthTime:!!partnerBirthTime,partnerLatitude:!!partnerLatitude,partnerLongitude:!!partnerLongitude,partnerLatValue:partnerLatitude,partnerLonValue:partnerLongitude,userBirthDate:!!userBirthDate,userBirthTime:!!userBirthTime,userLatitude:!!userLatitude,userLongitude:!!userLongitude,userLatValue:userLatitude,userLonValue:userLongitude,rootSectionsCount:root.sections?.length||0,rootKeys:Object.keys(root).slice(0,20),hasCompatibilityData:!!root.compatibility_data,hasPartner:!!root.partner},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
       }
       // #endregion
       
