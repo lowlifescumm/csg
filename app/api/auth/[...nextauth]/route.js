@@ -354,19 +354,19 @@ console.log('[NextAuth] GoogleProvider clientSecret length (env):', process.env.
 const handler = NextAuth(authOptions);
 console.log('[NextAuth] Handler created successfully');
 
-export const GET = async (req, ctx) => {
+export async function GET(request, context) {
   console.log('[NextAuth][GET] Incoming request', {
-    url: req.url,
-    host: req.headers.get('host'),
-    forwardedHost: req.headers.get('x-forwarded-host'),
-    forwardedProto: req.headers.get('x-forwarded-proto'),
-    userAgent: req.headers.get('user-agent'),
+    url: request.url,
+    host: request.headers.get('host'),
+    forwardedHost: request.headers.get('x-forwarded-host'),
+    forwardedProto: request.headers.get('x-forwarded-proto'),
+    userAgent: request.headers.get('user-agent'),
   });
   // Force public host if request came in via internal service URL
   try {
     const expectedHost = NEXTAUTH_URL ? new URL(NEXTAUTH_URL).host : null;
-    const reqUrl = new URL(req.url);
-    const incomingHost = req.headers.get('host');
+    const reqUrl = new URL(request.url);
+    const incomingHost = request.headers.get('host');
     if (expectedHost && incomingHost && incomingHost !== expectedHost) {
       const redirectUrl = `${NEXTAUTH_URL}${reqUrl.pathname}${reqUrl.search}`;
       console.log('[NextAuth][GET] Host mismatch, redirecting to public host', { incomingHost, expectedHost, redirectUrl });
@@ -375,22 +375,23 @@ export const GET = async (req, ctx) => {
   } catch (e) {
     console.error('[NextAuth][GET] Host enforcement error:', e);
   }
-  return handler(req, ctx);
-};
+  
+  return handler(request, context);
+}
 
-export const POST = async (req, ctx) => {
+export async function POST(request, context) {
   console.log('[NextAuth][POST] Incoming request', {
-    url: req.url,
-    host: req.headers.get('host'),
-    forwardedHost: req.headers.get('x-forwarded-host'),
-    forwardedProto: req.headers.get('x-forwarded-proto'),
-    userAgent: req.headers.get('user-agent'),
+    url: request.url,
+    host: request.headers.get('host'),
+    forwardedHost: request.headers.get('x-forwarded-host'),
+    forwardedProto: request.headers.get('x-forwarded-proto'),
+    userAgent: request.headers.get('user-agent'),
   });
   // Force public host if request came in via internal service URL
   try {
     const expectedHost = NEXTAUTH_URL ? new URL(NEXTAUTH_URL).host : null;
-    const reqUrl = new URL(req.url);
-    const incomingHost = req.headers.get('host');
+    const reqUrl = new URL(request.url);
+    const incomingHost = request.headers.get('host');
     if (expectedHost && incomingHost && incomingHost !== expectedHost) {
       const redirectUrl = `${NEXTAUTH_URL}${reqUrl.pathname}${reqUrl.search}`;
       console.log('[NextAuth][POST] Host mismatch, redirecting to public host', { incomingHost, expectedHost, redirectUrl });
@@ -399,5 +400,6 @@ export const POST = async (req, ctx) => {
   } catch (e) {
     console.error('[NextAuth][POST] Host enforcement error:', e);
   }
-  return handler(req, ctx);
-};
+  
+  return handler(request, context);
+}
