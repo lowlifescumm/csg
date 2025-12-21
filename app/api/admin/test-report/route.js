@@ -178,12 +178,24 @@ export async function POST(request) {
       if (!hasPreGeneratedSections && hasPartnerData && userBirthDate && userBirthTime && userLatitude && userLongitude) {
         console.log('[Test Report] Generating compatibility report content...');
         
+          // #region agent log (production-safe)
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:182',message:'H1: Starting compatibility content generation',data:{hasPreGeneratedSections,hasPartnerData,userBirthDate:!!userBirthDate,partnerBirthDate:!!partnerBirthDate},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+          }
+          // #endregion
+        
         try {
           // Import required functions
           const { hydrateReportData } = await import('@/src/services/chartHydrator');
-          const { generateCompatibilityReport } = await import('@/lib/compatibility');
+          const { generateReportContent } = await import('@/lib/pdf-generator.js');
           
-          // Hydrate both charts
+          // #region agent log (production-safe)
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:191',message:'H1: Using generateReportContent instead of generateCompatibilityReport',data:{usingGenerateReportContent:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+          }
+          // #endregion
+          
+          // Hydrate both charts (same as master report does)
           const chart1Hydrated = await hydrateReportData({
             name: userSource.name || root.name || 'Person 1',
             birthDate: userBirthDate,
@@ -200,23 +212,59 @@ export async function POST(request) {
             birthLongitude: parseFloat(partnerLongitude),
           });
           
-          const chart1 = chart1Hydrated.rawChart;
-          const chart2 = chart2Hydrated.rawChart;
+          // #region agent log (production-safe)
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:212',message:'H2: Chart hydration complete',data:{chart1HasUser:!!chart1Hydrated.user,chart1HasPartner:!!chart1Hydrated.partner,chart2HasUser:!!chart2Hydrated.user,chart2HasPartner:!!chart2Hydrated.partner,chart1HasMatrixScores:!!chart1Hydrated.matrix_scores,chart1HasComposite:!!chart1Hydrated.composite},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+          }
+          // #endregion
           
-          // Generate compatibility report
-          const compatibilityResult = await generateCompatibilityReport(
-            chart1,
-            chart2,
-            userSource.name || root.name || 'Person 1',
-            partnerName
-          );
+          // Build compatibility data structure matching master report format
+          // H2: Include all required fields for generateReportContent
+          const compatibilityData = {
+            name: userSource.name || root.name || 'Person 1',
+            partner_name: partnerName,
+            user: chart1Hydrated.user || chart1Hydrated.rawChart,
+            partner: chart2Hydrated.user || chart2Hydrated.rawChart,
+            chartData: {
+              user: chart1Hydrated.user || chart1Hydrated.rawChart,
+              partner: chart2Hydrated.user || chart2Hydrated.rawChart,
+              matrix_scores: chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+            },
+            compatibility_data: {
+              partner: chart2Hydrated.user || chart2Hydrated.rawChart,
+              user: chart1Hydrated.user || chart1Hydrated.rawChart,
+            },
+            synastryAspects: chart1Hydrated.synastryAspects,
+            houseOverlays: chart1Hydrated.houseOverlays,
+            composite: chart1Hydrated.composite,
+            compositeChart: chart1Hydrated.compositeChart,
+            matrix_scores: chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+            compatibility_scores: chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+          };
           
-          // Build sections array from generated report
+          // #region agent log (production-safe)
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:234',message:'H2: Compatibility data structure built',data:{hasUser:!!compatibilityData.user,hasPartner:!!compatibilityData.partner,hasSynastryAspects:!!compatibilityData.synastryAspects,hasHouseOverlays:!!compatibilityData.houseOverlays,hasComposite:!!compatibilityData.composite,hasMatrixScores:!!compatibilityData.matrix_scores},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+          }
+          // #endregion
+          
+          // H1: Use generateReportContent (same as master report) instead of generateCompatibilityReport
+          const compatibilityResult = await generateReportContent('compatibility', compatibilityData);
+          
+          // #region agent log (production-safe)
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:252',message:'H1: generateReportContent completed',data:{hasContent:!!compatibilityResult?.content,contentLength:compatibilityResult?.content?.length||0,hasSections:!!compatibilityResult?.sections,sectionsCount:compatibilityResult?.sections?.length||0,contentPreview:compatibilityResult?.content?.substring(0,200)||''},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+          }
+          // #endregion
+          
+          // Build sections array matching master report format
+          // generateReportContent returns { content: string, sections: array }
+          // Use the content directly (same as master report does at line 2110)
           sections = [
             {
               type: 'compatibility',
               title: 'Compatibility Analysis',
-              content: compatibilityResult.report || '',
+              content: compatibilityResult?.content || '',
             },
             {
               type: 'closing',
@@ -225,15 +273,27 @@ export async function POST(request) {
             },
           ];
           
-          // Set compatibility scores
-          compatibilityScores = compatibilityResult.scores;
+          // Set compatibility scores from hydrated data
+          compatibilityScores = chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores;
+          
+          // #region agent log (production-safe)
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:257',message:'H5: Sections array built',data:{sectionsCount:sections.length,sectionsTypes:sections.map(s=>s.type),firstSectionContentLength:sections[0]?.content?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+          }
+          // #endregion
           
           console.log('[Test Report] ✓ Compatibility report generated:', {
             sectionsCount: sections.length,
             hasScores: !!compatibilityScores,
             overallScore: compatibilityScores?.overall,
+            contentLength: sections[0]?.content?.length || 0,
           });
         } catch (genError) {
+          // #region agent log (production-safe)
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:267',message:'ERROR: Compatibility generation failed',data:{error:genError.message,stack:genError.stack?.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1,H2'})}).catch(()=>{});
+          }
+          // #endregion
           console.error('[Test Report] Failed to generate compatibility content:', genError);
           // Continue with empty sections - will still generate cover page
         }
