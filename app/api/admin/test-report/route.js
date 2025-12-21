@@ -249,29 +249,74 @@ export async function POST(request) {
           // #endregion
           
           // H1: Use generateReportContent (same as master report) instead of generateCompatibilityReport
-          const compatibilityResult = await generateReportContent('compatibility', compatibilityData);
-          
-          // #region agent log (production-safe)
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:252',message:'H1: generateReportContent completed',data:{hasContent:!!compatibilityResult?.content,contentLength:compatibilityResult?.content?.length||0,hasSections:!!compatibilityResult?.sections,sectionsCount:compatibilityResult?.sections?.length||0,contentPreview:compatibilityResult?.content?.substring(0,200)||''},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+          let compatibilityResult;
+          try {
+            compatibilityResult = await generateReportContent('compatibility', compatibilityData);
+            
+            // #region agent log (production-safe)
+            if (typeof fetch !== 'undefined') {
+              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:252',message:'H1: generateReportContent completed',data:{hasResult:!!compatibilityResult,hasContent:!!compatibilityResult?.content,contentLength:compatibilityResult?.content?.length||0,hasSections:!!compatibilityResult?.sections,sectionsCount:compatibilityResult?.sections?.length||0,contentPreview:compatibilityResult?.content?.substring(0,200)||'',resultType:typeof compatibilityResult,resultKeys:compatibilityResult?Object.keys(compatibilityResult):[]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+            }
+            // #endregion
+          } catch (genError) {
+            // #region agent log (production-safe)
+            if (typeof fetch !== 'undefined') {
+              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:260',message:'ERROR: generateReportContent threw exception',data:{error:genError.message,stack:genError.stack?.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+            }
+            // #endregion
+            console.error('[Test Report] generateReportContent failed:', genError);
+            throw genError; // Re-throw to be caught by outer try-catch
           }
-          // #endregion
           
-          // Build sections array matching master report format
-          // generateReportContent returns { content: string, sections: array }
-          // Use the content directly (same as master report does at line 2110)
-          sections = [
-            {
-              type: 'compatibility',
-              title: 'Compatibility Analysis',
-              content: compatibilityResult?.content || '',
-            },
-            {
-              type: 'closing',
-              title: 'Closing Blessing',
-              content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
-            },
-          ];
+          // Check if result is null or empty
+          if (!compatibilityResult || !compatibilityResult.content) {
+            // #region agent log (production-safe)
+            if (typeof fetch !== 'undefined') {
+              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:270',message:'H3: generateReportContent returned null or empty',data:{resultIsNull:!compatibilityResult,hasContent:!!compatibilityResult?.content,resultValue:JSON.stringify(compatibilityResult)?.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+            }
+            // #endregion
+            
+            // Fallback: Use generateCompatibilityReport if generateReportContent fails
+            console.warn('[Test Report] generateReportContent returned empty, falling back to generateCompatibilityReport');
+            const { generateCompatibilityReport } = await import('@/lib/compatibility');
+            const chart1 = chart1Hydrated.rawChart;
+            const chart2 = chart2Hydrated.rawChart;
+            const fallbackResult = await generateCompatibilityReport(
+              chart1,
+              chart2,
+              userSource.name || root.name || 'Person 1',
+              partnerName
+            );
+            
+            sections = [
+              {
+                type: 'compatibility',
+                title: 'Compatibility Analysis',
+                content: fallbackResult.report || '',
+              },
+              {
+                type: 'closing',
+                title: 'Closing Blessing',
+                content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
+              },
+            ];
+            compatibilityScores = fallbackResult.scores;
+          } else {
+            // Build sections array matching master report format
+            // generateReportContent returns { content: string, sections: array }
+            sections = [
+              {
+                type: 'compatibility',
+                title: 'Compatibility Analysis',
+                content: compatibilityResult.content || '',
+              },
+              {
+                type: 'closing',
+                title: 'Closing Blessing',
+                content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
+              },
+            ];
+          }
           
           // Set compatibility scores from hydrated data
           compatibilityScores = chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores;
@@ -300,6 +345,15 @@ export async function POST(request) {
       }
       
       // Build userData structure expected by generatePremiumPdf
+      // CRITICAL: Ensure sections array is properly formatted before building userData
+      const finalSections = sections.length > 0 ? sections : [];
+      
+      // #region agent log (production-safe)
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:290',message:'H4: Building userData with sections',data:{sectionsCount:finalSections.length,sectionsTypes:finalSections.map(s=>s.type),firstSectionHasContent:!!finalSections[0]?.content,firstSectionContentLength:finalSections[0]?.content?.length||0,firstSectionContentPreview:finalSections[0]?.content?.substring(0,100)||''},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+      }
+      // #endregion
+      
       const userData = {
         name: userSource.name || root.name || 'User',
         birthDate: userBirthDate,
@@ -310,17 +364,25 @@ export async function POST(request) {
         risingSign: userSource.risingSign || root.risingSign,
         reportType: 'compatibility', // Set report type for dynamic title (TASK 1)
         reportTitle: 'COMPATIBILITY REPORT', // Explicit title for cover page
-        sections: sections,
+        sections: finalSections, // CRITICAL: Pass sections array
         compatibilityScores: compatibilityScores,
         compatibilityChartSvg: compatibilityChartSvg,
         base64BackgroundImage: root.base64BackgroundImage || root.backgroundImageUrl || data?.base64BackgroundImage,
       };
+      
+      // #region agent log (production-safe)
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:310',message:'H4: userData built, ready for PDF generation',data:{name:userData.name,reportType:userData.reportType,hasSections:!!userData.sections?.length,sectionsCount:userData.sections?.length||0,firstSectionType:userData.sections?.[0]?.type,firstSectionTitle:userData.sections?.[0]?.title,firstSectionContentLength:userData.sections?.[0]?.content?.length||0,hasCompatibilityScores:!!userData.compatibilityScores},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+      }
+      // #endregion
       
       console.log('[Test Report] Generating compatibility PDF with userData:', {
         name: userData.name,
         reportType: userData.reportType,
         hasSections: !!userData.sections?.length,
         sectionsCount: userData.sections?.length || 0,
+        sectionsTypes: userData.sections?.map(s => s.type) || [],
+        firstSectionContentLength: userData.sections?.[0]?.content?.length || 0,
         hasCompatibilityScores: !!userData.compatibilityScores,
         hasCompatibilityChartSvg: !!userData.compatibilityChartSvg,
       });

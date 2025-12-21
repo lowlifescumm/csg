@@ -354,6 +354,11 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         );
 
       case 'compatibility':
+        // #region agent log (production-safe)
+        if (typeof window === 'undefined' && typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MasterReport.tsx:333',message:'H5: Rendering compatibility section',data:{hasCompatibilitySection:!!compatibilitySection,hasChartSvg:!!finalCompatibilityChartSvg,hasScores:!!compatibilityScores,sectionsCount:sections.length,sectionsTypes:sections.map(s=>s.type)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+        }
+        // #endregion
         if (!compatibilitySection && !finalCompatibilityChartSvg && !compatibilityScores) return null;
         return wrapWithStationery(
           <div className="content-section section-compatibility">
