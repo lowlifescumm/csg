@@ -169,13 +169,20 @@ export async function POST(request) {
       // Check if we need to generate compatibility content
       const hasPreGeneratedSections = root.sections && root.sections.length > 0;
       const hasPartnerData = partnerBirthDate && partnerBirthTime && partnerLatitude && partnerLongitude;
+      const hasUserData = userBirthDate && userBirthTime && userLatitude && userLongitude;
+      
+      // #region agent log (production-safe)
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:172',message:'H6: Checking section generation conditions',data:{hasPreGeneratedSections,hasPartnerData,hasUserData,partnerBirthDate:!!partnerBirthDate,partnerBirthTime:!!partnerBirthTime,partnerLatitude:!!partnerLatitude,partnerLongitude:!!partnerLongitude,userBirthDate:!!userBirthDate,userBirthTime:!!userBirthTime,userLatitude:!!userLatitude,userLongitude:!!userLongitude,rootSectionsCount:root.sections?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
+      }
+      // #endregion
       
       let sections = root.sections || data?.sections || [];
       let compatibilityScores = root.compatibilityScores || root.compatibility_scores || data?.compatibilityScores;
       let compatibilityChartSvg = root.compatibilityChartSvg || root.compatibility_chart_svg || data?.compatibilityChartSvg;
       
       // If sections are missing but we have partner data, generate compatibility report
-      if (!hasPreGeneratedSections && hasPartnerData && userBirthDate && userBirthTime && userLatitude && userLongitude) {
+      if (!hasPreGeneratedSections && hasPartnerData && hasUserData) {
         console.log('[Test Report] Generating compatibility report content...');
         
           // #region agent log (production-safe)
@@ -316,14 +323,20 @@ export async function POST(request) {
                 content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
               },
             ];
+            
+            // #region agent log (production-safe)
+            if (typeof fetch !== 'undefined') {
+              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:320',message:'H6: Sections built from generateReportContent',data:{sectionsCount:sections.length,firstSectionContentLength:sections[0]?.content?.length||0,secondSectionContentLength:sections[1]?.content?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
+            }
+            // #endregion
+            
+            // Set compatibility scores from hydrated data
+            compatibilityScores = chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores;
           }
-          
-          // Set compatibility scores from hydrated data
-          compatibilityScores = chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores;
           
           // #region agent log (production-safe)
           if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:257',message:'H5: Sections array built',data:{sectionsCount:sections.length,sectionsTypes:sections.map(s=>s.type),firstSectionContentLength:sections[0]?.content?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:333',message:'H5: Sections array built after generation',data:{sectionsCount:sections.length,sectionsTypes:sections.map(s=>s.type),firstSectionContentLength:sections[0]?.content?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
           }
           // #endregion
           
@@ -342,6 +355,20 @@ export async function POST(request) {
           console.error('[Test Report] Failed to generate compatibility content:', genError);
           // Continue with empty sections - will still generate cover page
         }
+      } else {
+        // #region agent log (production-safe)
+        if (typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:345',message:'H6: Section generation condition FAILED - skipping generation',data:{hasPreGeneratedSections,hasPartnerData,hasUserData,reason:hasPreGeneratedSections?'hasPreGeneratedSections':!hasPartnerData?'missingPartnerData':!hasUserData?'missingUserData':'unknown',partnerBirthDate:!!partnerBirthDate,partnerBirthTime:!!partnerBirthTime,partnerLatitude:!!partnerLatitude,partnerLongitude:!!partnerLongitude,userBirthDate:!!userBirthDate,userBirthTime:!!userBirthTime,userLatitude:!!userLatitude,userLongitude:!!userLongitude},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
+        }
+        // #endregion
+        console.warn('[Test Report] Skipping compatibility content generation:', {
+          hasPreGeneratedSections,
+          hasPartnerData,
+          hasUserData,
+          reason: hasPreGeneratedSections ? 'sections already provided' : !hasPartnerData ? 'missing partner data' : !hasUserData ? 'missing user data' : 'unknown',
+          partnerData: { birthDate: !!partnerBirthDate, birthTime: !!partnerBirthTime, lat: !!partnerLatitude, lon: !!partnerLongitude },
+          userData: { birthDate: !!userBirthDate, birthTime: !!userBirthTime, lat: !!userLatitude, lon: !!userLongitude },
+        });
       }
       
       // Build userData structure expected by generatePremiumPdf
