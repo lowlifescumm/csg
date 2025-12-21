@@ -10,23 +10,26 @@ require('dotenv').config({ path: '../env.local' });
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Application product definitions
-const appProducts = {
-  creditPacks: [
-    { size: 10, price: 999, name: "10 Credits", description: "Perfect for trying out readings" },
-    { size: 25, price: 1999, name: "25 Credits", description: "Great for regular use" },
-    { size: 50, price: 3499, name: "50 Credits", description: "Best value for frequent users" },
-    { size: 100, price: 5999, name: "100 Credits", description: "Maximum value pack" }
-  ],
-  subscription: {
-    name: 'Cosmic Spiritual Guide - Premium Subscription',
-    description: 'Monthly credits: 4 moon readings, 2 compatibility reports, 2 birth charts + unlimited tarot & transits',
-    price: 2999,
-    recurring: true
-  }
-};
-
 async function verifyProductSync() {
+  // Import pricing configuration
+  const pricingModule = await import('../lib/pricing.js');
+  const { SUBSCRIPTION_TIERS } = pricingModule;
+  
+  // Application product definitions
+  const appProducts = {
+    creditPacks: [
+      { size: 10, price: 999, name: "10 Credits", description: "Perfect for trying out readings" },
+      { size: 25, price: 1999, name: "25 Credits", description: "Great for regular use" },
+      { size: 50, price: 3499, name: "50 Credits", description: "Best value for frequent users" },
+      { size: 100, price: 5999, name: "100 Credits", description: "Maximum value pack" }
+    ],
+    subscription: {
+      name: 'Cosmic Spiritual Guide - Premium Subscription',
+      description: 'Monthly credits: 4 moon readings, 2 compatibility reports, 2 birth charts + unlimited tarot & transits',
+      price: SUBSCRIPTION_TIERS.MYSTIC_PREMIUM.priceInCents,
+      recurring: true
+    }
+  };
   console.log('🔍 Verifying Product Sync: Live Site vs Stripe Portal\n');
 
   try {

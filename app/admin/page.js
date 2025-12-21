@@ -101,7 +101,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-12 h-12 object-contain" />
-              <img src="/logo-text.svg" alt="Cosmic" className="h-8 object-contain" />
+              <img src="/logo-text.svg" alt="Cosmic Spirit Guide" className="h-8 object-contain" />
             </div>
             <div>
               <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 smooth-transition"
           >
             <LogOut className="w-4 h-4" />
-            Logout
+            Log Out
           </button>
         </div>
 

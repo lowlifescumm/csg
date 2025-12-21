@@ -4,6 +4,7 @@ import { Heart, Loader2, Sparkles, ChevronRight, ChevronLeft, Crown, AlertCircle
 import { useRouter } from 'next/navigation';
 import LowCreditsUpsellBanner from '@/components/LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
+import { SUBSCRIPTION_TIERS } from '@/lib/pricing';
 
 export default function CompatibilityCalculator() {
   const [step, setStep] = useState(1);
@@ -175,7 +176,7 @@ export default function CompatibilityCalculator() {
 
           <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
             <div className="text-center mb-6">
-              <div className="text-6xl font-bold text-white mb-2">$9.99</div>
+              <div className="text-6xl font-bold text-white mb-2">${(SUBSCRIPTION_TIERS.MYSTIC_LITE.priceInCents / 100).toFixed(2)}</div>
               <div className="text-purple-200">per month</div>
             </div>
 

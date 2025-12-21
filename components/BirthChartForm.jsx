@@ -262,7 +262,7 @@ export default function BirthChartForm({ updateMode = false }) {
                 placeholder="Select your birth time"
               />
               <p className="text-sm text-gray-500 mt-1">
-Your rising sign depends on exact birth time
+Your Rising Sign depends on exact birth time
               </p>
             </div>
 

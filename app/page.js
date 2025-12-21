@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Sparkles, Star, Heart, Check, ChevronRight, Zap, Shield, Eye, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
@@ -425,17 +426,17 @@ export default function HomePage() {
             <div>
               <h3 className="font-semibold text-white mb-4">Resources</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white smooth-transition">Blog</a></li>
-                <li><a href="#" className="hover:text-white smooth-transition">About Us</a></li>
-                <li><a href="#" className="hover:text-white smooth-transition">Contact</a></li>
+                <li><Link href="/blog" className="hover:text-white smooth-transition">Blog</Link></li>
+                <li><Link href="/about" className="hover:text-white smooth-transition">About Us</Link></li>
+                <li><Link href="/contact" className="hover:text-white smooth-transition">Contact</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="font-semibold text-white mb-4">Legal</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white smooth-transition">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white smooth-transition">Privacy Policy</a></li>
+                <li><Link href="/terms" className="hover:text-white smooth-transition">Terms of Service</Link></li>
+                <li><Link href="/privacy" className="hover:text-white smooth-transition">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
