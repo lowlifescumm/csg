@@ -204,17 +204,24 @@ export async function POST(request) {
           // #endregion
         
         try {
+          const startTime = Date.now();
+          console.log('[Test Report] Starting compatibility generation at', new Date().toISOString());
+          
           // Import required functions
+          console.log('[Test Report] Importing hydrateReportData and generateReportContent...');
           const { hydrateReportData } = await import('@/src/services/chartHydrator');
           const { generateReportContent } = await import('@/lib/pdf-generator.js');
+          console.log('[Test Report] Imports complete, elapsed:', Date.now() - startTime, 'ms');
           
           // #region agent log (production-safe)
           if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:191',message:'H1: Using generateReportContent instead of generateCompatibilityReport',data:{usingGenerateReportContent:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:208',message:'H7: Imports complete',data:{elapsed:Date.now()-startTime},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H7'})}).catch(()=>{});
           }
           // #endregion
           
           // Hydrate both charts (same as master report does)
+          console.log('[Test Report] Hydrating user chart...');
+          const hydrateStart1 = Date.now();
           const chart1Hydrated = await hydrateReportData({
             name: userSource.name || root.name || 'Person 1',
             birthDate: userBirthDate,
@@ -222,7 +229,16 @@ export async function POST(request) {
             birthLatitude: parseFloat(userLatitude),
             birthLongitude: parseFloat(userLongitude),
           });
+          console.log('[Test Report] User chart hydrated, elapsed:', Date.now() - hydrateStart1, 'ms');
           
+          // #region agent log (production-safe)
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:225',message:'H7: User chart hydrated',data:{elapsed:Date.now()-hydrateStart1},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H7'})}).catch(()=>{});
+          }
+          // #endregion
+          
+          console.log('[Test Report] Hydrating partner chart...');
+          const hydrateStart2 = Date.now();
           const chart2Hydrated = await hydrateReportData({
             name: partnerName,
             birthDate: partnerBirthDate,
@@ -230,6 +246,7 @@ export async function POST(request) {
             birthLatitude: parseFloat(partnerLatitude),
             birthLongitude: parseFloat(partnerLongitude),
           });
+          console.log('[Test Report] Partner chart hydrated, elapsed:', Date.now() - hydrateStart2, 'ms');
           
           // #region agent log (production-safe)
           if (typeof fetch !== 'undefined') {
@@ -270,7 +287,21 @@ export async function POST(request) {
           // H1: Use generateReportContent (same as master report) instead of generateCompatibilityReport
           let compatibilityResult;
           try {
-            compatibilityResult = await generateReportContent('compatibility', compatibilityData);
+            console.log('[Test Report] Calling generateReportContent for compatibility...');
+            const generateStart = Date.now();
+            
+            // Add timeout wrapper (5 minutes max)
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('generateReportContent timeout after 5 minutes')), 5 * 60 * 1000);
+            });
+            
+            compatibilityResult = await Promise.race([
+              generateReportContent('compatibility', compatibilityData, (progress, message) => {
+                console.log(`[Test Report] generateReportContent progress: ${progress}% - ${message} (elapsed: ${Date.now() - generateStart}ms)`);
+              }),
+              timeoutPromise
+            ]);
+            console.log('[Test Report] generateReportContent complete, elapsed:', Date.now() - generateStart, 'ms');
             
             // #region agent log (production-safe)
             if (typeof fetch !== 'undefined') {
