@@ -304,6 +304,12 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
             hasScores: !!compatibilityScores,
             overallScore: compatibilityScores?.overall,
             contentLength: sections[0]?.content?.length || 0,
+            sections: sections.map(s => ({
+              type: s.type,
+              title: s.title,
+              contentLength: s.content?.length || 0,
+              contentPreview: s.content?.substring(0, 100) || '',
+            })),
           });
         } catch (genError) {
           // #region agent log (production-safe)

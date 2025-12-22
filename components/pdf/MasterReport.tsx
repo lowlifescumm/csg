@@ -343,7 +343,15 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         );
 
       case 'relationship_matrix':
-        if (!relationshipMatrixSection) return null;
+        // #region agent log (production-safe)
+        if (typeof window === 'undefined' && typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MasterReport.tsx:345',message:'H11: Rendering relationship_matrix section',data:{hasRelationshipMatrixSection:!!relationshipMatrixSection,relationshipMatrixSectionType:relationshipMatrixSection?.type,relationshipMatrixSectionTitle:relationshipMatrixSection?.title,relationshipMatrixSectionContentLength:relationshipMatrixSection?.content?.length||0,relationshipMatrixSectionContentPreview:relationshipMatrixSection?.content?.substring(0,200)||''},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H11'})}).catch(()=>{});
+        }
+        // #endregion
+        if (!relationshipMatrixSection) {
+          console.log('[MasterReport] Relationship matrix section not found - returning null');
+          return null;
+        }
         return wrapWithStationery(
           <div className="content-section section-relationship-matrix relationship-matrix-section">
             <h2 className="section-header">{relationshipMatrixSection.title || 'Relationship Matrix'}</h2>
@@ -356,10 +364,19 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
       case 'compatibility':
         // #region agent log (production-safe)
         if (typeof window === 'undefined' && typeof fetch !== 'undefined') {
-          fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MasterReport.tsx:333',message:'H5: Rendering compatibility section',data:{hasCompatibilitySection:!!compatibilitySection,hasChartSvg:!!finalCompatibilityChartSvg,hasScores:!!compatibilityScores,sectionsCount:sections.length,sectionsTypes:sections.map(s=>s.type)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+          fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MasterReport.tsx:356',message:'H10: Rendering compatibility section',data:{hasCompatibilitySection:!!compatibilitySection,compatibilitySectionType:compatibilitySection?.type,compatibilitySectionTitle:compatibilitySection?.title,compatibilitySectionContentLength:compatibilitySection?.content?.length||0,compatibilitySectionContentPreview:compatibilitySection?.content?.substring(0,200)||'',hasChartSvg:!!finalCompatibilityChartSvg,hasScores:!!compatibilityScores,sectionsCount:sections.length,sectionsTypes:sections.map(s=>s.type),allSections:JSON.stringify(sections.map(s=>({type:s.type,title:s.title,contentLength:s.content?.length||0})))},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H10'})}).catch(()=>{});
         }
         // #endregion
-        if (!compatibilitySection && !finalCompatibilityChartSvg && !compatibilityScores) return null;
+        if (!compatibilitySection && !finalCompatibilityChartSvg && !compatibilityScores) {
+          console.log('[MasterReport] Compatibility section not found - returning null', {
+            hasCompatibilitySection: !!compatibilitySection,
+            hasChartSvg: !!finalCompatibilityChartSvg,
+            hasScores: !!compatibilityScores,
+            sectionsCount: sections.length,
+            sectionsTypes: sections.map(s => s.type),
+          });
+          return null;
+        }
         return wrapWithStationery(
           <div className="content-section section-compatibility">
               {compatibilitySection ? (
@@ -505,7 +522,15 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         );
 
       case 'closing':
-        if (!closingSection) return null;
+        // #region agent log (production-safe)
+        if (typeof window === 'undefined' && typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MasterReport.tsx:closing',message:'H12: Rendering closing section',data:{hasClosingSection:!!closingSection,closingSectionType:closingSection?.type,closingSectionTitle:closingSection?.title,closingSectionContentLength:closingSection?.content?.length||0,closingSectionContentPreview:closingSection?.content?.substring(0,200)||''},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H12'})}).catch(()=>{});
+        }
+        // #endregion
+        if (!closingSection) {
+          console.log('[MasterReport] Closing section not found - returning null');
+          return null;
+        }
         // TASK 2: Sanitize closing content and ensure signature is present
         const closingContent = sanitizeSignOffs(closingSection.content);
         const hasSignature = closingContent.toLowerCase().includes('cosmic spirit guide') || 
