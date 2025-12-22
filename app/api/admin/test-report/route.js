@@ -248,9 +248,39 @@ export async function POST(request) {
           });
           console.log('[Test Report] Partner chart hydrated, elapsed:', Date.now() - hydrateStart2, 'ms');
           
+          // Calculate compatibility scores and synastry data explicitly
+          // hydrateReportData doesn't calculate compatibility scores - we need to do it ourselves
+          console.log('[Test Report] Calculating compatibility scores and synastry data...');
+          const calcStart = Date.now();
+          
+          const { 
+            calculateCompatibilityScores, 
+            calculateSynastryAspects, 
+            calculateHouseOverlays, 
+            calculateCompositeChart 
+          } = await import('@/lib/compatibility');
+          
+          const chart1 = chart1Hydrated.rawChart;
+          const chart2 = chart2Hydrated.rawChart;
+          
+          // Calculate all compatibility metrics
+          const calculatedScores = calculateCompatibilityScores(chart1, chart2);
+          const calculatedSynastryAspects = calculateSynastryAspects(chart1, chart2, userName, partnerName);
+          const calculatedHouseOverlays = calculateHouseOverlays(chart1, chart2, userName, partnerName);
+          const calculatedComposite = calculateCompositeChart(chart1, chart2);
+          
+          console.log('[Test Report] Compatibility calculations complete, elapsed:', Date.now() - calcStart, 'ms');
+          console.log('[Test Report] Calculated scores:', {
+            overall: calculatedScores.overall,
+            emotional: calculatedScores.emotional,
+            communication: calculatedScores.communication,
+            passion: calculatedScores.passion,
+            longTerm: calculatedScores.longTerm,
+          });
+          
           // #region agent log (production-safe)
           if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:212',message:'H2: Chart hydration complete',data:{chart1HasUser:!!chart1Hydrated.user,chart1HasPartner:!!chart1Hydrated.partner,chart2HasUser:!!chart2Hydrated.user,chart2HasPartner:!!chart2Hydrated.partner,chart1HasMatrixScores:!!chart1Hydrated.matrix_scores,chart1HasComposite:!!chart1Hydrated.composite},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:250',message:'H9: Compatibility scores calculated',data:{overall:calculatedScores.overall,emotional:calculatedScores.emotional,communication:calculatedScores.communication,passion:calculatedScores.passion,longTerm:calculatedScores.longTerm,synastryAspectsCount:calculatedSynastryAspects.length,houseOverlaysCount:calculatedHouseOverlays.length,hasComposite:!!calculatedComposite},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H9'})}).catch(()=>{});
           }
           // #endregion
           
@@ -264,18 +294,18 @@ export async function POST(request) {
             chartData: {
               user: chart1Hydrated.user || chart1Hydrated.rawChart,
               partner: chart2Hydrated.user || chart2Hydrated.rawChart,
-              matrix_scores: chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+              matrix_scores: calculatedScores,
             },
             compatibility_data: {
               partner: chart2Hydrated.user || chart2Hydrated.rawChart,
               user: chart1Hydrated.user || chart1Hydrated.rawChart,
             },
-            synastryAspects: chart1Hydrated.synastryAspects,
-            houseOverlays: chart1Hydrated.houseOverlays,
-            composite: chart1Hydrated.composite,
-            compositeChart: chart1Hydrated.compositeChart,
-            matrix_scores: chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
-            compatibility_scores: chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+            synastryAspects: calculatedSynastryAspects,
+            houseOverlays: calculatedHouseOverlays,
+            composite: calculatedComposite,
+            compositeChart: calculatedComposite,
+            matrix_scores: calculatedScores,
+            compatibility_scores: calculatedScores,
           };
           
           // #region agent log (production-safe)
@@ -346,6 +376,21 @@ export async function POST(request) {
               },
             ];
             
+            // Calculate compatibility scores for fallback case too
+            const { 
+              calculateCompatibilityScores: calcScoresFallback,
+              calculateSynastryAspects: calcSynastryFallback,
+              calculateHouseOverlays: calcOverlaysFallback,
+              calculateCompositeChart: calcCompositeFallback
+            } = await import('@/lib/compatibility');
+            
+            const chart1Fallback = chart1Hydrated.rawChart;
+            const chart2Fallback = chart2Hydrated.rawChart;
+            const fallbackCalculatedScores = calcScoresFallback(chart1Fallback, chart2Fallback);
+            const fallbackSynastryAspects = calcSynastryFallback(chart1Fallback, chart2Fallback, userName, partnerName);
+            const fallbackHouseOverlays = calcOverlaysFallback(chart1Fallback, chart2Fallback, userName, partnerName);
+            const fallbackComposite = calcCompositeFallback(chart1Fallback, chart2Fallback);
+            
             // Generate Relationship Matrix section even in fallback case
             console.log('[Test Report] Generating relationship matrix (fallback case)...');
             try {
@@ -356,7 +401,10 @@ export async function POST(request) {
                   user: chart1Hydrated.user || chart1Hydrated.rawChart,
                   partner: chart2Hydrated.user || chart2Hydrated.rawChart,
                 },
-                matrix_scores: fallbackResult.scores || chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+                matrix_scores: fallbackResult.scores || fallbackCalculatedScores,
+                synastryAspects: fallbackSynastryAspects,
+                houseOverlays: fallbackHouseOverlays,
+                composite: fallbackComposite,
               });
               
               if (relationshipMatrixResult && relationshipMatrixResult.content) {
@@ -377,7 +425,7 @@ export async function POST(request) {
               content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
             });
             
-            compatibilityScores = fallbackResult.scores;
+            compatibilityScores = fallbackResult.scores || fallbackCalculatedScores;
           } else {
             // Build sections array matching master report format
             // generateReportContent returns { content: string, sections: array }
@@ -400,7 +448,10 @@ export async function POST(request) {
                   user: chart1Hydrated.user || chart1Hydrated.rawChart,
                   partner: chart2Hydrated.user || chart2Hydrated.rawChart,
                 },
-                matrix_scores: chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores,
+                matrix_scores: calculatedScores,
+                synastryAspects: calculatedSynastryAspects,
+                houseOverlays: calculatedHouseOverlays,
+                composite: calculatedComposite,
               }, (progress, message) => {
                 console.log(`[Test Report] relationship_matrix progress: ${progress}% - ${message}`);
               });
@@ -433,8 +484,8 @@ export async function POST(request) {
             }
             // #endregion
             
-            // Set compatibility scores from hydrated data
-            compatibilityScores = chart1Hydrated.matrix_scores || chart2Hydrated.matrix_scores;
+            // Set compatibility scores from calculated data
+            compatibilityScores = calculatedScores;
           }
           
           // #region agent log (production-safe)
