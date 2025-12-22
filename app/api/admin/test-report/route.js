@@ -207,38 +207,20 @@ export async function POST(request) {
           const startTime = Date.now();
           console.log('[Test Report] Starting compatibility generation at', new Date().toISOString());
           
-          // Import required functions
-          console.log('[Test Report] Importing hydrateReportData and generateReportContent...');
+          // Use the same approach as /api/compatibility route - simpler and proven to work
           const { hydrateReportData } = await import('@/src/services/chartHydrator');
-          const { generateReportContent } = await import('@/lib/pdf-generator.js');
-          console.log('[Test Report] Imports complete, elapsed:', Date.now() - startTime, 'ms');
+          const { generateCompatibilityReport } = await import('@/lib/compatibility');
           
-          // #region agent log (production-safe)
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:208',message:'H7: Imports complete',data:{elapsed:Date.now()-startTime},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H7'})}).catch(()=>{});
-          }
-          // #endregion
-          
-          // Hydrate both charts (same as master report does)
-          console.log('[Test Report] Hydrating user chart...');
-          const hydrateStart1 = Date.now();
+          // Hydrate both charts
+          console.log('[Test Report] Hydrating charts...');
           const chart1Hydrated = await hydrateReportData({
-            name: userSource.name || root.name || 'Person 1',
+            name: userName,
             birthDate: userBirthDate,
             birthTime: userBirthTime,
             birthLatitude: parseFloat(userLatitude),
             birthLongitude: parseFloat(userLongitude),
           });
-          console.log('[Test Report] User chart hydrated, elapsed:', Date.now() - hydrateStart1, 'ms');
           
-          // #region agent log (production-safe)
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:225',message:'H7: User chart hydrated',data:{elapsed:Date.now()-hydrateStart1},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H7'})}).catch(()=>{});
-          }
-          // #endregion
-          
-          console.log('[Test Report] Hydrating partner chart...');
-          const hydrateStart2 = Date.now();
           const chart2Hydrated = await hydrateReportData({
             name: partnerName,
             birthDate: partnerBirthDate,
@@ -246,247 +228,70 @@ export async function POST(request) {
             birthLatitude: parseFloat(partnerLatitude),
             birthLongitude: parseFloat(partnerLongitude),
           });
-          console.log('[Test Report] Partner chart hydrated, elapsed:', Date.now() - hydrateStart2, 'ms');
-          
-          // Calculate compatibility scores and synastry data explicitly
-          // hydrateReportData doesn't calculate compatibility scores - we need to do it ourselves
-          console.log('[Test Report] Calculating compatibility scores and synastry data...');
-          const calcStart = Date.now();
-          
-          const { 
-            calculateCompatibilityScores, 
-            calculateSynastryAspects, 
-            calculateHouseOverlays, 
-            calculateCompositeChart 
-          } = await import('@/lib/compatibility');
           
           const chart1 = chart1Hydrated.rawChart;
           const chart2 = chart2Hydrated.rawChart;
           
-          // Calculate all compatibility metrics
-          const calculatedScores = calculateCompatibilityScores(chart1, chart2);
-          const calculatedSynastryAspects = calculateSynastryAspects(chart1, chart2, userName, partnerName);
-          const calculatedHouseOverlays = calculateHouseOverlays(chart1, chart2, userName, partnerName);
-          const calculatedComposite = calculateCompositeChart(chart1, chart2);
+          // Generate compatibility report (same as /api/compatibility route)
+          console.log('[Test Report] Generating compatibility report...');
+          const result = await generateCompatibilityReport(
+            chart1,
+            chart2,
+            userName,
+            partnerName
+          );
           
-          console.log('[Test Report] Compatibility calculations complete, elapsed:', Date.now() - calcStart, 'ms');
-          console.log('[Test Report] Calculated scores:', {
-            overall: calculatedScores.overall,
-            emotional: calculatedScores.emotional,
-            communication: calculatedScores.communication,
-            passion: calculatedScores.passion,
-            longTerm: calculatedScores.longTerm,
-          });
+          console.log('[Test Report] Compatibility report generated, elapsed:', Date.now() - startTime, 'ms');
+          console.log('[Test Report] Scores:', result.scores);
+          console.log('[Test Report] Report length:', result.report?.length || 0);
           
-          // #region agent log (production-safe)
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:250',message:'H9: Compatibility scores calculated',data:{overall:calculatedScores.overall,emotional:calculatedScores.emotional,communication:calculatedScores.communication,passion:calculatedScores.passion,longTerm:calculatedScores.longTerm,synastryAspectsCount:calculatedSynastryAspects.length,houseOverlaysCount:calculatedHouseOverlays.length,hasComposite:!!calculatedComposite},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H9'})}).catch(()=>{});
-          }
-          // #endregion
-          
-          // Build compatibility data structure matching master report format
-          // H2: Include all required fields for generateReportContent
-          const compatibilityData = {
-            name: userSource.name || root.name || 'Person 1',
-            partner_name: partnerName,
-            user: chart1Hydrated.user || chart1Hydrated.rawChart,
-            partner: chart2Hydrated.user || chart2Hydrated.rawChart,
-            chartData: {
-              user: chart1Hydrated.user || chart1Hydrated.rawChart,
-              partner: chart2Hydrated.user || chart2Hydrated.rawChart,
-              matrix_scores: calculatedScores,
+          // Build sections array for PDF
+          sections = [
+            {
+              type: 'compatibility',
+              title: 'Compatibility Analysis',
+              content: result.report || '',
             },
-            compatibility_data: {
-              partner: chart2Hydrated.user || chart2Hydrated.rawChart,
-              user: chart1Hydrated.user || chart1Hydrated.rawChart,
+            {
+              type: 'relationship_matrix',
+              title: 'Relationship Matrix',
+              content: `## Relationship Compatibility Scores
+
+**Overall Compatibility:** ${result.scores.overall}/100
+
+**Emotional Connection:** ${result.scores.emotional}/100
+${result.scores.emotional >= 70 ? '✨ Strong emotional bond and understanding' : result.scores.emotional >= 50 ? '💫 Moderate emotional compatibility' : '🌙 May require more emotional awareness'}
+
+**Communication:** ${result.scores.communication}/100
+${result.scores.communication >= 70 ? '✨ Excellent communication and understanding' : result.scores.communication >= 50 ? '💫 Good communication with some differences' : '🌙 Communication styles may differ'}
+
+**Romantic Chemistry:** ${result.scores.passion}/100
+${result.scores.passion >= 70 ? '✨ Strong romantic and physical attraction' : result.scores.passion >= 50 ? '💫 Moderate chemistry and attraction' : '🌙 May need to cultivate romantic connection'}
+
+**Long-term Potential:** ${result.scores.longTerm}/100
+${result.scores.longTerm >= 70 ? '✨ Strong foundation for lasting relationship' : result.scores.longTerm >= 50 ? '💫 Potential for growth with effort' : '🌙 May require significant work for longevity'}
+
+${result.synastryAspects && result.synastryAspects.length > 0 ? `
+## Key Synastry Aspects
+
+${result.synastryAspects.slice(0, 10).map(aspect => `- ${aspect.description}`).join('\n')}
+` : ''}
+
+${result.houseOverlays && result.houseOverlays.length > 0 ? `
+## House Overlays
+
+${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).join('\n')}
+` : ''}
+`,
             },
-            synastryAspects: calculatedSynastryAspects,
-            houseOverlays: calculatedHouseOverlays,
-            composite: calculatedComposite,
-            compositeChart: calculatedComposite,
-            matrix_scores: calculatedScores,
-            compatibility_scores: calculatedScores,
-          };
-          
-          // #region agent log (production-safe)
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:234',message:'H2: Compatibility data structure built',data:{hasUser:!!compatibilityData.user,hasPartner:!!compatibilityData.partner,hasSynastryAspects:!!compatibilityData.synastryAspects,hasHouseOverlays:!!compatibilityData.houseOverlays,hasComposite:!!compatibilityData.composite,hasMatrixScores:!!compatibilityData.matrix_scores},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-          }
-          // #endregion
-          
-          // H1: Use generateReportContent (same as master report) instead of generateCompatibilityReport
-          let compatibilityResult;
-          try {
-            console.log('[Test Report] Calling generateReportContent for compatibility...');
-            const generateStart = Date.now();
-            
-            // Add timeout wrapper (5 minutes max)
-            const timeoutPromise = new Promise((_, reject) => {
-              setTimeout(() => reject(new Error('generateReportContent timeout after 5 minutes')), 5 * 60 * 1000);
-            });
-            
-            compatibilityResult = await Promise.race([
-              generateReportContent('compatibility', compatibilityData, (progress, message) => {
-                console.log(`[Test Report] generateReportContent progress: ${progress}% - ${message} (elapsed: ${Date.now() - generateStart}ms)`);
-              }),
-              timeoutPromise
-            ]);
-            console.log('[Test Report] generateReportContent complete, elapsed:', Date.now() - generateStart, 'ms');
-            
-            // #region agent log (production-safe)
-            if (typeof fetch !== 'undefined') {
-              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:252',message:'H1: generateReportContent completed',data:{hasResult:!!compatibilityResult,hasContent:!!compatibilityResult?.content,contentLength:compatibilityResult?.content?.length||0,hasSections:!!compatibilityResult?.sections,sectionsCount:compatibilityResult?.sections?.length||0,contentPreview:compatibilityResult?.content?.substring(0,200)||'',resultType:typeof compatibilityResult,resultKeys:compatibilityResult?Object.keys(compatibilityResult):[]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
-            }
-            // #endregion
-          } catch (genError) {
-            // #region agent log (production-safe)
-            if (typeof fetch !== 'undefined') {
-              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:260',message:'ERROR: generateReportContent threw exception',data:{error:genError.message,stack:genError.stack?.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
-            }
-            // #endregion
-            console.error('[Test Report] generateReportContent failed:', genError);
-            throw genError; // Re-throw to be caught by outer try-catch
-          }
-          
-          // Check if result is null or empty
-          if (!compatibilityResult || !compatibilityResult.content) {
-            // #region agent log (production-safe)
-            if (typeof fetch !== 'undefined') {
-              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:270',message:'H3: generateReportContent returned null or empty',data:{resultIsNull:!compatibilityResult,hasContent:!!compatibilityResult?.content,resultValue:JSON.stringify(compatibilityResult)?.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
-            }
-            // #endregion
-            
-            // Fallback: Use generateCompatibilityReport if generateReportContent fails
-            console.warn('[Test Report] generateReportContent returned empty, falling back to generateCompatibilityReport');
-            const { generateCompatibilityReport } = await import('@/lib/compatibility');
-            const chart1 = chart1Hydrated.rawChart;
-            const chart2 = chart2Hydrated.rawChart;
-            const fallbackResult = await generateCompatibilityReport(
-              chart1,
-              chart2,
-              userSource.name || root.name || 'Person 1',
-              partnerName
-            );
-            
-            sections = [
-              {
-                type: 'compatibility',
-                title: 'Compatibility Analysis',
-                content: fallbackResult.report || '',
-              },
-            ];
-            
-            // Calculate compatibility scores for fallback case too
-            const { 
-              calculateCompatibilityScores: calcScoresFallback,
-              calculateSynastryAspects: calcSynastryFallback,
-              calculateHouseOverlays: calcOverlaysFallback,
-              calculateCompositeChart: calcCompositeFallback
-            } = await import('@/lib/compatibility');
-            
-            const chart1Fallback = chart1Hydrated.rawChart;
-            const chart2Fallback = chart2Hydrated.rawChart;
-            const fallbackCalculatedScores = calcScoresFallback(chart1Fallback, chart2Fallback);
-            const fallbackSynastryAspects = calcSynastryFallback(chart1Fallback, chart2Fallback, userName, partnerName);
-            const fallbackHouseOverlays = calcOverlaysFallback(chart1Fallback, chart2Fallback, userName, partnerName);
-            const fallbackComposite = calcCompositeFallback(chart1Fallback, chart2Fallback);
-            
-            // Generate Relationship Matrix section even in fallback case
-            console.log('[Test Report] Generating relationship matrix (fallback case)...');
-            try {
-              const relationshipMatrixResult = await generateReportContent('relationship_matrix', {
-                user: chart1Hydrated.user || chart1Hydrated.rawChart,
-                partner: chart2Hydrated.user || chart2Hydrated.rawChart,
-                pair: {
-                  user: chart1Hydrated.user || chart1Hydrated.rawChart,
-                  partner: chart2Hydrated.user || chart2Hydrated.rawChart,
-                },
-                matrix_scores: fallbackResult.scores || fallbackCalculatedScores,
-                synastryAspects: fallbackSynastryAspects,
-                houseOverlays: fallbackHouseOverlays,
-                composite: fallbackComposite,
-              });
-              
-              if (relationshipMatrixResult && relationshipMatrixResult.content) {
-                sections.push({
-                  type: 'relationship_matrix',
-                  title: 'Relationship Matrix',
-                  content: relationshipMatrixResult.content || '',
-                });
-              }
-            } catch (matrixError) {
-              console.error('[Test Report] Failed to generate relationship matrix in fallback:', matrixError);
-              // Continue without relationship matrix
-            }
-            
-            sections.push({
+            {
               type: 'closing',
               title: 'Closing Blessing',
               content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
-            });
-            
-            compatibilityScores = fallbackResult.scores || fallbackCalculatedScores;
-          } else {
-            // Build sections array matching master report format
-            // generateReportContent returns { content: string, sections: array }
-            sections = [
-              {
-                type: 'compatibility',
-                title: 'Compatibility Analysis',
-                content: compatibilityResult.content || '',
-              },
-            ];
-            
-            // Generate Relationship Matrix section (required for compatibility reports per REPORT_RECIPES)
-            console.log('[Test Report] Generating relationship matrix...');
-            const matrixStart = Date.now();
-            try {
-              const relationshipMatrixResult = await generateReportContent('relationship_matrix', {
-                user: chart1Hydrated.user || chart1Hydrated.rawChart,
-                partner: chart2Hydrated.user || chart2Hydrated.rawChart,
-                pair: {
-                  user: chart1Hydrated.user || chart1Hydrated.rawChart,
-                  partner: chart2Hydrated.user || chart2Hydrated.rawChart,
-                },
-                matrix_scores: calculatedScores,
-                synastryAspects: calculatedSynastryAspects,
-                houseOverlays: calculatedHouseOverlays,
-                composite: calculatedComposite,
-              }, (progress, message) => {
-                console.log(`[Test Report] relationship_matrix progress: ${progress}% - ${message}`);
-              });
-              
-              if (relationshipMatrixResult && relationshipMatrixResult.content) {
-                sections.push({
-                  type: 'relationship_matrix',
-                  title: 'Relationship Matrix',
-                  content: relationshipMatrixResult.content || '',
-                });
-                console.log('[Test Report] Relationship matrix generated, elapsed:', Date.now() - matrixStart, 'ms');
-              } else {
-                console.warn('[Test Report] Relationship matrix returned empty, skipping');
-              }
-            } catch (matrixError) {
-              console.error('[Test Report] Failed to generate relationship matrix:', matrixError);
-              // Continue without relationship matrix - compatibility section is more important
-            }
-            
-            // Add closing section
-            sections.push({
-              type: 'closing',
-              title: 'Closing Blessing',
-              content: 'May this compatibility report guide you on your journey together. The stars have aligned to bring you insights into your relationship dynamics, helping you understand each other more deeply and navigate your path forward with greater awareness and harmony.',
-            });
-            
-            // #region agent log (production-safe)
-            if (typeof fetch !== 'undefined') {
-              fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:370',message:'H8: Sections built including relationship matrix',data:{sectionsCount:sections.length,sectionsTypes:sections.map(s=>s.type),hasCompatibility:!!sections.find(s=>s.type==='compatibility'),hasRelationshipMatrix:!!sections.find(s=>s.type==='relationship_matrix'),hasClosing:!!sections.find(s=>s.type==='closing')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H8'})}).catch(()=>{});
-            }
-            // #endregion
-            
-            // Set compatibility scores from calculated data
-            compatibilityScores = calculatedScores;
-          }
+            },
+          ];
+          
+          compatibilityScores = result.scores;
           
           // #region agent log (production-safe)
           if (typeof fetch !== 'undefined') {
