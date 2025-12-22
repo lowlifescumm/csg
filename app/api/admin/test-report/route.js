@@ -211,10 +211,14 @@ export async function POST(request) {
           const { hydrateReportData } = await import('@/src/services/chartHydrator');
           const { generateCompatibilityReport } = await import('@/lib/compatibility');
           
+          // Get user and partner names (use the variables defined earlier)
+          const userNameForReport = userSource.name || root.name || 'Person 1';
+          const partnerNameForReport = partnerName || 'Person 2';
+          
           // Hydrate both charts
           console.log('[Test Report] Hydrating charts...');
           const chart1Hydrated = await hydrateReportData({
-            name: userName,
+            name: userNameForReport,
             birthDate: userBirthDate,
             birthTime: userBirthTime,
             birthLatitude: parseFloat(userLatitude),
@@ -222,7 +226,7 @@ export async function POST(request) {
           });
           
           const chart2Hydrated = await hydrateReportData({
-            name: partnerName,
+            name: partnerNameForReport,
             birthDate: partnerBirthDate,
             birthTime: partnerBirthTime,
             birthLatitude: parseFloat(partnerLatitude),
@@ -237,8 +241,8 @@ export async function POST(request) {
           const result = await generateCompatibilityReport(
             chart1,
             chart2,
-            userName,
-            partnerName
+            userNameForReport,
+            partnerNameForReport
           );
           
           console.log('[Test Report] Compatibility report generated, elapsed:', Date.now() - startTime, 'ms');
