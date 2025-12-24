@@ -2,6 +2,9 @@
   "name": "cosmic-spiritual-guide",
   "version": "1.0.0",
   "private": true,
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 5000",
     "build": "prisma generate && next build && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && mkdir -p .next/standalone/styles && cp -r styles .next/standalone/",
