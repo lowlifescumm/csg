@@ -30,7 +30,7 @@ export async function POST(request) {
     const authResult = await getAuthenticatedUser(request.cookies, authOptions);
     const isAuthenticated = !!authResult;
     const isAdmin = authResult?.role === 'admin';
-    const userId = authResult?.userId?.toString() || null;
+    const userId = authResult?.userId || null;
     
     // Rate limiting for unauthenticated requests
     if (!isAuthenticated) {
@@ -84,7 +84,7 @@ export async function POST(request) {
     });
 
     const body = await request.json();
-    const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false, useCache = true, clearCache = false } = body;
+    const { report_type, data, generate_html = true, generate_pdf = true, regenerate = false, useCache = false, clearCache = false } = body;
     
     // Handle cache clearing
     if (clearCache) {
@@ -768,53 +768,13 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       // 2) Generate content via existing OpenAI step (or use cache)
       let contentResult;
       
-      // Check cache first if useCache is true
-      if (useCache && !regenerate) {
-        const cachedData = getCachedReportData(report_type);
-        if (cachedData && cachedData.contentResult) {
-          console.log(`[Test Report] ✓ Using cached report data for ${report_type} (cached at ${cachedData.cachedAt})`);
-          contentResult = cachedData.contentResult;
-          // Also restore sampleData and calculatedData if cached
-          if (cachedData.sampleData) {
-            Object.assign(sampleData, cachedData.sampleData);
-          }
-          if (cachedData.calculatedData) {
-            Object.assign(calculatedData, cachedData.calculatedData);
-          }
-        } else {
-          // Generate new content
-          console.log(`[Test Report] No cache found for ${report_type}, generating new content...`);
-          if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
-            const tier = report_type.replace('premium-', '').toUpperCase();
-            contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
-          } else {
-            contentResult = await generateReportContent(report_type, sampleData, progressCallback);
-          }
-          
-          // Cache the generated data
-          setCachedReportData(report_type, {
-            contentResult,
-            sampleData,
-            calculatedData,
-          });
-        }
+      // Generate new content (caching disabled for test reports)
+      console.log(`[Test Report] Generating new content for ${report_type} (cache disabled)...`);
+      if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+        const tier = report_type.replace('premium-', '').toUpperCase();
+        contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
       } else {
-        // Generate new content (cache disabled or regenerate requested)
-        if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
-          const tier = report_type.replace('premium-', '').toUpperCase();
-          contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
-        } else {
-          contentResult = await generateReportContent(report_type, sampleData, progressCallback);
-        }
-        
-        // Cache the generated data (unless regenerate is true)
-        if (!regenerate) {
-          setCachedReportData(report_type, {
-            contentResult,
-            sampleData,
-            calculatedData,
-          });
-        }
+        contentResult = await generateReportContent(report_type, sampleData, progressCallback);
       }
       
       // Extract chart SVG from sections if available
@@ -920,57 +880,16 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       // Use new premium e-book quality PDF generator (React component)
       console.log('[Test Report] Using Premium E-book PDF generator');
       
-      // Check cache for premium generator path
+      // Generate new content for premium generator (caching disabled for test reports)
       let contentResult;
-      let cachedPremiumData = null; // Initialize here
-      
-      if (useCache && !regenerate) {
-        cachedPremiumData = getCachedReportData(report_type);
-        if (cachedPremiumData && cachedPremiumData.contentResult) {
-          console.log(`[Test Report] ✓ Using cached contentResult for premium generator (cached at ${cachedPremiumData.cachedAt})`);
-          contentResult = cachedPremiumData.contentResult;
-          // Restore sampleData if cached
-          if (cachedPremiumData.sampleData) {
-            Object.assign(sampleData, cachedPremiumData.sampleData);
-          }
-        } else {
-          // Generate new content
-          console.log(`[Test Report] No cache found, generating new content for premium generator...`);
-          if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
-            const tier = report_type.replace('premium-', '').toUpperCase();
-            // Pass skipPdf: true to prevent duplicate PDF generation
-            contentResult = await generatePremiumReport(tier, { ...sampleData, skipPdf: true }, progressCallback);
-            console.log('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
-          } else {
-            contentResult = await generateReportContent(report_type, sampleData, progressCallback);
-          }
-          
-          // Cache the generated content
-          setCachedReportData(report_type, {
-            contentResult,
-            sampleData,
-            calculatedData,
-          });
-        }
+      console.log(`[Test Report] Generating new content for premium generator (cache disabled)...`);
+      if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
+        const tier = report_type.replace('premium-', '').toUpperCase();
+        // Pass skipPdf: true to prevent duplicate PDF generation
+        contentResult = await generatePremiumReport(tier, { ...sampleData, skipPdf: true }, progressCallback);
+        console.log('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
       } else {
-        // Generate new content (cache disabled or regenerate requested)
-        if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
-          const tier = report_type.replace('premium-', '').toUpperCase();
-          // Pass skipPdf: true to prevent duplicate PDF generation
-          contentResult = await generatePremiumReport(tier, { ...sampleData, skipPdf: true }, progressCallback);
-          console.log('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
-        } else {
-          contentResult = await generateReportContent(report_type, sampleData, progressCallback);
-        }
-        
-        // Cache the generated content (unless regenerate is true)
-        if (!regenerate) {
-          setCachedReportData(report_type, {
-            contentResult,
-            sampleData,
-            calculatedData,
-          });
-        }
+        contentResult = await generateReportContent(report_type, sampleData, progressCallback);
       }
       
       // Extract chart SVG from sections
@@ -1010,13 +929,8 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
         }
       }
       
-      // Check cache for userData if not already loaded
-      if (!cachedPremiumData && useCache && !regenerate) {
-        cachedPremiumData = getCachedReportData(report_type);
-      }
-      
-      // Prepare userData for premium generator (use cached if available)
-      const userData = cachedPremiumData?.userData || {
+      // Prepare userData for premium generator (caching disabled for test reports)
+      const userData = {
         name: sampleData.name || hydrationInput.name || 'Test User',
         birthDate: sampleData.birth_date || hydrationInput.birth_date || '',
         birthTime: sampleData.birth_time || hydrationInput.birth_time || '',
