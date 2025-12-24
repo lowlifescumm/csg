@@ -1,0 +1,770 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Reading {
+  id             Int              @id @default(autoincrement())
+  user_id        Int?
+  type           String?          @db.VarChar(50)
+  question       String?
+  result         Json?
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  reading_type   String?
+  raw_text       String?
+  summary        String?
+  meta           Json?
+  reading_jobs   reading_jobs[]
+  reading_shares reading_shares[]
+
+  @@index([reading_type], map: "idx_readings_reading_type")
+  @@map("readings")
+}
+
+model TarotHistory {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  card_name   String?   @db.VarChar(50)
+  position    String?   @db.VarChar(20)
+  user_intent String?   @db.VarChar(255)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  user        users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("tarot_history")
+}
+
+model NatalChart {
+  id                    Int                     @id @default(autoincrement())
+  user_id               Int
+  birth_date            DateTime                @db.Timestamptz(6)
+  birth_time            DateTime                @db.Time(6)
+  timezone              String                  @db.VarChar(100)
+  latitude              Decimal                 @db.Decimal(10, 7)
+  longitude             Decimal                 @db.Decimal(10, 7)
+  location_name         String?                 @db.VarChar(255)
+  natal_positions       Json
+  houses                Json?
+  ascendant             Json?
+  midheaven             Json?
+  chart_name            String?                 @default("Birth Chart") @db.VarChar(255)
+  is_primary            Boolean?                @default(true)
+  is_encrypted          Boolean?                @default(true)
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @updatedAt @db.Timestamptz(6)
+  data                  Json?
+  user                  users                   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  transit_subscriptions transit_subscriptions[]
+  transits              Transit[]
+
+  @@index([created_at], map: "idx_natal_charts_created_at")
+  @@index([user_id, is_primary], map: "idx_natal_charts_primary")
+  @@index([user_id], map: "idx_natal_charts_user_id")
+  @@index([natal_positions], map: "idx_natal_positions_gin", type: Gin)
+  @@map("natal_charts")
+}
+
+model Transit {
+  id                    Int                     @id @default(autoincrement())
+  user_id               Int
+  natal_chart_id        Int
+  transiting_body       String                  @db.VarChar(50)
+  natal_point           String                  @db.VarChar(50)
+  aspect                String                  @db.VarChar(50)
+  start_time            DateTime?               @db.Timestamptz(6)
+  exact_time            DateTime                @db.Timestamptz(6)
+  end_time              DateTime?               @db.Timestamptz(6)
+  orb                   Decimal                 @db.Decimal(5, 2)
+  strength_score        Int?
+  status                String?                 @default("upcoming") @db.VarChar(20)
+  is_retrograde         Boolean?                @default(false)
+  interpretation        Json?
+  affected_house        Int?
+  house_meaning         String?                 @db.VarChar(255)
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @updatedAt @db.Timestamptz(6)
+  transit_notifications transit_notifications[]
+  natal_chart           NatalChart              @relation(fields: [natal_chart_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user                  users                   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([interpretation], map: "idx_transit_interpretation_gin", type: Gin)
+  @@index([exact_time], map: "idx_transits_exact_time")
+  @@index([natal_chart_id], map: "idx_transits_natal_chart_id")
+  @@index([status], map: "idx_transits_status")
+  @@index([status, exact_time], map: "idx_transits_status_exact_time")
+  @@index([user_id, exact_time(sort: Desc)], map: "idx_transits_user_exact_time")
+  @@index([user_id], map: "idx_transits_user_id")
+  @@index([user_id, status], map: "idx_transits_user_status")
+  @@index([user_id, status, exact_time], map: "idx_transits_user_status_exact")
+  @@map("transits")
+}
+
+model TransitLog {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  transit_planet String   @db.VarChar(50)
+  natal_planet   String   @db.VarChar(50)
+  aspect         String   @db.VarChar(50)
+  orb            Decimal  @db.Decimal(5, 2)
+  intensity      Decimal  @db.Decimal(3, 2)
+  affected_house Int?
+  created_at     DateTime @default(now())
+
+  user           users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([created_at])
+  @@map("transit_logs") // This ensures the table name is snake_case
+}
+
+model birth_charts {
+  id             Int       @id @default(autoincrement())
+  user_id        Int?
+  birth_date     DateTime? @db.Date
+  birth_time     DateTime? @db.Time(6)
+  location       String?   @db.VarChar(255)
+  latitude       Decimal?  @db.Decimal(10, 6)
+  longitude      Decimal?  @db.Decimal(10, 6)
+  chart_data     Json?
+  interpretation String?
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  is_primary     Boolean?  @default(true)
+}
+
+model blog_categories {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  slug        String    @unique @db.VarChar(100)
+  description String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model blog_post_views {
+  id         Int         @id @default(autoincrement())
+  post_id    Int?
+  ip_address String?     @db.Inet
+  user_agent String?
+  viewed_at  DateTime?   @default(now()) @db.Timestamp(6)
+  blog_posts blog_posts? @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([post_id], map: "idx_blog_post_views_post_id")
+}
+
+model blog_posts {
+  id               Int               @id @default(autoincrement())
+  title            String            @db.VarChar(255)
+  slug             String            @unique @db.VarChar(255)
+  excerpt          String?
+  content          String?
+  featured_image   String?           @db.VarChar(500)
+  status           String?           @default("draft") @db.VarChar(20)
+  tags             String[]
+  category         String?           @db.VarChar(100)
+  meta_title       String?           @db.VarChar(255)
+  meta_description String?
+  author_id        Int?
+  published_at     DateTime?         @db.Timestamp(6)
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?         @default(now()) @db.Timestamp(6)
+  blog_post_views  blog_post_views[]
+  users            users?            @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([category], map: "idx_blog_posts_category")
+  @@index([slug], map: "idx_blog_posts_slug")
+  @@index([status], map: "idx_blog_posts_status")
+}
+
+model blog_tags {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  slug        String    @unique @db.VarChar(100)
+  description String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model compatibility_purchases {
+  id                      Int       @id @default(autoincrement())
+  user_id                 Int
+  compatibility_report_id Int
+  credits_used            Int?      @default(1)
+  created_at              DateTime? @default(now()) @db.Timestamp(6)
+  amount                  Int?
+  status                  String?   @db.VarChar
+  payment_intent_id       String?   @db.VarChar
+}
+
+model compatibility_reports {
+  id           Int       @id @default(autoincrement())
+  user_id      Int?
+  chart1_data  Json?
+  chart2_data  Json?
+  person1_name String?   @db.VarChar(255)
+  person2_name String?   @db.VarChar(255)
+  scores       Json?
+  report       String?
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model credit_ledger {
+  id                                                        Int            @id @default(autoincrement())
+  user_id                                                   Int
+  delta                                                     Int
+  source                                                    String         @db.VarChar(100)
+  meta                                                      Json?          @default("{}")
+  created_at                                                DateTime?      @default(now()) @db.Timestamptz(6)
+  expires_at                                                DateTime?      @db.Timestamptz(6)
+  users                                                     users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reading_jobs_reading_jobs_ledger_entry_idTocredit_ledger  reading_jobs[] @relation("reading_jobs_ledger_entry_idTocredit_ledger")
+  reading_jobs_reading_jobs_refund_ledger_idTocredit_ledger reading_jobs[] @relation("reading_jobs_refund_ledger_idTocredit_ledger")
+
+  @@index([created_at], map: "idx_credit_ledger_created_at")
+  @@index([source], map: "idx_credit_ledger_source")
+  @@index([user_id], map: "idx_credit_ledger_user_id")
+}
+
+model credit_usage_history {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  credit_type String?   @db.VarChar(50)
+  action      String?   @db.VarChar(50)
+  amount      Int?
+  description String?
+  related_id  Int?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model credits {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  credits     Int?      @default(0)
+  updated_at  DateTime? @db.Timestamp(6)
+  created_at  DateTime? @db.Timestamp(6)
+  credit_type String?   @default("paid") @db.VarChar(20)
+  expires_at  DateTime? @db.Timestamp(6)
+  source      String?   @db.VarChar(50)
+
+  @@index([user_id, credit_type], map: "idx_credits_user_type")
+  @@index([user_id, credit_type, expires_at], map: "idx_credits_user_type_expiry")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model energy_logs {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  date       DateTime  @db.Date
+  physical   Int
+  emotional  Int
+  spiritual  Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, date])
+  @@index([date], map: "idx_energy_logs_date")
+  @@index([user_id], map: "idx_energy_logs_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ephemeris_cache {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  calculation_time DateTime  @unique @db.Timestamptz(6)
+  positions        Json
+  source           String?   @default("astronomy-engine") @db.VarChar(100)
+  version          String?   @db.VarChar(50)
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([calculation_time], map: "idx_ephemeris_cache_calc_time")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model forecast_preferences {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int       @unique
+  delivery_cadence   String?   @default("daily") @db.VarChar(20)
+  delivery_time      DateTime? @default(dbgenerated("'08:00:00'::time without time zone")) @db.Time(6)
+  timezone           String?   @default("America/Los_Angeles") @db.VarChar(50)
+  tone               String?   @default("spiritual") @db.VarChar(20)
+  default_length     String?   @default("medium") @db.VarChar(20)
+  topics             String[]  @default(["general"])
+  include_actions    Boolean?  @default(true)
+  include_rituals    Boolean?  @default(false)
+  ai_rewrite_enabled Boolean?  @default(false)
+  email_enabled      Boolean?  @default(true)
+  push_enabled       Boolean?  @default(false)
+  created_at         DateTime? @default(now()) @db.Timestamp(6)
+  updated_at         DateTime? @default(now()) @db.Timestamp(6)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_forecast_prefs_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model forecast_templates {
+  id                Int       @id @default(autoincrement())
+  planet            String    @db.VarChar(20)
+  aspect            String    @db.VarChar(20)
+  target_type       String    @db.VarChar(20)
+  target            String?   @db.VarChar(20)
+  topic             String    @db.VarChar(20)
+  tone              String    @db.VarChar(20)
+  headline_template String
+  short_template    String
+  medium_template   String?
+  long_template     String?
+  strength          String?   @default("medium") @db.VarChar(20)
+  priority          Int?      @default(5)
+  default_actions   Json?
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([planet, aspect, topic, tone], map: "idx_forecast_templates_lookup")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model forecasts {
+  id                Int       @id @default(autoincrement())
+  user_id           Int
+  forecast_date     DateTime  @db.Date
+  forecast_type     String?   @default("daily") @db.VarChar(20)
+  length            String?   @default("medium") @db.VarChar(20)
+  headline          String
+  theme             String?
+  full_text         String
+  tone              String?   @db.VarChar(20)
+  transit_summary   Json?
+  topics            String[]
+  urgency           String?   @default("normal") @db.VarChar(20)
+  confidence_score  String?   @default("medium") @db.VarChar(20)
+  suggested_actions Json?
+  rituals           Json?
+  generated_at      DateTime? @default(now()) @db.Timestamp(6)
+  delivered_at      DateTime? @db.Timestamp(6)
+  read_at           DateTime? @db.Timestamp(6)
+  saved_to_journal  Boolean?  @default(false)
+  cache_key         String?
+  expires_at        DateTime? @db.Timestamp(6)
+  users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, forecast_date, forecast_type])
+  @@index([user_id, forecast_date(sort: Desc)], map: "idx_forecasts_user_date")
+}
+
+model horoscopes {
+  id         Int       @id @default(autoincrement())
+  sign       String?   @db.VarChar(50)
+  date       DateTime? @db.Date
+  content    String?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@unique([sign, date], map: "horoscopes_sign_date_uniq")
+}
+
+model journal_entries {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  content    String
+  type       String?   @default("general") @db.VarChar(50)
+  sign       String?   @db.VarChar(20)
+  entry_date DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  metadata   Json?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([entry_date], map: "idx_journal_entries_date")
+  @@index([user_id], map: "idx_journal_entries_user_id")
+}
+
+model moon_reading_purchases {
+  id                Int       @id @default(autoincrement())
+  user_id           Int
+  moon_reading_id   Int
+  credits_used      Int?      @default(1)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  status            String?   @db.VarChar
+  payment_intent_id String?   @db.VarChar
+  amount            Int?
+}
+
+model newsletter_signups {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique @db.VarChar(255)
+  first_name String?   @db.VarChar(100)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model password_reset_tokens {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  token      String    @unique @db.VarChar(255)
+  expires_at DateTime  @db.Timestamp(6)
+  used       Boolean?  @default(false)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_password_reset_tokens_expires_at")
+  @@index([token], map: "idx_password_reset_tokens_token")
+  @@index([user_id], map: "idx_password_reset_tokens_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model pdf_templates {
+  id            Int       @id @default(autoincrement())
+  name          String    @db.VarChar(255)
+  slug          String    @unique @db.VarChar(255)
+  description   String?
+  report_type   String    @db.VarChar(50)
+  version       Int?      @default(1)
+  template_json Json
+  is_active     Boolean?  @default(true)
+  is_default    Boolean?  @default(false)
+  created_by    Int?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  preview_url   String?   @db.VarChar(500)
+  notes         String?
+  users         users?    @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+
+  @@index([report_type], map: "idx_pdf_templates_report_type")
+  @@index([slug], map: "idx_pdf_templates_slug")
+}
+
+model reading_jobs {
+  id                                                         Int               @id @default(autoincrement())
+  user_id                                                    Int
+  reading_type                                               String            @db.VarChar(100)
+  status                                                     String            @default("pending_validation") @db.VarChar(40)
+  queue                                                      String?           @default("default") @db.VarChar(50)
+  options                                                    Json?             @default("{}")
+  idempotency_key                                            String            @db.VarChar(120)
+  dependency_version                                         String?           @db.VarChar(50)
+  missing_recommended                                        Json?             @default("[]")
+  auto_created                                               Json?             @default("[]")
+  ledger_entry_id                                            Int?
+  refund_ledger_id                                           Int?
+  reading_id                                                 Int?
+  charge_amount                                              Int?
+  last_error                                                 String?
+  created_at                                                 DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                                                 DateTime?         @default(now()) @db.Timestamptz(6)
+  retry_count                                                Int?              @default(0)
+  max_retries                                                Int?              @default(3)
+  started_at                                                 DateTime?         @db.Timestamptz(6)
+  completed_at                                               DateTime?         @db.Timestamptz(6)
+  progress_percent                                           Int?              @default(0)
+  progress_message                                           String?
+  credit_ledger_reading_jobs_ledger_entry_idTocredit_ledger  credit_ledger?    @relation("reading_jobs_ledger_entry_idTocredit_ledger", fields: [ledger_entry_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  readings                                                   Reading?          @relation(fields: [reading_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  credit_ledger_reading_jobs_refund_ledger_idTocredit_ledger credit_ledger?    @relation("reading_jobs_refund_ledger_idTocredit_ledger", fields: [refund_ledger_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                                                      users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reading_results                                            reading_results[]
+
+  @@unique([user_id, idempotency_key])
+  @@index([queue], map: "idx_reading_jobs_queue")
+  @@index([status], map: "idx_reading_jobs_status")
+  @@index([user_id], map: "idx_reading_jobs_user")
+}
+
+model reading_results {
+  id               Int           @id @default(autoincrement())
+  user_id          Int
+  reading_job_id   Int?
+  reading_type     String        @db.VarChar(100)
+  content_json     Json          @default("{}")
+  pdf_url          String?       @db.VarChar(500)
+  status           String        @default("processing") @db.VarChar(40)
+  progress_percent Int?          @default(0)
+  progress_message String?
+  error_message    String?
+  created_at       DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime?     @default(now()) @db.Timestamptz(6)
+  completed_at     DateTime?     @db.Timestamptz(6)
+  reading_jobs     reading_jobs? @relation(fields: [reading_job_id], references: [id], onUpdate: NoAction)
+  users            users         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)], map: "idx_reading_results_created")
+  @@index([reading_job_id], map: "idx_reading_results_job")
+  @@index([status], map: "idx_reading_results_status")
+  @@index([reading_type], map: "idx_reading_results_type")
+  @@index([user_id], map: "idx_reading_results_user")
+}
+
+model reading_shares {
+  id              Int       @id @default(autoincrement())
+  user_id         Int
+  reading_id      Int
+  credits_awarded Int?      @default(3)
+  shared_at       DateTime? @default(now()) @db.Timestamp(6)
+  readings        Reading   @relation(fields: [reading_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, reading_id])
+  @@index([user_id, reading_id], map: "idx_reading_shares_user_reading")
+}
+
+model referral_redemptions {
+  id                                            Int       @id @default(autoincrement())
+  referrer_id                                   Int?
+  referred_id                                   Int?
+  referrer_rewarded                             Boolean?  @default(false)
+  referred_rewarded                             Boolean?  @default(false)
+  created_at                                    DateTime? @default(now()) @db.Timestamp(6)
+  users_referral_redemptions_referred_idTousers users?    @relation("referral_redemptions_referred_idTousers", fields: [referred_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_referral_redemptions_referrer_idTousers users?    @relation("referral_redemptions_referrer_idTousers", fields: [referrer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([referrer_id, referred_id])
+}
+
+model report_templates {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  owner_id      String?
+  template_json Json
+  preview_html  String?
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime? @default(now()) @db.Timestamptz(6)
+  report_type   String?
+
+  @@index([name], map: "idx_report_templates_name")
+  @@index([owner_id], map: "idx_report_templates_owner")
+}
+
+model sessions {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  session_token String    @unique
+  expires_at    DateTime  @db.Timestamptz(6)
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  expire        DateTime? @db.Timestamp(6)
+  sess          Json?
+  sid           String?   @db.VarChar
+}
+
+model stripe_events {
+  id         Int       @id @default(autoincrement())
+  event_id   String    @unique @db.VarChar(255)
+  type       String?   @db.VarChar(100)
+  payload    Json?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model subscriptions {
+  id                     Int       @id @default(autoincrement())
+  user_id                Int       @unique(map: "idx_subscriptions_user_id")
+  status                 String?   @db.VarChar(50)
+  plan_id                String?   @db.VarChar(100)
+  current_period_start   DateTime? @db.Timestamptz(6)
+  current_period_end     DateTime? @db.Timestamptz(6)
+  created_at             DateTime? @default(now()) @db.Timestamp(6)
+  updated_at             DateTime? @default(now()) @db.Timestamptz(6)
+  stripe_subscription_id String?   @db.VarChar
+  tier                   String?   @db.VarChar(50)
+  rollover_days          Int?
+  report_discount        Int?
+  priority_access        Boolean?  @default(false)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transit_computation_log {
+  id                  Int       @id @default(autoincrement())
+  user_id             Int?
+  computation_type    String    @db.VarChar(50)
+  window_start        DateTime  @db.Timestamptz(6)
+  window_end          DateTime  @db.Timestamptz(6)
+  transits_found      Int?      @default(0)
+  computation_time_ms Int?
+  status              String?   @default("completed") @db.VarChar(50)
+  error_message       String?
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  users               users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_transit_comp_log_created_at")
+  @@index([user_id], map: "idx_transit_comp_log_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transit_notifications {
+  id                    Int                    @id @default(autoincrement())
+  user_id               Int
+  transit_id            Int
+  subscription_id       Int?
+  notification_type     String                 @db.VarChar(50)
+  event_type            String                 @db.VarChar(50)
+  sent_at               DateTime?              @default(now()) @db.Timestamptz(6)
+  delivered             Boolean?               @default(false)
+  delivery_status       String?                @db.VarChar(100)
+  error_message         String?
+  payload               Json?
+  notification_hash     String?                @db.VarChar(64)
+  created_at            DateTime?              @default(now()) @db.Timestamptz(6)
+  transit_subscriptions transit_subscriptions? @relation(fields: [subscription_id], references: [id], onUpdate: NoAction)
+  transits              Transit                @relation(fields: [transit_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                 users                  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([notification_hash], map: "idx_transit_notif_hash")
+  @@index([sent_at], map: "idx_transit_notif_sent_at")
+  @@index([transit_id], map: "idx_transit_notif_transit_id")
+  @@index([user_id], map: "idx_transit_notif_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transit_subscriptions {
+  id                    Int                     @id @default(autoincrement())
+  user_id               Int
+  natal_chart_id        Int
+  transiting_bodies     String[]
+  natal_points          String[]
+  aspects               String[]
+  min_strength          Int?                    @default(50)
+  notify_email          Boolean?                @default(true)
+  notify_push           Boolean?                @default(false)
+  notify_webhook        Boolean?                @default(false)
+  webhook_url           String?                 @db.VarChar(500)
+  is_active             Boolean?                @default(true)
+  last_check            DateTime?               @db.Timestamptz(6)
+  next_check            DateTime?               @db.Timestamptz(6)
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  transit_notifications transit_notifications[]
+  natal_charts          NatalChart              @relation(fields: [natal_chart_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                 users                   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([is_active], map: "idx_transit_subs_active")
+  @@index([next_check], map: "idx_transit_subs_next_check")
+  @@index([user_id], map: "idx_transit_subs_user_id")
+}
+
+model user_credit_snapshot {
+  user_id    Int       @id
+  balance    Int       @default(0)
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([updated_at], map: "idx_user_credit_snapshot_updated_at")
+}
+
+model user_credits {
+  id                Int       @id @default(autoincrement())
+  user_id           Int
+  credit_type       String    @db.VarChar(50)
+  credits_remaining Int?      @default(0)
+  credits_used      Int?      @default(0)
+  reset_date        DateTime? @db.Timestamp(6)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model user_favorites {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  type       String    @db.VarChar(50)
+  item_id    String    @db.VarChar(100)
+  name       String?   @db.VarChar(255)
+  metadata   Json?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, type, item_id])
+  @@index([type], map: "idx_user_favorites_type")
+  @@index([user_id], map: "idx_user_favorites_user_id")
+}
+
+model user_tasks {
+  id             Int       @id @default(autoincrement())
+  user_id        Int
+  task_id        String    @db.VarChar(100)
+  completed_date DateTime  @db.Date
+  xp_earned      Int?      @default(0)
+  credit_earned  Int?      @default(0)
+  streak_bonus   Int?      @default(0)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  users          users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, task_id, completed_date])
+  @@index([completed_date], map: "idx_user_tasks_date")
+  @@index([user_id], map: "idx_user_tasks_user_id")
+}
+
+model user_xp {
+  id            Int       @id @default(autoincrement())
+  user_id       Int       @unique
+  total_xp      Int?      @default(0)
+  current_level Int?      @default(1)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_user_xp_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  id                                                           Int                       @id @default(autoincrement())
+  email                                                        String                    @unique @db.VarChar(255)
+  created_at                                                   DateTime?                 @db.Timestamp(6)
+  password                                                     String?                   @db.VarChar(255)
+  first_name                                                   String?                   @db.VarChar(100)
+  last_name                                                    String?                   @db.VarChar(100)
+  updated_at                                                   DateTime?                 @db.Timestamp(6)
+  role                                                         String?                   @default("user") @db.VarChar(50)
+  stripe_customer_id                                           String?                   @db.VarChar(255)
+  stripe_subscription_id                                       String?                   @db.VarChar(255)
+  ai_personalization_opt_in                                    Boolean?                  @default(true)
+  google_id                                                    String?                   @unique @db.VarChar(255)
+  avatar_url                                                   String?
+  email_verified                                               Boolean?                  @default(false)
+  free_natal_chart_used                                        Boolean?                  @default(false)
+  last_free_credit_refresh                                     DateTime?                 @default(now()) @db.Timestamp(6)
+  referral_code                                                String?                   @unique @db.VarChar(50)
+  referred_by                                                  Int?
+  password_hash                                                String?                   @db.VarChar(255)
+  subscription_tier                                            String?                   @db.VarChar(50)
+  premium_credits_cap                                          Int?                      @default(0)
+  monthly_credits_reset_date                                   DateTime?                 @db.Timestamp(6)
+  subscription_status                                          String?                   @db.VarChar(20)
+  subscription_current_period_start                            DateTime?                 @db.Timestamptz(6)
+  subscription_current_period_end                              DateTime?                 @db.Timestamptz(6)
+  subscription_next_renewal_at                                 DateTime?                 @db.Timestamptz(6)
+  subscription_last_credit_issued_at                           DateTime?                 @db.Timestamptz(6)
+  subscription_report_discount                                 Int?                      @default(0)
+  subscription_priority                                        Boolean?                  @default(false)
+  next_free_credit_issue_at                                    DateTime?                 @default(now()) @db.Timestamptz(6)
+  blog_posts                                                   blog_posts[]
+  credit_ledger                                                credit_ledger[]
+  energy_logs                                                  energy_logs[]
+  forecast_preferences                                         forecast_preferences?
+  forecasts                                                    forecasts[]
+  journal_entries                                              journal_entries[]
+  natal_charts                                                 NatalChart[]
+  password_reset_tokens                                        password_reset_tokens[]
+  pdf_templates                                                pdf_templates[]
+  reading_jobs                                                 reading_jobs[]
+  reading_results                                              reading_results[]
+  reading_shares                                               reading_shares[]
+  referral_redemptions_referral_redemptions_referred_idTousers referral_redemptions[]    @relation("referral_redemptions_referred_idTousers")
+  referral_redemptions_referral_redemptions_referrer_idTousers referral_redemptions[]    @relation("referral_redemptions_referrer_idTousers")
+  tarot_history                                                TarotHistory[]
+  transit_computation_log                                      transit_computation_log[]
+  transit_notifications                                        transit_notifications[]
+  transit_subscriptions                                        transit_subscriptions[]
+  transits                                                     Transit[]
+  transit_logs                                                 TransitLog[]
+  user_credit_snapshot                                         user_credit_snapshot?
+  user_favorites                                               user_favorites[]
+  user_tasks                                                   user_tasks[]
+  user_xp                                                      user_xp?
+  users                                                        users?                    @relation("usersTousers", fields: [referred_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_users                                                  users[]                   @relation("usersTousers")
+
+  @@index([ai_personalization_opt_in], map: "idx_users_ai_optin")
+  @@index([email], map: "idx_users_email")
+  @@index([google_id], map: "idx_users_google_id")
+  @@index([referral_code], map: "idx_users_referral_code")
+  @@index([referred_by], map: "idx_users_referred_by")
+}
