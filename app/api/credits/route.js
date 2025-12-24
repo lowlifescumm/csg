@@ -3,6 +3,7 @@ import { Pool } from 'pg';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
+import { getCreditBalance } from '@/lib/credit-engine.js';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -176,10 +177,13 @@ export async function GET(request) {
     const requestedUserId = searchParams?.get('userId');
     
     // Verify admin if requesting different user's credits
-    if (requestedUserId && requestedUserId !== auth.userId?.toString()) {
+    const authUserId = parseInt(auth.userId, 10);
+    const requestedUserIdInt = requestedUserId ? parseInt(requestedUserId, 10) : null;
+    
+    if (requestedUserIdInt && requestedUserIdInt !== authUserId) {
       const { rows: userRows } = await pool.query(
         "SELECT role FROM users WHERE id=$1",
-        [auth.userId]
+        [authUserId]
       );
       
       if (!userRows[0] || userRows[0].role !== 'admin') {
@@ -187,7 +191,7 @@ export async function GET(request) {
       }
     }
 
-    const userId = requestedUserId ? parseInt(requestedUserId, 10) : auth.userId;
+    const userId = requestedUserIdInt || authUserId;
     
     // Check if user is premium
     const userResult = await pool.query(
@@ -202,29 +206,22 @@ export async function GET(request) {
     const isPremium = userResult.rows[0].stripe_subscription_id && 
                      userResult.rows[0].stripe_subscription_id.length > 0;
 
-    // If not premium and admin is requesting, return simple credits table balance
+    // SINGLE SOURCE OF TRUTH: Use credit_ledger for ALL users (premium and non-premium)
+    // This ensures admin updates via credit_ledger are immediately visible in user dashboard
+    const creditBalance = await getCreditBalance(userId);
+    const ledgerBalance = creditBalance.balance || 0;
+
+    // If not premium, return simple balance from credit ledger
     if (!isPremium) {
-      // Check if this is an admin request for simple credits
-      if (requestedUserId && requestedUserId !== auth.userId?.toString()) {
-        const { rows: simpleCredits } = await pool.query(
-          'SELECT credits FROM credits WHERE user_id = $1',
-          [userId]
-        );
-        
-        return NextResponse.json({ 
-          credits: simpleCredits[0]?.credits || 0,
-          isPremium: false
-        });
-      }
-      
       return NextResponse.json({ 
+        credits: ledgerBalance,
         isPremium: false,
-        credits: null,
-        history: [],
+        // Include breakdown for debugging/admin visibility
+        breakdown: creditBalance.breakdown,
         stats: {
-          totalAvailable: 0,
-          totalUsedThisMonth: 0,
-          monthlyAllocation: 8
+          totalAvailable: ledgerBalance,
+          totalUsedThisMonth: Math.abs(creditBalance.breakdown?.consumed || 0),
+          monthlyAllocation: 0
         }
       });
     }
@@ -329,6 +326,8 @@ export async function GET(request) {
       isPremium: true,
       credits,
       history,
+      // Include ledger balance as fallback/verification (SSOT)
+      ledgerBalance: ledgerBalance,
       stats: {
         totalAvailable,
         totalUsedThisMonth,
