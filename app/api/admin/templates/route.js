@@ -145,7 +145,7 @@ export async function POST(request) {
       );
     }
 
-    // Validate template size (500KB limit)
+    // Validate template size (1000KB / 1MB limit)
     const sizeCheck = validateTemplateSize(template_json, MAX_TEMPLATE_SIZE_KB);
     if (!sizeCheck.valid) {
       return NextResponse.json(
