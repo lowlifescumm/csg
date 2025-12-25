@@ -219,11 +219,12 @@ export async function POST(request) {
       }
 
       if (isUpdate) {
-        // Update existing template
+        // Update existing template with atomic ownership check to prevent TOCTOU race condition
+        // The WHERE clause ensures only the owner (or admin) can update the template
         const result = await client.query(
-          `UPDATE report_templates 
+          `UPDATE report_templates
            SET name = $1, template_json = $2, preview_html = $3, report_type = $4, updated_at = now()
-           WHERE id = $5
+           WHERE id = $5 AND (owner_id = $6 OR $7 = true)
            RETURNING id, name, created_at, owner_id`,
           [
             name.trim(),
@@ -231,11 +232,24 @@ export async function POST(request) {
             preview_html ? sanitizeTemplate({ preview_html }).preview_html : null,
             report_type || null,
             templateId,
+            userId,
+            isAdmin,
           ]
         );
-        
+
         if (result.rows.length === 0) {
-          return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+          // Check if template exists to provide appropriate error message
+          const existsCheck = await client.query(
+            'SELECT id FROM report_templates WHERE id = $1',
+            [templateId]
+          );
+          if (existsCheck.rows.length === 0) {
+            return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+          }
+          // Template exists but user doesn't have permission
+          return NextResponse.json({
+            error: 'Forbidden - You can only edit your own templates'
+          }, { status: 403 });
         }
         
         const template = result.rows[0];
