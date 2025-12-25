@@ -102,6 +102,21 @@ async function initializeDatabase() {
     `);
     console.log('✅ Horoscopes table created');
 
+    // Report templates table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS report_templates (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name TEXT NOT NULL,
+        owner_id TEXT,
+        template_json JSONB NOT NULL,
+        preview_html TEXT,
+        report_type TEXT,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      )
+    `);
+    console.log('✅ Report templates table created');
+
     // Create indexes for better performance
     console.log('📊 Creating database indexes...');
     
@@ -113,7 +128,9 @@ async function initializeDatabase() {
       'CREATE INDEX IF NOT EXISTS idx_credits_user_id ON credits(user_id)',
       'CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id)',
       'CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_id ON subscriptions(stripe_subscription_id)',
-      'CREATE INDEX IF NOT EXISTS idx_horoscopes_sign_date ON horoscopes(sign, date)'
+      'CREATE INDEX IF NOT EXISTS idx_horoscopes_sign_date ON horoscopes(sign, date)',
+      'CREATE INDEX IF NOT EXISTS idx_report_templates_owner ON report_templates(owner_id)',
+      'CREATE INDEX IF NOT EXISTS idx_report_templates_name ON report_templates(name)'
     ];
 
     for (const indexQuery of indexes) {

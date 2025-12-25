@@ -173,36 +173,6 @@ export async function POST(request) {
 
     const client = await pool.connect();
     try {
-      // Ensure report_templates table exists
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS report_templates (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          name TEXT NOT NULL,
-          owner_id TEXT,
-          template_json JSONB NOT NULL,
-          preview_html TEXT,
-          report_type TEXT,
-          created_at TIMESTAMPTZ DEFAULT now(),
-          updated_at TIMESTAMPTZ DEFAULT now()
-        );
-        
-        CREATE INDEX IF NOT EXISTS idx_report_templates_owner ON report_templates(owner_id);
-        CREATE INDEX IF NOT EXISTS idx_report_templates_name ON report_templates(name);
-      `);
-      
-      // Add report_type column if it doesn't exist (for existing tables)
-      await client.query(`
-        DO $$ 
-        BEGIN
-          IF NOT EXISTS (
-            SELECT 1 FROM information_schema.columns 
-            WHERE table_name = 'report_templates' AND column_name = 'report_type'
-          ) THEN
-            ALTER TABLE report_templates ADD COLUMN report_type TEXT;
-          END IF;
-        END $$;
-      `);
-
       // Determine owner_id - use authenticated user's ID if not provided
       // Non-admin users: always use their own userId (ignore provided owner_id)
       // Admins: can set owner_id to any value, default to userId if not provided
