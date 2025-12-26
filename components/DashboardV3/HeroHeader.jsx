@@ -57,7 +57,8 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
   const safeStreak = streak && typeof streak === 'object' && Object.keys(streak).length > 0 ? streak : null;
   const safeMoonPhase = moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 ? moonPhase : null;
   
-  const totalCredits = safeCredits?.stats?.totalAvailable || safeCredits?.credits || 0;
+  // SSOT: Prioritize ledgerBalance if available, then stats.totalAvailable, then credits field
+  const totalCredits = safeCredits?.ledgerBalance ?? safeCredits?.stats?.totalAvailable ?? (typeof safeCredits?.credits === 'number' ? safeCredits.credits : 0);
   const hasZeroCredits = totalCredits === 0;
   const currentStreak = safeStreak?.currentStreak || 0;
 

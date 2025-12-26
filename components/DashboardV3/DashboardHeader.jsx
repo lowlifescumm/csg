@@ -38,7 +38,8 @@ export default function DashboardHeader({ user, moonPhase, streak, credits }) {
   };
 
   const currentStreak = safeStreak?.currentStreak || 0;
-  const totalCredits = safeCredits?.stats?.totalAvailable || safeCredits?.credits || 0;
+  // SSOT: Prioritize ledgerBalance if available, then stats.totalAvailable, then credits field
+  const totalCredits = safeCredits?.ledgerBalance ?? safeCredits?.stats?.totalAvailable ?? (typeof safeCredits?.credits === 'number' ? safeCredits.credits : 0);
 
   return (
     <div className="flex items-center justify-between mb-6">

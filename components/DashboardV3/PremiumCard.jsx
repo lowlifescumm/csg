@@ -43,18 +43,18 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
     }
 
     try {
-      const response = await fetch("/api/create-subscription", {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        alert(data.error || "Failed to start subscription");
-        setProcessing(false);
+      // Check authentication first
+      const authCheck = await fetch("/api/auth/user", { credentials: 'include' });
+      const authData = await authCheck.json();
+      
+      if (!authData.user) {
+        // Redirect to login if not authenticated
+        window.location.href = "/login?redirect=/subscription";
+        return;
       }
+
+      // Redirect to subscription page where user can choose tier
+      window.location.href = "/subscription";
     } catch (error) {
       console.error("Subscription error:", error);
       alert("Failed to start subscription process");
@@ -191,8 +191,8 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
           
           <p className="text-purple-300 text-sm mt-4">
             {textVariant === "long"
-              ? "Secure payment powered by Stripe • Cancel anytime • $9.99/month"
-              : "$9.99/month • Cancel anytime"}
+              ? "Secure payment powered by Stripe • Cancel anytime • Starting at $19.99/month"
+              : "Starting at $19.99/month • Cancel anytime"}
           </p>
         </div>
 

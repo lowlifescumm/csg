@@ -41,7 +41,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const safeMoonPhase = moonPhase && typeof moonPhase === 'object' ? moonPhase : null;
   
   const isPremium = user?.stripe_subscription_id || safeCredits?.isPremium;
-  const totalCredits = safeCredits?.stats?.totalAvailable || safeCredits?.credits || 0;
+  // SSOT: Prioritize ledgerBalance if available, then stats.totalAvailable, then credits field
+  const totalCredits = safeCredits?.ledgerBalance ?? safeCredits?.stats?.totalAvailable ?? (typeof safeCredits?.credits === 'number' ? safeCredits.credits : 0);
   const readingCount = safeReadings?.stats?.readingCount || 0;
   const chartCount = safeReadings?.stats?.chartCount || 0;
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });

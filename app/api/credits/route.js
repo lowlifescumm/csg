@@ -265,8 +265,9 @@ export async function GET(request) {
         isPremium: true,
         credits,
         history: [],
+        ledgerBalance: ledgerBalance,
         stats: {
-          totalAvailable,
+          totalAvailable: ledgerBalance, // Use SSOT instead of user_credits sum
           totalUsedThisMonth,
           monthlyAllocation: 8,
           daysUntilRenewal: Math.ceil((new Date(newCreditsResult.rows[0].reset_date) - new Date()) / (1000 * 60 * 60 * 24))
@@ -322,14 +323,16 @@ export async function GET(request) {
       ? Math.ceil((new Date(creditsResult.rows[0].reset_date) - new Date()) / (1000 * 60 * 60 * 24))
       : 30;
 
+    // SSOT: Use ledgerBalance as totalAvailable for premium users
+    // The ledgerBalance is the single source of truth from credit_ledger table
     return NextResponse.json({ 
       isPremium: true,
       credits,
       history,
-      // Include ledger balance as fallback/verification (SSOT)
+      // Include ledger balance as SSOT
       ledgerBalance: ledgerBalance,
       stats: {
-        totalAvailable,
+        totalAvailable: ledgerBalance, // Use SSOT instead of user_credits sum
         totalUsedThisMonth,
         monthlyAllocation: 8,
         daysUntilRenewal

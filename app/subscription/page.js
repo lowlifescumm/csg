@@ -38,6 +38,7 @@ export default function SubscriptionPage() {
       const response = await fetch('/api/create-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({ tier: tierId }),
       });
 
