@@ -57,13 +57,13 @@ export default function HomePage() {
             <Eye className="w-16 h-16 sm:w-20 sm:h-20 text-purple-600 mx-auto" />
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text px-2">
-            Connect With Your Cosmic Spirit Guide — Get Daily Tarot Insights for Free
+            Daily Tarot Insights
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-4 max-w-3xl mx-auto px-4">
-            Receive spiritually aligned tarot readings powered by advanced AI guidance.
+            Receive spiritually aligned tarot and astrology readings powered by advanced AI guidance.
           </p>
           <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto px-4">
-            Clear answers. Gentle direction. <strong className="text-purple-600">3 free credits every single day.</strong>
+            Clear answers on love, career, and purpose. Gentle direction. <strong className="text-purple-600">3 free credits every single day.</strong>
           </p>
           
           <button 
@@ -79,7 +79,7 @@ export default function HomePage() {
       <section className="py-12 sm:py-16 px-4 sm:px-6 bg-white/50">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-lg sm:text-xl text-gray-700 mb-2">
-            Trusted by thousands seeking clarity, direction, and calm.
+            Trusted by thousands seeking clarity, direction, and calm across tarot and astrology guidance.
           </p>
           <p className="text-base sm:text-lg text-gray-600 mb-8">
             Real guidance. Real insight. Zero guesswork.
@@ -116,7 +116,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
-              Your Cosmic Spirit Guide gives you:
+              Your Cosmic Spirit Guide gives you tarot and astrology insight:
             </h2>
           </div>
           
@@ -174,8 +174,11 @@ export default function HomePage() {
             <p className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
               3 free credits every day — no commitment, no tricks
             </p>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               Every reading blends timeless tarot symbolism with advanced AI interpretation to create messages uniquely aligned to you.
+            </p>
+            <p className="text-gray-600">
+              Alongside each tarot spread, you can receive concise astrology insight on your primary birth chart sign to support love, career, and key life decisions.
             </p>
           </div>
         </div>
@@ -186,10 +189,13 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
-              How It Works
+              How It Works for online tarot and astrology readings
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 mb-4">
               Simple, soulful, and always available.
+            </p>
+            <p className="text-lg text-gray-600">
+              Log in from any device for secure, on-demand access to AI-generated tarot and astrology insights without scheduling calls or sharing private contact details.
             </p>
           </div>
           
@@ -226,11 +232,10 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
-              Why People Love This
+              Why People Love This AI tarot and astrology platform
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              You don&apos;t need to be a tarot expert.<br />
-              Your guide interprets everything for you with clarity and heart.
+              You don&apos;t need to be a tarot expert. Your guide interprets everything for you with clarity and heart.
             </p>
           </div>
           
@@ -281,8 +286,8 @@ export default function HomePage() {
               Ethics & Transparency
             </h2>
             <p className="text-xl text-gray-700 mb-8">
-              We believe spiritual tools should empower you — not scare you.
-            </p>
+            We believe spiritual tools should empower you — not scare you.
+          </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -391,8 +396,11 @@ export default function HomePage() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 px-4">
             Experience Your First Reading Now
           </h2>
-          <p className="text-lg sm:text-xl md:text-2xl mb-8 text-purple-200 px-4">
+          <p className="text-lg sm:text-xl md:text-2xl mb-4 text-purple-200 px-4">
             Connect with your Cosmic Spirit Guide and receive your daily guidance — instantly and free.
+          </p>
+          <p className="text-lg sm:text-xl mb-8 text-purple-200 px-4">
+            Guided by the stars, powered by insight.
           </p>
           <button 
             onClick={() => router.push("/login")}
@@ -441,8 +449,21 @@ export default function HomePage() {
             </div>
           </div>
           
-          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-500">
-            <p>&copy; 2025 Cosmic Spirit Guide. All rights reserved.</p>
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-center text-sm text-gray-500 mb-4">
+              Subscribe to curated updates on new tarot spreads, astrology resources, and platform improvements designed for consistent, data-informed spiritual practice.
+            </p>
+            <p className="text-center text-sm text-gray-500 mb-2">
+              &copy; 2025 Cosmic Spirit Guide. All rights reserved.
+            </p>
+            <p className="text-center text-sm text-gray-500 mb-2">
+              Powered by AI • Tarot • Horoscopes • Birth Charts
+            </p>
+            <div className="flex justify-center gap-4 text-sm text-gray-500">
+              <Link href="/privacy" className="hover:text-white smooth-transition">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-white smooth-transition">Terms of Service</Link>
+              <Link href="/contact" className="hover:text-white smooth-transition">Contact</Link>
+            </div>
           </div>
         </div>
       </footer>
