@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Moon, Sparkles, Calendar, Heart, Briefcase, Droplet, Star, ChevronRight } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { SUBSCRIPTION_TIERS } from '@/lib/pricing';
 import LowCreditsUpsellBanner from '@/components/LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
 
@@ -506,7 +507,7 @@ export default function PersonalizedMoonReading() {
                   </div>
                   <div className="text-center mb-4">
                     <div className="text-xs sm:text-sm font-semibold opacity-90 mb-2">Premium Subscription</div>
-                    <div className="text-3xl sm:text-4xl font-bold">$9.99<span className="text-lg sm:text-xl opacity-75">/mo</span></div>
+                    <div className="text-3xl sm:text-4xl font-bold">${(SUBSCRIPTION_TIERS.MYSTIC_LITE.priceInCents / 100).toFixed(2)}<span className="text-lg sm:text-xl opacity-75">/mo</span></div>
                   </div>
                   <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6 text-xs sm:text-sm">
                     <li className="flex items-start gap-2">

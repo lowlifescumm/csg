@@ -117,7 +117,7 @@ export default function Sidebar({ user, onLinkClick }) {
           className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-purple-200 hover:bg-white hover:bg-opacity-10 smooth-transition text-sm sm:text-base"
         >
           <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-          <span className="font-medium truncate">Sign Out</span>
+          <span className="font-medium truncate">Log Out</span>
         </button>
       </div>
     </div>

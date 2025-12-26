@@ -10,12 +10,12 @@ import { POST as POST_COMPLETE } from "@/app/api/meditations/[id]/complete/route
 import { GET as GET_USER_MEDITATIONS } from "@/app/api/user/meditations/route";
 import { pool } from "@/lib/db";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth-config";
 
 // Mock dependencies
 jest.mock("@/lib/db");
 jest.mock("@/lib/auth");
-jest.mock("@/app/api/auth/[...nextauth]/route", () => ({
+jest.mock("@/lib/auth-config", () => ({
   authOptions: {},
 }));
 

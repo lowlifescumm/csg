@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth.js';
 import { validateReadingPrerequisites } from '@/lib/reading-prerequisites.js';
 import { pool } from '@/lib/db.js';

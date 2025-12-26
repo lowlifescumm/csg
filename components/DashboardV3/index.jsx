@@ -18,6 +18,7 @@ import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import CardCountSelector from "@/components/CardCountSelector";
 import HelpSystem from "@/components/HelpSystem";
 import DailyHoroscope from "@/components/DailyHoroscope";
+import PatternAlert from "@/components/PatternAlert";
 // Meditation components temporarily hidden
 // import MeditationCard from "@/components/MeditationCard";
 // import MeditationPlayer from "@/components/MeditationPlayer";
@@ -340,6 +341,11 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 <span>More Tarot Types</span>
                 <span className="text-xs opacity-80">View All</span>
               </button>
+            </div>
+
+            {/* Pattern Alert - Cosmic Insights */}
+            <div className="mt-6">
+              <PatternAlert />
             </div>
           </div>
 

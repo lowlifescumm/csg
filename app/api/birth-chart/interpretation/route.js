@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { pool } from '@/lib/db.js';
 import { interpretBirthChart } from '@/lib/astrology.js';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';

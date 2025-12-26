@@ -58,7 +58,7 @@ function CreditPackCheckoutForm({ pack, onSuccess, onError, onCancel }) {
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold disabled:opacity-50 hover:from-purple-700 hover:to-pink-700 transition"
+          className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg font-semibold disabled:opacity-50 hover:from-purple-700 hover:to-pink-700 transition"
         >
           {loading ? (
             <>
@@ -278,7 +278,7 @@ export default function PricingTiers() {
 
             <button
               onClick={() => router.push("/signup")}
-              className="w-full bg-white/20 text-white font-semibold py-3 rounded-xl hover:bg-white/30 transition-all border border-white/30"
+              className="w-full bg-white/20 text-white font-semibold py-4 rounded-xl hover:bg-white/30 transition-all border border-white/30"
             >
               Get Started Free
             </button>
@@ -354,7 +354,7 @@ export default function PricingTiers() {
 
                 <button
                   onClick={() => handlePackPurchase(selectedPackData)}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
                 >
                   Purchase ${(selectedPackData.priceInCents / 100).toFixed(2)}
                 </button>

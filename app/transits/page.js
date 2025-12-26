@@ -7,6 +7,7 @@ import {
   Users, Brain, Home, Activity, ArrowLeft, Share2, Loader2, Lock
 } from 'lucide-react';
 import Link from 'next/link';
+import { SUBSCRIPTION_TIERS } from '@/lib/pricing';
 
 export default function TransitDashboard() {
   const [selectedTransit, setSelectedTransit] = useState(null);
@@ -103,7 +104,7 @@ export default function TransitDashboard() {
 
           <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
             <div className="text-center mb-6">
-              <div className="text-6xl font-bold text-white mb-2">$29.99</div>
+              <div className="text-6xl font-bold text-white mb-2">${(SUBSCRIPTION_TIERS.MYSTIC_LITE.priceInCents / 100).toFixed(2)}</div>
               <div className="text-purple-200">per month</div>
             </div>
 

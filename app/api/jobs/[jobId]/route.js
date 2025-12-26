@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { getJobById } from '@/lib/reading-jobs.js';
 import { pool } from '@/lib/db.js';
 import { serializeJob } from '@/lib/reading-jobs.js';

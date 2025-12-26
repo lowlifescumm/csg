@@ -1,7 +1,197 @@
-import { calculateBirthChart } from "@/lib/astrology";
+import { calculateBirthChart, degreesToSign } from "@/lib/astrology";
 import { calculateSynastryScore, calculateSynastryAspects } from "@/lib/compatibility";
 import { calculateBodyGraph } from "@/src/utils/humanDesign/hdCalculator";
 import * as Astronomy from 'astronomy-engine';
+import { Body } from 'astronomy-engine';
+
+// ---------------------------------------------------------------------------
+// Aspect calculation helper (adds explicit planetary relationships)
+// ---------------------------------------------------------------------------
+const ASPECTS = {
+  Conjunction: { angle: 0, orb: 8 },
+  Opposition: { angle: 180, orb: 8 },
+  Trine: { angle: 120, orb: 8 },
+  Square: { angle: 90, orb: 8 },
+  Sextile: { angle: 60, orb: 6 },
+};
+
+function calculateAspects(planets: Record<string, any>) {
+  const aspects: Array<{ planet1: string; planet2: string; type: string; angle: number }> = [];
+  if (!planets || Object.keys(planets).length === 0) return aspects;
+
+  const planetNames = Object.keys(planets);
+
+  for (let i = 0; i < planetNames.length; i++) {
+    for (let j = i + 1; j < planetNames.length; j++) {
+      const p1 = planets[planetNames[i]];
+      const p2 = planets[planetNames[j]];
+
+      if (!p1?.longitude || !p2?.longitude) continue;
+
+      // Calculate absolute difference
+      let diff = Math.abs(p1.longitude - p2.longitude);
+      if (diff > 180) diff = 360 - diff; // Handle circular wrap
+
+      // Check against aspect definitions
+      for (const [name, data] of Object.entries(ASPECTS)) {
+        if (Math.abs(diff - data.angle) <= data.orb) {
+          aspects.push({
+            planet1: p1.name,
+            planet2: p2.name,
+            type: name,
+            angle: parseFloat(diff.toFixed(1)),
+          });
+        }
+      }
+    }
+  }
+
+  return aspects;
+}
+
+// ---------------------------------------------------------------------------
+// Composite Chart Calculator (Midpoint-based)
+// ---------------------------------------------------------------------------
+
+/**
+ * Calculate midpoint between two longitudes using shortest arc rule
+ * @param p1 - First longitude (0-360)
+ * @param p2 - Second longitude (0-360)
+ * @returns Midpoint longitude (0-360)
+ */
+function calculateMidpoint(p1: number, p2: number): number {
+  // Normalize to 0-360
+  let lon1 = ((p1 % 360) + 360) % 360;
+  let lon2 = ((p2 % 360) + 360) % 360;
+
+  // Calculate difference taking shortest arc
+  let diff = lon2 - lon1;
+  if (Math.abs(diff) > 180) {
+    // Take the shorter arc by adjusting direction
+    diff = diff > 0 ? diff - 360 : diff + 360;
+  }
+
+  // Calculate midpoint
+  let mid = lon1 + diff / 2;
+  
+  // Normalize result to 0-360
+  mid = ((mid % 360) + 360) % 360;
+  
+  return mid;
+}
+
+/**
+ * Calculate which house (1-12) a planet falls into using equal house system
+ * @param planetLongitude - Planet's longitude (0-360)
+ * @param ascendantLongitude - Composite Ascendant longitude (0-360)
+ * @returns House number (1-12)
+ */
+function getHouseForLongitude(planetLongitude: number, ascendantLongitude: number): number {
+  // Normalize to 0-360
+  let planetLon = ((planetLongitude % 360) + 360) % 360;
+  let ascLon = ((ascendantLongitude % 360) + 360) % 360;
+
+  // Calculate difference (handling wrap-around)
+  let diff = planetLon - ascLon;
+  if (diff < 0) diff += 360;
+
+  // Each house is 30 degrees in equal house system
+  const house = Math.floor(diff / 30) + 1;
+  
+  // Ensure house is between 1-12
+  return ((house - 1) % 12) + 1;
+}
+
+/**
+ * Calculate Composite Chart from user and partner charts
+ * Uses midpoint method with shortest arc rule and equal house system
+ */
+function calculateCompositeChart(
+  userChart: CalculatedChartData,
+  partnerChart: CalculatedChartData
+): {
+  sun: { sign: string; house: number };
+  moon: { sign: string; house: number };
+  mercury: { sign: string; house: number };
+  venus: { sign: string; house: number };
+  mars: { sign: string; house: number };
+  jupiter: { sign: string; house: number };
+  saturn: { sign: string; house: number };
+  rising: { sign: string };
+} {
+  try {
+    // Get planetary longitudes from both charts
+    const userPlanets = userChart.planets || {};
+    const partnerPlanets = partnerChart.planets || {};
+
+    // Helper to get longitude safely
+    const getLongitude = (planetKey: string, planets: Record<string, any>): number | null => {
+      const planet = planets[planetKey.toLowerCase()] || planets[planetKey];
+      if (!planet) return null;
+      return planet.longitude ?? planet.eclipticLongitude ?? null;
+    };
+
+    // Calculate Composite Ascendant (midpoint of ascendants)
+    const userAscendant = userChart.houses?.[1]?.longitude ?? 
+                          (userChart.rawChart as any)?.ascendant?.longitude ?? null;
+    const partnerAscendant = partnerChart.houses?.[1]?.longitude ?? 
+                             (partnerChart.rawChart as any)?.ascendant?.longitude ?? null;
+
+    if (userAscendant === null || partnerAscendant === null) {
+      throw new Error("Cannot calculate composite chart: missing ascendant data");
+    }
+
+    const compositeAscendant = calculateMidpoint(userAscendant, partnerAscendant);
+    const compositeAscendantSign = degreesToSign(compositeAscendant);
+
+    // Calculate composite planets (midpoints)
+    const compositePlanets: Record<string, { longitude: number; sign: string; house: number }> = {};
+    
+    const planetKeys = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn'];
+    
+    for (const planetKey of planetKeys) {
+      const userLon = getLongitude(planetKey, userPlanets);
+      const partnerLon = getLongitude(planetKey, partnerPlanets);
+
+      if (userLon !== null && partnerLon !== null) {
+        const compositeLon = calculateMidpoint(userLon, partnerLon);
+        const compositeSign = degreesToSign(compositeLon);
+        const compositeHouse = getHouseForLongitude(compositeLon, compositeAscendant);
+
+        compositePlanets[planetKey] = {
+          longitude: compositeLon,
+          sign: compositeSign,
+          house: compositeHouse,
+        };
+      }
+    }
+
+    // Return structured composite chart data
+    return {
+      sun: compositePlanets.sun || { sign: 'Unknown', house: 0 },
+      moon: compositePlanets.moon || { sign: 'Unknown', house: 0 },
+      mercury: compositePlanets.mercury || { sign: 'Unknown', house: 0 },
+      venus: compositePlanets.venus || { sign: 'Unknown', house: 0 },
+      mars: compositePlanets.mars || { sign: 'Unknown', house: 0 },
+      jupiter: compositePlanets.jupiter || { sign: 'Unknown', house: 0 },
+      saturn: compositePlanets.saturn || { sign: 'Unknown', house: 0 },
+      rising: { sign: compositeAscendantSign },
+    };
+  } catch (error) {
+    console.error('[calculateCompositeChart] Error:', error);
+    // Return safe defaults on error
+    return {
+      sun: { sign: 'Unknown', house: 0 },
+      moon: { sign: 'Unknown', house: 0 },
+      mercury: { sign: 'Unknown', house: 0 },
+      venus: { sign: 'Unknown', house: 0 },
+      mars: { sign: 'Unknown', house: 0 },
+      jupiter: { sign: 'Unknown', house: 0 },
+      saturn: { sign: 'Unknown', house: 0 },
+      rising: { sign: 'Unknown' },
+    };
+  }
+}
 
 type BirthChartResult = ReturnType<typeof calculateBirthChart>;
 
@@ -18,6 +208,7 @@ export interface UserInput {
   partnerBirthCity?: string;
   partnerBirthLatitude?: number;
   partnerBirthLongitude?: number;
+  partnerName?: string; // CRITICAL: Partner's name (separate from user name)
 }
 
 export interface Coordinates {
@@ -89,6 +280,12 @@ export interface CalculatedChartData {
     exactDate: Date | string;
     orb: number;
     strengthScore: number;
+  }>;
+  aspects?: Array<{
+    planet1: string;
+    planet2: string;
+    type: string;
+    angle: number;
   }>;
   // Partner data (if provided)
   partner?: CalculatedChartData | null;
@@ -195,18 +392,19 @@ function drawTarotSpread(count: number = 3): Array<{
 
 /**
  * Calculate current moon phase using astronomy-engine
- * @returns Moon phase data
+ * @returns Moon phase data with current moon sign
  */
 function calculateCurrentMoonPhase(): {
   phase_name: string;
   illumination: string;
+  sign: string;
 } {
   const now = new Date();
   const time = Astronomy.MakeTime(now);
 
   // Get Sun and Moon positions
-  const sunVec = Astronomy.GeoVector('Sun', time, true);
-  const moonVec = Astronomy.GeoVector('Moon', time, true);
+  const sunVec = Astronomy.GeoVector(Body.Sun, time, true);
+  const moonVec = Astronomy.GeoVector(Body.Moon, time, true);
 
   const sunEcl = Astronomy.Ecliptic(sunVec);
   const moonEcl = Astronomy.Ecliptic(moonVec);
@@ -219,7 +417,7 @@ function calculateCurrentMoonPhase(): {
   if (phaseAngle < 0) phaseAngle += 360;
 
   // Get illumination percentage
-  const illumination = Astronomy.Illumination('Moon', time);
+  const illumination = Astronomy.Illumination(Body.Moon, time);
   const illuminationPercent = Math.round(illumination.phase_fraction * 100);
 
   // Determine phase name
@@ -245,9 +443,17 @@ function calculateCurrentMoonPhase(): {
     phaseName = 'New Moon';
   }
 
+  // Calculate current moon sign from longitude
+  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 
+                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const normalizedLon = moonLon % 360;
+  const signIndex = Math.floor(normalizedLon / 30);
+  const currentMoonSign = signs[signIndex] || 'Unknown';
+
   return {
     phase_name: phaseName,
     illumination: `${illuminationPercent}%`,
+    sign: currentMoonSign,
   };
 }
 
@@ -399,8 +605,8 @@ function calculateRelationshipMatrix(
     const neptuneAspects = synastryAspects.filter(
       (a) => a.person1Planet === "Neptune" || a.person2Planet === "Neptune"
     );
-    const user12thHouse = userChart.houses?.[12];
-    const partner12thHouse = partnerChart.houses?.[12];
+    const user12thHouse = (userChart.houses as any)?.[12];
+    const partner12thHouse = (partnerChart.houses as any)?.[12];
     const has12thHouseActivity = Boolean(user12thHouse || partner12thHouse);
 
     neptuneAspects.forEach((aspect) => {
@@ -471,7 +677,7 @@ function calculateRelationshipMatrix(
  * 4. Partner chart calculation (if partner data provided)
  * 5. Synastry compatibility scoring (if partner data provided)
  */
-export async function hydrateReportData(input: UserInput): Promise<CalculatedChartData> {
+export async function hydrateReportData(input: UserInput): Promise<CalculatedChartData & { user?: CalculatedChartData; partner?: any; matrix_scores?: any; compatibility_score?: number | null; composite?: any }> {
   console.log('HYDRATOR INPUT:', JSON.stringify(input, null, 2));
   validateInput(input);
 
@@ -484,6 +690,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   const { northNode, southNode } = extractNodes(chart);
   const aspectMatrix = buildAspectMatrix(chart.aspects || []);
   const houses = chart.houses || {};
+  const calculatedAspects = calculateAspects(planets);
 
   // Calculate Human Design Body Graph
   const humanDesignData = await calculateHumanDesign(chart, input.birthDate, input.birthTime, coordinates.latitude, coordinates.longitude);
@@ -496,15 +703,16 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
   const userChart: CalculatedChartData = {
     input,
     coordinates,
-    sunSign: chart.planets?.sun?.sign ?? "Unknown",
-    moonSign: chart.planets?.moon?.sign ?? "Unknown",
+    sunSign: (chart.planets as any)?.sun?.sign ?? "Unknown",
+    moonSign: (chart.planets as any)?.moon?.sign ?? "Unknown",
     risingSign: chart.ascendant ?? houses?.[1]?.sign ?? "Unknown",
     northNode,
     southNode,
     planetaryPositions,
     aspectMatrix,
+    aspects: calculatedAspects,
     planets,
-    houses,
+    houses: houses || ({} as any), // Type assertion for houses
     isSaturnReturn: Boolean((chart as any)?.isSaturnReturn),
     rawChart: chart,
     humanDesign: humanDesignData,
@@ -513,9 +721,10 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     moon_data: {
       phase_name: moonPhase.phase_name,
       illumination: moonPhase.illumination,
-      sun_sign: chart.planets?.sun?.sign ?? "Unknown",
-      moon_sign: chart.planets?.moon?.sign ?? "Unknown",
-    },
+      moon_sign: moonPhase.sign, // Current transit moon sign
+      sun_sign: (chart.planets as any)?.sun?.sign ?? "Unknown", // User's natal sun sign
+      natal_moon_sign: (chart.planets as any)?.moon?.sign ?? "Unknown", // User's natal moon sign
+    } as any, // Type assertion to allow additional properties
     short_transits: shortTransits,
   };
 
@@ -548,26 +757,36 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       const partnerNodes = extractNodes(partnerChart);
       const partnerAspectMatrix = buildAspectMatrix(partnerChart.aspects || []);
       const partnerHouses = partnerChart.houses || {};
+      const partnerAspects = calculateAspects(partnerPlanets);
+
+      // CRITICAL: Fix Identity Theft Bug - Prevent partner from using user's name
+      // If partnerName is missing or identical to userName, use safe default
+      const userName = input.name || 'User';
+      const providedPartnerName = input.partnerName || '';
+      const safePartnerName = (providedPartnerName && providedPartnerName !== userName && providedPartnerName.trim() !== '')
+        ? providedPartnerName
+        : 'The Partner'; // Safe default - NEVER use userName
 
       const partnerChartData: CalculatedChartData = {
         input: {
-          name: input.name + " (Partner)",
-          birthDate: input.partnerBirthDate,
-          birthTime: input.partnerBirthTime,
+          name: safePartnerName, // Use safe partner name, never user's name
+          birthDate: input.partnerBirthDate || new Date(), // Default to current date if undefined
+          birthTime: input.partnerBirthTime || '12:00', // Default to noon if undefined
           birthCity: input.partnerBirthCity,
           birthLatitude: input.partnerBirthLatitude,
           birthLongitude: input.partnerBirthLongitude,
         },
         coordinates: partnerCoordinates,
-        sunSign: partnerChart.planets?.sun?.sign ?? "Unknown",
-        moonSign: partnerChart.planets?.moon?.sign ?? "Unknown",
+        sunSign: (partnerChart.planets as any)?.sun?.sign ?? "Unknown",
+        moonSign: (partnerChart.planets as any)?.moon?.sign ?? "Unknown",
         risingSign: partnerChart.ascendant ?? partnerHouses?.[1]?.sign ?? "Unknown",
         northNode: partnerNodes.northNode,
         southNode: partnerNodes.southNode,
         planetaryPositions: partnerPlanetaryPositions,
         aspectMatrix: partnerAspectMatrix,
+        aspects: partnerAspects,
         planets: partnerPlanets,
-        houses: partnerHouses,
+        houses: partnerHouses || ({} as any), // Type assertion for houses
         isSaturnReturn: Boolean((partnerChart as any)?.isSaturnReturn),
         rawChart: partnerChart,
       };
@@ -578,25 +797,51 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
       // Calculate relationship matrix scores (ensure it's never null)
       const matrixScores = calculateRelationshipMatrix(userChart, partnerChartData);
 
+      // Calculate Composite Chart (midpoint-based)
+      const compositeChart = calculateCompositeChart(userChart, partnerChartData);
+
+      // CRITICAL VALIDATION: Ensure partner signs are calculated, not "Unknown"
+      if (partnerChartData.sunSign === "Unknown" || partnerChartData.moonSign === "Unknown") {
+        throw new Error(
+          `[chartHydrator] CRITICAL: Partner chart calculated but Sun/Moon signs are Unknown. ` +
+          `Sun: ${partnerChartData.sunSign}, Moon: ${partnerChartData.moonSign}. ` +
+          `Check partner birth data: ${input.partnerBirthDate} ${input.partnerBirthTime}`
+        );
+      }
+
+      // CRITICAL VALIDATION: Ensure matrix_scores are not all defaults (50)
+      const allDefaults = matrixScores.emotional === 50 && 
+                         matrixScores.communication === 50 && 
+                         matrixScores.spiritual === 50 && 
+                         matrixScores.stability === 50 && 
+                         matrixScores.physical === 50;
+      if (allDefaults) {
+        console.warn(
+          `[chartHydrator] Matrix scores are all 50 (defaults). ` +
+          `This may indicate synastry calculation failed. ` +
+          `User chart: ${userChart.sunSign}/${userChart.moonSign}, ` +
+          `Partner chart: ${partnerChartData.sunSign}/${partnerChartData.moonSign}`
+        );
+      }
+
       // Explicit Return Structure (include Essential data from userChart)
       return {
         ...userChart, // Spread to include tarot_spread, moon_data, short_transits
         user: userChart,
         partner: {
           // Must include { sun: { sign: '...' } }
-          sun: partnerChartData.planets?.sun || partnerChart.planets?.sun || { sign: partnerChartData.sunSign },
-          moon: partnerChartData.planets?.moon || partnerChart.planets?.moon || { sign: partnerChartData.moonSign },
+          sun: (partnerChartData.planets as any)?.sun || (partnerChart.planets as any)?.sun || { sign: partnerChartData.sunSign },
+          moon: (partnerChartData.planets as any)?.moon || (partnerChart.planets as any)?.moon || { sign: partnerChartData.moonSign },
           rising: partnerChartData.risingSign || partnerChart.ascendant,
-          planets: partnerChartData.planets || partnerChart.planets,
-          houses: partnerChartData.houses || partnerChart.houses,
-          name: input.partnerBirthCity ? `${input.name} (Partner)` : "Partner",
+          name: safePartnerName, // CRITICAL: Use safe partner name, never user's name
           birth_date: input.partnerBirthDate,
-          // Include full partner chart data for compatibility
+          // Include full partner chart data for compatibility (this includes planets and houses)
           ...partnerChartData,
-        },
+        } as any, // Type assertion to allow additional properties
         matrix_scores: matrixScores, // Real numbers (0-100) based on aspects
         compatibility_score: compatibilityScore,
-      };
+        composite: compositeChart, // Composite chart data for relationship analysis
+      } as CalculatedChartData & { user?: CalculatedChartData; partner?: any; matrix_scores?: any; compatibility_score?: number | null; composite?: any };
     } catch (error) {
       console.error("[chartHydrator] Error calculating partner chart:", error);
       // Return user chart only if partner calculation fails (include Essential data)
@@ -606,7 +851,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
         partner: null,
         matrix_scores: null,
         compatibility_score: null,
-      };
+      } as CalculatedChartData & { user?: CalculatedChartData; partner?: any; matrix_scores?: any; compatibility_score?: number | null; composite?: any };
     }
   }
 
@@ -618,7 +863,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     partner: null,
     matrix_scores: null,
     compatibility_score: null,
-  };
+  } as CalculatedChartData & { user?: CalculatedChartData; partner?: any; matrix_scores?: any; compatibility_score?: number | null; composite?: any };
 }
 
 export function buildNatalChartPayload(calculatedData: CalculatedChartData, input: UserInput) {
@@ -797,14 +1042,14 @@ function extractPlanetaryPositions(chart: ReturnType<typeof calculateBirthChart>
   ];
 
   for (const key of planetKeys) {
-    const data = chart.planets[key];
+    const data = (chart.planets as any)[key];
     if (!data) continue;
     planets.push({
       name: capitalize(key),
       sign: data.sign ?? "Unknown",
       degree: roundTo(data.degree ?? 0, 2),
       longitude: roundTo(data.longitude ?? 0, 4),
-      house: chart.planetHouses?.[key] ?? null,
+      house: (chart.planetHouses as any)?.[key] ?? null,
       retrograde: data.retrograde ?? false,
     });
   }
@@ -820,12 +1065,12 @@ function mergePlanetHouses(chart: BirthChartResult): Record<string, PlanetaryPos
     if (!data) continue;
     const lowerKey = key.toLowerCase();
     const house =
-      chart.planetHouses?.[key] ??
-      chart.planetHouses?.[lowerKey] ??
+      (chart.planetHouses as any)?.[key] ??
+      (chart.planetHouses as any)?.[lowerKey] ??
       (lowerKey === "northnode"
-        ? chart.planetHouses?.northnode
+        ? (chart.planetHouses as any)?.northNode
         : lowerKey === "southnode"
-        ? chart.planetHouses?.southnode
+        ? (chart.planetHouses as any)?.southNode
         : (data as any).house ?? null);
 
     planets[key] = {
@@ -843,16 +1088,16 @@ function mergePlanetHouses(chart: BirthChartResult): Record<string, PlanetaryPos
 
 function extractNodes(chart: ReturnType<typeof calculateBirthChart>) {
   const north =
-    chart.planets?.northNode ||
-    chart.planets?.northnode ||
-    chart?.northNode ||
-    chart?.northnode ||
+    (chart.planets as any)?.northNode ||
+    (chart.planets as any)?.northnode ||
+    (chart as any)?.northNode ||
+    (chart as any)?.northnode ||
     null;
   const south =
-    chart.planets?.southNode ||
-    chart.planets?.southnode ||
-    chart?.southNode ||
-    chart?.southnode ||
+    (chart.planets as any)?.southNode ||
+    (chart.planets as any)?.southnode ||
+    (chart as any)?.southNode ||
+    (chart as any)?.southnode ||
     null;
 
   const normalize = (node: any, label: string): PlanetaryPosition | null => {
@@ -1053,7 +1298,7 @@ function extractPlanetaryPositionsForHD(chart: BirthChartResult): Array<{ planet
   ];
 
   for (const key of planetKeys) {
-    const data = chart.planets[key];
+    const data = (chart.planets as any)[key];
     if (!data || data.longitude === undefined) continue;
     
     planets.push({
@@ -1083,11 +1328,14 @@ async function getCurrentTransitPositions(date: Date = new Date()): Promise<Arra
   });
 
   // Other planets
+  const planetBodies = [Body.Moon, Body.Mercury, Body.Venus, Body.Mars, Body.Jupiter, Body.Saturn, Body.Uranus, Body.Neptune, Body.Pluto];
   const planetNames = ['Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
   
-  for (const planetName of planetNames) {
+  for (let i = 0; i < planetBodies.length; i++) {
+    const body = planetBodies[i];
+    const planetName = planetNames[i];
     try {
-      const geoVector = Astronomy.GeoVector(planetName, time, false);
+      const geoVector = Astronomy.GeoVector(body, time, false);
       const ecliptic = Astronomy.Ecliptic(geoVector);
       planets.push({
         planet: planetName,

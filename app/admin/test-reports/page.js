@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PremiumReportInputForm from "@/components/PremiumReportInputForm";
@@ -276,6 +276,39 @@ export default function TestReportsPage() {
   const [editingReport, setEditingReport] = useState(null);
   const [customDataError, setCustomDataError] = useState(null);
   const [formData, setFormData] = useState({});
+  const [engine, setEngine] = useState('puppeteer');
+  const [templateId, setTemplateId] = useState('');
+  const [templates, setTemplates] = useState([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  // Location geocoding state for compatibility form
+  const [locationCoords, setLocationCoords] = useState({});
+  const [geocoding, setGeocoding] = useState({ user: false, partner: false });
+  const [locationErrors, setLocationErrors] = useState({ user: '', partner: '' });
+
+  // Fetch templates when component mounts or engine changes
+  const fetchTemplates = async () => {
+    if (engine === 'template') {
+      setLoadingTemplates(true);
+      try {
+        const response = await fetch('/api/admin/templates');
+        const data = await response.json();
+        if (response.ok && data.templates) {
+          setTemplates(data.templates);
+        }
+      } catch (error) {
+        console.error('Failed to fetch templates:', error);
+      } finally {
+        setLoadingTemplates(false);
+      }
+    }
+  };
+
+  // Load templates when engine is set to 'template'
+  useEffect(() => {
+    if (engine === 'template') {
+      fetchTemplates();
+    }
+  }, [engine]);
 
   const handleTestReport = async (reportType) => {
     setTesting(reportType);
@@ -289,7 +322,18 @@ export default function TestReportsPage() {
         parsedCustomData = customDataMap[reportType];
       }
 
-      const response = await fetch("/api/admin/test-report", {
+      // Build query params for engine selection
+      const queryParams = new URLSearchParams();
+      if (engine === 'template') {
+        queryParams.set('engine', 'template');
+        if (templateId) {
+          queryParams.set('templateId', templateId);
+        }
+      } else if (engine === 'premium') {
+        queryParams.set('engine', 'premium');
+      }
+
+      const response = await fetch(`/api/admin/test-report?${queryParams.toString()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -577,19 +621,13 @@ export default function TestReportsPage() {
         partner_birth_date: sample.compatibility_data?.partner?.birth_date || '',
         partner_birth_time: sample.compatibility_data?.partner?.birth_time || '',
         partner_location: sample.compatibility_data?.partner?.location || '',
-        compatibility_score: sample.compatibility_data?.compatibility_score || 0,
+        // compatibility_score will be calculated from birth charts
         transit_name: sample.transit_data?.name || '',
         transit_date_range: sample.transit_data?.date_range || '',
         destiny_cycle_name: sample.destiny_data?.cycle_name || '',
         destiny_start_date: sample.destiny_data?.start_date || '',
         destiny_end_date: sample.destiny_data?.end_date || '',
-        matrix_user_sun: sample.matrix_data?.pair?.user?.sun || '',
-        matrix_partner_sun: sample.matrix_data?.pair?.partner?.sun || '',
-        matrix_emotional: sample.matrix_data?.matrix_scores?.emotional || 0,
-        matrix_communication: sample.matrix_data?.matrix_scores?.communication || 0,
-        matrix_spiritual: sample.matrix_data?.matrix_scores?.spiritual || 0,
-        matrix_stability: sample.matrix_data?.matrix_scores?.stability || 0,
-        matrix_physical: sample.matrix_data?.matrix_scores?.physical || 0,
+        // matrix_user_sun, matrix_partner_sun, and matrix scores will be calculated from birth data
         karmic_north_node: sample.karmic_data?.nodes?.north_node || '',
         karmic_south_node: sample.karmic_data?.nodes?.south_node || '',
       };
@@ -609,8 +647,7 @@ export default function TestReportsPage() {
         name: formValues.name || 'Test User',
         moon_phase: formValues.moon_phase || '',
         phase_energy: formValues.phase_energy || '',
-        sun_sign: formValues.sun_sign || '',
-        moon_sign: formValues.moon_sign || '',
+        // sun_sign, moon_sign will be calculated from birth data
       };
     } else if (reportId === 'birth_chart') {
       return {
@@ -620,29 +657,35 @@ export default function TestReportsPage() {
         location: formValues.location || '',
         latitude: parseFloat(formValues.latitude) || 0,
         longitude: parseFloat(formValues.longitude) || 0,
-        sun: formValues.sun || '',
-        moon: formValues.moon || '',
-        rising: formValues.rising || '',
+        // sun, moon, rising will be calculated from birth data
         planets: {},
         houses: {},
         aspects: [],
       };
     } else if (reportId === 'compatibility') {
+      // Include coordinates if available
+      const userCoords = locationCoords.user;
+      const partnerCoords = locationCoords.partner;
+      
       return {
         user: {
           name: formValues.user_name || 'Person One',
           birth_date: formValues.user_birth_date || '',
           birth_time: formValues.user_birth_time || '',
           location: formValues.user_location || '',
+          latitude: userCoords?.latitude,
+          longitude: userCoords?.longitude,
         },
         partner: {
           name: formValues.partner_name || 'Person Two',
           birth_date: formValues.partner_birth_date || '',
           birth_time: formValues.partner_birth_time || '',
           location: formValues.partner_location || '',
+          latitude: partnerCoords?.latitude,
+          longitude: partnerCoords?.longitude,
         },
         aspects: [],
-        compatibility_score: parseInt(formValues.compatibility_score) || 0,
+        // compatibility_score will be calculated from birth charts
       };
     } else if (reportId === 'transit_forecast_short' || reportId === 'transit_forecast_extended') {
       return {
@@ -668,9 +711,7 @@ export default function TestReportsPage() {
           location: formValues.birth_location || '',
           latitude: parseFloat(formValues.birth_latitude) || 0,
           longitude: parseFloat(formValues.birth_longitude) || 0,
-          sun: formValues.birth_sun || '',
-          moon: formValues.birth_moon || '',
-          rising: formValues.birth_rising || '',
+          // sun, moon, rising will be calculated from birth data
           planets: {},
           houses: {},
           aspects: [],
@@ -689,7 +730,7 @@ export default function TestReportsPage() {
             location: formValues.partner_location || '',
           },
           aspects: [],
-          compatibility_score: parseInt(formValues.compatibility_score) || 0,
+          // compatibility_score will be calculated from birth charts
         },
         transit_data: {
           name: formValues.transit_name || formValues.name || 'Test User',
@@ -707,9 +748,7 @@ export default function TestReportsPage() {
           location: formValues.birth_location || '',
           latitude: parseFloat(formValues.birth_latitude) || 0,
           longitude: parseFloat(formValues.birth_longitude) || 0,
-          sun: formValues.birth_sun || '',
-          moon: formValues.birth_moon || '',
-          rising: formValues.birth_rising || '',
+          // sun, moon, rising will be calculated from birth data
           planets: {},
           houses: {},
           aspects: [],
@@ -728,7 +767,7 @@ export default function TestReportsPage() {
             location: formValues.partner_location || '',
           },
           aspects: [],
-          compatibility_score: parseInt(formValues.compatibility_score) || 0,
+          // compatibility_score will be calculated from birth charts
         },
         transit_data: {
           name: formValues.transit_name || formValues.name || 'Test User',
@@ -743,15 +782,10 @@ export default function TestReportsPage() {
         },
         matrix_data: {
           pair: {
-            user: { sun: formValues.matrix_user_sun || 'Gemini' },
-            partner: { sun: formValues.matrix_partner_sun || 'Scorpio' },
+            // user and partner sun signs will be calculated from birth data
           },
           matrix_scores: {
-            emotional: parseInt(formValues.matrix_emotional) || 0,
-            communication: parseInt(formValues.matrix_communication) || 0,
-            spiritual: parseInt(formValues.matrix_spiritual) || 0,
-            stability: parseInt(formValues.matrix_stability) || 0,
-            physical: parseInt(formValues.matrix_physical) || 0,
+            // matrix scores will be calculated from birth charts
           },
         },
         karmic_data: {
@@ -935,6 +969,86 @@ export default function TestReportsPage() {
       setEditingReport(null);
       setCustomDataError(null);
     }
+    // Clear location coordinates when removing custom data
+    setLocationCoords({});
+    setLocationErrors({ user: '', partner: '' });
+  };
+
+  // Geocode location for compatibility form
+  const geocodeLocation = async (location, type) => {
+    if (!location || location.trim() === '') {
+      setLocationErrors(prev => ({ ...prev, [type]: 'Location is required' }));
+      return null;
+    }
+
+    setGeocoding(prev => ({ ...prev, [type]: true }));
+    setLocationErrors(prev => ({ ...prev, [type]: '' }));
+
+    try {
+      // Try Google Maps Geocoding API first
+      const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      
+      if (googleApiKey) {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${googleApiKey}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            const loc = data.results[0].geometry.location;
+            const coords = {
+              latitude: loc.lat,
+              longitude: loc.lng
+            };
+            setLocationCoords(prev => ({ ...prev, [type]: coords }));
+            setLocationErrors(prev => ({ ...prev, [type]: '' }));
+            setGeocoding(prev => ({ ...prev, [type]: false }));
+            return coords;
+          }
+        }
+      }
+
+      // Fallback to OpenStreetMap
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'CosmicSpiritualGuide/1.0'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.length > 0) {
+          const coords = {
+            latitude: parseFloat(data[0].lat),
+            longitude: parseFloat(data[0].lon)
+          };
+          setLocationCoords(prev => ({ ...prev, [type]: coords }));
+          setLocationErrors(prev => ({ ...prev, [type]: '' }));
+          setGeocoding(prev => ({ ...prev, [type]: false }));
+          return coords;
+        }
+      }
+
+      // All services failed
+      setLocationErrors(prev => ({ 
+        ...prev, 
+        [type]: `Could not find "${location}". Please try a major city name (e.g., "New York, USA" or "London, UK")` 
+      }));
+      setGeocoding(prev => ({ ...prev, [type]: false }));
+      return null;
+    } catch (error) {
+      console.error(`Geocoding error for ${type}:`, error);
+      setLocationErrors(prev => ({ 
+        ...prev, 
+        [type]: 'Geocoding service unavailable. Please try again.' 
+      }));
+      setGeocoding(prev => ({ ...prev, [type]: false }));
+      return null;
+    }
   };
 
   return (
@@ -960,6 +1074,76 @@ export default function TestReportsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Engine & Template Selection */}
+        <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">PDF Generation Engine</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Engine
+              </label>
+              <select
+                value={engine}
+                onChange={(e) => {
+                  setEngine(e.target.value);
+                  if (e.target.value === 'template') {
+                    fetchTemplates();
+                  }
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="puppeteer">Puppeteer (Default HTML)</option>
+                <option value="template">Template Engine (pdfme)</option>
+                <option value="premium">Premium E-book Generator (React + Print CSS)</option>
+              </select>
+              <p className="mt-1 text-sm text-gray-500">
+                {engine === 'puppeteer' 
+                  ? 'Uses the standard HTML-to-PDF pipeline'
+                  : engine === 'template'
+                  ? 'Uses WYSIWYG templates from the template library'
+                  : 'Uses React component with premium print styling'}
+              </p>
+            </div>
+            
+            {engine === 'template' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Template (Optional - auto-selects if not specified)
+                </label>
+                {loadingTemplates ? (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading templates...
+                  </div>
+                ) : (
+                  <>
+                    <select
+                      value={templateId}
+                      onChange={(e) => setTemplateId(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                      <option value="">Auto-select (use default for report type)</option>
+                      {templates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name} ({template.report_type || 'N/A'})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Leave empty to auto-select a template for the report type, or choose a specific template.
+                    </p>
+                    {templates.length === 0 && (
+                      <p className="mt-2 text-sm text-amber-600">
+                        No templates found. <Link href="/admin/report-templates" className="underline">Create one here</Link>.
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Report Type Buttons */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Individual Reports</h2>
@@ -1207,6 +1391,12 @@ export default function TestReportsPage() {
                           [field]: value,
                         },
                       }));
+                    }, {
+                      geocoding,
+                      locationCoords,
+                      locationErrors,
+                      geocodeLocation,
+                      setLocationCoords,
                     })}
                   </div>
                   
@@ -1274,7 +1464,9 @@ function reportIdToName(reportId) {
   return match ? match.name : reportId;
 }
 
-function renderFormFields(reportId, formValues, onChange) {
+function renderFormFields(reportId, formValues, onChange, geocodingHelpers = {}) {
+  const { geocoding = {}, locationCoords = {}, locationErrors = {}, geocodeLocation, setLocationCoords } = geocodingHelpers;
+  
   const handleChange = (field) => (e) => {
     const value = e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
     onChange(field, value);
@@ -1392,33 +1584,10 @@ function renderFormFields(reportId, formValues, onChange) {
             placeholder="Growth and intention setting"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
-            <select
-              value={formValues.sun_sign || ''}
-              onChange={handleChange('sun_sign')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
-            <select
-              value={formValues.moon_sign || ''}
-              onChange={handleChange('moon_sign')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Sun and Moon signs will be calculated automatically from birth date, time, and location.
+          </p>
         </div>
       </>
     );
@@ -1494,46 +1663,10 @@ function renderFormFields(reportId, formValues, onChange) {
             />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
-            <select
-              value={formValues.sun || ''}
-              onChange={handleChange('sun')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
-            <select
-              value={formValues.moon || ''}
-              onChange={handleChange('moon')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rising Sign</label>
-            <select
-              value={formValues.rising || ''}
-              onChange={handleChange('rising')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="">Select...</option>
-              {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                <option key={sign} value={sign}>{sign}</option>
-              ))}
-            </select>
-          </div>
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Sun, Moon, and Rising signs will be calculated automatically from birth date, time, and location.
+          </p>
         </div>
       </>
     );
@@ -1577,12 +1710,36 @@ function renderFormFields(reportId, formValues, onChange) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                value={formValues.user_location || ''}
-                onChange={handleChange('user_location')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formValues.user_location || ''}
+                  onChange={(e) => {
+                    handleChange('user_location')(e);
+                    if (setLocationCoords) {
+                      setLocationCoords(prev => ({ ...prev, user: null })); // Reset coordinates when location changes
+                    }
+                  }}
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="e.g., New York, USA"
+                />
+                <button
+                  type="button"
+                  onClick={() => geocodeLocation(formValues.user_location || '', 'user')}
+                  disabled={!formValues.user_location || geocoding.user}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {geocoding.user ? 'Searching...' : 'Search'}
+                </button>
+              </div>
+              {locationErrors.user && (
+                <p className="mt-1 text-sm text-red-600">{locationErrors.user}</p>
+              )}
+              {locationCoords.user && !locationErrors.user && (
+                <p className="mt-1 text-sm text-green-600">
+                  ✓ Location found: {locationCoords.user.latitude.toFixed(4)}°, {locationCoords.user.longitude.toFixed(4)}°
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -1621,25 +1778,43 @@ function renderFormFields(reportId, formValues, onChange) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                value={formValues.partner_location || ''}
-                onChange={handleChange('partner_location')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formValues.partner_location || ''}
+                  onChange={(e) => {
+                    handleChange('partner_location')(e);
+                    if (setLocationCoords) {
+                      setLocationCoords(prev => ({ ...prev, partner: null })); // Reset coordinates when location changes
+                    }
+                  }}
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="e.g., Los Angeles, USA"
+                />
+                <button
+                  type="button"
+                  onClick={() => geocodeLocation(formValues.partner_location || '', 'partner')}
+                  disabled={!formValues.partner_location || geocoding.partner}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {geocoding.partner ? 'Searching...' : 'Search'}
+                </button>
+              </div>
+              {locationErrors.partner && (
+                <p className="mt-1 text-sm text-red-600">{locationErrors.partner}</p>
+              )}
+              {locationCoords.partner && !locationErrors.partner && (
+                <p className="mt-1 text-sm text-green-600">
+                  ✓ Location found: {locationCoords.partner.latitude.toFixed(4)}°, {locationCoords.partner.longitude.toFixed(4)}°
+                </p>
+              )}
             </div>
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Compatibility Score (0-100)</label>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            value={formValues.compatibility_score || 0}
-            onChange={handleChange('compatibility_score')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-          />
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Compatibility score will be calculated automatically from birth chart data.
+          </p>
         </div>
       </>
     );
@@ -1855,44 +2030,10 @@ function renderFormFields(reportId, formValues, onChange) {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sun Sign</label>
-              <select
-                value={formValues.birth_sun || ''}
-                onChange={handleChange('birth_sun')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="">Select...</option>
-                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                  <option key={sign} value={sign}>{sign}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Moon Sign</label>
-              <select
-                value={formValues.birth_moon || ''}
-                onChange={handleChange('birth_moon')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="">Select...</option>
-                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                  <option key={sign} value={sign}>{sign}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rising Sign</label>
-              <select
-                value={formValues.birth_rising || ''}
-                onChange={handleChange('birth_rising')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              >
-                <option value="">Select...</option>
-                {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                  <option key={sign} value={sign}>{sign}</option>
-                ))}
-              </select>
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> Sun, Moon, and Rising signs will be calculated automatically from birth date, time, and location.
+              </p>
             </div>
           </div>
         </div>
@@ -1979,17 +2120,11 @@ function renderFormFields(reportId, formValues, onChange) {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Compatibility Score (0-100)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={formValues.compatibility_score || 0}
-                onChange={handleChange('compatibility_score')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
-            </div>
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> Compatibility score will be calculated automatically from birth chart data.
+            </p>
           </div>
         </div>
 
@@ -2053,50 +2188,10 @@ function renderFormFields(reportId, formValues, onChange) {
             </div>
             <div className="border-t border-gray-200 pt-4 mt-4">
               <h4 className="font-semibold text-gray-900 mb-3">Relationship Matrix Data</h4>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">User Sun Sign <span className="text-red-500">*</span></label>
-                  <select
-                    value={formValues.matrix_user_sun || ''}
-                    onChange={handleChange('matrix_user_sun')}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    required
-                  >
-                    <option value="">Select...</option>
-                    {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                      <option key={sign} value={sign}>{sign}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Partner Sun Sign <span className="text-red-500">*</span></label>
-                  <select
-                    value={formValues.matrix_partner_sun || ''}
-                    onChange={handleChange('matrix_partner_sun')}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    required
-                  >
-                    <option value="">Select...</option>
-                    {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map(sign => (
-                      <option key={sign} value={sign}>{sign}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-5 gap-4">
-                {['emotional', 'communication', 'spiritual', 'stability', 'physical'].map(scoreType => (
-                  <div key={scoreType}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">{scoreType} (0-100)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formValues[`matrix_${scoreType}`] || 0}
-                      onChange={handleChange(`matrix_${scoreType}`)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    />
-                  </div>
-                ))}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> Sun signs and relationship matrix scores (emotional, communication, spiritual, stability, physical) will be calculated automatically from birth chart data.
+                </p>
               </div>
             </div>
             <div className="border-t border-gray-200 pt-4 mt-4">

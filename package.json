@@ -2,9 +2,13 @@
   "name": "cosmic-spiritual-guide",
   "version": "1.0.0",
   "private": true,
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 5000",
-    "build": "next build && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public",
+    "build": "prisma generate && next build && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && mkdir -p .next/standalone/styles && cp -r styles .next/standalone/",
+    "postinstall": "node -e \"process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/db'; require('child_process').execSync('npx prisma generate', {stdio: 'inherit'})\"",
     "start": "node .next/standalone/server.js",
     "lint": "eslint --config eslint.config.mjs --max-warnings=0 --ignore-pattern \".next/**\" --ignore-pattern \"app__disabled/**\" .",
     "pinecone:init": "node scripts/pinecone-init.js",
@@ -25,7 +29,11 @@
     "test:report": "node scripts/test-report-generation.js"
   },
   "dependencies": {
+    "@pdfme/common": "^4.4.1",
+    "@pdfme/generator": "^4.4.1",
     "@pinecone-database/pinecone": "^6.1.2",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
     "@sparticuz/chromium": "^141.0.0",
     "@stripe/react-stripe-js": "^5.0.0",
     "@stripe/stripe-js": "^8.0.0",
@@ -40,17 +48,21 @@
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
+    "mustache": "^4.2.0",
     "next": "^15.0.0",
     "next-auth": "^4.24.11",
     "openai": "^4.28.0",
+    "pdf-lib": "^1.17.1",
     "pdfkit": "^0.17.2",
-    "pg": "^8.11.3",
+    "pg": "^8.16.3",
     "postcss": "^8.4.32",
+    "prisma": "^7.2.0",
     "puppeteer-core": "^24.31.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^3.3.0",
     "resend": "^3.2.0",
+    "sanitize-html": "^2.17.0",
     "stripe": "^14.14.0",
     "sweph-wasm": "^2.6.9",
     "tailwindcss": "^3.4.1"
@@ -60,6 +72,9 @@
     "@playwright/test": "^1.48.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@types/pg": "^8.16.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0"
   }

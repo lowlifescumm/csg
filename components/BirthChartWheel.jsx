@@ -396,13 +396,18 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <svg
-        ref={svgRef}
-        width="1400"
-        height="1000"
-        viewBox="0 0 1400 1000"
-        className="max-w-full h-auto border-2 border-purple-200 rounded-2xl bg-white"
-      >
+      {/* Wrapper div for print-safe containment */}
+      <div className="w-full print:w-full print:max-w-full overflow-hidden">
+        <svg
+          ref={svgRef}
+          viewBox="0 0 1400 1000"
+          preserveAspectRatio="xMidYMid meet"
+          className="w-full h-auto max-w-full border-2 border-purple-200 rounded-2xl bg-white"
+          style={{ 
+            printColorAdjust: 'exact', 
+            WebkitPrintColorAdjust: 'exact' 
+          }}
+        >
         {/* Site Branding */}
         <text
           x={centerX}
@@ -717,6 +722,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           👑=Domicile ↑=Exalted ↓=Detriment ×=Fall
         </text>
       </svg>
+      </div>
       
       <div className="flex gap-3">
         <button

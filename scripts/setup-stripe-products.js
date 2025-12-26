@@ -1,6 +1,20 @@
 #!/usr/bin/env node
 
 /**
+ * ⚠️  DEPRECATED: This script is deprecated and should not be used.
+ * 
+ * This script uses hardcoded pricing that may not match the current pricing configuration.
+ * Please use the newer version instead:
+ * 
+ *   → csg/scripts/setup-stripe-products-v2.js
+ * 
+ * The v2 script uses the centralized pricing configuration from lib/pricing.js,
+ * ensuring consistency across the application.
+ * 
+ * This file is kept for reference only and may be removed in a future release.
+ */
+
+/**
  * Stripe Products Setup Script
  * Creates all necessary products and prices in Stripe for Cosmic Spiritual Guide
  */

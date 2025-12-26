@@ -92,7 +92,7 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center space-x-2 px-3 lg:px-4 py-2 rounded-lg font-medium text-xs lg:text-sm transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
                     isActive(item.href)
                       ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
@@ -134,7 +134,7 @@ export default function Header() {
                   className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-100 hover:text-red-600 transition-all"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
+                  <span>Log Out</span>
                 </button>
               </>
             ) : (
@@ -143,7 +143,7 @@ export default function Header() {
                   href="/login"
                   className="px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-100 transition-all"
                 >
-                  Login
+                  Log In
                 </Link>
                 <Link
                   href="/login"
@@ -178,7 +178,7 @@ export default function Header() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
                       isActive(item.href)
                         ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
                         : "text-gray-700 hover:bg-gray-100"
@@ -223,7 +223,7 @@ export default function Header() {
                     className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 hover:text-red-600 text-left w-full"
                   >
                     <LogOut className="w-5 h-5" />
-                    <span>Logout</span>
+                    <span>Log Out</span>
                   </button>
                 </>
               ) : (
@@ -233,7 +233,7 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="px-4 py-3 rounded-lg font-medium text-center text-gray-700 hover:bg-gray-100"
                   >
-                    Login
+                    Log In
                   </Link>
                   <Link
                     href="/login"

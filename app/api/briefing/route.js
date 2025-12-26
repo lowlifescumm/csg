@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth-config';
 import { generateDailyHoroscope, getCachedHoroscope } from "@/lib/horoscope";
 import { zodiacSigns } from "@/lib/zodiac-data";
 
