@@ -6,19 +6,40 @@ export default function CardCountSelector({ onSelect, onCancel }) {
   const [selectedCount, setSelectedCount] = useState(3);
   const [question, setQuestion] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedCount >= 1 && selectedCount <= 10) {
       // For 10-card spread, require a question
       if (selectedCount === 10 && !question.trim()) {
         alert("Please enter a question for your 10-card spread.");
         return;
       }
-      onSelect({
-        cardCount: selectedCount,
-        question: question.trim(),
-        spreadType: "custom_spread",
-        spreadId: "custom_spread"
-      });
+      
+      // Check credits before proceeding
+      try {
+        const checkRes = await fetch(`/api/credits/check-reading?readingType=TAROT_CUSTOM&cardCount=${selectedCount}`, {
+          credentials: 'include'
+        });
+        const checkData = await checkRes.json();
+        
+        if (!checkData.allowed) {
+          // Show error and prevent card selection
+          alert(checkData.reason === 'insufficient_credits' 
+            ? `Insufficient credits. This ${selectedCount}-card spread requires ${checkData.cost} credit(s). You have ${checkData.available_balance || 0} credit(s) available.`
+            : 'Unable to start reading. Please try again.');
+          return;
+        }
+        
+        // Credits are sufficient, proceed
+        onSelect({
+          cardCount: selectedCount,
+          question: question.trim(),
+          spreadType: "custom_spread",
+          spreadId: "custom_spread"
+        });
+      } catch (error) {
+        console.error('Error checking credits:', error);
+        alert('Failed to check credits. Please try again.');
+      }
     }
   };
 

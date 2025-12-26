@@ -384,7 +384,7 @@ Your Rising Sign depends on exact birth time
             >
               {loading ? 'Creating Your Chart...' : 'Create Chart (Free)'}
             </button>
-            <p className="text-center text-sm text-purple-300">✓ Chart creation is free! View your chart wheel instantly. Unlock full interpretation for 3 credits.</p>
+            <p className="text-center text-sm text-purple-300">✓ Chart creation is free! View your chart wheel instantly. Unlock full interpretation for 12 credits.</p>
           </div>
         </form>
       ) : (

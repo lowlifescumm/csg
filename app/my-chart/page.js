@@ -320,7 +320,7 @@ This interpretation provides deep insights into your personality traits, strengt
                     if (data.success) {
                       setInterpretation(data.interpretation);
                     } else if (response.status === 402) {
-                      alert(`Insufficient credits. Interpretation requires ${data.cost || 3} credits.`);
+                      alert(`Insufficient credits. Interpretation requires ${data.cost || 12} credits.`);
                       window.location.href = '/pricing';
                     } else {
                       alert(data.error || 'Failed to generate interpretation');
@@ -335,7 +335,7 @@ This interpretation provides deep insights into your personality traits, strengt
                 className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-4 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-lg"
               >
                 <Sparkles className="w-5 h-5" />
-                {loading ? 'Generating Interpretation...' : 'Unlock Full Analysis (3 Credits)'}
+                {loading ? 'Generating Interpretation...' : 'Unlock Full Analysis (12 Credits)'}
               </button>
               <p className="text-center text-purple-300 text-sm mt-3">
                 Or <Link href="/subscription" className="text-yellow-400 hover:underline">upgrade to Premium</Link> to get interpretation included

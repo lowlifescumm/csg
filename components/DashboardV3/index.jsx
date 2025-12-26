@@ -43,6 +43,39 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const isPremium = user?.stripe_subscription_id || safeCredits?.isPremium;
   // SSOT: Prioritize ledgerBalance if available, then stats.totalAvailable, then credits field
   const totalCredits = safeCredits?.ledgerBalance ?? safeCredits?.stats?.totalAvailable ?? (typeof safeCredits?.credits === 'number' ? safeCredits.credits : 0);
+  
+  // Helper function to check credits before opening tarot selector
+  const checkCreditsAndOpenTarot = async (spreadType, readingType, readingTypeKey = null) => {
+    // Determine reading type key if not provided
+    if (!readingTypeKey) {
+      const isPremiumTarot = spreadType === "love-potential" || spreadType === "breakup" || spreadType === "yin-yang";
+      readingTypeKey = isPremiumTarot ? 'TAROT_PREMIUM' : 'TAROT_BASIC';
+    }
+    
+    try {
+      const checkRes = await fetch(`/api/credits/check-reading?readingType=${readingTypeKey}`, {
+        credentials: 'include'
+      });
+      const checkData = await checkRes.json();
+      
+      if (!checkData.allowed) {
+        // Show error and prevent card selection
+        alert(checkData.reason === 'insufficient_credits' 
+          ? `Insufficient credits. This reading requires ${checkData.cost} credit(s). You have ${checkData.available_balance || 0} credit(s) available.`
+          : 'Unable to start reading. Please try again.');
+        return false;
+      }
+      
+      // Credits are sufficient, open selector
+      setTarotSelectorConfig({ spreadType, readingType });
+      setShowTarotSelector(true);
+      return true;
+    } catch (error) {
+      console.error('Error checking credits:', error);
+      alert('Failed to check credits. Please try again.');
+      return false;
+    }
+  };
   const readingCount = safeReadings?.stats?.readingCount || 0;
   const chartCount = safeReadings?.stats?.chartCount || 0;
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });
@@ -222,10 +255,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             {/* Quick Tarot Buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button
-                onClick={() => {
-                  setTarotSelectorConfig({ spreadType: "daily", readingType: "daily" });
-                  setShowTarotSelector(true);
-                }}
+                onClick={() => checkCreditsAndOpenTarot("daily", "daily")}
                 className="group bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3 relative"
               >
                 <Sparkles className="w-5 h-5 group-hover:animate-bounce-gentle" />
@@ -233,10 +263,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
               <button
-                onClick={() => {
-                  setTarotSelectorConfig({ spreadType: "daily-love", readingType: "daily-love" });
-                  setShowTarotSelector(true);
-                }}
+                onClick={() => checkCreditsAndOpenTarot("daily-love", "daily-love")}
                 className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3 relative"
               >
                 <Heart className="w-5 h-5" />
@@ -244,10 +271,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
               <button
-                onClick={() => {
-                  setTarotSelectorConfig({ spreadType: "career", readingType: "career" });
-                  setShowTarotSelector(true);
-                }}
+                onClick={() => checkCreditsAndOpenTarot("career", "career")}
                 className="group bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg flex items-center justify-center gap-3 relative"
               >
                 <Briefcase className="w-5 h-5" />
@@ -307,10 +331,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
               {/* Breakup Tarot */}
               <button
-                onClick={() => {
-                  setTarotSelectorConfig({ spreadType: "breakup", readingType: "breakup" });
-                  setShowTarotSelector(true);
-                }}
+                onClick={() => checkCreditsAndOpenTarot("breakup", "breakup", "TAROT_PREMIUM")}
                 className="group bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Heart className="w-8 h-8" />
@@ -320,10 +341,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
               {/* Past Present Future */}
               <button
-                onClick={() => {
-                  setTarotSelectorConfig({ spreadType: "ppf", readingType: "ppf" });
-                  setShowTarotSelector(true);
-                }}
+                onClick={() => checkCreditsAndOpenTarot("ppf", "ppf")}
                 className="group bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Sparkles className="w-8 h-8" />
@@ -616,15 +634,39 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 </button>
               </div>
               <TarotReadingTypePicker
-                onPick={(type) => {
-                  if (type.isCustom) {
-                    // Show card count selector for custom spread
-                    setShowTarotTypePicker(false);
-                    setShowCardCountSelector(true);
-                  } else {
-                    setTarotSelectorConfig({ spreadType: type.spreadType, readingType: type.key });
-                    setShowTarotTypePicker(false);
-                    setShowTarotSelector(true);
+                onPick={async (type) => {
+                  // Determine reading type key for credit check
+                  const isPremiumTarot = type.spreadType === "love-potential" || type.spreadType === "breakup" || type.spreadType === "yin-yang";
+                  const readingTypeKey = isPremiumTarot ? 'TAROT_PREMIUM' : 'TAROT_BASIC';
+                  
+                  // Check credits before opening card selector
+                  try {
+                    const checkRes = await fetch(`/api/credits/check-reading?readingType=${readingTypeKey}`, {
+                      credentials: 'include'
+                    });
+                    const checkData = await checkRes.json();
+                    
+                    if (!checkData.allowed) {
+                      // Show error and prevent card selection
+                      alert(checkData.reason === 'insufficient_credits' 
+                        ? `Insufficient credits. This reading requires ${checkData.cost} credit(s). You have ${checkData.available_balance || 0} credit(s) available.`
+                        : 'Unable to start reading. Please try again.');
+                      return;
+                    }
+                    
+                    // Credits are sufficient, proceed
+                    if (type.isCustom) {
+                      // Show card count selector for custom spread
+                      setShowTarotTypePicker(false);
+                      setShowCardCountSelector(true);
+                    } else {
+                      setTarotSelectorConfig({ spreadType: type.spreadType, readingType: type.key });
+                      setShowTarotTypePicker(false);
+                      setShowTarotSelector(true);
+                    }
+                  } catch (error) {
+                    console.error('Error checking credits:', error);
+                    alert('Failed to check credits. Please try again.');
                   }
                 }}
               />
@@ -635,7 +677,9 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
         {/* Card Count Selector Modal */}
         {showCardCountSelector && (
           <CardCountSelector
-            onSelect={(config) => {
+            onSelect={async (config) => {
+              // Credit check is already done in CardCountSelector.handleSubmit
+              // Just open the tarot selector
               setTarotSelectorConfig({ 
                 spreadType: config.spreadType, 
                 readingType: "general",
