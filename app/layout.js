@@ -16,24 +16,9 @@ export const viewport = {
   initialScale: 1,
 };
 
-export const metadata = {
-  title: "Cosmic Spiritual Guide - Tarot & Astrology Insights",
-  description: "Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance.",
-  openGraph: {
-    type: "website",
-    url: "https://cosmicspiritguide.com",
-    title: "Cosmic Spiritual Guide - Tarot & Astrology Insights",
-    description: "Get instant, personalized tarot and astrology insights. 3 free credits every day.",
-    images: ["https://cosmicspiritguide.com/CSG_LOGO.svg"],
-    siteName: "Cosmic Spiritual Guide",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Cosmic Spiritual Guide",
-    description: "Personalized AI-enhanced tarot and astrology.",
-    images: ["https://cosmicspiritguide.com/CSG_LOGO.svg"],
-  },
-};
+import { generatePageMetadata, PAGE_METADATA } from '@/lib/metadata';
+
+export const metadata = generatePageMetadata(PAGE_METADATA.home);
 
 export default function RootLayout({ children }) {
   return (
