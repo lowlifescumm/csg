@@ -101,6 +101,7 @@ body, html {
     font-family: 'Cinzel Decorative', serif; font-size: 3.8rem; line-height: 1;
     background: linear-gradient(to bottom, var(--accent-gold), #f0e6d2);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
     text-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
