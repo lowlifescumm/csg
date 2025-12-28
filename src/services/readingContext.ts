@@ -131,15 +131,33 @@ function calculatePrashnaChart(
   }
   
   // Extract ascendant
-  const ascendant = chart.ascendant ? {
-    sign: chart.ascendant.sign,
-    longitude: chart.ascendant.longitude,
-    degree: chart.ascendant.degree || 0,
-  } : {
-    sign: 'Unknown',
-    longitude: 0,
-    degree: 0,
-  };
+  // Handle case where ascendant might be a string or an object
+  const ascendant = (() => {
+    if (!chart.ascendant) {
+      return {
+        sign: 'Unknown',
+        longitude: 0,
+        degree: 0,
+      };
+    }
+    
+    // If ascendant is a string, return default values
+    if (typeof chart.ascendant === 'string') {
+      return {
+        sign: chart.ascendant,
+        longitude: 0,
+        degree: 0,
+      };
+    }
+    
+    // If ascendant is an object, extract properties
+    const ascendantObj = chart.ascendant as { sign: string; longitude: number; degree?: number };
+    return {
+      sign: ascendantObj.sign || 'Unknown',
+      longitude: ascendantObj.longitude || 0,
+      degree: ascendantObj.degree || 0,
+    };
+  })();
   
   // Extract midheaven (MC - 10th house cusp)
   const midheaven = chart.houses?.[10] ? {
