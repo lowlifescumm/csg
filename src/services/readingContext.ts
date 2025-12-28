@@ -130,41 +130,56 @@ function calculatePrashnaChart(
     }
   }
   
-  // Extract ascendant
-  // Handle case where ascendant might be a string or an object
+  // Extract ascendant from houses[1] (1st house cusp)
+  // Note: chart.ascendant is just a string (sign name), but houses[1] has full data
   const ascendant = (() => {
-    if (!chart.ascendant) {
+    if (!chart.houses) {
+      // Fallback to chart.ascendant if it exists (string)
+      const ascendantSign = chart.ascendant || 'Unknown';
       return {
-        sign: 'Unknown',
+        sign: typeof ascendantSign === 'string' ? ascendantSign : 'Unknown',
         longitude: 0,
         degree: 0,
       };
     }
     
-    // If ascendant is a string, return default values
-    if (typeof chart.ascendant === 'string') {
+    // Use type assertion via unknown to access houses object with number key
+    const housesObj = chart.houses as unknown as Record<number, { sign: string; longitude: number; degree?: number }>;
+    const house1 = housesObj[1];
+    
+    if (house1) {
       return {
-        sign: chart.ascendant,
-        longitude: 0,
-        degree: 0,
+        sign: house1.sign,
+        longitude: house1.longitude,
+        degree: house1.degree || (house1.longitude % 30),
       };
     }
     
-    // If ascendant is an object, extract properties
-    const ascendantObj = chart.ascendant as { sign: string; longitude: number; degree?: number };
+    // Fallback to chart.ascendant if houses[1] not available
+    const ascendantSign = chart.ascendant || 'Unknown';
     return {
-      sign: ascendantObj.sign || 'Unknown',
-      longitude: ascendantObj.longitude || 0,
-      degree: ascendantObj.degree || 0,
+      sign: typeof ascendantSign === 'string' ? ascendantSign : 'Unknown',
+      longitude: 0,
+      degree: 0,
     };
   })();
   
   // Extract midheaven (MC - 10th house cusp)
-  const midheaven = chart.houses?.[10] ? {
-    sign: chart.houses[10].sign,
-    longitude: chart.houses[10].longitude,
-    degree: chart.houses[10].longitude % 30,
-  } : undefined;
+  const midheaven = (() => {
+    if (!chart.houses) return undefined;
+    
+    // Use type assertion via unknown to access houses object with number key
+    const housesObj = chart.houses as unknown as Record<number, { sign: string; longitude: number; degree?: number }>;
+    const house10 = housesObj[10];
+    
+    if (!house10) return undefined;
+    
+    return {
+      sign: house10.sign,
+      longitude: house10.longitude,
+      degree: house10.degree || (house10.longitude % 30),
+    };
+  })();
   
   return {
     planets,
