@@ -294,7 +294,18 @@ export async function getUserSpiritualHistory(userId: number): Promise<HistorySu
     };
   } catch (error) {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'astro-engine.ts:251',message:'getUserSpiritualHistory catch',data:{error:error.message,stack:error.stack,code:error.code,meta:error.meta},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    const errorData = error instanceof Error ? {
+      error: error.message,
+      stack: error.stack,
+      code: (error as any).code,
+      meta: (error as any).meta,
+    } : {
+      error: String(error),
+      stack: undefined,
+      code: undefined,
+      meta: undefined,
+    };
+    fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'astro-engine.ts:251',message:'getUserSpiritualHistory catch',data:errorData,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
     // #endregion
     console.error('[getUserSpiritualHistory] Error:', error);
     // Return empty history on error so prompts still work
