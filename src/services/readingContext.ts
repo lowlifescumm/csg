@@ -118,7 +118,9 @@ function calculatePrashnaChart(
   
   if (chart.houses) {
     for (let i = 1; i <= 12; i++) {
-      const house = chart.houses[i];
+      // Use type assertion via unknown to access houses object with number key
+      const housesObj = chart.houses as unknown as Record<number, { sign: string; longitude: number; degree: number }>;
+      const house = housesObj[i];
       if (house) {
         houses[i] = {
           sign: house.sign,
