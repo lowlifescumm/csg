@@ -168,11 +168,21 @@ export default function CreditsPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Purchase Credits</h1>
-      
-      <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-        <h2 className="text-lg font-semibold">Your Credits: {userCredits}</h2>
-        <p className="text-sm text-gray-600">Each reading costs 1 credit</p>
+      <div className="grid md:grid-cols-2 gap-8 items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-4">Purchase Credits</h1>
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+            <h2 className="text-lg font-semibold">Your Credits: {userCredits}</h2>
+            <p className="text-sm text-gray-600">Each reading costs 1 credit</p>
+          </div>
+        </div>
+        <div className="relative">
+          <img 
+            src="https://res.cloudinary.com/dfgthvwaa/image/upload/v1766824891/Cosmic_Credits_z4uzoy.webp" 
+            alt="Buy cosmic spiritual credits for tarot readings and astrology reports."
+            className="w-full h-auto rounded-xl shadow-lg object-cover"
+          />
+        </div>
       </div>
 
       {message && (

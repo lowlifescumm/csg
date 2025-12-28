@@ -475,13 +475,15 @@
     background-image: none !important;
   }
 
-  /* Ensure chart pages are isolated */
+  /* Ensure chart pages are isolated - but don't force breaks that cause splitting */
   .birth-chart-isolated,
   .chart-page-container {
     page-break-before: always !important;
     break-before: page !important;
-    page-break-after: always !important;
-    break-after: page !important;
+    page-break-after: auto !important; /* Changed from always to auto - prevent forced split */
+    break-after: auto !important;
+    page-break-inside: avoid !important; /* Prevent splitting the chart itself */
+    break-inside: avoid !important;
   }
   
 
@@ -581,34 +583,35 @@
   }
 
   .chart-page-only {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 10mm; /* Reduced padding to give more room */
-    box-sizing: border-box;
-    overflow: hidden; /* Prevent overflow */
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important; /* Remove padding for maximum space */
+    box-sizing: border-box !important;
+    overflow: visible !important; /* Allow SVG to render fully */
   }
 
   .chart-container {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0;
-    box-sizing: border-box;
-    overflow: hidden;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important; /* Allow SVG to render fully */
   }
 
   .chart-container svg {
-    width: 100% !important;
+    width: auto !important;
     height: auto !important;
     max-width: 100% !important;
-    max-height: 100vh !important;
+    max-height: 100% !important;
     background-color: rgba(255, 255, 255, 0.05);
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 auto !important;
     border-radius: 2mm;
-    display: block;
-    margin: 0 auto;
-    box-sizing: border-box;
+    display: block !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
 
   /* Constrain body copy width for readability */

@@ -417,7 +417,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/CSG_LOGO.svg" alt="Cosmic Spirit Guide" className="h-8 w-auto" />
+                <img src="/CSG_LOGO.svg" alt="Cosmic Spirit Guide Logo - Daily Tarot Insights and Spiritual Guidance" className="h-8 w-auto" />
               </div>
               <p className="text-sm text-gray-400">Guided by the stars, powered by insight.</p>
             </div>

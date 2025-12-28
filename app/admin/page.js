@@ -100,8 +100,8 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-12 h-12 object-contain" />
-              <img src="/logo-text.svg" alt="Cosmic Spirit Guide" className="h-8 object-contain" />
+              <img src="/logo-eye.svg" alt="Cosmic Spirit Guide Admin Dashboard - Eye Symbol" className="w-12 h-12 object-contain" />
+              <img src="/logo-text.svg" alt="Cosmic Spirit Guide Admin Dashboard" className="h-8 object-contain" />
             </div>
             <div>
               <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
@@ -174,6 +174,17 @@ export default function AdminDashboard() {
               <div className="text-left">
                 <p className="font-semibold">User Management</p>
                 <p className="text-sm opacity-90">Manage user accounts</p>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => router.push('/admin/test-premium-reports')}
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl hover:from-orange-600 hover:to-red-600 smooth-transition hover:scale-[1.02] apple-shadow"
+            >
+              <FileText className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">Test Premium Reports</p>
+                <p className="text-sm opacity-90">Test report purchase flow</p>
               </div>
             </button>
             

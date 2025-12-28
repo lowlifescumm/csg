@@ -70,16 +70,25 @@ export default function SubscriptionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-6">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6 shadow-2xl">
-            <Zap className="w-10 h-10 text-white" />
+        <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
+          <div className="text-center md:text-left">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6 shadow-2xl">
+              <Zap className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-5xl font-bold text-white mb-4">
+              {isPremium ? 'Premium Member' : 'Upgrade to Premium'}
+            </h1>
+            <p className="text-xl text-purple-200">
+              {isPremium ? 'You have full access to all features' : 'Unlock unlimited cosmic guidance'}
+            </p>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">
-            {isPremium ? 'Premium Member' : 'Upgrade to Premium'}
-          </h1>
-          <p className="text-xl text-purple-200">
-            {isPremium ? 'You have full access to all features' : 'Unlock unlimited cosmic guidance'}
-          </p>
+          <div className="relative flex justify-center md:justify-end">
+            <img 
+              src="https://res.cloudinary.com/dfgthvwaa/image/upload/v1766824891/tarot-reading-services_p9k0bq.webp" 
+              alt="Premium sub features layout"
+              className="w-full max-w-md h-auto rounded-2xl shadow-2xl object-cover"
+            />
+          </div>
         </div>
 
         {isPremium ? (

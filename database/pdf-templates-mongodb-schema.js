@@ -46,3 +46,10 @@ TemplateSchema.index({ reportType: 1, isDefault: 1 });
 
 export const Template = mongoose.model('Template', TemplateSchema);
 
+
+
+
+
+
+
+

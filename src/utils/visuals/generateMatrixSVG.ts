@@ -132,3 +132,10 @@ export function generateCompatibilityRadar(scores: CompatibilityScores): string 
   return svg;
 }
 
+
+
+
+
+
+
+

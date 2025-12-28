@@ -22,7 +22,7 @@ export async function GET(request) {
     }
 
     const isAdmin = authResult.role === 'admin';
-    const userId = authResult.userId?.toString();
+    const userId = authResult.userId;
 
     const client = await pool.connect();
     try {
@@ -95,7 +95,7 @@ export async function POST(request) {
     }
 
     const isAdmin = authResult.role === 'admin';
-    const userId = authResult.userId?.toString();
+    const userId = authResult.userId;
     
     // Allow any authenticated user to create templates (not just admins)
     // Admins can create templates for others, regular users can only create for themselves

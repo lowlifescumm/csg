@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import nextDynamic from "next/dynamic";

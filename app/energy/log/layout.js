@@ -11,3 +11,4 @@ export default function EnergyLogLayout({ children }) {
   return children;
 }
 
+

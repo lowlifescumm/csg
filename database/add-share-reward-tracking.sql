@@ -15,3 +15,10 @@ COMMENT ON COLUMN users.has_rewarded_share IS 'Tracks if user has claimed their 
 
 
 
+
+
+
+
+
+
+

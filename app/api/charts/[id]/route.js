@@ -22,9 +22,10 @@ export async function GET(req, { params }) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    const userId = parseInt(decoded.userId, 10);
 
     const { id } = await params;
+    const chartId = parseInt(id, 10);
 
     // Get the natal chart
     const { rows } = await pool.query(
@@ -34,7 +35,7 @@ export async function GET(req, { params }) {
         chart_name, is_primary, created_at, updated_at
        FROM natal_charts
        WHERE id = $1`,
-      [id]
+      [chartId]
     );
 
     if (rows.length === 0) {
@@ -44,7 +45,7 @@ export async function GET(req, { params }) {
     const chart = rows[0];
 
     // Verify ownership
-    if (chart.user_id !== userId) {
+    if (parseInt(chart.user_id, 10) !== userId) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -101,7 +102,7 @@ export async function GET(req, { params }) {
     const { rows: transitRows } = await pool.query(
       `SELECT COUNT(*) as count FROM transits 
        WHERE natal_chart_id = $1 AND status IN ('upcoming', 'active')`,
-      [id]
+      [chartId]
     );
 
     return NextResponse.json({
@@ -137,21 +138,22 @@ export async function PUT(req, { params }) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    const userId = parseInt(decoded.userId, 10);
 
     const { id } = await params;
+    const chartId = parseInt(id, 10);
 
     // Verify ownership
     const { rows: chartRows } = await pool.query(
       'SELECT user_id FROM natal_charts WHERE id = $1',
-      [id]
+      [chartId]
     );
 
     if (chartRows.length === 0) {
       return NextResponse.json({ error: 'Natal chart not found' }, { status: 404 });
     }
 
-    if (chartRows[0].user_id !== userId) {
+    if (parseInt(chartRows[0].user_id, 10) !== userId) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -173,7 +175,7 @@ export async function PUT(req, { params }) {
       if (isPrimary) {
         await pool.query(
           'UPDATE natal_charts SET is_primary = false WHERE user_id = $1 AND is_primary = true AND id != $2',
-          [userId, id]
+          [userId, chartId]
         );
       }
       updates.push(`is_primary = $${paramCount++}`);
@@ -188,7 +190,7 @@ export async function PUT(req, { params }) {
     updates.push(`updated_at = NOW()`);
 
     // Add chart ID to values
-    values.push(id);
+    values.push(chartId);
 
     // Execute update
     const { rows } = await pool.query(
@@ -232,26 +234,27 @@ export async function DELETE(req, { params }) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    const userId = parseInt(decoded.userId, 10);
 
     const { id } = await params;
+    const chartId = parseInt(id, 10);
 
     // Verify ownership
     const { rows: chartRows } = await pool.query(
       'SELECT user_id FROM natal_charts WHERE id = $1',
-      [id]
+      [chartId]
     );
 
     if (chartRows.length === 0) {
       return NextResponse.json({ error: 'Natal chart not found' }, { status: 404 });
     }
 
-    if (chartRows[0].user_id !== userId) {
+    if (parseInt(chartRows[0].user_id, 10) !== userId) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // Delete chart (cascade will delete associated transits and subscriptions)
-    await pool.query('DELETE FROM natal_charts WHERE id = $1', [id]);
+    await pool.query('DELETE FROM natal_charts WHERE id = $1', [chartId]);
 
     return NextResponse.json({
       success: true,

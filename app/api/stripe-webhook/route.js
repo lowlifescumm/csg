@@ -183,6 +183,98 @@ export async function POST(request) {
         }
         break;
 
+      case 'checkout.session.completed':
+        // Handle premium report purchases
+        const session = event.data.object;
+        
+        if (session.mode === 'payment' && session.metadata?.report_id) {
+          const userId = parseInt(session.metadata.userId);
+          const reportId = session.metadata.report_id;
+          const reportName = session.metadata.report_name || 'Premium Report';
+          
+          if (userId && reportId) {
+            try {
+              // Extract partner data from session metadata
+              const skipPartnerData = session.metadata?.skip_partner_data === 'true';
+              let partnerDataJson = null;
+              
+              if (session.metadata?.partner_data && !skipPartnerData) {
+                try {
+                  partnerDataJson = JSON.parse(session.metadata.partner_data);
+                } catch (e) {
+                  console.error('[Webhook] Failed to parse partner_data:', e);
+                }
+              }
+
+              // Create a record of the premium report purchase
+              const orderResult = await pool.query(
+                `INSERT INTO premium_report_orders 
+                 (user_id, report_type, report_name, stripe_session_id, stripe_customer_id, amount_paid, status, partner_data, skip_partner_data, created_at)
+                 VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8, NOW())
+                 ON CONFLICT (stripe_session_id) DO UPDATE
+                 SET status = 'pending', partner_data = $7, skip_partner_data = $8, updated_at = NOW()
+                 RETURNING id`,
+                [
+                  userId,
+                  reportId.toUpperCase(),
+                  reportName,
+                  session.id,
+                  session.customer,
+                  session.amount_total, // Amount in cents
+                  partnerDataJson ? JSON.stringify(partnerDataJson) : null,
+                  skipPartnerData
+                ]
+              );
+              
+              const orderId = orderResult.rows[0]?.id;
+              
+              console.log(`[Premium Report] Purchase recorded for user ${userId}, report ${reportId} (order: ${orderId}, session: ${session.id})`);
+              
+              // Trigger report generation asynchronously using internal endpoint
+              if (orderId) {
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                               (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                               'http://localhost:5000');
+                const cronSecret = process.env.CRON_SECRET;
+                
+                if (cronSecret) {
+                  // Trigger generation in background (don't await to avoid blocking webhook)
+                  fetch(`${baseUrl}/api/premium-reports/generate-internal`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${cronSecret}`
+                    },
+                    body: JSON.stringify({ orderId }),
+                  }).catch(err => {
+                    console.error(`[Premium Report] Failed to trigger generation for order ${orderId}:`, err);
+                    // Update order status to indicate generation needs to be triggered manually
+                    pool.query(
+                      'UPDATE premium_report_orders SET status = $1, error_message = $2 WHERE id = $3',
+                      ['pending', 'Generation trigger failed - will be processed manually', orderId]
+                    ).catch(updateErr => {
+                      console.error(`[Premium Report] Failed to update order ${orderId}:`, updateErr);
+                    });
+                  });
+                } else {
+                  console.warn(`[Premium Report] CRON_SECRET not set, cannot trigger automatic generation for order ${orderId}`);
+                  // Mark as pending for manual processing
+                  pool.query(
+                    'UPDATE premium_report_orders SET status = $1, error_message = $2 WHERE id = $3',
+                    ['pending', 'Automatic generation not configured - will be processed manually', orderId]
+                  ).catch(updateErr => {
+                    console.error(`[Premium Report] Failed to update order ${orderId}:`, updateErr);
+                  });
+                }
+              }
+              
+            } catch (error) {
+              console.error(`[Premium Report] Error recording purchase for user ${userId}:`, error);
+            }
+          }
+        }
+        break;
+
       case 'charge.refunded':
         // Handle refunds - reverse credit purchase
         const charge = event.data.object;

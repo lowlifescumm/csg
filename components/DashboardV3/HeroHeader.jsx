@@ -94,14 +94,23 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
       <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-6">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between gap-6">
-          {/* Left: Title and Greeting */}
-          <div className="flex-1">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-              Your cosmic field is open ✨
-            </h1>
-            <p className="text-lg text-purple-200">
-              {getGreeting()}, {user?.firstName || user?.email?.split("@")[0] || "there"}
-            </p>
+          {/* Left: Title and Greeting with Image */}
+          <div className="flex-1 flex items-center gap-6">
+            <div className="flex-1">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                Your cosmic field is open ✨
+              </h1>
+              <p className="text-lg text-purple-200">
+                {getGreeting()}, {user?.firstName || user?.email?.split("@")[0] || "there"}
+              </p>
+            </div>
+            <div className="flex-shrink-0 w-48">
+              <img 
+                src="https://res.cloudinary.com/dfgthvwaa/image/upload/v1766826412/Personalized_Dashboard_welcome_l2jbfy.webp" 
+                alt="Personalized user dashboard for tracking astrology readings and spiritual progress."
+                className="w-full h-auto rounded-xl shadow-lg object-cover"
+              />
+            </div>
           </div>
 
           {/* Middle: Moon Phase Widget */}
@@ -162,9 +171,16 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
             <h1 className="text-2xl font-bold text-white mb-1">
               Your cosmic field is open ✨
             </h1>
-            <p className="text-base text-purple-200">
+            <p className="text-base text-purple-200 mb-4">
               {getGreeting()}, {user?.firstName || user?.email?.split("@")[0] || "there"}
             </p>
+            <div className="w-full max-w-xs mx-auto">
+              <img 
+                src="https://res.cloudinary.com/dfgthvwaa/image/upload/v1766826412/Personalized_Dashboard_welcome_l2jbfy.webp" 
+                alt="Personalized user dashboard for tracking astrology readings and spiritual progress."
+                className="w-full h-auto rounded-xl shadow-lg object-cover"
+              />
+            </div>
           </div>
 
           {/* Moon Phase */}

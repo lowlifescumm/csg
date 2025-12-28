@@ -102,8 +102,8 @@ function ResetPasswordContent() {
         <div className="text-center mb-8">
           <div className="inline-block float-animation">
             <div className="flex flex-col items-center mb-4">
-              <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
-              <img src="/logo-text.svg" alt="Cosmic Spirit Guide" className="h-8 object-contain" />
+              <img src="/logo-eye.svg" alt="Cosmic Spirit Guide Password Reset - Eye Symbol" className="w-20 h-20 mx-auto mb-2 object-contain" />
+              <img src="/logo-text.svg" alt="Cosmic Spirit Guide - Reset Your Password" className="h-8 object-contain" />
             </div>
           </div>
           <h1 className="text-3xl font-semibold gradient-text mb-2">
@@ -277,8 +277,8 @@ export default function ResetPasswordPage() {
           <div className="text-center">
             <div className="inline-block float-animation">
               <div className="flex flex-col items-center mb-4">
-              <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
-              <img src="/logo-text.svg" alt="Cosmic Spirit Guide" className="h-8 object-contain" />
+              <img src="/logo-eye.svg" alt="Cosmic Spirit Guide Password Reset - Eye Symbol" className="w-20 h-20 mx-auto mb-2 object-contain" />
+              <img src="/logo-text.svg" alt="Cosmic Spirit Guide - Reset Your Password" className="h-8 object-contain" />
             </div>
             </div>
             <h1 className="text-3xl font-semibold gradient-text mb-2">🔮 Loading Cosmic Guidance...</h1>

@@ -6,3 +6,4 @@ export default function CompatibilityLayout({ children }) {
   return children;
 }
 
+

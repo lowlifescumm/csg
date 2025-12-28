@@ -107,8 +107,8 @@ export default function LoginPage() {
           <div className="text-center">
             <div className="inline-block float-animation">
               <div className="flex flex-col items-center mb-4">
-                <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
-                <img src="/logo-text.svg" alt="Cosmic Spirit Guide" className="h-8 object-contain" />
+                <img src="/logo-eye.svg" alt="Cosmic Spirit Guide Eye Symbol - Sign In to Your Spiritual Journey" className="w-20 h-20 mx-auto mb-2 object-contain" />
+                <img src="/logo-text.svg" alt="Cosmic Spirit Guide - Login to Access Your Daily Tarot Readings" className="h-8 object-contain" />
               </div>
             </div>
             <p className="text-gray-600">Loading...</p>

@@ -1,12 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import BirthChartWheel from './BirthChartWheel';
 import LowCreditsUpsellBanner from './LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from './FloatingUpgradePrompt';
 
 export default function BirthChartForm({ updateMode = false }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     birthDate: '',
     birthTime: '',
@@ -189,8 +190,14 @@ export default function BirthChartForm({ updateMode = false }) {
         if (data.creditsRemaining !== undefined) {
           setCreditsRemaining(data.creditsRemaining);
         }
-        // Redirect to my-chart page to view the chart
-        router.push('/my-chart');
+        // Check if there's a redirect parameter (e.g., from premium report purchase)
+        const redirectUrl = searchParams?.get('redirect');
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        } else {
+          // Redirect to my-chart page to view the chart
+          router.push('/my-chart');
+        }
       } else if (data.requiresPayment) {
         setShowFloatingPrompt(true);
       } else {

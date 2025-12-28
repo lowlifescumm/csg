@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -80,7 +80,7 @@ export default function Header() {
           <Link href="/" className="flex items-center group logo-wrapper">
             <img 
               src="/CSG_LOGO.svg" 
-              alt="Cosmic Spirit Guide" 
+              alt="Cosmic Spirit Guide - AI-Powered Tarot and Astrology Readings" 
               className="flex-none h-10 w-auto group-hover:scale-105 transition-transform duration-300 block" 
             />
           </Link>

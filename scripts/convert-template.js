@@ -64,3 +64,10 @@ console.log(`   - ID: ${templateJson.id}`);
 console.log(`   - Type: ${templateJson.type}`);
 console.log(`   - HTML: ${htmlContent.split('\n').length} lines`);
 
+
+
+
+
+
+
+

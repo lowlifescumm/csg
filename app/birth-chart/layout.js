@@ -6,3 +6,4 @@ export default function BirthChartLayout({ children }) {
   return children;
 }
 
+

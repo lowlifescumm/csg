@@ -46,3 +46,10 @@ COMMENT ON TABLE pdf_templates IS 'Stores pdfme Designer export templates for WY
 COMMENT ON COLUMN pdf_templates.template_json IS 'Complete pdfme template JSON exported from Designer (https://pdfme.com/designer)';
 COMMENT ON COLUMN pdf_templates.report_type IS 'Report type this template is designed for (ESSENTIAL, ADVANCED, MASTER, etc.)';
 
+
+
+
+
+
+
+

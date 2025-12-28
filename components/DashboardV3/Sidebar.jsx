@@ -11,7 +11,8 @@ import {
   BookOpen, 
   MessageCircle, 
   Settings, 
-  LogOut 
+  LogOut,
+  FileText
 } from "lucide-react";
 
 export default function Sidebar({ user, onLinkClick }) {
@@ -38,6 +39,7 @@ export default function Sidebar({ user, onLinkClick }) {
     // Meditation temporarily hidden
     // { href: "/coach", label: "Meditation", icon: Brain },
     { href: "/journal", label: "Spiritual Journal", icon: BookOpen },
+    { href: "/premium-reports", label: "My Reports", icon: FileText },
     { href: "/coach", label: "Live Advisors", icon: MessageCircle, comingSoon: true },
   ];
 

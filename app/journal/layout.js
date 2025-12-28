@@ -11,3 +11,4 @@ export default function JournalLayout({ children }) {
   return children;
 }
 
+

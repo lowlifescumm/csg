@@ -130,14 +130,14 @@ const products = [
   // Direct-Pay Reports
   {
     name: 'Essential Report',
-    description: 'Tarot + Moon + short forecast',
+    description: 'Premium Tarot + Moon Reading + short Transit Forecast (fast 2–4 min PDF)',
     metadata: {
       report_type: 'ESSENTIAL',
       app: 'cosmic-spiritual-guide'
     },
     prices: [
       {
-        unit_amount: 4900, // $49
+        unit_amount: 1999, // $19.99
         currency: 'usd',
         recurring: null,
         metadata: {
@@ -148,14 +148,14 @@ const products = [
   },
   {
     name: 'Advanced Report',
-    description: 'Full natal + compatibility + forecast',
+    description: 'Full Birth Chart + Compatibility + Extended Transit Forecast (4–6 min PDF)',
     metadata: {
       report_type: 'ADVANCED',
       app: 'cosmic-spiritual-guide'
     },
     prices: [
       {
-        unit_amount: 14900, // $149
+        unit_amount: 3900, // $39
         currency: 'usd',
         recurring: null,
         metadata: {
@@ -166,14 +166,14 @@ const products = [
   },
   {
     name: 'Master Report',
-    description: 'Deep-dive multi-cycle destiny profile',
+    description: 'Comprehensive Birth Chart + Advanced Compatibility + Multi-cycle Forecast + Timeline etc. (6–8 min PDF)',
     metadata: {
       report_type: 'MASTER',
       app: 'cosmic-spiritual-guide'
     },
     prices: [
       {
-        unit_amount: 24900, // $249
+        unit_amount: 7499, // $74.99
         currency: 'usd',
         recurring: null,
         metadata: {

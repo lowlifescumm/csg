@@ -26,3 +26,10 @@ COMMENT ON TABLE report_templates IS 'Stores pdfme Designer export templates for
 COMMENT ON COLUMN report_templates.template_json IS 'Complete pdfme template JSON exported from Designer (https://pdfme.com/designer)';
 COMMENT ON COLUMN report_templates.preview_html IS 'Optional HTML preview of the template for admin UI';
 
+
+
+
+
+
+
+

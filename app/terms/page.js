@@ -16,13 +16,22 @@ export default function TermsPage() {
               <ArrowLeft className="w-5 h-5" />
               Back to Home
             </Link>
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                <FileText className="w-8 h-8 text-white" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-semibold gradient-text mb-2">Terms of Service</h1>
+                  <p className="text-purple-200">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-semibold gradient-text mb-2">Terms of Service</h1>
-                <p className="text-purple-200">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <div className="w-full sm:w-auto sm:max-w-xs">
+                <img 
+                  src="https://res.cloudinary.com/dfgthvwaa/image/upload/v1766824891/Secure_and_trusted_zmjbaq.webp" 
+                  alt="Cosmic Spirit Guide terms of service and user agreement policy."
+                  className="w-full h-auto rounded-xl shadow-lg object-cover"
+                />
               </div>
             </div>
           </div>
@@ -156,4 +165,7 @@ export default function TermsPage() {
     </div>
   );
 }
+
+
+
 

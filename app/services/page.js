@@ -1,10 +1,19 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CREDIT_PACKS, READING_COSTS, SUBSCRIPTION_TIERS, PREMIUM_REPORTS, FREE_CREDITS } from "@/lib/pricing";
-import { Sparkles, Moon, Calendar, Heart, TrendingUp, FileText, Gift, Crown, Zap } from "lucide-react";
+import { Sparkles, Moon, Calendar, Heart, TrendingUp, FileText, Gift, Crown, Zap, Loader2 } from "lucide-react";
 import Link from "next/link";
+import PartnerDataForm from "@/components/PartnerDataForm";
 
 export default function ServicesPage() {
+  const router = useRouter();
+  const [processingReport, setProcessingReport] = useState(null);
+  const [showPartnerForm, setShowPartnerForm] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState(null);
+  const [partnerData, setPartnerData] = useState(null);
+
   // Format price in cents to dollars
   const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
   
@@ -13,17 +22,102 @@ export default function ServicesPage() {
     return READING_COSTS[type] || READING_COSTS[type.toUpperCase()] || 0;
   };
 
+  // Handle premium report purchase
+  const handleReportPurchase = async (reportId, partnerDataToSend = null) => {
+    setProcessingReport(reportId);
+    try {
+      const response = await fetch("/api/premium-reports/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ 
+          reportId,
+          partnerData: partnerDataToSend?.partnerData || null,
+          skipPartnerData: partnerDataToSend?.skipPartnerData || false,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.checkoutUrl) {
+        // Clear partner data from state
+        setPartnerData(null);
+        window.location.href = data.checkoutUrl;
+      } else {
+        // Check if birth chart is required
+        if (data.requiresBirthChart) {
+          const createChart = confirm(
+            `${data.message}\n\nWould you like to create your birth chart now? (It's free!)`
+          );
+          if (createChart) {
+            window.location.href = data.birthChartUrl || "/birth-chart?redirect=/services";
+          }
+        } else {
+          alert(data.error || data.message || "Failed to start checkout. Please try again.");
+        }
+        setProcessingReport(null);
+      }
+    } catch (error) {
+      console.error("Report purchase error:", error);
+      alert("Failed to start checkout. Please try again.");
+      setProcessingReport(null);
+    }
+  };
+
+  // Handle purchase button click - show partner form for Advanced/Master
+  const handlePurchaseClick = (reportId) => {
+    const report = PREMIUM_REPORTS[reportId];
+    
+    // Show partner data form for Advanced and Master reports
+    if (reportId === 'ADVANCED' || reportId === 'MASTER') {
+      setSelectedReportId(reportId);
+      setShowPartnerForm(true);
+    } else {
+      // Essential report doesn't need partner data, proceed directly
+      handleReportPurchase(reportId);
+    }
+  };
+
+  // Handle partner data form completion
+  const handlePartnerDataComplete = (data) => {
+    setPartnerData(data);
+    setShowPartnerForm(false);
+    
+    // Proceed to checkout with partner data
+    if (selectedReportId) {
+      handleReportPurchase(selectedReportId, data);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Our Services & Pricing
-          </h1>
-          <p className="text-xl text-purple-200 max-w-3xl mx-auto">
-            Explore our comprehensive spiritual guidance offerings, from instant readings to in-depth reports
-          </p>
+        <div className="relative mb-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Text Content */}
+            <div className="text-center lg:text-left order-2 lg:order-1">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Our Services & Pricing
+              </h1>
+              <p className="text-xl text-purple-200 max-w-3xl mx-auto lg:mx-0">
+                Explore our comprehensive spiritual guidance offerings, from instant readings to in-depth reports
+              </p>
+            </div>
+            {/* Hero Image */}
+            <div className="relative flex justify-center lg:justify-end order-1 lg:order-2">
+              <div className="relative w-full max-w-lg lg:max-w-xl">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-sm p-2">
+                  <img 
+                    src="https://res.cloudinary.com/dfgthvwaa/image/upload/v1766824891/tarot-reading-astrology-services_xyzwm1.webp" 
+                    alt="Professional tarot card spread and astrology birth chart for spiritual guidance"
+                    className="w-full h-auto rounded-xl object-cover"
+                    style={{ maxHeight: '450px', minHeight: '300px' }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Free Tier */}
@@ -323,17 +417,31 @@ export default function ServicesPage() {
                     </li>
                   ))}
                 </ul>
+                {/* Show note for Advanced/Master reports about partner data */}
+                {(report.id === 'ADVANCED' || report.id === 'MASTER') && (
+                  <div className="mb-4 p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg">
+                    <p className="text-blue-200 text-xs">
+                      <span className="font-semibold">Note:</span> Compatibility sections require partner birth data. 
+                      Partner information can be added during checkout or after purchase.
+                    </p>
+                  </div>
+                )}
                 <div className="mb-4">
                   <p className="text-sm text-green-400">Turnaround: {report.turnaround}</p>
                 </div>
                 <button 
-                  onClick={() => {
-                    // TODO: Implement premium report purchase flow
-                    alert(`${report.name}\nPrice: ${formatPrice(report.priceInCents)}\n${report.description}\n\nTurnaround: ${report.turnaround}\n\nThis feature will be available soon!`);
-                  }}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition"
+                  onClick={() => handlePurchaseClick(report.id)}
+                  disabled={processingReport === report.id}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Purchase - {formatPrice(report.priceInCents)}
+                  {processingReport === report.id ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <span>Purchase - {formatPrice(report.priceInCents)}</span>
+                  )}
                 </button>
               </div>
             ))}
@@ -341,6 +449,18 @@ export default function ServicesPage() {
         </section>
 
       </div>
+
+      {/* Partner Data Form Modal */}
+      <PartnerDataForm
+        isOpen={showPartnerForm}
+        onClose={() => {
+          setShowPartnerForm(false);
+          setSelectedReportId(null);
+          setProcessingReport(null);
+        }}
+        onComplete={handlePartnerDataComplete}
+        reportType={selectedReportId}
+      />
     </div>
   );
 }
