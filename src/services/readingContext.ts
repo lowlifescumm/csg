@@ -97,8 +97,8 @@ function calculatePrashnaChart(
   const planetNames = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
   
   for (const planetName of planetNames) {
-    // Use type assertion to access planets object with string key
-    const planetsObj = chart.planets as Record<string, { sign: string; degree: number; longitude: number; house?: number | null }>;
+    // Use type assertion via unknown to access planets object with string key
+    const planetsObj = chart.planets as unknown as Record<string, { sign: string; degree: number; longitude: number; house?: number | null }>;
     const planet = planetsObj[planetName];
     if (planet) {
       planets[planetName] = {
