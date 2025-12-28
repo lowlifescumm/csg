@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Loader2, FileText, ArrowLeft } from "lucide-react";
 import { PREMIUM_REPORTS } from "@/lib/pricing";
 
-export default function PremiumReportCheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState("loading");
@@ -151,6 +151,21 @@ export default function PremiumReportCheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PremiumReportCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-purple-300 animate-spin mx-auto mb-4" />
+          <p className="text-purple-200">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }
 
