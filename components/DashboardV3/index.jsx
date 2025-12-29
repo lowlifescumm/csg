@@ -12,6 +12,7 @@ import GrowthBar from "./GrowthBar";
 import CompactDailyStreak from "./CompactDailyStreak";
 import BestMatches from "./BestMatches";
 import ReadingHistory from "./ReadingHistory";
+import WalletTransactionHistory from "@/components/WalletTransactionHistory";
 import PremiumCard from "./PremiumCard";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
@@ -33,7 +34,7 @@ import PatternAlert from "@/components/PatternAlert";
  * - Modern, sleek Apple-inspired design
  * - Component-based architecture for easy feature toggling
  */
-export default function DashboardV3({ user, credits, readings, streak, moonPhase, refetch }) {
+export default function DashboardV3({ user, credits, readings, streak, moonPhase, refetch, walletBalance }) {
   // Safely extract values, ensuring we never render objects directly
   const safeCredits = credits && typeof credits === 'object' ? credits : null;
   const safeReadings = readings && typeof readings === 'object' ? readings : null;
@@ -208,6 +209,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             credits={safeCredits}
             streak={safeStreak}
             moonPhase={safeMoonPhase}
+            walletBalance={walletBalance}
           />
 
           {/* Why Us - Value Proposition */}
@@ -487,6 +489,13 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               if (refetch) refetch();
             }}
           />
+
+          {/* Wallet Transaction History */}
+          {walletBalance && (
+            <WalletTransactionHistory 
+              userId={user?.id}
+            />
+          )}
 
           {/* Premium Card */}
           <PremiumCard 

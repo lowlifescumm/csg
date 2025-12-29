@@ -142,10 +142,68 @@ export async function POST(request) {
         break;
 
       case 'payment_intent.succeeded':
-        // Handle credit pack purchases using new credit engine
         const paymentIntent = event.data.object;
         
-        if (paymentIntent.metadata?.type === 'credit_pack') {
+        // Handle wallet funding
+        if (paymentIntent.metadata?.type === 'wallet_funding') {
+          const userId = parseInt(paymentIntent.metadata.userId);
+          const amountUsd = parseFloat(paymentIntent.metadata.amount_usd);
+          const amountCents = paymentIntent.amount;
+          
+          if (userId && !isNaN(userId) && amountUsd && !isNaN(amountUsd)) {
+            try {
+              // Idempotency check using payment_intent.id (primary key to prevent double-funding)
+              const existingEntry = await pool.query(
+                `SELECT id FROM wallet_ledger 
+                 WHERE meta->>'stripe_payment_intent_id' = $1 
+                 AND transaction_type = 'FUNDING'
+                 LIMIT 1`,
+                [paymentIntent.id]
+              );
+              
+              if (existingEntry.rows.length > 0) {
+                console.log(`[Wallet Funding] Payment intent ${paymentIntent.id} already processed (ledger_id: ${existingEntry.rows[0].id})`);
+                break;
+              }
+              
+              // Insert into wallet_ledger (trigger will update snapshot automatically)
+              const ledgerResult = await pool.query(
+                `INSERT INTO wallet_ledger (user_id, amount, transaction_type, meta, created_at)
+                 VALUES ($1, $2, 'FUNDING', $3, NOW())
+                 RETURNING id`,
+                [
+                  userId,
+                  amountUsd, // Pass as number, PostgreSQL DECIMAL handles precision
+                  JSON.stringify({
+                    stripe_payment_intent_id: paymentIntent.id,
+                    stripe_customer_id: paymentIntent.customer,
+                    amount_cents: amountCents,
+                    amount_usd: amountUsd.toString(),
+                    webhook_event: 'payment_intent.succeeded'
+                  })
+                ]
+              );
+              
+              const ledgerId = ledgerResult.rows[0]?.id;
+              console.log(`[Wallet Funding] Added $${amountUsd} to wallet for user ${userId} (ledger_id: ${ledgerId}, payment_intent: ${paymentIntent.id})`);
+              
+            } catch (error) {
+              // Comprehensive error logging for manual reconciliation
+              console.error(`[Wallet Funding] Error processing payment_intent.succeeded for user ${userId}:`, {
+                error: error.message,
+                stack: error.stack,
+                payment_intent_id: paymentIntent.id,
+                user_id: userId,
+                amount_usd: amountUsd,
+                amount_cents: amountCents,
+                metadata: paymentIntent.metadata,
+                timestamp: new Date().toISOString()
+              });
+            }
+          }
+        }
+        // Handle credit pack purchases using new credit engine
+        else if (paymentIntent.metadata?.type === 'credit_pack') {
           const userId = parseInt(paymentIntent.metadata.userId);
           const packSize = parseInt(paymentIntent.metadata.packSize);
           
@@ -184,10 +242,72 @@ export async function POST(request) {
         break;
 
       case 'checkout.session.completed':
-        // Handle premium report purchases
         const session = event.data.object;
         
-        if (session.mode === 'payment' && session.metadata?.report_id) {
+        // Handle wallet funding
+        if (session.mode === 'payment' && session.metadata?.type === 'wallet_funding') {
+          const userId = parseInt(session.metadata.userId);
+          const amountUsd = parseFloat(session.metadata.amount_usd);
+          const paymentIntentId = session.payment_intent; // Extract payment_intent ID
+          
+          if (userId && !isNaN(userId) && amountUsd && !isNaN(amountUsd)) {
+            try {
+              // Idempotency check using payment_intent_id (primary key to prevent double-funding)
+              const existingEntry = await pool.query(
+                `SELECT id FROM wallet_ledger 
+                 WHERE meta->>'stripe_payment_intent_id' = $1 
+                 AND transaction_type = 'FUNDING'
+                 LIMIT 1`,
+                [paymentIntentId]
+              );
+              
+              if (existingEntry.rows.length > 0) {
+                console.log(`[Wallet Funding] Payment intent ${paymentIntentId} already processed (ledger_id: ${existingEntry.rows[0].id})`);
+                break;
+              }
+              
+              // Insert into wallet_ledger (trigger will update snapshot automatically)
+              // amount_usd is already in dollars from metadata, pass as number
+              // PostgreSQL DECIMAL(10,2) will handle precision
+              const ledgerResult = await pool.query(
+                `INSERT INTO wallet_ledger (user_id, amount, transaction_type, meta, created_at)
+                 VALUES ($1, $2, 'FUNDING', $3, NOW())
+                 RETURNING id`,
+                [
+                  userId,
+                  amountUsd, // Pass as number, PostgreSQL DECIMAL handles precision
+                  JSON.stringify({
+                    stripe_session_id: session.id,
+                    stripe_payment_intent_id: paymentIntentId,
+                    stripe_customer_id: session.customer,
+                    amount_cents: session.amount_total, // Store original cents amount
+                    amount_usd: amountUsd.toString(),
+                    webhook_event: 'checkout.session.completed'
+                  })
+                ]
+              );
+              
+              const ledgerId = ledgerResult.rows[0]?.id;
+              console.log(`[Wallet Funding] Added $${amountUsd} to wallet for user ${userId} (ledger_id: ${ledgerId}, payment_intent: ${paymentIntentId}, session: ${session.id})`);
+              
+            } catch (error) {
+              // Comprehensive error logging for manual reconciliation
+              console.error(`[Wallet Funding] Error processing checkout.session.completed for user ${userId}:`, {
+                error: error.message,
+                stack: error.stack,
+                payment_intent_id: paymentIntentId,
+                session_id: session.id,
+                user_id: userId,
+                amount_usd: amountUsd,
+                amount_cents: session.amount_total,
+                metadata: session.metadata,
+                timestamp: new Date().toISOString()
+              });
+            }
+          }
+        }
+        // Handle premium report purchases
+        else if (session.mode === 'payment' && session.metadata?.report_id) {
           const userId = parseInt(session.metadata.userId);
           const reportId = session.metadata.report_id;
           const reportName = session.metadata.report_name || 'Premium Report';
