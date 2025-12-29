@@ -78,3 +78,10 @@ cronJobs:
       curl -X POST ${NEXT_PUBLIC_BASE_URL}/api/credits/issue-free-daily \
         -H "Authorization: Bearer ${CRON_SECRET}" \
         -H "Content-Type: application/json"
+  
+  - name: per-minute-billing
+    schedule: "* * * * *"  # Every minute
+    service: cosmic-spiritual-guide
+    command: |
+      curl ${NEXT_PUBLIC_BASE_URL}/api/cron/per-minute-billing \
+        -H "Authorization: Bearer ${CRON_SECRET}"
