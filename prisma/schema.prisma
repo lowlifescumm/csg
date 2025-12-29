@@ -760,6 +760,7 @@ model advisor_sessions {
   updated_at     DateTime? @default(now()) @db.Timestamptz(6)
   users          users     @relation("advisor_sessions_user", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   advisors       users     @relation("advisor_sessions_advisor", fields: [advisor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  chat_messages  chat_messages[]
 
   @@index([user_id], map: "idx_advisor_sessions_user_id")
   @@index([advisor_id], map: "idx_advisor_sessions_advisor_id")
@@ -767,6 +768,21 @@ model advisor_sessions {
   @@index([start_time], map: "idx_advisor_sessions_start_time")
   @@index([status, advisor_id], map: "idx_advisor_sessions_status_advisor")
   @@map("advisor_sessions")
+}
+
+model chat_messages {
+  id           Int       @id @default(autoincrement())
+  session_id   Int
+  sender_id    Int
+  message_text String    @db.Text
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  session      advisor_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  sender       users     @relation(fields: [sender_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id], map: "idx_chat_messages_session_id")
+  @@index([created_at], map: "idx_chat_messages_created_at")
+  @@index([sender_id], map: "idx_chat_messages_sender_id")
+  @@map("chat_messages")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -805,6 +821,7 @@ model users {
   advisor_sessions_user                                        advisor_sessions[] @relation("advisor_sessions_user")
   advisor_sessions_advisor                                     advisor_sessions[] @relation("advisor_sessions_advisor")
   blog_posts                                                   blog_posts[]
+  chat_messages                                                chat_messages[]
   credit_ledger                                                credit_ledger[]
   wallet_ledger                                                wallet_ledger[]
   energy_logs                                                  energy_logs[]
