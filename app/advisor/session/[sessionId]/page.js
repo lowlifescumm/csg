@@ -1,9 +1,10 @@
 "use client";
 import { useParams, useSearchParams } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import ChatWindow from "@/components/ChatWindow";
+import VoiceCallUI from "@/components/VoiceCallUI";
 
 function SessionChatContent() {
   const params = useParams();
@@ -13,6 +14,7 @@ function SessionChatContent() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState("chat"); // 'chat' or 'call'
 
   // Fetch current user
   useEffect(() => {
@@ -105,6 +107,11 @@ function SessionChatContent() {
   const advisor = session.advisor || null;
   const isAdvisor = currentUserId === session.advisor_id;
 
+  // Handle call end - switch back to chat
+  const handleCallEnd = () => {
+    setMode("chat");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex flex-col">
       {/* Top Bar */}
@@ -124,15 +131,52 @@ function SessionChatContent() {
         </div>
       </div>
 
-      {/* Chat Window */}
+      {/* Mode Tabs */}
+      <div className="max-w-6xl mx-auto w-full px-4 pt-4">
+        <div className="flex gap-2 bg-white bg-opacity-50 rounded-xl p-1 border border-white border-opacity-40">
+          <button
+            onClick={() => setMode("chat")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg smooth-transition font-medium ${
+              mode === "chat"
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white apple-shadow-lg"
+                : "text-gray-600 hover:text-gray-900 hover:bg-white bg-opacity-50"
+            }`}
+          >
+            <MessageCircle className="w-5 h-5" />
+            <span>Chat</span>
+          </button>
+          <button
+            onClick={() => setMode("call")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg smooth-transition font-medium ${
+              mode === "call"
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white apple-shadow-lg"
+                : "text-gray-600 hover:text-gray-900 hover:bg-white bg-opacity-50"
+            }`}
+          >
+            <Phone className="w-5 h-5" />
+            <span>Voice Call</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Content Area */}
       <div className="flex-1 max-w-6xl mx-auto w-full p-4">
-        <div className="glassmorphic rounded-3xl apple-shadow-lg border border-white border-opacity-40 bg-white bg-opacity-70 h-[calc(100vh-12rem)] flex flex-col overflow-hidden">
-          <ChatWindow
-            sessionId={session.id}
-            session={session}
-            currentUserId={currentUserId}
-            advisor={advisor}
-          />
+        <div className="glassmorphic rounded-3xl apple-shadow-lg border border-white border-opacity-40 bg-white bg-opacity-70 h-[calc(100vh-16rem)] flex flex-col overflow-hidden">
+          {mode === "chat" ? (
+            <ChatWindow
+              sessionId={session.id}
+              session={session}
+              currentUserId={currentUserId}
+              advisor={advisor}
+            />
+          ) : (
+            <VoiceCallUI
+              sessionId={session.id}
+              session={session}
+              currentUserId={currentUserId}
+              onEndCall={handleCallEnd}
+            />
+          )}
         </div>
       </div>
     </div>
