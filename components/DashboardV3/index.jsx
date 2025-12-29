@@ -20,6 +20,7 @@ import CardCountSelector from "@/components/CardCountSelector";
 import HelpSystem from "@/components/HelpSystem";
 import DailyHoroscope from "@/components/DailyHoroscope";
 import PatternAlert from "@/components/PatternAlert";
+import AdvisorSessionNotification from "@/components/AdvisorSessionNotification";
 // Meditation components temporarily hidden
 // import MeditationCard from "@/components/MeditationCard";
 // import MeditationPlayer from "@/components/MeditationPlayer";
@@ -203,6 +204,9 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
     <div className="w-full">
       {/* Main Content - No wrapper needed, layout shell handles it */}
       <div className="space-y-8">
+          {/* Advisor Session Notification */}
+          <AdvisorSessionNotification />
+          
           {/* Hero Header */}
           <HeroHeader
             user={user}
