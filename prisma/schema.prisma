@@ -761,6 +761,7 @@ model advisor_sessions {
   users          users     @relation("advisor_sessions_user", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   advisors       users     @relation("advisor_sessions_advisor", fields: [advisor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   chat_messages  chat_messages[]
+  webrtc_signaling webrtc_signaling[]
 
   @@index([user_id], map: "idx_advisor_sessions_user_id")
   @@index([advisor_id], map: "idx_advisor_sessions_advisor_id")
@@ -783,6 +784,25 @@ model chat_messages {
   @@index([created_at], map: "idx_chat_messages_created_at")
   @@index([sender_id], map: "idx_chat_messages_sender_id")
   @@map("chat_messages")
+}
+
+model webrtc_signaling {
+  id           Int       @id @default(autoincrement())
+  session_id   Int
+  from_user_id Int
+  to_user_id   Int
+  signal_type  String    @db.VarChar(50)
+  signal_data  Json      @db.JsonB
+  consumed     Boolean?  @default(false)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  session      advisor_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  from_user    users     @relation("webrtc_signaling_from", fields: [from_user_id], references: [id], onDelete: Cascade)
+  to_user      users     @relation("webrtc_signaling_to", fields: [to_user_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id], map: "idx_webrtc_signaling_session_id")
+  @@index([to_user_id, consumed], map: "idx_webrtc_signaling_to_user_id")
+  @@index([created_at], map: "idx_webrtc_signaling_created_at")
+  @@map("webrtc_signaling")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -822,6 +842,8 @@ model users {
   advisor_sessions_advisor                                     advisor_sessions[] @relation("advisor_sessions_advisor")
   blog_posts                                                   blog_posts[]
   chat_messages                                                chat_messages[]
+  webrtc_signaling_from                                        webrtc_signaling[] @relation("webrtc_signaling_from")
+  webrtc_signaling_to                                          webrtc_signaling[] @relation("webrtc_signaling_to")
   credit_ledger                                                credit_ledger[]
   wallet_ledger                                                wallet_ledger[]
   energy_logs                                                  energy_logs[]
