@@ -206,6 +206,18 @@ export async function POST(request) {
                 }
               }
 
+              // Check if order already exists (idempotency check)
+              const existingOrder = await pool.query(
+                'SELECT id, status FROM premium_report_orders WHERE stripe_session_id = $1',
+                [session.id]
+              );
+              
+              const isIdempotencyHit = existingOrder.rows.length > 0;
+              
+              if (isIdempotencyHit) {
+                console.log(`[Idempotency Hit] Premium report order already exists for session ${session.id} (order: ${existingOrder.rows[0].id}, user: ${userId}, report: ${reportId}) - preventing duplicate processing`);
+              }
+              
               // Create a record of the premium report purchase
               const orderResult = await pool.query(
                 `INSERT INTO premium_report_orders 
@@ -228,7 +240,9 @@ export async function POST(request) {
               
               const orderId = orderResult.rows[0]?.id;
               
-              console.log(`[Premium Report] Purchase recorded for user ${userId}, report ${reportId} (order: ${orderId}, session: ${session.id})`);
+              if (!isIdempotencyHit) {
+                console.log(`[Premium Report] Purchase recorded for user ${userId}, report ${reportId} (order: ${orderId}, session: ${session.id})`);
+              }
               
               // Trigger report generation asynchronously using internal endpoint
               if (orderId) {

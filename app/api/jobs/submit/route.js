@@ -59,6 +59,9 @@ export async function POST(request) {
     // Check for existing job with same idempotency key (idempotency check)
     const existingJob = await findJobByIdempotency(userId, key);
     if (existingJob) {
+      // Log idempotency hit
+      console.log(`[Idempotency Hit] Reading job already exists with idempotency key ${key} (job_id: ${existingJob.id}, user: ${userId}, reading_type: ${reading_type}, status: ${existingJob.status}) - preventing duplicate processing`);
+      
       // Return existing job
       return NextResponse.json({
         job_id: existingJob.id,
