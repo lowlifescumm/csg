@@ -18,6 +18,7 @@ export default function DashboardShell({ children }) {
   const [readings, setReadings] = useState(null);
   const [streak, setStreak] = useState(null);
   const [moonPhase, setMoonPhase] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -125,6 +126,21 @@ export default function DashboardShell({ children }) {
         console.log("Moon phase endpoint not available:", moonError);
       }
 
+      // Fetch wallet balance (optional - gracefully handles if endpoint doesn't exist)
+      try {
+        const walletRes = await fetch("/api/marketplace/wallet/balance", { credentials: 'include' });
+        if (walletRes.ok) {
+          const walletData = await safeJson(walletRes, 'wallet balance');
+          if (walletData.success && walletData.data) {
+            const cleanedWalletBalance = cleanEmptyObjects(walletData.data);
+            setWalletBalance(cleanedWalletBalance);
+          }
+        }
+      } catch (walletError) {
+        // Wallet balance endpoint is optional, continue if it fails
+        console.log("Wallet balance endpoint not available:", walletError);
+      }
+
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
       setError("Failed to load dashboard data. Please try again.");
@@ -189,6 +205,7 @@ export default function DashboardShell({ children }) {
     readings: safeReadings,
     streak: safeStreak,
     moonPhase: safeMoonPhase,
+    walletBalance: walletBalance || null,
     refetch: fetchDashboardData,
   });
 }

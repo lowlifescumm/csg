@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Moon, CreditCard, Zap, Crown, X } from "lucide-react";
 import Link from "next/link";
+import WalletBalanceDisplay from "@/components/WalletBalanceDisplay";
 
 // Credit packs matching the existing system
 const creditPacks = [
@@ -20,7 +21,7 @@ const creditPacks = [
  * - streak: Streak data object with currentStreak
  * - moonPhase: Moon phase data (optional, will fetch if not provided)
  */
-export default function HeroHeader({ user, credits, streak, moonPhase: propMoonPhase }) {
+export default function HeroHeader({ user, credits, streak, moonPhase: propMoonPhase, walletBalance }) {
   const [moonPhase, setMoonPhase] = useState(propMoonPhase);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [selectedPack, setSelectedPack] = useState(null);
@@ -144,6 +145,11 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
               <span className="text-white font-semibold">{totalCredits}</span>
             </button>
 
+            {/* Wallet Balance */}
+            {walletBalance && walletBalance.balance !== undefined && (
+              <WalletBalanceDisplay balance={walletBalance.balance} />
+            )}
+
             {/* Streak */}
             {currentStreak > 0 && (
               <div className="flex items-center gap-2 px-4 py-2 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20">
@@ -210,6 +216,11 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
               <CreditCard className={`w-4 h-4 ${hasZeroCredits ? "text-yellow-400" : "text-white"}`} />
               <span className="text-white font-semibold text-sm">{totalCredits}</span>
             </button>
+
+            {/* Wallet Balance */}
+            {walletBalance && walletBalance.balance !== undefined && (
+              <WalletBalanceDisplay balance={walletBalance.balance} className="flex-1" />
+            )}
 
             {currentStreak > 0 && (
               <div className="flex items-center gap-2 px-4 py-2 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20">

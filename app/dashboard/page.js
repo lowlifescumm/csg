@@ -36,7 +36,7 @@ function DashboardPageInner() {
 
   return (
     <DashboardShell>
-      {({ user, credits, readings, streak, moonPhase, refetch }) => {
+      {({ user, credits, readings, streak, moonPhase, refetch, walletBalance }) => {
         // Calculate energy and level data for header
         const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
         const energy = 75; // Default, can be calculated from user activity
@@ -63,6 +63,7 @@ function DashboardPageInner() {
                 readings={readings}
                 streak={streak}
                 moonPhase={moonPhase}
+                walletBalance={walletBalance}
                 refetch={refetch}
               />
             }

@@ -15,6 +15,34 @@ const pool = new Pool({
     : { rejectUnauthorized: false },
 });
 
+/**
+ * Record an idempotency hit (duplicate webhook event detected)
+ * This indicates the multi-webhook strategy is working correctly
+ */
+async function recordIdempotencyHit(eventType, paymentIntentId, userId, originalLedgerId, stripeEventId = null, metadata = {}) {
+  try {
+    await pool.query(
+      `INSERT INTO idempotency_hits 
+       (event_type, stripe_event_id, payment_intent_id, user_id, original_ledger_id, metadata, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+      [
+        eventType,
+        stripeEventId || null,
+        paymentIntentId,
+        userId || null,
+        originalLedgerId || null,
+        JSON.stringify(metadata)
+      ]
+    );
+    
+    // Structured logging for Render.com log visibility
+    console.log(`[Idempotency Hit] ${eventType} - Payment intent ${paymentIntentId} already processed (ledger_id: ${originalLedgerId}, user_id: ${userId}, event_id: ${stripeEventId || 'N/A'})`);
+  } catch (error) {
+    // Don't fail webhook processing if monitoring fails
+    console.error('[Idempotency Monitoring] Failed to record idempotency hit:', error.message);
+  }
+}
+
 export async function POST(request) {
   const body = await request.text();
   const sig = request.headers.get('stripe-signature');
@@ -142,10 +170,81 @@ export async function POST(request) {
         break;
 
       case 'payment_intent.succeeded':
-        // Handle credit pack purchases using new credit engine
         const paymentIntent = event.data.object;
         
-        if (paymentIntent.metadata?.type === 'credit_pack') {
+        // Handle wallet funding
+        if (paymentIntent.metadata?.type === 'wallet_funding') {
+          const userId = parseInt(paymentIntent.metadata.userId);
+          const amountUsd = parseFloat(paymentIntent.metadata.amount_usd);
+          const amountCents = paymentIntent.amount;
+          
+          if (userId && !isNaN(userId) && amountUsd && !isNaN(amountUsd)) {
+            try {
+              // Idempotency check using payment_intent.id (primary key to prevent double-funding)
+              const existingEntry = await pool.query(
+                `SELECT id FROM wallet_ledger 
+                 WHERE meta->>'stripe_payment_intent_id' = $1 
+                 AND transaction_type = 'FUNDING'
+                 LIMIT 1`,
+                [paymentIntent.id]
+              );
+              
+              if (existingEntry.rows.length > 0) {
+                // Record idempotency hit (duplicate detected - multi-webhook strategy working)
+                await recordIdempotencyHit(
+                  'payment_intent.succeeded',
+                  paymentIntent.id,
+                  userId,
+                  existingEntry.rows[0].id,
+                  event.id,
+                  {
+                    amount_usd: amountUsd,
+                    amount_cents: amountCents,
+                    stripe_customer_id: paymentIntent.customer,
+                    webhook_event: 'payment_intent.succeeded'
+                  }
+                );
+                break;
+              }
+              
+              // Insert into wallet_ledger (trigger will update snapshot automatically)
+              const ledgerResult = await pool.query(
+                `INSERT INTO wallet_ledger (user_id, amount, transaction_type, meta, created_at)
+                 VALUES ($1, $2, 'FUNDING', $3, NOW())
+                 RETURNING id`,
+                [
+                  userId,
+                  amountUsd, // Pass as number, PostgreSQL DECIMAL handles precision
+                  JSON.stringify({
+                    stripe_payment_intent_id: paymentIntent.id,
+                    stripe_customer_id: paymentIntent.customer,
+                    amount_cents: amountCents,
+                    amount_usd: amountUsd.toString(),
+                    webhook_event: 'payment_intent.succeeded'
+                  })
+                ]
+              );
+              
+              const ledgerId = ledgerResult.rows[0]?.id;
+              console.log(`[Wallet Funding] Added $${amountUsd} to wallet for user ${userId} (ledger_id: ${ledgerId}, payment_intent: ${paymentIntent.id})`);
+              
+            } catch (error) {
+              // Comprehensive error logging for manual reconciliation
+              console.error(`[Wallet Funding] Error processing payment_intent.succeeded for user ${userId}:`, {
+                error: error.message,
+                stack: error.stack,
+                payment_intent_id: paymentIntent.id,
+                user_id: userId,
+                amount_usd: amountUsd,
+                amount_cents: amountCents,
+                metadata: paymentIntent.metadata,
+                timestamp: new Date().toISOString()
+              });
+            }
+          }
+        }
+        // Handle credit pack purchases using new credit engine
+        else if (paymentIntent.metadata?.type === 'credit_pack') {
           const userId = parseInt(paymentIntent.metadata.userId);
           const packSize = parseInt(paymentIntent.metadata.packSize);
           
@@ -184,10 +283,86 @@ export async function POST(request) {
         break;
 
       case 'checkout.session.completed':
-        // Handle premium report purchases
         const session = event.data.object;
         
-        if (session.mode === 'payment' && session.metadata?.report_id) {
+        // Handle wallet funding
+        if (session.mode === 'payment' && session.metadata?.type === 'wallet_funding') {
+          const userId = parseInt(session.metadata.userId);
+          const amountUsd = parseFloat(session.metadata.amount_usd);
+          const paymentIntentId = session.payment_intent; // Extract payment_intent ID
+          
+          if (userId && !isNaN(userId) && amountUsd && !isNaN(amountUsd)) {
+            try {
+              // Idempotency check using payment_intent_id (primary key to prevent double-funding)
+              const existingEntry = await pool.query(
+                `SELECT id FROM wallet_ledger 
+                 WHERE meta->>'stripe_payment_intent_id' = $1 
+                 AND transaction_type = 'FUNDING'
+                 LIMIT 1`,
+                [paymentIntentId]
+              );
+              
+              if (existingEntry.rows.length > 0) {
+                // Record idempotency hit (duplicate detected - multi-webhook strategy working)
+                await recordIdempotencyHit(
+                  'checkout.session.completed',
+                  paymentIntentId,
+                  userId,
+                  existingEntry.rows[0].id,
+                  event.id,
+                  {
+                    amount_usd: amountUsd,
+                    amount_cents: session.amount_total,
+                    stripe_session_id: session.id,
+                    stripe_customer_id: session.customer,
+                    webhook_event: 'checkout.session.completed'
+                  }
+                );
+                break;
+              }
+              
+              // Insert into wallet_ledger (trigger will update snapshot automatically)
+              // amount_usd is already in dollars from metadata, pass as number
+              // PostgreSQL DECIMAL(10,2) will handle precision
+              const ledgerResult = await pool.query(
+                `INSERT INTO wallet_ledger (user_id, amount, transaction_type, meta, created_at)
+                 VALUES ($1, $2, 'FUNDING', $3, NOW())
+                 RETURNING id`,
+                [
+                  userId,
+                  amountUsd, // Pass as number, PostgreSQL DECIMAL handles precision
+                  JSON.stringify({
+                    stripe_session_id: session.id,
+                    stripe_payment_intent_id: paymentIntentId,
+                    stripe_customer_id: session.customer,
+                    amount_cents: session.amount_total, // Store original cents amount
+                    amount_usd: amountUsd.toString(),
+                    webhook_event: 'checkout.session.completed'
+                  })
+                ]
+              );
+              
+              const ledgerId = ledgerResult.rows[0]?.id;
+              console.log(`[Wallet Funding] Added $${amountUsd} to wallet for user ${userId} (ledger_id: ${ledgerId}, payment_intent: ${paymentIntentId}, session: ${session.id})`);
+              
+            } catch (error) {
+              // Comprehensive error logging for manual reconciliation
+              console.error(`[Wallet Funding] Error processing checkout.session.completed for user ${userId}:`, {
+                error: error.message,
+                stack: error.stack,
+                payment_intent_id: paymentIntentId,
+                session_id: session.id,
+                user_id: userId,
+                amount_usd: amountUsd,
+                amount_cents: session.amount_total,
+                metadata: session.metadata,
+                timestamp: new Date().toISOString()
+              });
+            }
+          }
+        }
+        // Handle premium report purchases
+        else if (session.mode === 'payment' && session.metadata?.report_id) {
           const userId = parseInt(session.metadata.userId);
           const reportId = session.metadata.report_id;
           const reportName = session.metadata.report_name || 'Premium Report';
@@ -215,7 +390,20 @@ export async function POST(request) {
               const isIdempotencyHit = existingOrder.rows.length > 0;
               
               if (isIdempotencyHit) {
-                console.log(`[Idempotency Hit] Premium report order already exists for session ${session.id} (order: ${existingOrder.rows[0].id}, user: ${userId}, report: ${reportId}) - preventing duplicate processing`);
+                // Record idempotency hit in database and logs
+                await recordIdempotencyHit(
+                  'checkout.session.completed',
+                  session.payment_intent || session.id,
+                  userId,
+                  existingOrder.rows[0].id,
+                  event.id,
+                  {
+                    report_id: reportId,
+                    report_name: reportName,
+                    stripe_session_id: session.id,
+                    amount_cents: session.amount_total
+                  }
+                );
               }
               
               // Create a record of the premium report purchase

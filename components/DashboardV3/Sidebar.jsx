@@ -60,13 +60,17 @@ export default function Sidebar({ user, onLinkClick }) {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 sm:space-y-2">
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const Icon = item.icon;
           const active = isActive(item.href);
           
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Sidebar.jsx:63',message:'Nav item key check',data:{href:item.href,label:item.label,index,key:item.href},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'A'})}).catch(()=>{});
+          // #endregion
+          
           return (
             <Link
-              key={item.href}
+              key={`${item.href}-${index}`}
               href={item.href}
               onClick={() => {
                 if (onLinkClick && typeof window !== 'undefined' && window.innerWidth < 768) {
