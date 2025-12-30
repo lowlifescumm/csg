@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, Bell, X, Clock } from "lucide-react";
 import Link from "next/link";
@@ -31,6 +31,9 @@ export default function AdvisorSessionNotification({ advisorProfile = null }) {
 
   // Fetch advisor status if not provided
   const fetchAdvisorStatus = useCallback(async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdvisorSessionNotification.jsx:33',message:'fetchAdvisorStatus called',data:{hasUseCallback:typeof useCallback},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     try {
       const response = await fetch("/api/marketplace/advisors/profile");
       const data = await response.json();

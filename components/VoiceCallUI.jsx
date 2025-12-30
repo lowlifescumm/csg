@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { Mic, MicOff, PhoneOff, Loader2, AlertCircle, Wifi, WifiOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/useToast";
 import SessionTimer from "./SessionTimer";
 import AudioLevelIndicator from "./AudioLevelIndicator";
 import { useWebRTCConnection } from "@/lib/useWebRTCConnection";
@@ -21,6 +23,8 @@ export default function VoiceCallUI({ sessionId, session, currentUserId, onEndCa
   const [audioLevel, setAudioLevel] = useState(0);
   const [error, setError] = useState("");
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(null);
+  const [insufficientFundsDisconnected, setInsufficientFundsDisconnected] = useState(false);
 
   const [localStream, setLocalStream] = useState(null);
   const localStreamRef = useRef(null);
@@ -28,6 +32,11 @@ export default function VoiceCallUI({ sessionId, session, currentUserId, onEndCa
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const balanceCheckIntervalRef = useRef(null);
+  const lastWarningTimeRef = useRef(null);
+  const wasInWarningZoneRef = useRef(false);
+  const router = useRouter();
+  const toast = useToast();
 
   // Determine other participant
   const isAdvisor = currentUserId === session?.advisor_id;
@@ -169,10 +178,77 @@ export default function VoiceCallUI({ sessionId, session, currentUserId, onEndCa
     }
   };
 
-  /**
-   * End call
-   */
-  const handleEndCall = () => {
+  // Check wallet balance
+  const checkWalletBalance = async () => {
+    try {
+      const response = await fetch('/api/marketplace/wallet/balance');
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        const balance = parseFloat(data.data.balance) || 0;
+        setWalletBalance(balance);
+        
+        // Check if balance is insufficient (only for user, not advisor)
+        // Edge cases handled:
+        // - Balance exactly equals rate: Will allow, server-side will catch on next billing cycle
+        // - Balance becomes negative: Will terminate immediately
+        // - Concurrent termination: Prevented by insufficientFundsDisconnected flag
+        if (!isAdvisor && session?.status === 'ACTIVE' && session?.per_minute_rate) {
+          const perMinuteRate = parseFloat(session.per_minute_rate) || 0;
+          
+          // Calculate minutes remaining
+          const minutesRemaining = perMinuteRate > 0 ? balance / perMinuteRate : Infinity;
+          
+          // Show low balance warning if < 2 minutes remaining
+          if (minutesRemaining < 2 && minutesRemaining >= 0 && perMinuteRate > 0) {
+            const now = Date.now();
+            const shouldShowWarning = 
+              !wasInWarningZoneRef.current || // First time entering warning zone
+              (lastWarningTimeRef.current && now - lastWarningTimeRef.current > 30000); // 30 seconds since last warning
+            
+            if (shouldShowWarning) {
+              const minutesText = minutesRemaining < 0.1 
+                ? 'less than 10 seconds' 
+                : minutesRemaining < 1 
+                  ? `${Math.round(minutesRemaining * 60)} seconds`
+                  : `${minutesRemaining.toFixed(1)} minute${minutesRemaining !== 1 ? 's' : ''}`;
+              
+              toast.warning(
+                `Low balance: You have ${minutesText} remaining. Add funds to continue your session.`,
+                {
+                  duration: 8000,
+                  action: {
+                    label: 'Add Funds',
+                    onClick: () => router.push('/marketplace?fund=true')
+                  }
+                }
+              );
+              
+              lastWarningTimeRef.current = now;
+              wasInWarningZoneRef.current = true;
+            }
+          } else {
+            // Reset warning zone flag when balance is sufficient
+            wasInWarningZoneRef.current = false;
+          }
+          
+          // Terminate if balance is less than per-minute rate (can't afford even 1 minute)
+          if (balance < perMinuteRate && !insufficientFundsDisconnected) {
+            console.log('[VoiceCallUI] Insufficient funds detected. Auto-disconnecting...');
+            console.log(`[VoiceCallUI] Balance: $${balance.toFixed(2)}, Required: $${perMinuteRate.toFixed(2)}`);
+            setInsufficientFundsDisconnected(true);
+            await handleAutoDisconnect('insufficient_funds');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[VoiceCallUI] Error checking wallet balance:', err);
+      // Don't show error to user, just log it
+    }
+  };
+
+  // Auto-disconnect handler for insufficient funds
+  const handleAutoDisconnect = async (reason) => {
     // Stop audio monitoring
     stopAudioLevelMonitoring();
 
@@ -186,6 +262,69 @@ export default function VoiceCallUI({ sessionId, session, currentUserId, onEndCa
     // End WebRTC connection
     endConnection();
     connectionStartedRef.current = false;
+
+    // Finalize session billing
+    try {
+      const response = await fetch(`/api/marketplace/advisors/sessions/${sessionId}/disconnect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('[VoiceCallUI] Session disconnected due to insufficient funds');
+        if (reason === 'insufficient_funds') {
+          setError('Your session ended because your wallet balance is insufficient. Please add funds to continue.');
+        }
+      } else {
+        console.error('[VoiceCallUI] Failed to disconnect session:', data.error);
+        setInsufficientFundsDisconnected(false); // Allow retry
+      }
+    } catch (error) {
+      console.error('[VoiceCallUI] Error disconnecting session:', error);
+      setInsufficientFundsDisconnected(false); // Allow retry
+    }
+
+    // Call callback if provided
+    if (onEndCall) {
+      onEndCall();
+    }
+  };
+
+  /**
+   * End call and finalize billing
+   */
+  const handleEndCall = async () => {
+    // Stop audio monitoring
+    stopAudioLevelMonitoring();
+
+    // Stop local stream
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+    setLocalStream(null);
+
+    // End WebRTC connection
+    endConnection();
+    connectionStartedRef.current = false;
+
+    // Finalize session billing
+    try {
+      const response = await fetch(`/api/marketplace/advisors/sessions/${sessionId}/disconnect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('[VoiceCallUI] Session disconnected and billing finalized');
+      } else {
+        console.error('[VoiceCallUI] Failed to disconnect session:', data.error);
+      }
+    } catch (error) {
+      console.error('[VoiceCallUI] Error disconnecting session:', error);
+    }
 
     // Call callback if provided
     if (onEndCall) {
@@ -219,6 +358,33 @@ export default function VoiceCallUI({ sessionId, session, currentUserId, onEndCa
     }
   }, [remoteStream]);
 
+  // Poll wallet balance during active sessions (only for users, not advisors)
+  useEffect(() => {
+    if (!sessionId || isAdvisor || session?.status !== 'ACTIVE') {
+      if (balanceCheckIntervalRef.current) {
+        clearInterval(balanceCheckIntervalRef.current);
+        balanceCheckIntervalRef.current = null;
+      }
+      return;
+    }
+
+    // Initial balance check
+    checkWalletBalance();
+
+    // Poll balance every 4 seconds (balance between responsiveness and server load)
+    balanceCheckIntervalRef.current = setInterval(() => {
+      checkWalletBalance();
+    }, 4000);
+
+    return () => {
+      if (balanceCheckIntervalRef.current) {
+        clearInterval(balanceCheckIntervalRef.current);
+        balanceCheckIntervalRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, session?.status, isAdvisor, session?.per_minute_rate]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -227,6 +393,10 @@ export default function VoiceCallUI({ sessionId, session, currentUserId, onEndCa
         localStreamRef.current.getTracks().forEach(track => track.stop());
       }
       endConnection();
+      if (balanceCheckIntervalRef.current) {
+        clearInterval(balanceCheckIntervalRef.current);
+        balanceCheckIntervalRef.current = null;
+      }
     };
   }, []);
 
@@ -323,9 +493,27 @@ export default function VoiceCallUI({ sessionId, session, currentUserId, onEndCa
 
       {/* Error display */}
       {(error || connectionError) && (
-        <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <p className="text-sm text-red-700">{error || connectionError}</p>
+        <div className={`mx-6 mt-4 p-3 rounded-lg flex items-center gap-2 ${
+          insufficientFundsDisconnected 
+            ? 'bg-yellow-50 border border-yellow-200' 
+            : 'bg-red-50 border border-red-200'
+        }`}>
+          <AlertCircle className={`w-5 h-5 flex-shrink-0 ${
+            insufficientFundsDisconnected ? 'text-yellow-500' : 'text-red-500'
+          }`} />
+          <div className={`text-sm ${
+            insufficientFundsDisconnected ? 'text-yellow-700' : 'text-red-700'
+          }`}>
+            <p>{error || connectionError}</p>
+            {insufficientFundsDisconnected && (
+              <a 
+                href="/marketplace?fund=true" 
+                className="underline font-semibold hover:text-yellow-800 block mt-1"
+              >
+                Add funds to your wallet
+              </a>
+            )}
+          </div>
         </div>
       )}
 

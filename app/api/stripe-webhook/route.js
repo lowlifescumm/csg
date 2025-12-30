@@ -15,6 +15,34 @@ const pool = new Pool({
     : { rejectUnauthorized: false },
 });
 
+/**
+ * Record an idempotency hit (duplicate webhook event detected)
+ * This indicates the multi-webhook strategy is working correctly
+ */
+async function recordIdempotencyHit(eventType, paymentIntentId, userId, originalLedgerId, stripeEventId = null, metadata = {}) {
+  try {
+    await pool.query(
+      `INSERT INTO idempotency_hits 
+       (event_type, stripe_event_id, payment_intent_id, user_id, original_ledger_id, metadata, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+      [
+        eventType,
+        stripeEventId || null,
+        paymentIntentId,
+        userId || null,
+        originalLedgerId || null,
+        JSON.stringify(metadata)
+      ]
+    );
+    
+    // Structured logging for Render.com log visibility
+    console.log(`[Idempotency Hit] ${eventType} - Payment intent ${paymentIntentId} already processed (ledger_id: ${originalLedgerId}, user_id: ${userId}, event_id: ${stripeEventId || 'N/A'})`);
+  } catch (error) {
+    // Don't fail webhook processing if monitoring fails
+    console.error('[Idempotency Monitoring] Failed to record idempotency hit:', error.message);
+  }
+}
+
 export async function POST(request) {
   const body = await request.text();
   const sig = request.headers.get('stripe-signature');
@@ -162,7 +190,20 @@ export async function POST(request) {
               );
               
               if (existingEntry.rows.length > 0) {
-                console.log(`[Wallet Funding] Payment intent ${paymentIntent.id} already processed (ledger_id: ${existingEntry.rows[0].id})`);
+                // Record idempotency hit (duplicate detected - multi-webhook strategy working)
+                await recordIdempotencyHit(
+                  'payment_intent.succeeded',
+                  paymentIntent.id,
+                  userId,
+                  existingEntry.rows[0].id,
+                  event.id,
+                  {
+                    amount_usd: amountUsd,
+                    amount_cents: amountCents,
+                    stripe_customer_id: paymentIntent.customer,
+                    webhook_event: 'payment_intent.succeeded'
+                  }
+                );
                 break;
               }
               
@@ -262,7 +303,21 @@ export async function POST(request) {
               );
               
               if (existingEntry.rows.length > 0) {
-                console.log(`[Wallet Funding] Payment intent ${paymentIntentId} already processed (ledger_id: ${existingEntry.rows[0].id})`);
+                // Record idempotency hit (duplicate detected - multi-webhook strategy working)
+                await recordIdempotencyHit(
+                  'checkout.session.completed',
+                  paymentIntentId,
+                  userId,
+                  existingEntry.rows[0].id,
+                  event.id,
+                  {
+                    amount_usd: amountUsd,
+                    amount_cents: session.amount_total,
+                    stripe_session_id: session.id,
+                    stripe_customer_id: session.customer,
+                    webhook_event: 'checkout.session.completed'
+                  }
+                );
                 break;
               }
               

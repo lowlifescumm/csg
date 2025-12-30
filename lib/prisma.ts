@@ -23,11 +23,17 @@ if (!databaseUrl) {
 }
 
 // Create PostgreSQL pool for Prisma adapter
+// Configured with explicit connection limits for Render.com starter plan
 const pool = new Pool({
   connectionString: databaseUrl,
   ssl: databaseUrl.includes('localhost') || databaseUrl.includes('127.0.0.1')
     ? false
     : { rejectUnauthorized: false },
+  max: 15, // Prisma pool limit (leaves room for main pool)
+  min: 2, // Keep minimum connections alive for connection reuse
+  connectionTimeoutMillis: 10000, // 10 seconds to establish new connection
+  idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+  // Note: statement_timeout is set per-connection via SQL, not pool config
 });
 
 // Create Prisma adapter
