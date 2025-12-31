@@ -1,9 +1,14 @@
 -- Credit Ledger System Schema
 -- Implements immutable ledger entries + balance snapshot pattern
+-- CRITICAL CONSTRAINT: This schema is for AI credits ONLY.
+-- It must NEVER have foreign keys to wallet_ledger.
+-- wallet_ledger is strictly USD and must remain completely isolated from credit_ledger.
+-- Both models only reference users(id) - this separation must be maintained.
 
 -- =============================================================================
 -- CREDIT LEDGER TABLE
--- Immutable ledger entries for all credit transactions
+-- Immutable ledger entries for all AI credit transactions
+-- DO NOT add foreign keys to wallet_ledger - they are strictly separate systems
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS credit_ledger (
   id SERIAL PRIMARY KEY,
@@ -18,10 +23,10 @@ CREATE TABLE IF NOT EXISTS credit_ledger (
   CONSTRAINT valid_delta CHECK (delta != 0)
 );
 
-CREATE INDEX idx_credit_ledger_user_id ON credit_ledger(user_id);
-CREATE INDEX idx_credit_ledger_created_at ON credit_ledger(created_at);
-CREATE INDEX idx_credit_ledger_source ON credit_ledger(source);
-CREATE INDEX idx_credit_ledger_expires_at ON credit_ledger(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_credit_ledger_user_id ON credit_ledger(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_ledger_created_at ON credit_ledger(created_at);
+CREATE INDEX IF NOT EXISTS idx_credit_ledger_source ON credit_ledger(source);
+CREATE INDEX IF NOT EXISTS idx_credit_ledger_expires_at ON credit_ledger(expires_at) WHERE expires_at IS NOT NULL;
 
 -- =============================================================================
 -- USER CREDIT SNAPSHOT TABLE
@@ -33,7 +38,7 @@ CREATE TABLE IF NOT EXISTS user_credit_snapshot (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_user_credit_snapshot_updated_at ON user_credit_snapshot(updated_at);
+CREATE INDEX IF NOT EXISTS idx_user_credit_snapshot_updated_at ON user_credit_snapshot(updated_at);
 
 -- =============================================================================
 -- ENSURE SUBSCRIPTION_TIER COLUMN EXISTS

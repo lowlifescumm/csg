@@ -209,6 +209,9 @@ model compatibility_reports {
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// CRITICAL CONSTRAINT: This model is for AI credits ONLY. It must NEVER have foreign keys to wallet_ledger.
+/// wallet_ledger is strictly USD and must remain completely isolated from credit_ledger.
+/// Both models only reference users(id) - this separation must be maintained.
 model credit_ledger {
   id                                                        Int            @id @default(autoincrement())
   user_id                                                   Int
@@ -224,6 +227,25 @@ model credit_ledger {
   @@index([created_at], map: "idx_credit_ledger_created_at")
   @@index([source], map: "idx_credit_ledger_source")
   @@index([user_id], map: "idx_credit_ledger_user_id")
+}
+
+/// CRITICAL CONSTRAINT: This model is strictly for USD wallet transactions ONLY.
+/// It must NEVER have foreign keys to credit_ledger or any AI credit-related tables.
+/// wallet_ledger and credit_ledger are completely isolated - both only reference users(id).
+/// DO NOT add any foreign keys that would connect wallet_ledger to credit_ledger or reading_jobs.
+model wallet_ledger {
+  id              Int       @id @default(autoincrement())
+  user_id         Int
+  amount          Decimal   @db.Decimal(10, 2)
+  transaction_type String   @db.VarChar(50)
+  meta            Json?     @default("{}")
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_wallet_ledger_created_at")
+  @@index([transaction_type], map: "idx_wallet_ledger_transaction_type")
+  @@index([user_id], map: "idx_wallet_ledger_user_id")
+  @@map("wallet_ledger")
 }
 
 model credit_usage_history {
@@ -650,6 +672,16 @@ model user_credit_snapshot {
   @@index([updated_at], map: "idx_user_credit_snapshot_updated_at")
 }
 
+model user_wallet_snapshot {
+  user_id    Int       @id
+  balance    Decimal   @default(0) @db.Decimal(10, 2)
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([updated_at], map: "idx_user_wallet_snapshot_updated_at")
+  @@map("user_wallet_snapshot")
+}
+
 model user_credits {
   id                Int       @id @default(autoincrement())
   user_id           Int
@@ -703,6 +735,83 @@ model user_xp {
   @@index([user_id], map: "idx_user_xp_user_id")
 }
 
+model advisor_profile {
+  id                Int       @id @default(autoincrement())
+  user_id           Int       @unique
+  bio               String?
+  specialties       String[]  @default([])
+  is_advisor        Boolean?  @default(false)
+  per_minute_rate   Decimal?  @db.Decimal(10, 2)
+  is_online         Boolean?  @default(false)
+  last_heartbeat_at DateTime? @db.Timestamptz(6)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+  users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_advisor_profile_user_id")
+  @@index([is_advisor], map: "idx_advisor_profile_is_advisor")
+  @@map("advisor_profile")
+}
+
+model advisor_sessions {
+  id             Int       @id @default(autoincrement())
+  user_id        Int
+  advisor_id     Int
+  status         String    @default("REQUESTED") @db.VarChar(50)
+  start_time     DateTime? @db.Timestamptz(6)
+  end_time       DateTime? @db.Timestamptz(6)
+  total_cost_usd Decimal?  @default(0) @db.Decimal(10, 2)
+  per_minute_rate Decimal? @db.Decimal(10, 2)
+  meta           Json?     @default("{}")
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  users          users     @relation("advisor_sessions_user", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  advisors       users     @relation("advisor_sessions_advisor", fields: [advisor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  chat_messages  chat_messages[]
+  webrtc_signaling webrtc_signaling[]
+
+  @@index([user_id], map: "idx_advisor_sessions_user_id")
+  @@index([advisor_id], map: "idx_advisor_sessions_advisor_id")
+  @@index([status], map: "idx_advisor_sessions_status")
+  @@index([start_time], map: "idx_advisor_sessions_start_time")
+  @@index([status, advisor_id], map: "idx_advisor_sessions_status_advisor")
+  @@map("advisor_sessions")
+}
+
+model chat_messages {
+  id           Int       @id @default(autoincrement())
+  session_id   Int
+  sender_id    Int
+  message_text String    @db.Text
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  session      advisor_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  sender       users     @relation(fields: [sender_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id], map: "idx_chat_messages_session_id")
+  @@index([created_at], map: "idx_chat_messages_created_at")
+  @@index([sender_id], map: "idx_chat_messages_sender_id")
+  @@map("chat_messages")
+}
+
+model webrtc_signaling {
+  id           Int       @id @default(autoincrement())
+  session_id   Int
+  from_user_id Int
+  to_user_id   Int
+  signal_type  String    @db.VarChar(50)
+  signal_data  Json      @db.JsonB
+  consumed     Boolean?  @default(false)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  session      advisor_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  from_user    users     @relation("webrtc_signaling_from", fields: [from_user_id], references: [id], onDelete: Cascade)
+  to_user      users     @relation("webrtc_signaling_to", fields: [to_user_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id], map: "idx_webrtc_signaling_session_id")
+  @@index([to_user_id, consumed], map: "idx_webrtc_signaling_to_user_id")
+  @@index([created_at], map: "idx_webrtc_signaling_created_at")
+  @@map("webrtc_signaling")
+}
+
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model users {
   id                                                           Int                       @id @default(autoincrement())
@@ -735,8 +844,15 @@ model users {
   subscription_report_discount                                 Int?                      @default(0)
   subscription_priority                                        Boolean?                  @default(false)
   next_free_credit_issue_at                                    DateTime?                 @default(now()) @db.Timestamptz(6)
+  advisor_profile                                              advisor_profile?
+  advisor_sessions_user                                        advisor_sessions[] @relation("advisor_sessions_user")
+  advisor_sessions_advisor                                     advisor_sessions[] @relation("advisor_sessions_advisor")
   blog_posts                                                   blog_posts[]
+  chat_messages                                                chat_messages[]
+  webrtc_signaling_from                                        webrtc_signaling[] @relation("webrtc_signaling_from")
+  webrtc_signaling_to                                          webrtc_signaling[] @relation("webrtc_signaling_to")
   credit_ledger                                                credit_ledger[]
+  wallet_ledger                                                wallet_ledger[]
   energy_logs                                                  energy_logs[]
   forecast_preferences                                         forecast_preferences?
   forecasts                                                    forecasts[]
@@ -756,6 +872,7 @@ model users {
   transits                                                     Transit[]
   transit_logs                                                 TransitLog[]
   user_credit_snapshot                                         user_credit_snapshot?
+  user_wallet_snapshot                                         user_wallet_snapshot?
   user_favorites                                               user_favorites[]
   user_tasks                                                   user_tasks[]
   user_xp                                                      user_xp?
