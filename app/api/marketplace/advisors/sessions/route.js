@@ -77,10 +77,10 @@ export async function POST(request) {
       `SELECT 
         ap.user_id, 
         ap.per_minute_rate, 
-        ap.is_advisor, 
+        ap.status, 
         ap.is_online
        FROM advisor_profile ap
-       WHERE ap.user_id = $1 AND ap.is_advisor = true`,
+       WHERE ap.user_id = $1 AND ap.status = 'APPROVED'`,
       [advisorId]
     );
 

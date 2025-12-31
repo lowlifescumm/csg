@@ -97,6 +97,23 @@ function validateProfileData(data) {
     }
   }
 
+  // Validate phone_number (E.164 format for Twilio)
+  if (data.phone_number !== undefined && data.phone_number !== null) {
+    if (typeof data.phone_number !== 'string') {
+      errors.push('Phone number must be a string');
+    } else {
+      const phoneNumber = data.phone_number.trim();
+      // E.164 format: ^\+[1-9]\d{1,14}$
+      // Must start with +, followed by country code (1-3 digits), then subscriber number (up to 15 total digits)
+      const e164Regex = /^\+[1-9]\d{1,14}$/;
+      if (!e164Regex.test(phoneNumber)) {
+        errors.push('Phone number must be in E.164 format (e.g., +1234567890). Must start with + followed by country code and number.');
+      }
+    }
+  } else {
+    errors.push('Phone number is required');
+  }
+
   return {
     valid: errors.length === 0,
     errors
@@ -134,6 +151,8 @@ export async function GET(request) {
         specialties,
         is_advisor,
         per_minute_rate,
+        phone_number,
+        status,
         is_online,
         last_heartbeat_at,
         created_at,
@@ -158,6 +177,8 @@ export async function GET(request) {
       specialties: row.specialties || [],
       is_advisor: row.is_advisor || false,
       per_minute_rate: row.per_minute_rate ? parseFloat(row.per_minute_rate) : null,
+      phone_number: row.phone_number || null,
+      status: row.status || 'PENDING',
       is_online: row.is_online || false,
       last_heartbeat_at: row.last_heartbeat_at ? new Date(row.last_heartbeat_at).toISOString() : null,
       created_at: row.created_at ? new Date(row.created_at).toISOString() : null,
@@ -230,17 +251,41 @@ async function handleUpsert(request) {
     const perMinuteRate = typeof body.per_minute_rate === 'string'
       ? parseFloat(body.per_minute_rate)
       : body.per_minute_rate;
+    const phoneNumber = body.phone_number ? body.phone_number.trim() : null;
+
+    // Check if profile already exists to determine if this is a new creation or update
+    const existingProfile = await pool.query(
+      'SELECT id, status FROM advisor_profile WHERE user_id = $1',
+      [userId]
+    );
+    const isNewProfile = existingProfile.rows.length === 0;
+    
+    // For new profiles, explicitly set status to PENDING
+    // For existing profiles, only update status if explicitly provided (admin action)
+    // Otherwise, keep existing status
+    const status = isNewProfile ? 'PENDING' : (body.status || existingProfile.rows[0]?.status || 'PENDING');
+    
+    // Build UPDATE clause - only update status if explicitly provided in body
+    const updateFields = [
+      'bio = EXCLUDED.bio',
+      'specialties = EXCLUDED.specialties',
+      'per_minute_rate = EXCLUDED.per_minute_rate',
+      'phone_number = EXCLUDED.phone_number',
+    ];
+    
+    // Only update status if explicitly provided (admin action)
+    if (body.status) {
+      updateFields.push('status = EXCLUDED.status');
+    }
 
     // Upsert advisor profile using ON CONFLICT pattern
     const result = await pool.query(
       `INSERT INTO advisor_profile 
-        (user_id, bio, specialties, per_minute_rate, is_advisor, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        (user_id, bio, specialties, per_minute_rate, phone_number, status, is_advisor, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
        ON CONFLICT (user_id) 
        DO UPDATE SET
-         bio = EXCLUDED.bio,
-         specialties = EXCLUDED.specialties,
-         per_minute_rate = EXCLUDED.per_minute_rate,
+         ${updateFields.join(', ')},
          updated_at = NOW()
        RETURNING 
          id,
@@ -249,11 +294,13 @@ async function handleUpsert(request) {
          specialties,
          is_advisor,
          per_minute_rate,
+         phone_number,
+         status,
          is_online,
          last_heartbeat_at,
          created_at,
          updated_at`,
-      [userId, bio, specialties, perMinuteRate, false] // is_advisor defaults to false
+      [userId, bio, specialties, perMinuteRate, phoneNumber, status, false] // is_advisor defaults to false
     );
 
     const row = result.rows[0];
@@ -266,6 +313,8 @@ async function handleUpsert(request) {
       specialties: row.specialties || [],
       is_advisor: row.is_advisor || false,
       per_minute_rate: row.per_minute_rate ? parseFloat(row.per_minute_rate) : null,
+      phone_number: row.phone_number || null,
+      status: row.status || 'PENDING',
       is_online: row.is_online || false,
       last_heartbeat_at: row.last_heartbeat_at ? new Date(row.last_heartbeat_at).toISOString() : null,
       created_at: row.created_at ? new Date(row.created_at).toISOString() : null,

@@ -46,7 +46,7 @@ export async function POST(request) {
 
     // Check if user has advisor profile and is approved
     const profileCheck = await pool.query(
-      `SELECT id, is_advisor, is_online FROM advisor_profile WHERE user_id = $1`,
+      `SELECT id, status, is_online FROM advisor_profile WHERE user_id = $1`,
       [userId]
     );
 
@@ -55,7 +55,7 @@ export async function POST(request) {
     }
 
     const profile = profileCheck.rows[0];
-    if (!profile.is_advisor) {
+    if (profile.status !== 'APPROVED') {
       return forbiddenResponse('Advisor profile not approved');
     }
 

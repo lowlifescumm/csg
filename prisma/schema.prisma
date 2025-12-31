@@ -209,6 +209,9 @@ model compatibility_reports {
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// CRITICAL CONSTRAINT: This model is for AI credits ONLY. It must NEVER have foreign keys to wallet_ledger.
+/// wallet_ledger is strictly USD and must remain completely isolated from credit_ledger.
+/// Both models only reference users(id) - this separation must be maintained.
 model credit_ledger {
   id                                                        Int            @id @default(autoincrement())
   user_id                                                   Int
@@ -226,6 +229,10 @@ model credit_ledger {
   @@index([user_id], map: "idx_credit_ledger_user_id")
 }
 
+/// CRITICAL CONSTRAINT: This model is strictly for USD wallet transactions ONLY.
+/// It must NEVER have foreign keys to credit_ledger or any AI credit-related tables.
+/// wallet_ledger and credit_ledger are completely isolated - both only reference users(id).
+/// DO NOT add any foreign keys that would connect wallet_ledger to credit_ledger or reading_jobs.
 model wallet_ledger {
   id              Int       @id @default(autoincrement())
   user_id         Int

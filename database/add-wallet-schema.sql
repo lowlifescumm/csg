@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS wallet_ledger (
   CONSTRAINT valid_amount CHECK (amount != 0)
 );
 
-CREATE INDEX idx_wallet_ledger_user_id ON wallet_ledger(user_id);
-CREATE INDEX idx_wallet_ledger_created_at ON wallet_ledger(created_at);
-CREATE INDEX idx_wallet_ledger_transaction_type ON wallet_ledger(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_wallet_ledger_user_id ON wallet_ledger(user_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_ledger_created_at ON wallet_ledger(created_at);
+CREATE INDEX IF NOT EXISTS idx_wallet_ledger_transaction_type ON wallet_ledger(transaction_type);
 
 -- =============================================================================
 -- USER WALLET SNAPSHOT TABLE
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS user_wallet_snapshot (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_user_wallet_snapshot_updated_at ON user_wallet_snapshot(updated_at);
+CREATE INDEX IF NOT EXISTS idx_user_wallet_snapshot_updated_at ON user_wallet_snapshot(updated_at);
 
 -- =============================================================================
 -- FUNCTION: Update balance snapshot after ledger entry
@@ -86,11 +86,15 @@ FROM users u
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Table and column comments
-COMMENT ON TABLE wallet_ledger IS 'Immutable ledger entries for all USD wallet transactions (strictly separate from credit_ledger)';
+-- CRITICAL CONSTRAINT: wallet_ledger is strictly for USD transactions ONLY.
+-- It must NEVER have foreign keys to credit_ledger or any AI credit-related tables.
+-- wallet_ledger and credit_ledger are completely isolated - both only reference users(id).
+-- DO NOT add any foreign keys that would connect wallet_ledger to credit_ledger or reading_jobs.
+COMMENT ON TABLE wallet_ledger IS 'Immutable ledger entries for all USD wallet transactions. CRITICAL: Strictly separate from credit_ledger - no foreign keys to AI credits allowed.';
 COMMENT ON TABLE user_wallet_snapshot IS 'Balance cache for fast wallet balance queries (auto-updated via trigger)';
-COMMENT ON COLUMN wallet_ledger.user_id IS 'Foreign key to users table';
+COMMENT ON COLUMN wallet_ledger.user_id IS 'Foreign key to users table ONLY. Must never reference credit_ledger or reading_jobs.';
 COMMENT ON COLUMN wallet_ledger.amount IS 'USD amount - positive for additions (FUNDING, EARNING_CREDIT), negative for deductions (SESSION_DEBIT)';
 COMMENT ON COLUMN wallet_ledger.transaction_type IS 'Type of transaction: FUNDING (user adds money), SESSION_DEBIT (user pays for session), EARNING_CREDIT (advisor earns from session)';
-COMMENT ON COLUMN wallet_ledger.meta IS 'Additional metadata (session_id, payment_intent_id, advisor_id, etc.)';
+COMMENT ON COLUMN wallet_ledger.meta IS 'Additional metadata (session_id, payment_intent_id, advisor_id, etc.). Must not contain references to credit_ledger entries.';
 COMMENT ON COLUMN user_wallet_snapshot.balance IS 'Cached USD balance for fast queries (derived from wallet_ledger)';
 

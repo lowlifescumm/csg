@@ -32,7 +32,7 @@ export async function GET(request) {
         ap.last_heartbeat_at
        FROM advisor_profile ap
        JOIN users u ON ap.user_id = u.id
-       WHERE ap.is_advisor = true 
+       WHERE ap.status = 'APPROVED'
          AND ap.is_online = true
        ORDER BY ap.last_heartbeat_at DESC NULLS LAST, u.first_name, u.last_name`,
       []

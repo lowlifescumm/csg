@@ -160,14 +160,14 @@ export default function MarketplacePage() {
                   {/* Call/Chat Buttons */}
                   <div className="flex gap-3 mt-6">
                     <Link
-                      href={`/advisor/session/${advisor.id}?type=call`}
+                      href={`/advisor/${advisor.id}/session?type=call`}
                       className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-4 rounded-xl font-semibold smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 apple-shadow-lg"
                     >
                       <Phone className="w-5 h-5" />
                       Call
                     </Link>
                     <Link
-                      href={`/advisor/session/${advisor.id}?type=chat`}
+                      href={`/advisor/${advisor.id}/session?type=chat`}
                       className="flex-1 bg-white bg-opacity-70 border-2 border-purple-300 text-purple-700 py-3 px-4 rounded-xl font-semibold smooth-transition hover:bg-opacity-90 hover:border-purple-400 flex items-center justify-center gap-2"
                     >
                       <MessageCircle className="w-5 h-5" />

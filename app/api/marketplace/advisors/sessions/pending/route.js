@@ -41,14 +41,14 @@ export async function GET(request) {
 
     // Verify user is an approved advisor
     const advisorCheck = await pool.query(
-      `SELECT ap.is_advisor, ap.is_online
+      `SELECT ap.status, ap.is_online
        FROM advisor_profile ap
        WHERE ap.user_id = $1`,
       [userId]
     );
 
-    if (advisorCheck.rows.length === 0 || !advisorCheck.rows[0].is_advisor) {
-      // Return empty array instead of error (advisor may not have profile yet)
+    if (advisorCheck.rows.length === 0 || advisorCheck.rows[0].status !== 'APPROVED') {
+      // Return empty array instead of error (advisor may not have profile yet or not approved)
       return successResponse({
         sessions: [],
         total: 0
