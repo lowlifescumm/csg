@@ -70,6 +70,11 @@ export default async function sitemap() {
        ORDER BY published_at DESC`
     );
 
+    // Log for debugging (can be removed in production)
+    if (blogPostsResult.rows.length > 0) {
+      console.log(`[Sitemap] Including ${blogPostsResult.rows.length} published blog posts`);
+    }
+
     // Create sitemap entries for each blog post
     const blogPostPages = blogPostsResult.rows.map((post) => ({
       url: `${SITE_URL}/blog/${post.slug}`,
