@@ -37,6 +37,7 @@
     "@sparticuz/chromium": "^141.0.0",
     "@stripe/react-stripe-js": "^5.0.0",
     "@stripe/stripe-js": "^8.0.0",
+    "@twilio/conversations": "^2.6.5",
     "astronomy-engine": "^2.1.19",
     "autoprefixer": "^10.4.16",
     "bcryptjs": "^3.0.2",

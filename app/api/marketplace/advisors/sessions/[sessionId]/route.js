@@ -95,6 +95,7 @@ export async function GET(request, { params }) {
       end_time: session.end_time ? session.end_time.toISOString() : null,
       total_cost_usd: session.total_cost_usd ? parseFloat(session.total_cost_usd) : null,
       per_minute_rate: session.per_minute_rate ? parseFloat(session.per_minute_rate) : null,
+      conversation_sid: session.conversation_sid || null,
       created_at: session.created_at ? session.created_at.toISOString() : null,
       updated_at: session.updated_at ? session.updated_at.toISOString() : null,
       advisor: advisor ? {

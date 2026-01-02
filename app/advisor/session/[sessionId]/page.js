@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
-import ChatWindow from "@/components/ChatWindow";
+import TwilioChatWindow from "@/components/TwilioChatWindow";
 import VoiceCallUI from "@/components/VoiceCallUI";
 
 function SessionChatContent() {
@@ -163,7 +163,7 @@ function SessionChatContent() {
       <div className="flex-1 max-w-6xl mx-auto w-full p-4">
         <div className="glassmorphic rounded-3xl apple-shadow-lg border border-white border-opacity-40 bg-white bg-opacity-70 h-[calc(100vh-16rem)] flex flex-col overflow-hidden">
           {mode === "chat" ? (
-            <ChatWindow
+            <TwilioChatWindow
               sessionId={session.id}
               session={session}
               currentUserId={currentUserId}
