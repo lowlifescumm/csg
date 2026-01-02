@@ -6,6 +6,20 @@
  * Usage: node scripts/verify-twilio-conversations-setup.js
  */
 
+// Load environment variables from .env.local if it exists
+try {
+  require('dotenv').config({ path: '.env.local' });
+} catch (e) {
+  // dotenv might not be available, continue without it
+}
+
+// Also try loading from .env as fallback
+try {
+  require('dotenv').config({ path: '.env' });
+} catch (e) {
+  // dotenv might not be available, continue without it
+}
+
 const requiredEnvVars = [
   'TWILIO_CONVERSATIONS_SERVICE_SID',
   'TWILIO_API_KEY_SID',
@@ -48,8 +62,14 @@ function verifySetup() {
     const serviceSid = process.env.TWILIO_CONVERSATIONS_SERVICE_SID;
     const apiKeySid = process.env.TWILIO_API_KEY_SID;
     
-    if (!serviceSid.startsWith('IS')) {
-      console.log('\n⚠️  Warning: Service SID should start with "IS"');
+    if (serviceSid.startsWith('MG')) {
+      console.log('\n⚠️  WARNING: Service SID starts with "MG" (Messaging Service)');
+      console.log('   Twilio Conversations requires a Conversations Service SID (starts with "IS")');
+      console.log('   Please create a Conversations Service in Twilio Console:');
+      console.log('   https://console.twilio.com/us1/develop/conversations/services');
+    } else if (!serviceSid.startsWith('IS')) {
+      console.log('\n⚠️  Warning: Service SID should start with "IS" (Conversations Service)');
+      console.log('   Current value starts with: ' + serviceSid.substring(0, 2));
     }
     
     if (!apiKeySid.startsWith('SK')) {
