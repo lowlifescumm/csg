@@ -14,6 +14,8 @@ import { cookies } from 'next/headers';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/lib/auth-config';
 import { finalizeSessionBilling } from '@/lib/session-billing';
+import { pool } from '@/lib/db';
+import twilio from 'twilio';
 import {
   successResponse,
   unauthorizedResponse,
@@ -57,7 +59,54 @@ export async function POST(request, { params }) {
       return badRequestResponse('Invalid session ID');
     }
 
+    // Fetch session to get conversation_sid and verify authorization
+    const sessionResult = await pool.query(
+      `SELECT id, user_id, advisor_id, status, conversation_sid
+       FROM advisor_sessions
+       WHERE id = $1`,
+      [sessionIdInt]
+    );
+
+    if (sessionResult.rows.length === 0) {
+      return notFoundResponse('Session not found');
+    }
+
+    const session = sessionResult.rows[0];
+
+    // Verify user is authorized (must be session participant)
+    if (session.user_id !== userId && session.advisor_id !== userId) {
+      return forbiddenResponse('Not authorized to disconnect this session');
+    }
+
+    // Close Twilio Conversation if it exists
+    if (session.conversation_sid) {
+      try {
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const conversationServiceSid = process.env.TWILIO_CONVERSATIONS_SERVICE_SID;
+
+        if (accountSid && authToken && conversationServiceSid) {
+          const twilioClient = twilio(accountSid, authToken);
+          
+          // Close/delete the Twilio Conversation
+          await twilioClient.conversations.v1.services(conversationServiceSid)
+            .conversations(session.conversation_sid)
+            .remove();
+          
+          console.log(`[Disconnect Session] Closed Twilio Conversation: ${session.conversation_sid}`);
+        } else {
+          console.warn('[Disconnect Session] Twilio credentials not configured, skipping conversation closure');
+        }
+      } catch (twilioError) {
+        // Log error but don't fail the disconnect if conversation closure fails
+        // The conversation might already be closed or the session might not have one
+        console.error('[Disconnect Session] Error closing Twilio Conversation:', twilioError);
+        // Continue with billing finalization even if conversation closure fails
+      }
+    }
+
     // Finalize billing (includes authorization check, status validation, and billing)
+    // Note: Authorization is already checked above, but finalizeSessionBilling also validates
     const result = await finalizeSessionBilling(sessionIdInt, userId);
 
     if (!result.success) {
