@@ -83,14 +83,12 @@ export async function POST(request, { params }) {
       try {
         const accountSid = process.env.TWILIO_ACCOUNT_SID;
         const authToken = process.env.TWILIO_AUTH_TOKEN;
-        const conversationServiceSid = process.env.TWILIO_CONVERSATIONS_SERVICE_SID;
 
-        if (accountSid && authToken && conversationServiceSid) {
+        if (accountSid && authToken) {
           const twilioClient = twilio(accountSid, authToken);
           
           // Close/delete the Twilio Conversation
-          await twilioClient.conversations.v1.services(conversationServiceSid)
-            .conversations(session.conversation_sid)
+          await twilioClient.conversations.v1.conversations(session.conversation_sid)
             .remove();
           
           console.log(`[Disconnect Session] Closed Twilio Conversation: ${session.conversation_sid}`);
