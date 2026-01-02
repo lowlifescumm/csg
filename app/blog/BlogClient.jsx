@@ -17,6 +17,7 @@ export default function BlogClient({ initialPosts, initialCategories, initialTag
   const fetchPosts = async (page = 1) => {
     try {
       setLoading(true);
+      setHasSearched(true);
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '9'
@@ -40,6 +41,18 @@ export default function BlogClient({ initialPosts, initialCategories, initialTag
 
   const handleSearch = () => {
     fetchPosts(1);
+  };
+
+  const handleFilterChange = () => {
+    // Auto-search when filters change
+    if (selectedCategory || selectedTag || searchQuery) {
+      fetchPosts(1);
+    } else {
+      // Reset to initial posts if no filters
+      setPosts(initialPosts || []);
+      setPagination(initialPagination || {});
+      setHasSearched(false);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -80,7 +93,10 @@ export default function BlogClient({ initialPosts, initialCategories, initialTag
           <div className="lg:w-48">
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                handleFilterChange();
+              }}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none bg-white/70"
             >
               <option value="">All Categories</option>
@@ -96,7 +112,10 @@ export default function BlogClient({ initialPosts, initialCategories, initialTag
           <div className="lg:w-48">
             <select
               value={selectedTag}
-              onChange={(e) => setSelectedTag(e.target.value)}
+              onChange={(e) => {
+                setSelectedTag(e.target.value);
+                handleFilterChange();
+              }}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none bg-white/70"
             >
               <option value="">All Tags</option>

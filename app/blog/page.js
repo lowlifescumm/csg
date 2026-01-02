@@ -95,53 +95,7 @@ export default async function BlogPage() {
           </div>
         </div>
 
-        {/* Server-rendered blog posts for crawlers - all links in initial HTML */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-          {posts.map((post) => (
-            <article key={post.id} className="glassmorphic rounded-2xl overflow-hidden apple-shadow-lg hover:shadow-xl smooth-transition group">
-              {post.featured_image && (
-                <div className="aspect-video overflow-hidden">
-                  <Link href={`/blog/${post.slug}`}>
-                    <img
-                      src={post.featured_image}
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 smooth-transition"
-                    />
-                  </Link>
-                </div>
-              )}
-              
-              <div className="p-6">
-                <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                  <div className="flex items-center space-x-1">
-                    <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                  </div>
-                </div>
-
-                <h2 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-purple-600 smooth-transition">
-                  <Link href={`/blog/${post.slug}`}>
-                    {post.title}
-                  </Link>
-                </h2>
-
-                <p className="text-gray-600 mb-4 line-clamp-3">
-                  {post.excerpt || post.content.substring(0, 150) + '...'}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    className="flex items-center space-x-1 text-purple-600 hover:text-purple-700 font-medium smooth-transition"
-                  >
-                    <span>Read More</span>
-                  </Link>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* Client component for search/filter functionality */}
+        {/* Client component with server-rendered initial data - links in HTML for crawlers */}
         <BlogClient 
           initialPosts={posts}
           initialCategories={categories}
