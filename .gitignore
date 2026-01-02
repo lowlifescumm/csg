@@ -93,3 +93,6 @@ meditations/
 artifacts/
 # Cursor rules - should not be committed
 .cursor/rules/
+
+# MCP configuration with sensitive credentials
+mcp.json
