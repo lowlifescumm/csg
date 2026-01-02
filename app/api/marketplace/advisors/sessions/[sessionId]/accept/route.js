@@ -97,11 +97,10 @@ export async function PUT(request, { params }) {
 
     // Get Twilio configuration
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const apiKeySid = process.env.TWILIO_API_KEY_SID;
-    const apiSecret = process.env.TWILIO_API_SECRET;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
     const conversationServiceSid = process.env.TWILIO_CONVERSATIONS_SERVICE_SID;
 
-    if (!accountSid || !apiKeySid || !apiSecret || !conversationServiceSid) {
+    if (!accountSid || !authToken || !conversationServiceSid) {
       await client.query('ROLLBACK');
       console.error('[Accept Session] Missing Twilio configuration');
       return errorResponse(
@@ -111,8 +110,8 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Initialize Twilio client
-    const twilioClient = twilio(apiKeySid, apiSecret, { accountSid });
+    // Initialize Twilio client (use Account SID and Auth Token for server-side API calls)
+    const twilioClient = twilio(accountSid, authToken);
 
     // Create Twilio Conversation
     let conversation;
