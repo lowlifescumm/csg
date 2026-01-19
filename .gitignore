@@ -93,3 +93,6 @@ meditations/
 artifacts/
 # Cursor rules - should not be committed
 .cursor/rules/
+
+# Antigravity Kit 2.0 - local agent files
+.agent/
