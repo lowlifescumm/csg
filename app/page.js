@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Script from "next/script";
 import { Sparkles, Star, Heart, Check, ChevronRight, Zap, Shield, Eye, ArrowRight } from "lucide-react";
+import { generateHomePageSchema } from "@/lib/schema";
 
 export default function HomePage() {
   const router = useRouter();
@@ -24,7 +26,7 @@ export default function HomePage() {
     try {
       const res = await fetch("/api/auth/user");
       const data = await res.json();
-      
+
       if (data.user) {
         setUser(data.user);
       }
@@ -45,19 +47,26 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
+      {/* JSON-LD Schema Markup */}
+      <Script
+        id="schema-org"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateHomePageSchema()) }}
+      />
+
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16 sm:py-20 md:py-24 px-4 sm:px-6">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-10 w-48 sm:w-72 h-48 sm:h-72 bg-purple-500 rounded-full filter blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-pink-500 rounded-full filter blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute bottom-20 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-pink-500 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
-        
+
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <div className="inline-block float-animation mb-6">
             <Eye className="w-16 h-16 sm:w-20 sm:h-20 text-purple-600 mx-auto" />
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text px-2">
-            Daily Tarot Insights
+            AI-Powered Tarot & Astrology Readings
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-4 max-w-3xl mx-auto px-4">
             Receive spiritually aligned tarot and astrology readings powered by advanced AI guidance.
@@ -65,8 +74,8 @@ export default function HomePage() {
           <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto px-4">
             Clear answers on love, career, and purpose. Gentle direction. <strong className="text-purple-600">3 free credits every single day.</strong>
           </p>
-          
-          <button 
+
+          <button
             onClick={() => router.push("/login")}
             className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-semibold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105 mb-12"
           >
@@ -84,7 +93,7 @@ export default function HomePage() {
           <p className="text-base sm:text-lg text-gray-600 mb-8">
             Real guidance. Real insight. Zero guesswork.
           </p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
               <div className="flex gap-1 mb-3">
@@ -96,7 +105,7 @@ export default function HomePage() {
                 &quot;Shockingly accurate. The readings felt like they were written for my soul.&quot;
               </p>
             </div>
-            
+
             <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
               <div className="flex gap-1 mb-3">
                 {[...Array(5)].map((_, i) => (
@@ -119,7 +128,7 @@ export default function HomePage() {
               Your Cosmic Spirit Guide gives you tarot and astrology insight:
             </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
               <div className="flex items-start gap-4">
@@ -132,7 +141,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
               <div className="flex items-start gap-4">
                 <div className="bg-gradient-to-br from-blue-500 to-purple-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -144,7 +153,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
               <div className="flex items-start gap-4">
                 <div className="bg-gradient-to-br from-pink-500 to-purple-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -156,7 +165,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
               <div className="flex items-start gap-4">
                 <div className="bg-gradient-to-br from-purple-500 to-blue-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -169,7 +178,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 sm:p-8 text-center border border-purple-200">
             <p className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
               3 free credits every day — no commitment, no tricks
@@ -198,7 +207,7 @@ export default function HomePage() {
               Log in from any device for secure, on-demand access to AI-generated tarot and astrology insights without scheduling calls or sharing private contact details.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div className="text-center">
               <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
@@ -238,7 +247,7 @@ export default function HomePage() {
               You don&apos;t need to be a tarot expert. Your guide interprets everything for you with clarity and heart.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {[
               "Helps reduce anxiety and overthinking",
@@ -266,7 +275,7 @@ export default function HomePage() {
               Sample Reading Snippet
             </h2>
           </div>
-          
+
           <div className="glassmorphic rounded-3xl p-8 sm:p-12 border border-white border-opacity-40 text-center">
             <div className="inline-block mb-6">
               <Sparkles className="w-12 h-12 text-purple-600" />
@@ -286,10 +295,10 @@ export default function HomePage() {
               Ethics & Transparency
             </h2>
             <p className="text-xl text-gray-700 mb-8">
-            We believe spiritual tools should empower you — not scare you.
-          </p>
+              We believe spiritual tools should empower you — not scare you.
+            </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
               <div className="flex items-start gap-3 mb-4">
@@ -302,7 +311,7 @@ export default function HomePage() {
               </div>
               <p className="text-gray-600">Always uplifting and supportive</p>
             </div>
-            
+
             <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40">
               <div className="flex items-start gap-3">
                 <Eye className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
@@ -317,7 +326,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          
+
           <div className="text-center">
             <p className="text-xl text-gray-700 font-semibold">
               This is modern spirituality: mystical + honest + accessible.
@@ -334,7 +343,7 @@ export default function HomePage() {
               FAQ
             </h2>
           </div>
-          
+
           <div className="space-y-4">
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer flex items-center justify-between">
@@ -402,7 +411,7 @@ export default function HomePage() {
           <p className="text-lg sm:text-xl mb-8 text-purple-200 px-4">
             Guided by the stars, powered by insight.
           </p>
-          <button 
+          <button
             onClick={() => router.push("/login")}
             className="bg-white text-purple-900 px-10 sm:px-12 py-4 sm:py-5 rounded-2xl font-bold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105"
           >
@@ -421,7 +430,7 @@ export default function HomePage() {
               </div>
               <p className="text-sm text-gray-400">Guided by the stars, powered by insight.</p>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-white mb-4">Services</h3>
               <ul className="space-y-2 text-sm">
@@ -430,7 +439,7 @@ export default function HomePage() {
                 <li><button onClick={() => router.push("/compatibility")} className="hover:text-white smooth-transition">Compatibility</button></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-white mb-4">Resources</h3>
               <ul className="space-y-2 text-sm">
@@ -439,7 +448,7 @@ export default function HomePage() {
                 <li><Link href="/contact" className="hover:text-white smooth-transition">Contact</Link></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-white mb-4">Legal</h3>
               <ul className="space-y-2 text-sm">
@@ -448,7 +457,7 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 pt-8">
             <p className="text-center text-sm text-gray-500 mb-4">
               Subscribe to curated updates on new tarot spreads, astrology resources, and platform improvements designed for consistent, data-informed spiritual practice.
