@@ -15,24 +15,26 @@ export default function SubscriptionPage() {
     try {
       const res = await fetch('/api/auth/user');
       const data = await res.json();
-      
-      if (!data.user) {
-        router.push('/login');
-      } else {
+
+      if (data.user) {
         setUser(data.user);
       }
     } catch (error) {
-      router.push('/login');
+      console.log('User not logged in, showing public pricing');
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
   const handleSubscribe = async (tierId = 'MYSTIC_LITE') => {
+    if (!user) {
+      router.push('/login?redirect=/subscription');
+      return;
+    }
     setProcessing(true);
     try {
       const response = await fetch('/api/create-subscription', {
@@ -57,13 +59,8 @@ export default function SubscriptionPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-purple-300 animate-spin" />
-      </div>
-    );
-  }
+  // Removed blocking loading state for SEO
+  // if (loading) { ... }
 
   const isPremium = user?.stripeSubscriptionId;
 
@@ -83,8 +80,8 @@ export default function SubscriptionPage() {
             </p>
           </div>
           <div className="relative flex justify-center md:justify-end">
-            <img 
-              src="https://res.cloudinary.com/dfgthvwaa/image/upload/v1766824891/tarot-reading-services_p9k0bq.webp" 
+            <img
+              src="https://res.cloudinary.com/dfgthvwaa/image/upload/v1766824891/tarot-reading-services_p9k0bq.webp"
               alt="Premium sub features layout"
               className="w-full max-w-md h-auto rounded-2xl shadow-2xl object-cover"
             />
@@ -117,7 +114,7 @@ export default function SubscriptionPage() {
                   <div className="text-lg text-white mt-2">60 credits/month</div>
                   <div className="text-sm text-purple-200 mt-1">90-day rollover</div>
                 </div>
-                
+
                 <div className="space-y-3 mb-6">
                   <div className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
@@ -149,7 +146,7 @@ export default function SubscriptionPage() {
                     Best Value
                   </span>
                 </div>
-                
+
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold text-white mb-2">Mystic Premium</h2>
                   <div className="text-5xl font-bold text-white mb-2">$39.99</div>
@@ -157,7 +154,7 @@ export default function SubscriptionPage() {
                   <div className="text-lg text-white mt-2">150 credits/month</div>
                   <div className="text-sm text-purple-200 mt-1">180-day rollover</div>
                 </div>
-                
+
                 <div className="space-y-3 mb-6">
                   <div className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
@@ -190,7 +187,7 @@ export default function SubscriptionPage() {
                 </button>
               </div>
             </div>
-            
+
             <div className="text-center mt-8">
               <Link
                 href="/dashboard"

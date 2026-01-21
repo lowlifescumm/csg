@@ -19,6 +19,7 @@ const DashboardV3Client = nextDynamic(
           <div className="relative mb-6">
             <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
           </div>
+          <h1 className="sr-only">Dashboard Loading...</h1>
           <p className="text-gray-200 animate-pulse mb-4">Loading your cosmic journey...</p>
         </div>
       </div>
@@ -82,6 +83,7 @@ export default function DashboardPage() {
             <div className="relative mb-6">
               <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
             </div>
+            <h1 className="sr-only">Dashboard Loading...</h1>
             <p className="text-gray-200 animate-pulse mb-4">Loading your cosmic journey...</p>
           </div>
         </div>
