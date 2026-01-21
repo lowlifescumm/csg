@@ -37,13 +37,8 @@ export default function HomePage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white"></div>
-      </div>
-    );
-  }
+  // Removed blocking loading state for SEO
+  // if (loading) { ... }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
