@@ -55,10 +55,52 @@ export default async function sitemap() {
         priority: 0.6,
       },
       {
+        url: `${SITE_URL}/reading`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.9,
+      },
+      {
+        url: `${SITE_URL}/about`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.7,
+      },
+      {
+        url: `${SITE_URL}/pricing`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.8,
+      },
+      {
+        url: `${SITE_URL}/birth-chart`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
+      {
+        url: `${SITE_URL}/compatibility`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
+      {
+        url: `${SITE_URL}/moon-reading`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
+      {
+        url: `${SITE_URL}/transits`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.8,
+      },
+      {
         url: `${SITE_URL}/subscription`,
         lastModified: new Date(),
         changeFrequency: 'monthly',
-        priority: 0.6,
+        priority: 0.7,
       },
     ];
 

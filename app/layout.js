@@ -18,12 +18,12 @@ export const viewport = {
 
 import { generatePageMetadata, PAGE_METADATA } from '@/lib/metadata';
 
-export const metadata = generatePageMetadata(PAGE_METADATA.home);
+export const metadata = generatePageMetadata(PAGE_METADATA.site);
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.className} scroll-smooth`}>
-      <body 
+      <body
         className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50"
         suppressHydrationWarning={true}
       >
@@ -41,19 +41,19 @@ export default function RootLayout({ children }) {
               gtag('config', 'G-T0J78R09VN');
             `}
           </Script>
-          
+
           {/* Marketing Blocks Chatbot */}
           <Script id="marketing-blocks-chatbot" strategy="afterInteractive">
             {`
               !function(){function e() {var e=((new Date).getTime(),document.createElement("script"));e.type="text/javascript",e.async=!0,e.setAttribute("embed-id","d102cc24-c986-4cb8-b609-6bc63125bc00"),e.src="https://embed.marketingblocks.ai/aibot/embed/d102cc24-c986-4cb8-b609-6bc63125bc00";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}var t=window;t.attachEvent?t.attachEvent("onload",e):t.addEventListener("load",e,!1)}();
             `}
           </Script>
-          
+
           <Header />
-          
+
           {/* Responsive padding for fixed header */}
           <div className="pt-16 sm:pt-20 md:pt-[80px]"></div>
-          
+
           <main id="main-content" className="flex-1">
             <ErrorBoundary>
               <div className="w-full">
@@ -61,7 +61,7 @@ export default function RootLayout({ children }) {
               </div>
             </ErrorBoundary>
           </main>
-          
+
           <footer className="glassmorphic border-t border-white border-opacity-20 py-6 mt-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
@@ -76,7 +76,7 @@ export default function RootLayout({ children }) {
               </div>
             </div>
           </footer>
-          
+
           <ToastContainerWrapper />
           <ClientErrorCatcher />
         </AuthProviderWrapper>
