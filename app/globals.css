@@ -25,7 +25,7 @@
     scroll-behavior: smooth;
     overflow-x: hidden;
   }
-  
+
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -48,15 +48,16 @@
 }
 
 @layer components {
+
   /* Glassmorphic Design System */
   .glassmorphic {
     @apply bg-white bg-opacity-10 backdrop-blur-md;
   }
-  
+
   .glassmorphic-strong {
     @apply bg-white bg-opacity-20 backdrop-blur-lg;
   }
-  
+
   .glassmorphic-light {
     @apply bg-white bg-opacity-5 backdrop-blur-sm;
   }
@@ -65,11 +66,11 @@
   .apple-shadow {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   }
-  
+
   .apple-shadow-lg {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
   }
-  
+
   .apple-shadow-xl {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.05);
   }
@@ -78,11 +79,11 @@
   .gradient-text {
     @apply bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent;
   }
-  
+
   .gradient-bg-primary {
     @apply bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500;
   }
-  
+
   .gradient-bg-secondary {
     @apply bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500;
   }
@@ -91,24 +92,25 @@
   .smooth-transition {
     @apply transition-all duration-300 ease-in-out;
   }
-  
+
   .smooth-transition-fast {
     @apply transition-all duration-150 ease-in-out;
   }
-  
+
   .smooth-transition-slow {
     @apply transition-all duration-500 ease-in-out;
   }
 
   /* Enhanced Button Styles */
   .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl smooth-transition hover:shadow-lg hover:scale-105 active:scale-95;
+    @apply px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 font-semibold rounded-xl smooth-transition hover:shadow-lg hover:scale-105 active:scale-95;
+    color: #ffffff;
   }
-  
+
   .btn-secondary {
     @apply px-6 py-3 bg-white bg-opacity-20 text-gray-900 font-semibold rounded-xl smooth-transition hover:bg-opacity-30 hover:shadow-lg;
   }
-  
+
   .btn-ghost {
     @apply px-6 py-3 text-gray-700 font-semibold rounded-xl smooth-transition hover:bg-gray-100 hover:text-gray-900;
   }
@@ -117,7 +119,7 @@
   .card {
     @apply glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40;
   }
-  
+
   .card-hover {
     @apply card smooth-transition hover:shadow-lg hover:scale-[1.02];
   }
@@ -126,23 +128,23 @@
   .heading-1 {
     @apply text-4xl font-bold text-gray-900;
   }
-  
+
   .heading-2 {
     @apply text-3xl font-semibold text-gray-900;
   }
-  
+
   .heading-3 {
     @apply text-2xl font-semibold text-gray-900;
   }
-  
+
   .body-large {
     @apply text-lg text-gray-700;
   }
-  
+
   .body-medium {
     @apply text-base text-gray-600;
   }
-  
+
   .body-small {
     @apply text-sm text-gray-500;
   }
@@ -151,20 +153,217 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2;
   }
-  
+
   .touch-target {
     @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* ============================================
+     DASHBOARD REDESIGN - Design System
+     ============================================ */
+
+  /* Interactive Cards - No layout shift on hover */
+  .interactive-card {
+    @apply cursor-pointer transition-all duration-200 ease-in-out;
+  }
+
+  .interactive-card:hover {
+    @apply border-purple-400/50;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .interactive-card:active {
+    @apply scale-[0.98];
+  }
+
+  /* Dashboard Card Variants */
+  .dashboard-card {
+    @apply glassmorphic rounded-2xl p-6 apple-shadow-lg border border-white/40 transition-all duration-200;
+  }
+
+  .dashboard-card-hover {
+    @apply dashboard-card cursor-pointer;
+  }
+
+  .dashboard-card-hover:hover {
+    @apply border-purple-400/50 shadow-xl;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Action Buttons - Improved hierarchy */
+  .action-primary {
+    @apply px-6 py-4 rounded-2xl font-semibold cursor-pointer;
+    @apply transition-all duration-200 ease-in-out;
+    @apply shadow-lg hover:shadow-2xl;
+    color: #ffffff;
+  }
+
+  .action-primary:hover {
+    @apply brightness-110;
+  }
+
+  .action-primary:active {
+    @apply scale-[0.98];
+  }
+
+  .action-secondary {
+    @apply px-6 py-4 rounded-2xl font-semibold cursor-pointer;
+    @apply transition-all duration-200 ease-in-out;
+    @apply shadow-md hover:shadow-lg;
+    color: #ffffff;
+  }
+
+  .action-secondary:hover {
+    @apply brightness-105;
+  }
+
+  /* Credit Badge */
+  .credit-badge {
+    @apply absolute top-2 right-2 bg-white/20 backdrop-blur-sm;
+    @apply text-xs px-2 py-1 rounded-full font-medium;
+  }
+
+  /* Section Headers */
+  .section-header {
+    @apply mb-6;
+  }
+
+  .section-title {
+    @apply text-2xl sm:text-3xl font-semibold gradient-text mb-2;
+  }
+
+  .section-subtitle {
+    @apply text-purple-200 text-sm sm:text-base;
+  }
+
+  /* Stats Card */
+  .stat-card {
+    @apply glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow;
+    @apply border border-white/40 hover:shadow-lg transition-shadow duration-200;
+  }
+
+  .stat-icon {
+    @apply w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0;
+  }
+
+  .stat-label {
+    @apply text-xs sm:text-sm text-purple-200 font-medium;
+  }
+
+  .stat-value {
+    @apply text-xl sm:text-2xl font-semibold text-white truncate;
+  }
+
+  /* Light Mode Overrides */
+  @media (prefers-color-scheme: light) {
+
+    /* Base Backgrounds */
+    body {
+      @apply bg-gray-50;
+    }
+
+    /* Container Overrides */
+    .glassmorphic {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(0, 0, 0, 0.1) !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    }
+
+    .glassmorphic-strong {
+      background: rgba(255, 255, 255, 0.98) !important;
+    }
+
+    .dashboard-card {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(226, 232, 240, 1) !important;
+      /* border-slate-200 */
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+    }
+
+    .dashboard-card-hover:hover {
+      background: #ffffff !important;
+      border-color: rgba(139, 92, 246, 0.5) !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .interactive-card {
+      @apply text-slate-800;
+      /* Ensure text is dark by default in cards */
+    }
+
+    .interactive-card:hover {
+      background: #ffffff !important;
+      border-color: rgba(139, 92, 246, 0.5) !important;
+    }
+
+    /* Typography Overrides - Force dark text in light mode */
+    .section-subtitle {
+      color: #475569 !important;
+      /* slate-600 */
+    }
+
+    .stat-label {
+      color: #64748b !important;
+      /* slate-500 */
+    }
+
+    .stat-value {
+      color: #0f172a !important;
+      /* slate-900 */
+    }
+
+    /* Scoped overrides to avoid circular dependency */
+    .dashboard-card .text-white,
+    .glassmorphic .text-white,
+    .interactive-card .text-white {
+      color: #1e293b;
+      /* slate-800 */
+    }
+
+    .dashboard-card .text-purple-200,
+    .glassmorphic .text-purple-200 {
+      color: #475569 !important;
+      /* slate-600 */
+    }
+
+    /* Exceptions: Buttons and Gradients must keep white text */
+    .bg-gradient-to-r .text-white,
+    .bg-gradient-to-br .text-white,
+    .btn-primary .text-white,
+    .action-primary .text-white,
+    .action-secondary .text-white,
+    .group:hover .text-white {
+      color: #ffffff !important;
+    }
+
+    /* Fix stats grid icons background */
+    .stat-icon {
+      /* Keep gradients valid, text inside icons is handled by specific override above */
+    }
+  }
+
+  /* Loading Skeleton for Dashboard */
+  .skeleton-card {
+    @apply animate-pulse bg-white/10 rounded-2xl;
+  }
+
+  .skeleton-text {
+    @apply animate-pulse bg-white/10 rounded h-4;
+  }
+
+  .skeleton-circle {
+    @apply animate-pulse bg-white/10 rounded-full;
   }
 
   /* Loading States */
   .loading-skeleton {
     @apply animate-pulse bg-gray-200 rounded;
   }
-  
+
   .loading-spinner {
     @apply animate-spin rounded-full border-2 border-gray-300 border-t-purple-600;
   }
@@ -173,15 +372,15 @@
   .mobile-padding {
     @apply px-4 sm:px-6 lg:px-8;
   }
-  
+
   .mobile-margin {
     @apply mx-4 sm:mx-6 lg:mx-8;
   }
-  
+
   .mobile-text {
     @apply text-sm sm:text-base;
   }
-  
+
   .mobile-heading {
     @apply text-xl sm:text-2xl lg:text-3xl;
   }
@@ -210,9 +409,10 @@
   .sr-only {
     @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
   }
-  
+
   .skip-link {
-    @apply absolute -top-10 left-4 bg-purple-600 text-white px-4 py-2 rounded z-50 focus:top-4;
+    @apply absolute -top-10 left-4 bg-purple-600 px-4 py-2 rounded z-50 focus:top-4;
+    color: #ffffff;
   }
 
   /* Mobile-specific utilities */
@@ -220,11 +420,11 @@
     .mobile-hide {
       @apply hidden;
     }
-    
+
     .mobile-full-width {
       @apply w-full;
     }
-    
+
     .mobile-text-center {
       @apply text-center;
     }
@@ -232,6 +432,7 @@
 }
 
 @layer utilities {
+
   /* Custom Utilities */
   .line-clamp-1 {
     display: -webkit-box;
@@ -239,14 +440,14 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -258,11 +459,11 @@
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in-out;
   }
-  
+
   .animate-slide-up {
     animation: slideUp 0.5s ease-out;
   }
-  
+
   .animate-bounce-gentle {
     animation: bounceGentle 2s infinite;
   }
@@ -273,6 +474,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -283,6 +485,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -290,12 +493,19 @@
 }
 
 @keyframes bounceGentle {
-  0%, 20%, 50%, 80%, 100% {
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
+
   40% {
     transform: translateY(-10px);
   }
+
   60% {
     transform: translateY(-5px);
   }
@@ -306,11 +516,11 @@
   .glassmorphic {
     background-color: rgba(17, 24, 39, 0.2);
   }
-  
+
   .glassmorphic-strong {
     background-color: rgba(17, 24, 39, 0.4);
   }
-  
+
   .glassmorphic-light {
     background-color: rgba(17, 24, 39, 0.1);
   }
@@ -321,7 +531,7 @@
   .no-print {
     display: none !important;
   }
-  
+
   .print-break {
     page-break-before: always;
   }
@@ -332,7 +542,7 @@
   .glassmorphic {
     background-color: rgba(255, 255, 255, 0.9);
   }
-  
+
   .gradient-text {
     color: #581c87;
   }
@@ -340,16 +550,18 @@
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
+
   .smooth-transition,
   .smooth-transition-fast,
   .smooth-transition-slow {
     transition: none;
   }
-  
+
   @keyframes shimmer {
     0% {
       transform: translateX(-100%);
     }
+
     100% {
       transform: translateX(100%);
     }

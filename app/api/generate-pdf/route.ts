@@ -16,6 +16,7 @@ async function getPuppeteer() {
     return { puppeteer, chromium };
   } catch (error) {
     // Fallback to regular puppeteer for local development
+    // @ts-ignore
     const puppeteer = await import('puppeteer');
     return { puppeteer, chromium: null };
   }
@@ -68,19 +69,19 @@ export async function POST(request: NextRequest) {
     // Use correct relative path (3 levels up from app/api/generate-pdf to root, then into components)
     // @ts-ignore - Dynamic import with path alias requires runtime resolution
     const { default: MasterReport } = await import('../../../components/pdf/MasterReport');
-    
-        // Fallback: load default background image if none provided
+
+    // Fallback: load default background image if none provided
     try {
       if (!userData.base64BackgroundImage) {
         const fs = await import('fs');
         const path = await import('path');
-        
+
         // Try multiple possible paths (for different deployment environments)
         const possiblePaths = [
           path.join(process.cwd(), 'docs', 'Nebula.jpg'),
           path.join(process.cwd(), 'csg', 'docs', 'Nebula.jpg'),
         ];
-        
+
         let bgPath = null;
         for (const testPath of possiblePaths) {
           if (fs.existsSync(testPath)) {
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
             break;
           }
         }
-        
+
         if (bgPath) {
           const base64 = fs.readFileSync(bgPath).toString('base64');
           userData.base64BackgroundImage = `data:image/jpeg;base64,${base64}`;
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('[PDF Generator] Error loading default background image:', err);
     }
-    
+
 
     // Render React component to HTML
     const htmlContent = ReactDOMServer.renderToStaticMarkup(
@@ -157,8 +158,8 @@ export async function POST(request: NextRequest) {
           chromiumAny.setGraphicsMode(false);
         }
         // @ts-ignore - executablePath may be a function or property depending on chromium version
-        const executablePath = typeof chromiumAny.executablePath === 'function' 
-          ? await chromiumAny.executablePath() 
+        const executablePath = typeof chromiumAny.executablePath === 'function'
+          ? await chromiumAny.executablePath()
           : chromiumAny.executablePath;
         if (executablePath) {
           launchOptions.executablePath = executablePath;
@@ -198,8 +199,8 @@ export async function POST(request: NextRequest) {
         format: 'a4',
         printBackground: true,
         displayHeaderFooter: false,
-        
-        
+
+
         margin: {
           top: '0mm',
           right: '0mm',
