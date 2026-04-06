@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cosmicspiritguide.com/sitemap.xml
+
+# Disallow admin and debug pages
+Disallow: /admin/
+Disallow: /debug/
+Disallow: /api/
+
+# Crawl-delay for bots
+Crawl-delay: 1
