@@ -92,7 +92,7 @@ Provide a comprehensive interpretation in the following JSON format:
 Make the interpretation personalized, insightful, and actionable. Consider the intensity (${transit.intensity}/10) and aspect nature (${transit.aspectNature}).`;
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'llama-3.1-8b-instant',
     messages: [
       {
         role: 'system',
