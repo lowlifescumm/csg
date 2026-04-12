@@ -31,7 +31,7 @@ dotenv.config({ path: resolve(__dirname, '../.env.local') });
 // Import ES modules
 import { generateReportContent, generatePDF, generatePremiumReport } from '../lib/pdf-generator.js';
 import { getPromptByType } from '../lib/report-prompts.js';
-import { generateText } from '../lib/openai.js';
+import { generateText } from '../lib/groq.js';
 
 // Sample test data
 const SAMPLE_DATA = {
