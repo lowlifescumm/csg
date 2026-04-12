@@ -134,10 +134,19 @@ export async function POST(request) {
 
     // Embed and upsert to Pinecone
     if (optedIn && summary && process.env.PINECONE_API_KEY) {
-      const embedding = await createEmbedding(summary);
-      const pine = getPinecone();
-      const index = pine.index(process.env.PINECONE_INDEX || 'csg-tarot');
-      await index.upsert([{ id: String(saved.id), values: embedding, metadata: { user_id: userId, reading_type: resolvedId, created_at: saved.created_at } }]);
+      try {
+        const embedding = await createEmbedding(summary);
+        if (Array.isArray(embedding) && embedding.length > 0) {
+          const pine = getPinecone();
+          const index = pine.index(process.env.PINECONE_INDEX || 'csg-tarot');
+          await index.upsert([{ id: String(saved.id), values: embedding, metadata: { user_id: userId, reading_type: resolvedId, created_at: saved.created_at } }]);
+        } else {
+          console.warn('[Readings/Create] Skipping Pinecone upsert: embedding unavailable');
+        }
+      } catch (embeddingError) {
+        // Personalization indexing should never block returning a successful reading.
+        console.warn('[Readings/Create] Non-blocking embedding/indexing failure:', embeddingError?.message || embeddingError);
+      }
     }
 
     return NextResponse.json({ success: true, reading: { id: saved.id, cards, interpretation: fullText, summary, createdAt: saved.created_at } });
@@ -146,5 +155,4 @@ export async function POST(request) {
     return NextResponse.json({ error: "Failed to create reading" }, { status: 500 });
   }
 }
-
 
