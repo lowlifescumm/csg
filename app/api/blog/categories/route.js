@@ -16,11 +16,12 @@ export async function GET() {
     `);
 
     // Get all unique categories from blog posts and insert them into blog_categories if they don't exist
+    // Use ON CONFLICT DO NOTHING to handle duplicates and long names
     await pool.query(`
       INSERT INTO blog_categories (name, slug)
       SELECT DISTINCT 
         category as name,
-        lower(replace(category, ' ', '-')) as slug
+        lower(regexp_replace(category, '[^a-zA-Z0-9]+', '-', 'g')) as slug
       FROM blog_posts 
       WHERE category IS NOT NULL AND category != ''
       ON CONFLICT (name) DO NOTHING
@@ -44,6 +45,9 @@ export async function GET() {
 
   } catch (error) {
     console.error('Blog categories API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to fetch categories',
+      detail: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }
