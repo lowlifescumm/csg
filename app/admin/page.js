@@ -209,6 +209,17 @@ export default function AdminDashboard() {
                 <p className="text-sm opacity-90">Manage PDF templates</p>
               </div>
             </button>
+            
+            <button
+              onClick={() => router.push('/admin/content-calendar')}
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl hover:from-teal-600 hover:to-cyan-600 smooth-transition hover:scale-[1.02] apple-shadow"
+            >
+              <Calendar className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">Content Calendar</p>
+                <p className="text-sm opacity-90">24 posts over 3 months</p>
+              </div>
+            </button>
           </div>
         </div>
 
