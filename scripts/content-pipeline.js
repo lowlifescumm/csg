@@ -349,7 +349,53 @@ async function createBlogPost(post, imageUrl, publish = false) {
   return result.post;
 }
 
-// ─── X/Twitter Posting ───────────────────────────────────────────────────────
+// ─── X/Twitter Posting (OAuth 1.0a) ───────────────────────────────────────────
+
+function buildOAuthHeader(method, url, body = '') {
+  const oauth = {
+    oauth_consumer_key: TWITTER_API_KEY,
+    oauth_token: TWITTER_ACCESS_TOKEN,
+    oauth_signature_method: 'HMAC-SHA1',
+    oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
+    oauth_nonce: crypto.randomBytes(16).toString('hex'),
+    oauth_version: '1.0',
+  };
+
+  // Build the signature base string
+  const params = new URLSearchParams();
+  Object.keys(oauth).sort().forEach(k => params.append(k, oauth[k]));
+  if (body) {
+    // For tweet posting, the body param is included in signature for some configs
+    // Twitter's 1.0a signature: method + url + all params (sorted)
+    const bodyParams = new URLSearchParams(body);
+    bodyParams.forEach((v, k) => params.append(k, v));
+  }
+
+  const signatureBase = [
+    method.toUpperCase(),
+    encodeURIComponent(url),
+    encodeURIComponent(params.toString()),
+  ].join('&');
+
+  // Sign with consumer secret + access token secret
+  const signingKey = `${encodeURIComponent(TWITTER_API_SECRET)}&${encodeURIComponent(TWITTER_ACCESS_SECRET)}`;
+  const signature = crypto
+    .createHmac('sha1', signingKey)
+    .update(signatureBase)
+    .digest('base64');
+
+  oauth.oauth_signature = signature;
+
+  // Build Authorization header
+  const authHeader =
+    'OAuth ' +
+    Object.keys(oauth)
+      .sort()
+      .map(k => `${encodeURIComponent(k)}="${encodeURIComponent(oauth[k])}"`)
+      .join(', ');
+
+  return authHeader;
+}
 
 async function postToTwitter(copy) {
   if (!TWITTER_API_KEY || !TWITTER_ACCESS_TOKEN) {
@@ -358,23 +404,28 @@ async function postToTwitter(copy) {
   }
 
   try {
-    // Twitter API v2 posting
     const tweetText = copy.xCopy;
-    
-    const res = await fetch('https://api.twitter.com/2/tweets', {
+    const url = 'https://api.twitter.com/1.1/statuses/update.json';
+
+    // Build the OAuth 1.0a Authorization header
+    const authHeader = buildOAuthHeader('POST', url, `status=${encodeURIComponent(tweetText)}`);
+
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${TWITTER_API_KEY}`,
-        'Content-Type': 'application/json',
+        'Authorization': authHeader,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({ text: tweetText }),
+      body: `status=${encodeURIComponent(tweetText)}`,
     });
-    
+
     const json = await res.json();
-    if (!res.ok) throw new Error(`Twitter ${res.status}: ${JSON.stringify(json)}`);
-    
-    log('social', `Tweet posted: ${json.data?.id}`);
-    return json.data?.id;
+    if (!res.ok) {
+      throw new Error(`Twitter ${res.status}: ${JSON.stringify(json)}`);
+    }
+
+    log('social', `Tweet posted: ${json.id_str}`);
+    return json.id_str;
   } catch (err) {
     log('warn', `Twitter post failed: ${err.message}`);
     return null;
