@@ -53,7 +53,7 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: BLOG_API_KEY
-        generateValue: true
+        value: csg-content-pipeline-2026-secure-key
       - key: FAL_KEY
         sync: false
       - key: TWITTER_API_KEY
