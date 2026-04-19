@@ -139,7 +139,6 @@ async function generateImage(post) {
 function getThemeForPost(post) {
   const title = post.title_options?.[0] || post.title || post.target_keyword || '';
   const keyword = post.target_keyword || '';
-  const category = post.category || categorizeKeyword(keyword);
 
   const themes = {
     'tarot': {
@@ -200,13 +199,11 @@ function getThemeForPost(post) {
     },
   };
 
-  // Match keyword to theme
+  // Match keyword/title to a theme
+  const lower = (keyword + ' ' + title).toLowerCase();
   for (const [key, theme] of Object.entries(themes)) {
-    if (keyword.toLowerCase().includes(key) || title.toLowerCase().includes(key)) {
-      return theme;
-    }
+    if (lower.includes(key)) return theme;
   }
-  
   return themes['default'];
 }
 
@@ -389,7 +386,8 @@ async function postToTwitter(copy) {
 async function runPost(postNumber, publish = false) {
   log('info', `═══ Processing Post #${postNumber} ═══`);
   
-  const briefPath = join(ROOT, '.paperclip/instances/default/projects/84898c57-acb2-43a9-a0e7-b22d600d3434/f3cca765-f210-4ec7-8fd7-6134eb67f658/csg/content-briefs-month-1.json');
+  // Briefs are in the OpenClaw paperclip instances directory
+  const briefPath = '/home/ethan/.paperclip/instances/default/projects/84898c57-acb2-43a9-a0e7-b22d600d3434/f3cca765-f210-4ec7-8fd7-6134eb67f658/csg/content-briefs-month-1.json';
   const briefs = JSON.parse(readFileSync(briefPath, 'utf8'));
   const post = briefs.find(p => p.post_number === postNumber);
   
