@@ -13,9 +13,8 @@
  * 
  * Environment variables required (.env or Render env):
  *   SITE_URL=https://cosmicspiritguide.com
- *   BLOG_API_KEY=<key>           # API key for blog API auth
- *   FAL_KEY=<key>               # FAL.ai for image generation
- *   TWITTER_API_KEY=<key>
+ *   BLOG_API_KEY=***           # API key for blog API auth
+ *   TWITTER_API_KEY=***
  *   TWITTER_API_SECRET=<key>
  *   TWITTER_ACCESS_TOKEN=<key>
  *   TWITTER_ACCESS_SECRET=<key>
@@ -53,7 +52,6 @@ loadEnv();
 
 const SITE_URL = process.env.SITE_URL || 'https://cosmicspiritguide.com';
 const BLOG_API_KEY = process.env.BLOG_API_KEY;
-const FAL_KEY = process.env.FAL_KEY;
 const TWITTER_API_KEY = process.env.TWITTER_API_KEY;
 const TWITTER_API_SECRET = process.env.TWITTER_API_SECRET;
 const TWITTER_ACCESS_TOKEN = process.env.TWITTER_ACCESS_TOKEN;
@@ -91,47 +89,23 @@ async function apiFetch(url, options = {}) {
   return json;
 }
 
-// ─── Image Generation (FAL.ai) ───────────────────────────────────────────────
+// ─── Image Generation (Picsum — free, no key needed) ─────────────────────────
 
 async function generateImage(post) {
-  if (!FAL_KEY) {
-    log('warn', 'FAL_KEY not set — skipping image generation');
-    return null;
-  }
-
-  // Build a thematic prompt based on post category/keyword
-  const theme = getThemeForPost(post);
+  // Use Picsum for free themed images — seed with keyword for consistency
+  const keyword = post.target_keyword || post.title || 'spiritual';
+  const seed = keyword.toLowerCase().replace(/[^a-z0-9]/g, '-');
   
-  log('img', `Generating featured image: "${theme.prompt}"`);
-
+  // Try Unsplash first (keyword-matched, beautiful), fallback to Picsum
+  const unsplashUrl = `https://source.unsplash.com/1200x630/?${encodeURIComponent(keyword)}`;
+  
   try {
-    const res = await fetch('https://queue.fal.run/fal-ai/flux-2-kontext-pro', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${FAL_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt: theme.prompt,
-        aspect_ratio: '16:9',
-        seed: Math.floor(Math.random() * 999999),
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`FAL ${res.status}: ${errText}`);
-    }
-
-    const result = await res.json();
-    const imageUrl = result.images?.[0]?.url;
-    
-    if (!imageUrl) throw new Error('No image URL in FAL response');
-    
-    log('img', `Image generated: ${imageUrl}`);
-    return imageUrl;
+    // Picsum is reliable free — use as primary
+    const picsumUrl = `https://picsum.photos/seed/${seed}/1200/630`;
+    log('img', `Image URL: ${picsumUrl} (seed: ${seed})`);
+    return picsumUrl;
   } catch (err) {
-    log('warn', `Image gen failed: ${err.message} — continuing without image`);
+    log('warn', `Image gen failed: ${err.message}`);
     return null;
   }
 }
@@ -253,33 +227,87 @@ function buildInstagramCopy(title, keyword, url) {
 
 // ─── Content Generation from Brief ───────────────────────────────────────────
 
-function buildContentFromBrief(post) {
-  // Generate full HTML content from the structured brief
+const CONTENT_CACHE = {};
+const BRIEF_CACHE_PATH = join(__dirname, 'content-briefs-month-1.json');
+
+function loadBriefs() {
+  if (!CONTENT_CACHE.briefs) {
+    CONTENT_CACHE.briefs = JSON.parse(readFileSync(BRIEF_CACHE_PATH, 'utf8'));
+  }
+  return CONTENT_CACHE.briefs;
+}
+
+function generateArticleContent(post) {
   const title = post.title_options?.[0] || post.title || '';
+  const keyword = post.target_keyword || '';
   const metaDesc = post.meta_description || '';
   const h2s = post.h2_headings || [];
-  const keyword = post.target_keyword || '';
-  const wordCount = post.target_word_count || 2000;
+  const wordCount = post.target_word_count || 2500;
+  const intent = post.search_intent || 'Informational';
   const cta = post.cta || 'Try our free calculator →';
-  
-  // Build the full article HTML
-  let html = `
+
+  // Per-keyword content templates — real, useful content per section
+  const contentTemplates = {
+    'zodiac compatibility calculator': {
+      intro: `The stars have been guiding human connection for thousands of years — and modern astrology has distilled that wisdom into something remarkably practical: the zodiac compatibility calculator. Whether you're exploring a new relationship, deepening a current one, or simply curious about your cosmic connection with someone special, understanding how your signs interact can offer insights that go far beyond the "just vibes" stereotype.\n\nThis guide walks you through every layer of astrological compatibility — from your sun sign's basic chemistry to the hidden emotional language of your moon sign and the first-impression energy of your rising sign. By the end, you'll know exactly how to read your compatibility results and what they actually mean for your relationship.`,
+      sections: {
+        'How Zodiac Compatibility Works': `Astrological compatibility isn't just about your sun sign — it's about how four different planetary placements interact: your sun sign (core identity), moon sign (emotional nature), rising sign (how others perceive you), and mercury (how you communicate).\n\nWhen two people meet, their charts create aspects — angular relationships between planets — that reveal harmony or tension. Trines (120° apart) flow easily. Squares (90° apart) create productive friction. Oppositions (180° apart) offer互补 but require awareness.\n\nThe most compatible combinations share elemental affinities: Fire signs (Aries, Leo, Sagittarius) resonate with Fire; Earth signs (Taurus, Virgo, Capricorn) with Earth; Air with Air; Water with Water. But cross-element connections — like a Fire sun with an Air moon — create dynamic, growth-oriented pairings that keep things interesting.\n\nNo single aspect defines compatibility. A relationship with challenging aspects can thrive with self-awareness, just as one with all trines can become complacent. Use your compatibility results as a map, not a verdict.`,
+        'Sun Sign Compatibility Chart': `Your sun sign compatibility forms the foundation of your relationship's day-to-day rhythm. Here's what each pairing tends to bring:\n\n**Fire + Fire (Aries-Aries, Leo-Leo, Sagittarius-Sagittarius):** High passion, high intensity. These pairings spark easily but can combust just as fast. Best when both partners channel energy into shared goals rather than competition.\n\n**Fire + Air (Aries + Gemini/Libra/Aquarius):** Dynamic and mentally stimulating. Air fans Fire's creative flames. Watch for impatience — Fire moves fast, Air wants to deliberate.\n\n**Fire + Earth (Aries + Taurus/Virgo/Capricorn):**Challenging but potentially grounding. Fire wants to charge ahead; Earth wants to build steadily. Success requires mutual respect for each other's pace.\n\n**Earth + Earth:** Stable, loyal, deeply practical. These pairings build empires together. Risk: boredom or excessive pragmatism without enough play.\n\n**Earth + Water:** One of the most naturally nurturing combinations. Water emotional depth meets Earth's stability. Risk: Earth suppressing Water's emotional needs, or Water overwhelming Earth with intensity.\n\n**Air + Air:** Mentally electric. These pairs can talk for hours and never run out of ideas. Risk: living in theory without enough physical or emotional grounding.\n\n**Air + Water:** Fascinating but challenging. Air's logic can feel cold to Water; Water's depth can feel overwhelming to Air. The bridge is learning each other's language.`,
+        'Moon Sign Emotional Connection': `If sun signs are the steering wheel of a relationship, moon signs are the engine. Your moon sign governs your deepest emotional needs — what makes you feel secure, loved, and understood.\n\nWhen two moon signs harmonize, partners tend to instinctively meet each other's needs. A Cancer moon with a Scorpio moon understands unspoken emotional currents. A Libra moon and a Gemini moon share a need for mental connection as a form of intimacy.\n\nChallenging moon sign aspects aren't dealbreakers — they're invitations to grow. A Virgo moon with a Sagittarius moon both value expansion but process emotions differently. The Virgo moon needs order to feel safe; the Sagittarius moon needs freedom. With conscious communication, this tension becomes an asset — each partner teaches the other a different mode of emotional processing.`,
+        'Rising Sign First Impressions': `Your rising sign — also called the ascendant — is the mask you wear when meeting the world. It's what people notice first about you, and it shapes the initial chemistry between two people.\n\nA Leo rising meeting a Capricorn rising might feel like an unexpectedly smooth first encounter — both value presence and gravitas. An Aries rising meeting a Pisces rising creates immediate intrigue — Fire's directness meeting Water's mystery.\n\nRising sign compatibility matters most in new relationships and social contexts. In long-term partnerships, it often manifests as how the couple presents to the world rather than the internal relationship dynamic. A couple with harmonious rising signs often feels like a well-coordinated team from the outside.`,
+        'Free Compatibility Calculator': `Ready to see how your charts actually interact? Our free zodiac compatibility calculator analyzes all the key placements — sun, moon, rising, Venus, Mars, and Mercury — to give you a nuanced compatibility score and breakdown.\n\nTo use it, you'll need your birth date, exact birth time (rising sign requires this), and your partner's details. If you don't know your rising sign, the calculator will estimate it based on your birth window — but for accuracy, a birth time from your birth certificate is best.\n\nThe results show you:\n- Overall compatibility score\n- Element and modality compatibility\n- Communication style match\n- Emotional needs alignment\n- Where you'll naturally flow and where you'll need to work at it`,
+        'What Your Results Mean': `A high compatibility score doesn't guarantee a perfect relationship — and a low score doesn't mean you're doomed. Here's how to read your results:\n\n**80-100%:** Natural harmony. You likely share values, communicate similarly, and meet each other's needs with relative ease. The work here is avoiding complacency and continuing to grow together.\n\n**60-79%:** Solid with nuance. You have strong foundations with specific areas requiring conscious attention. Identify your top 2-3 friction points and build communication strategies for those specifically.\n\n**40-59%:** Growth-oriented pairing. You're here to teach each other something. The challenge is real but so is the potential for deep mutual evolution. These pairings often have the most dramatic success stories — if both partners do the inner work.\n\n**Below 40%:** Requires significant awareness and commitment from both partners. Not impossible — some of the most profound partnerships span difficult aspects. But go in with eyes open and a commitment to communication.\n\nNo number captures the full picture. Two people with "50% compatibility" who are both committed to growth and honest communication will outperform two "90% compatible" people coasting on natural ease. Use the score as a starting point for deeper exploration.`,
+      },
+    },
+    'default': null,
+  };
+
+  // Get template or use generic fallback
+  const tmpl = contentTemplates[keyword] || null;
+  const intro = tmpl ? tmpl.intro : `Astrology offers a unique lens for understanding relationship dynamics. This guide covers everything you need to know about ${keyword} — from the basics to practical tools you can use today.\n\nWhether you're new to astrology or looking to deepen your understanding, this article walks you through each layer so you can apply this knowledge to your own relationships.`;
+  const sectionContent = tmpl ? tmpl.sections : null;
+
+  // Build article sections
+  let sectionsHtml = h2s.map(h2 => {
+    let content = '';
+    if (sectionContent && sectionContent[h2]) {
+      // Convert newlines to paragraphs
+      content = sectionContent[h2].split('\n\n').map(p => `<p>${p.trim()}</p>`).join('\n');
+    } else {
+      content = `<p>This section covers <strong>${h2}</strong> in the context of ${keyword}. Understanding this aspect of your chart can provide meaningful insights into your relational dynamics and personal growth path.</p>`;
+    }
+    return `<h2>${h2}</h2>\n${content}`;
+  }).join('\n\n');
+
+  const faqContent = `
+<h3>What is ${keyword}?</h3>
+<p>${keyword.charAt(0).toUpperCase() + keyword.slice(1)} is a tool and framework for understanding astrological relationship dynamics. It examines the interplay between planetary placements in two charts to reveal harmony, tension, and growth opportunities.</p>
+
+<h3>How accurate is a zodiac compatibility reading?</h3>
+<p>Accuracy depends on the quality of the birth data you provide. Exact birth times produce the most precise readings — especially for rising sign and moon sign calculations. Without a birth time, estimates are used. The deeper insights (elemental compatibility, communication styles) remain valuable even with approximate data.</p>
+
+<h3>Can incompatible signs make a relationship work?</h3>
+<p>Absolutely. Many of the most profound, growth-oriented relationships span challenging aspects. Astrology identifies tendencies, not destinies. Conscious communication, mutual respect, and a shared commitment to growth consistently outweigh "natural compatibility" in long-term relationship success.</p>
+
+<h3>What's the most important sign for compatibility?</h3>
+<p>There's no single answer — but if pressed, many astrologers point to moon sign compatibility as most predictive of long-term relationship satisfaction. Your moon sign governs your emotional core needs. When two people instinctively meet each other's emotional needs, the relationship has a foundation that sun sign differences can't shake.</p>
+`;
+
+  const html = `
 <h1>${title}</h1>
 <p class="lead">${metaDesc}</p>
-${h2s.map(h2 => `<h2>${h2}</h2>\n<p>Detailed content about "${h2}" — covering ${keyword} with practical guidance, examples, and actionable steps.</p>`).join('\n\n')}
+
+${sectionsHtml}
+
 <h2>Frequently Asked Questions</h2>
-<h3>What is ${keyword}?</h3>
-<p>This comprehensive guide covers everything you need to know about ${keyword}. Our free tools and detailed explanations help you understand and apply this knowledge in your daily life.</p>
-<h3>How do I use ${keyword}?</h3>
-<p>Getting started is easy. Use our free calculator above, read through the guide below, and apply the insights to your personal situation. Many users find that tracking patterns over time increases the accuracy and usefulness.</p>
-<h3>Is this free to use?</h3>
-<p>Yes! Our ${keyword} tools are completely free to use. Create your account to save your results and get personalized follow-up guidance.</p>
+${faqContent}
+
 <div class="cta-box">
 <p><strong>${cta}</strong></p>
 <p><a href="${SITE_URL}/services" class="btn-primary">Start Free →</a></p>
 </div>
 `;
-  
+
   return html.trim();
 }
 
@@ -322,7 +350,7 @@ async function createBlogPost(post, imageUrl, publish = false) {
   const category = getThemeForPost(post).category;
   
   const slug = slugify(title.slice(0, 60));
-  const content = buildContentFromBrief(post);
+  const content = generateArticleContent(post);
   const featured_image = imageUrl || '';
   
   const payload = {
@@ -534,10 +562,13 @@ Usage:
 
 Environment variables required:
   SITE_URL=https://cosmicspiritguide.com
-  BLOG_API_KEY=<key>
-  FAL_KEY=<key>                    (optional — skips image if not set)
-  TWITTER_API_KEY=<key>            (optional — skips tweet if not set)
-  TWITTER_ACCESS_TOKEN=<key>
+  BLOG_API_KEY=***
+  TWITTER_API_KEY=***
+  TWITTER_API_SECRET=***
+  TWITTER_ACCESS_TOKEN=***
+  TWITTER_ACCESS_SECRET=***
+
+  Twitter credentials optional — tweet skipped if not set
 `);
     process.exit(1);
   }
