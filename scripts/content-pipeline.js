@@ -237,7 +237,28 @@ function loadBriefs() {
   return CONTENT_CACHE.briefs;
 }
 
-function generateArticleContent(post) {
+function mdToHtml(text) {
+  if (!text) return '';
+  return text
+    // Bold: **text** → <strong>text</strong>
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic: *text* → <em>text</em>
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Unordered lists: consecutive - lines become <ul>
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    // Wrap consecutive <li> elements in <ul>
+    .replace(/(<li>.*<\/li>)(?=\s*<li>)/gs, '$1')
+    .replace(/(<li>[\s\S]*?<\/li>)(\n)(?=<li>)/g, '$1')
+    // Paragraphs: double newlines become paragraph breaks
+    .split(/\n\n+/)
+    .map(p => {
+      p = p.trim();
+      if (!p) return '';
+      if (p.startsWith('<li>') || p.startsWith('<ul>')) return p;
+      return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+    })
+    .join('\n');
+}
   const title = post.title_options?.[0] || post.title || '';
   const keyword = post.target_keyword || '';
   const metaDesc = post.meta_description || '';
@@ -249,14 +270,13 @@ function generateArticleContent(post) {
   // Per-keyword content templates — real, useful content per section
   const contentTemplates = {
     'zodiac compatibility calculator': {
-      intro: `The stars have been guiding human connection for thousands of years — and modern astrology has distilled that wisdom into something remarkably practical: the zodiac compatibility calculator. Whether you're exploring a new relationship, deepening a current one, or simply curious about your cosmic connection with someone special, understanding how your signs interact can offer insights that go far beyond the "just vibes" stereotype.\n\nThis guide walks you through every layer of astrological compatibility — from your sun sign's basic chemistry to the hidden emotional language of your moon sign and the first-impression energy of your rising sign. By the end, you'll know exactly how to read your compatibility results and what they actually mean for your relationship.`,
+      intro: `The stars have been guiding human connection for thousands of years — and modern astrology has distilled that wisdom into something remarkably practical: the zodiac compatibility calculator. Whether you're exploring a new relationship, deepening a current one, or simply curious about your cosmic connection with someone special, understanding how your signs interact can offer insights that go far beyond the "just vibes" stereotype.\n\nThis guide walks you through every layer of astrological compatibility — from your sun sign's basic chemistry to the hidden emotional language of your moon sign and the first-impression energy of your rising sign. By the end, you'll know exactly how to interpret your compatibility results and what they actually mean for your relationship.`,
       sections: {
-        'How Zodiac Compatibility Works': `Astrological compatibility isn't just about your sun sign — it's about how four different planetary placements interact: your sun sign (core identity), moon sign (emotional nature), rising sign (how others perceive you), and mercury (how you communicate).\n\nWhen two people meet, their charts create aspects — angular relationships between planets — that reveal harmony or tension. Trines (120° apart) flow easily. Squares (90° apart) create productive friction. Oppositions (180° apart) offer互补 but require awareness.\n\nThe most compatible combinations share elemental affinities: Fire signs (Aries, Leo, Sagittarius) resonate with Fire; Earth signs (Taurus, Virgo, Capricorn) with Earth; Air with Air; Water with Water. But cross-element connections — like a Fire sun with an Air moon — create dynamic, growth-oriented pairings that keep things interesting.\n\nNo single aspect defines compatibility. A relationship with challenging aspects can thrive with self-awareness, just as one with all trines can become complacent. Use your compatibility results as a map, not a verdict.`,
-        'Sun Sign Compatibility Chart': `Your sun sign compatibility forms the foundation of your relationship's day-to-day rhythm. Here's what each pairing tends to bring:\n\n**Fire + Fire (Aries-Aries, Leo-Leo, Sagittarius-Sagittarius):** High passion, high intensity. These pairings spark easily but can combust just as fast. Best when both partners channel energy into shared goals rather than competition.\n\n**Fire + Air (Aries + Gemini/Libra/Aquarius):** Dynamic and mentally stimulating. Air fans Fire's creative flames. Watch for impatience — Fire moves fast, Air wants to deliberate.\n\n**Fire + Earth (Aries + Taurus/Virgo/Capricorn):**Challenging but potentially grounding. Fire wants to charge ahead; Earth wants to build steadily. Success requires mutual respect for each other's pace.\n\n**Earth + Earth:** Stable, loyal, deeply practical. These pairings build empires together. Risk: boredom or excessive pragmatism without enough play.\n\n**Earth + Water:** One of the most naturally nurturing combinations. Water emotional depth meets Earth's stability. Risk: Earth suppressing Water's emotional needs, or Water overwhelming Earth with intensity.\n\n**Air + Air:** Mentally electric. These pairs can talk for hours and never run out of ideas. Risk: living in theory without enough physical or emotional grounding.\n\n**Air + Water:** Fascinating but challenging. Air's logic can feel cold to Water; Water's depth can feel overwhelming to Air. The bridge is learning each other's language.`,
+        'How Zodiac Compatibility Works': `Astrological compatibility isn't just about your sun sign — it's about how four different planetary placements interact: your sun sign (core identity), moon sign (emotional nature), rising sign (how others perceive you), and mercury (how you communicate).\n\nWhen two people meet, their charts create aspects — angular relationships between planets — that reveal harmony or tension. Trines (120 degrees apart) flow easily. Squares (90 degrees apart) create productive friction. Oppositions (180 degrees apart) offer complementary but require awareness.\n\nThe most compatible combinations share elemental affinities: Fire signs (Aries, Leo, Sagittarius) resonate with Fire; Earth signs (Taurus, Virgo, Capricorn) with Earth; Air with Air; Water with Water. But cross-element connections — like a Fire sun with an Air moon — create dynamic, growth-oriented pairings that keep things interesting.\n\nNo single aspect defines compatibility. A relationship with challenging aspects can thrive with self-awareness, just as one with all trines can become complacent. Use your compatibility results as a map, not a verdict.`,
+        'Sun Sign Compatibility Chart': `Your sun sign compatibility forms the foundation of your relationship's day-to-day rhythm. Here's what each pairing tends to bring:\n\nFire + Fire (Aries-Aries, Leo-Leo, Sagittarius-Sagittarius): High passion, high intensity. These pairings spark easily but can combust just as fast. Best when both partners channel energy into shared goals rather than competition.\n\nFire + Air (Aries with Gemini, Libra, or Aquarius): Dynamic and mentally stimulating. Air fans Fire's creative flames. Watch for impatience — Fire moves fast, Air wants to deliberate.\n\nFire + Earth (Aries with Taurus, Virgo, or Capricorn): Challenging but potentially grounding. Fire wants to charge ahead; Earth wants to build steadily. Success requires mutual respect for each other's pace.\n\nEarth + Earth: Stable, loyal, deeply practical. These pairings build empires together. Watch for boredom or excessive pragmatism without enough play.\n\nEarth + Water: One of the most naturally nurturing combinations. Water's emotional depth meets Earth's stability. Risk: Earth suppressing Water's emotional needs, or Water overwhelming Earth with intensity.\n\nAir + Air: Mentally electric. These pairs can talk for hours and never run out of ideas. Watch for living in theory without enough physical or emotional grounding.\n\nAir + Water: Fascinating but challenging. Air's logic can feel cold to Water; Water's depth can feel overwhelming to Air. The bridge is learning each other's language.`,
         'Moon Sign Emotional Connection': `If sun signs are the steering wheel of a relationship, moon signs are the engine. Your moon sign governs your deepest emotional needs — what makes you feel secure, loved, and understood.\n\nWhen two moon signs harmonize, partners tend to instinctively meet each other's needs. A Cancer moon with a Scorpio moon understands unspoken emotional currents. A Libra moon and a Gemini moon share a need for mental connection as a form of intimacy.\n\nChallenging moon sign aspects aren't dealbreakers — they're invitations to grow. A Virgo moon with a Sagittarius moon both value expansion but process emotions differently. The Virgo moon needs order to feel safe; the Sagittarius moon needs freedom. With conscious communication, this tension becomes an asset — each partner teaches the other a different mode of emotional processing.`,
         'Rising Sign First Impressions': `Your rising sign — also called the ascendant — is the mask you wear when meeting the world. It's what people notice first about you, and it shapes the initial chemistry between two people.\n\nA Leo rising meeting a Capricorn rising might feel like an unexpectedly smooth first encounter — both value presence and gravitas. An Aries rising meeting a Pisces rising creates immediate intrigue — Fire's directness meeting Water's mystery.\n\nRising sign compatibility matters most in new relationships and social contexts. In long-term partnerships, it often manifests as how the couple presents to the world rather than the internal relationship dynamic. A couple with harmonious rising signs often feels like a well-coordinated team from the outside.`,
-        'Free Compatibility Calculator': `Ready to see how your charts actually interact? Our free zodiac compatibility calculator analyzes all the key placements — sun, moon, rising, Venus, Mars, and Mercury — to give you a nuanced compatibility score and breakdown.\n\nTo use it, you'll need your birth date, exact birth time (rising sign requires this), and your partner's details. If you don't know your rising sign, the calculator will estimate it based on your birth window — but for accuracy, a birth time from your birth certificate is best.\n\nThe results show you:\n- Overall compatibility score\n- Element and modality compatibility\n- Communication style match\n- Emotional needs alignment\n- Where you'll naturally flow and where you'll need to work at it`,
-        'What Your Results Mean': `A high compatibility score doesn't guarantee a perfect relationship — and a low score doesn't mean you're doomed. Here's how to read your results:\n\n**80-100%:** Natural harmony. You likely share values, communicate similarly, and meet each other's needs with relative ease. The work here is avoiding complacency and continuing to grow together.\n\n**60-79%:** Solid with nuance. You have strong foundations with specific areas requiring conscious attention. Identify your top 2-3 friction points and build communication strategies for those specifically.\n\n**40-59%:** Growth-oriented pairing. You're here to teach each other something. The challenge is real but so is the potential for deep mutual evolution. These pairings often have the most dramatic success stories — if both partners do the inner work.\n\n**Below 40%:** Requires significant awareness and commitment from both partners. Not impossible — some of the most profound partnerships span difficult aspects. But go in with eyes open and a commitment to communication.\n\nNo number captures the full picture. Two people with "50% compatibility" who are both committed to growth and honest communication will outperform two "90% compatible" people coasting on natural ease. Use the score as a starting point for deeper exploration.`,
+        'What Your Results Mean': `A high compatibility score doesn't guarantee a perfect relationship — and a low score doesn't mean you're doomed. Here's how to read your results:\n\n80-100%: Natural harmony. You likely share values, communicate similarly, and meet each other's needs with relative ease. The work here is avoiding complacency and continuing to grow together.\n\n60-79%: Solid with nuance. You have strong foundations with specific areas requiring conscious attention. Identify your top 2-3 friction points and build communication strategies for those specifically.\n\n40-59%: Growth-oriented pairing. You're here to teach each other something. The challenge is real but so is the potential for deep mutual evolution. These pairings often have the most dramatic success stories — if both partners do the inner work.\n\nBelow 40%: Requires significant awareness and commitment from both partners. Not impossible — some of the most profound partnerships span difficult aspects. But go in with eyes open and a commitment to communication.\n\nNo number captures the full picture. Two people with "50% compatibility" who are both committed to growth and honest communication will outperform two "90% compatible" people coasting on natural ease. Use the score as a starting point for deeper exploration.`,
       },
     },
     'default': null,
@@ -271,8 +291,7 @@ function generateArticleContent(post) {
   let sectionsHtml = h2s.map(h2 => {
     let content = '';
     if (sectionContent && sectionContent[h2]) {
-      // Convert newlines to paragraphs
-      content = sectionContent[h2].split('\n\n').map(p => `<p>${p.trim()}</p>`).join('\n');
+      content = mdToHtml(sectionContent[h2]);
     } else {
       content = `<p>This section covers <strong>${h2}</strong> in the context of ${keyword}. Understanding this aspect of your chart can provide meaningful insights into your relational dynamics and personal growth path.</p>`;
     }
@@ -293,6 +312,8 @@ function generateArticleContent(post) {
 <p>There's no single answer — but if pressed, many astrologers point to moon sign compatibility as most predictive of long-term relationship satisfaction. Your moon sign governs your emotional core needs. When two people instinctively meet each other's emotional needs, the relationship has a foundation that sun sign differences can't shake.</p>
 `;
 
+  const cta = post.cta || 'Explore our full astrology guides →';
+
   const html = `
 <h1>${title}</h1>
 <p class="lead">${metaDesc}</p>
@@ -304,7 +325,7 @@ ${faqContent}
 
 <div class="cta-box">
 <p><strong>${cta}</strong></p>
-<p><a href="${SITE_URL}/services" class="btn-primary">Start Free →</a></p>
+<p><a href="${SITE_URL}/services" class="btn-primary">Explore All Guides →</a></p>
 </div>
 `;
 
@@ -447,7 +468,15 @@ async function postToTwitter(copy) {
       body: `status=${encodeURIComponent(tweetText)}`,
     });
 
-    const json = await res.json();
+    const text = await res.text();
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      // Twitter returned non-JSON (empty, HTML error page, etc.)
+      throw new Error(`Twitter ${res.status}: Non-JSON response (${text.length} bytes). Body: ${text.slice(0, 300)}`);
+    }
+
     if (!res.ok) {
       throw new Error(`Twitter ${res.status}: ${JSON.stringify(json)}`);
     }
