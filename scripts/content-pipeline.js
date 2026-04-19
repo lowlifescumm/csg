@@ -23,7 +23,7 @@
  * Image generation uses FAL.ai (flux-2-kontext-pro) — no local GPU needed.
  */
 
-import 'dotenv/config';
+// ─── Imports ─────────────────────────────────────────────────────────────────
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -31,6 +31,23 @@ import crypto from 'crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+
+// ─── Env Loader ───────────────────────────────────────────────────────────────
+// Simple .env loader (no external deps needed)
+function loadEnv() {
+  for (const envPath of [join(ROOT, '.env'), join(process.env.HOME || '', '.env')]) {
+    if (existsSync(envPath)) {
+      readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+        const idx = line.indexOf('=');
+        if (idx > 0) {
+          const k = line.slice(0, idx).trim(), v = line.slice(idx + 1).trim();
+          if (k && !process.env[k]) process.env[k] = v;
+        }
+      });
+    }
+  }
+}
+loadEnv();
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
