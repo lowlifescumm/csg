@@ -438,7 +438,7 @@ async function runPost(postNumber, publish = false) {
   log('info', `═══ Processing Post #${postNumber} ═══`);
   
   // Briefs are in the OpenClaw paperclip instances directory
-  const briefPath = '/home/ethan/.paperclip/instances/default/projects/84898c57-acb2-43a9-a0e7-b22d600d3434/f3cca765-f210-4ec7-8fd7-6134eb67f658/csg/content-briefs-month-1.json';
+  const briefPath = join(__dirname, 'content-briefs-month-1.json');
   const briefs = JSON.parse(readFileSync(briefPath, 'utf8'));
   const post = briefs.find(p => p.post_number === postNumber);
   
