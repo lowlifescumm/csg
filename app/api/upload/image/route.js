@@ -6,28 +6,28 @@ import { pool } from '@/lib/db';
 
 export async function POST(request) {
   try {
-    // Check authentication
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    // Check authentication (API key or cookie)
+    let userId = null;
+    const apiKey = request.headers.get('x-api-key');
     
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (apiKey) {
+      if (!process.env.BLOG_API_KEY || apiKey !== process.env.BLOG_API_KEY) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      const { rows } = await pool.query(
+        "SELECT id FROM users WHERE role='admin' ORDER BY id ASC LIMIT 1"
+      );
+      userId = rows[0]?.id;
+    } else {
+      const cookieStore = await cookies();
+      const token = cookieStore.get('auth_token')?.value;
+      if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const decoded = verifyToken(token);
+      if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      userId = decoded.userId;
     }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { rows } = await pool.query(
-      'SELECT role FROM users WHERE id=$1',
-      [decoded.userId]
-    );
     
-    if (!rows[0] || rows[0].role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Get form data
     const formData = await request.formData();
