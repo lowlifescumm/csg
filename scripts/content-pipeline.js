@@ -15,11 +15,11 @@
  *   SITE_URL=https://cosmicspiritguide.com
  *   BLOG_API_KEY=***           # API key for blog API auth
  *   TWITTER_API_KEY=***
- *   TWITTER_API_SECRET=<key>
- *   TWITTER_ACCESS_TOKEN=<key>
- *   TWITTER_ACCESS_SECRET=<key>
+ *   TWITTER_API_SECRET=***
+ *   TWITTER_ACCESS_TOKEN=***
+ *   TWITTER_ACCESS_SECRET=***
  * 
- * Image generation uses FAL.ai (flux-2-kontext-pro) — no local GPU needed.
+ * Image generation: Pollinations.ai (free, no API key needed)
  */
 
 // ─── Imports ─────────────────────────────────────────────────────────────────
@@ -27,6 +27,9 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+
+// Shared pipeline logic (themes, social copy, article HTML, image URLs)
+import { getThemeForPost, buildImageUrl, generateSocialCopy, slugify } from '../lib/content-pipeline-lib.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -68,9 +71,7 @@ function log(type, msg) {
   console.log(`${ts} ${icons[type] || '·'} ${msg}`);
 }
 
-function slugify(text) {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
+// slugify imported from lib
 
 function apiHeaders() {
   return {
@@ -89,116 +90,25 @@ async function apiFetch(url, options = {}) {
   return json;
 }
 
-// ─── Image Generation (Pollinations.ai — free, no API key needed) ───────────
+// ─── Image Generation (Pollinations.ai — via shared lib) ──────────────────────
 
 async function generateImage(post) {
-  const keyword = post.target_keyword || post.title || 'spiritual';
-  const seed = keyword.toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-  // Get themed prompt (handles all the spiritual/astrology themes)
-  const theme = getThemeForPost(post);
-  const prompt = `${theme.prompt}, ${keyword} spiritual guide article`;
-
-  // Pollinations.ai — free AI image generation, no API key needed
-  // Returns a URL that redirects to the generated image
-  const encodedPrompt = encodeURIComponent(prompt);
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=630&seed=${seed}&nologo=true`;
-
-  log('img', `Image URL: ${imageUrl}`);
+  const imageUrl = buildImageUrl(post);
+  log('img', `Image: ${imageUrl}`);
   return imageUrl;
 }
 
-function getThemeForPost(post) {
-  const title = post.title_options?.[0] || post.title || post.target_keyword || '';
-  const keyword = post.target_keyword || '';
-
-  const themes = {
-    'tarot': {
-      prompt: `Mystical tarot cards floating in cosmic space, ethereal purple and gold lighting, spiritual atmosphere, dark celestial background with stars and nebula, professional product photography, 4K`,
-      category: 'Tarot',
-    },
-    'zodiac': {
-      prompt: `Zodiac constellation wheel with golden stars on deep cosmic purple background, astrological symbols, celestial elegance, mystical spiritual aesthetic, 4K`,
-      category: 'Astrology',
-    },
-    'birth chart': {
-      prompt: `Beautiful birth chart wheel with planets on a cosmic blue background, astrology wheel diagram, mystical spiritual aesthetic, detailed celestial map, 4K`,
-      category: 'Astrology',
-    },
-    'compatibility': {
-      prompt: `Two overlapping zodiac constellation circles merging with golden light, cosmic love connection, romantic celestial theme, deep purple and rose gold, spiritual love, 4K`,
-      category: 'Compatibility',
-    },
-    'moon sign': {
-      prompt: `Full moon over mystical ocean with moonlight reflecting silver, lunar goddess energy, spiritual serene atmosphere, dreamy blue and silver palette, 4K`,
-      category: 'Astrology',
-    },
-    'mercury retrograde': {
-      prompt: `Retrograde Mercury planet in cosmic space with communication symbols, glitch effect overlay, mystical purple and teal, retro sci-fi spiritual aesthetic, 4K`,
-      category: 'Astrology',
-    },
-    'crystal': {
-      prompt: `Beautiful crystals and gemstones arranged artfully with soft spiritual lighting, rose quartz amethyst and citrine, mystical crystal grid, warm ethereal glow, 4K`,
-      category: 'Spiritual',
-    },
-    'manifestation': {
-      prompt: `Manifestation journal open with golden pen and floating cosmic light particles, affirmation cards beside it, spiritual productivity aesthetic, warm gold and purple, 4K`,
-      category: 'Spiritual',
-    },
-    'angel number': {
-      prompt: `Glowing repeating numbers 111 222 333 floating in angelic cosmic light, divine spiritual message, golden numerology symbols, white and gold celestial background, 4K`,
-      category: 'Spiritual',
-    },
-    'numerology': {
-      prompt: `Numerology numbers and sacred geometry symbols glowing in cosmic space, golden mathematical patterns, spiritual mystical aesthetic, 4K`,
-      category: 'Numerology',
-    },
-    'twin flame': {
-      prompt: `Two mirror-image flames merging into one cosmic light, twin flame spiritual concept, warm orange and purple dual tones, ethereal and romantic, 4K`,
-      category: 'Love',
-    },
-    'love': {
-      prompt: `Cosmic love connection visualization, two souls as stars connecting with golden light beam, romantic celestial art, deep purple and rose gold palette, spiritual love, 4K`,
-      category: 'Love',
-    },
-    'career': {
-      prompt: `Career success constellation in night sky, professional achievement spiritual concept, golden stars forming success path, cosmic blue background, motivational mystical aesthetic, 4K`,
-      category: 'Career',
-    },
-    'default': {
-      prompt: `Mystical spiritual cosmic background with stars and soft purple blue gradient, ethereal floating particles, magical celestial atmosphere, clean minimal design, 4K`,
-      category: 'Spiritual',
-    },
-  };
-
-  // Match keyword/title to a theme
-  const lower = (keyword + ' ' + title).toLowerCase();
-  for (const [key, theme] of Object.entries(themes)) {
-    if (lower.includes(key)) return theme;
+// CLI-specific: load briefs from local scripts/ path
+const CONTENT_CACHE = {};
+function loadBriefsLocal() {
+  if (!CONTENT_CACHE.briefs) {
+    const path = join(__dirname, 'content-briefs-month-1.json');
+    CONTENT_CACHE.briefs = JSON.parse(readFileSync(path, 'utf8'));
   }
-  return themes['default'];
+  return CONTENT_CACHE.briefs;
 }
 
-// ─── Social Copy Generation ──────────────────────────────────────────────────
-
-function generateSocialCopy(post, siteUrl, postSlug) {
-  const title = post.title_options?.[0] || post.title || '';
-  const keyword = post.target_keyword || '';
-  const intent = post.search_intent || '';
-  
-  const postUrl = `${siteUrl}/blog/${postSlug}`;
-
-  // X/Twitter copy (280 chars max, with tracking)
-  const xCopy = buildXCopy(title, keyword, postUrl, intent);
-  
-  // Pinterest caption
-  const pinterestCopy = buildPinterestCopy(title, keyword, postUrl);
-  
-  // Instagram caption
-  const instagramCopy = buildInstagramCopy(title, keyword, postUrl);
-
-  return { xCopy, pinterestCopy, instagramCopy, postUrl };
-}
+// ─── Social Copy Generation (CLI overrides the lib's social copy) ───────────────
 
 function buildXCopy(title, keyword, url, intent) {
   // Different angles based on search intent
@@ -223,31 +133,20 @@ function buildInstagramCopy(title, keyword, url) {
   return `✨ ${title} ✨\n\nLink in bio for the full guide + free ${keyword} calculator 🧭\n\nSave this post for later ⚡\n\n#astrology #${keyword.replace(/ /g, '')} #spirituality #zodiac #cosmicspiritguide`;
 }
 
-// ─── Content Generation from Brief ───────────────────────────────────────────
+// ─── Content Generation from Brief (via shared lib) ───────────────────────────
+// generateArticleContent, generateSocialCopy imported from ../lib/content-pipeline-lib.js
 
-const CONTENT_CACHE = {};
-const BRIEF_CACHE_PATH = join(__dirname, 'content-briefs-month-1.json');
-
-function loadBriefs() {
-  if (!CONTENT_CACHE.briefs) {
-    CONTENT_CACHE.briefs = JSON.parse(readFileSync(BRIEF_CACHE_PATH, 'utf8'));
-  }
-  return CONTENT_CACHE.briefs;
-}
-
+// CLI uses loadBriefsLocal (defined above) — not the shared lib's loadBriefs()
+// The lib's generateArticleContent is used by the API route; CLI uses its own
+// section templates above (keep CLI's generateArticleContent for now)
 function mdToHtml(text) {
   if (!text) return '';
   return text
-    // Bold: **text** → <strong>text</strong>
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Italic: *text* → <em>text</em>
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    // Unordered lists: consecutive - lines become <ul>
     .replace(/^- (.+)$/gm, '<li>$1</li>')
-    // Wrap consecutive <li> elements in <ul>
     .replace(/(<li>.*<\/li>)(?=\s*<li>)/gs, '$1')
     .replace(/(<li>[\s\S]*?<\/li>)(\n)(?=<li>)/g, '$1')
-    // Paragraphs: double newlines become paragraph breaks
     .split(/\n\n+/)
     .map(p => {
       p = p.trim();
@@ -258,7 +157,9 @@ function mdToHtml(text) {
     .join('\n');
 }
 
-function generateArticleContent(post) {
+// Keep CLI's own generateArticleContent with richer section content templates
+// (the lib has a simpler version for the API route)
+function generateArticleContentCLI(post) {
   const title = post.title_options?.[0] || post.title || '';
   const keyword = post.target_keyword || '';
   const metaDesc = post.meta_description || '';
@@ -364,7 +265,7 @@ async function createBlogPost(post, imageUrl, publish = false) {
   const category = getThemeForPost(post).category;
   
   const slug = slugify(title.slice(0, 60));
-  const content = generateArticleContent(post);
+  const content = generateArticleContentCLI(post);
   const featured_image = imageUrl || '';
   
   const payload = {
