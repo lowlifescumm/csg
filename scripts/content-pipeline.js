@@ -259,13 +259,13 @@ function mdToHtml(text) {
     })
     .join('\n');
 }
+
+function generateArticleContent(post) {
   const title = post.title_options?.[0] || post.title || '';
   const keyword = post.target_keyword || '';
   const metaDesc = post.meta_description || '';
   const h2s = post.h2_headings || [];
-  const wordCount = post.target_word_count || 2500;
-  const intent = post.search_intent || 'Informational';
-  const cta = post.cta || 'Try our free calculator →';
+  const cta = post.cta || 'Explore our full astrology guides →';
 
   // Per-keyword content templates — real, useful content per section
   const contentTemplates = {
@@ -282,12 +282,9 @@ function mdToHtml(text) {
     'default': null,
   };
 
-  // Get template or use generic fallback
   const tmpl = contentTemplates[keyword] || null;
-  const intro = tmpl ? tmpl.intro : `Astrology offers a unique lens for understanding relationship dynamics. This guide covers everything you need to know about ${keyword} — from the basics to practical tools you can use today.\n\nWhether you're new to astrology or looking to deepen your understanding, this article walks you through each layer so you can apply this knowledge to your own relationships.`;
   const sectionContent = tmpl ? tmpl.sections : null;
 
-  // Build article sections
   let sectionsHtml = h2s.map(h2 => {
     let content = '';
     if (sectionContent && sectionContent[h2]) {
@@ -312,8 +309,6 @@ function mdToHtml(text) {
 <p>There's no single answer — but if pressed, many astrologers point to moon sign compatibility as most predictive of long-term relationship satisfaction. Your moon sign governs your emotional core needs. When two people instinctively meet each other's emotional needs, the relationship has a foundation that sun sign differences can't shake.</p>
 `;
 
-  const cta = post.cta || 'Explore our full astrology guides →';
-
   const html = `
 <h1>${title}</h1>
 <p class="lead">${metaDesc}</p>
@@ -326,8 +321,7 @@ ${faqContent}
 <div class="cta-box">
 <p><strong>${cta}</strong></p>
 <p><a href="${SITE_URL}/services" class="btn-primary">Explore All Guides →</a></p>
-</div>
-`;
+</div>`;
 
   return html.trim();
 }
