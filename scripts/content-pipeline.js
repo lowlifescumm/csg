@@ -89,25 +89,23 @@ async function apiFetch(url, options = {}) {
   return json;
 }
 
-// ─── Image Generation (Picsum — free, no key needed) ─────────────────────────
+// ─── Image Generation (Pollinations.ai — free, no API key needed) ───────────
 
 async function generateImage(post) {
-  // Use Picsum for free themed images — seed with keyword for consistency
   const keyword = post.target_keyword || post.title || 'spiritual';
   const seed = keyword.toLowerCase().replace(/[^a-z0-9]/g, '-');
-  
-  // Try Unsplash first (keyword-matched, beautiful), fallback to Picsum
-  const unsplashUrl = `https://source.unsplash.com/1200x630/?${encodeURIComponent(keyword)}`;
-  
-  try {
-    // Picsum is reliable free — use as primary
-    const picsumUrl = `https://picsum.photos/seed/${seed}/1200/630`;
-    log('img', `Image URL: ${picsumUrl} (seed: ${seed})`);
-    return picsumUrl;
-  } catch (err) {
-    log('warn', `Image gen failed: ${err.message}`);
-    return null;
-  }
+
+  // Get themed prompt (handles all the spiritual/astrology themes)
+  const theme = getThemeForPost(post);
+  const prompt = `${theme.prompt}, ${keyword} spiritual guide article`;
+
+  // Pollinations.ai — free AI image generation, no API key needed
+  // Returns a URL that redirects to the generated image
+  const encodedPrompt = encodeURIComponent(prompt);
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=630&seed=${seed}&nologo=true`;
+
+  log('img', `Image URL: ${imageUrl}`);
+  return imageUrl;
 }
 
 function getThemeForPost(post) {
