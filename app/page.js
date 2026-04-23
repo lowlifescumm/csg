@@ -57,20 +57,17 @@ export default function HomePage() {
             <Eye className="w-16 h-16 sm:w-20 sm:h-20 text-purple-600 mx-auto" />
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text px-2">
-            Connect With Your Cosmic Spirit Guide — Get Daily Tarot Insights for Free
+            Free Birth Chart Calculator + Daily Tarot — All Powered by AI
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-4 max-w-3xl mx-auto px-4">
-            Receive spiritually aligned tarot readings powered by advanced AI guidance.
-          </p>
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto px-4">
-            Clear answers. Gentle direction. <strong className="text-purple-600">3 free credits every single day.</strong>
+            Get your <strong className="text-purple-600">free birth chart</strong> (no signup required) plus 3 tarot credits every day.
           </p>
           
           <button 
-            onClick={() => router.push("/login")}
+            onClick={() => router.push("/birth-chart")}
             className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-semibold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105 mb-12"
           >
-            Get Your Free Readings
+            Get Your Free Birth Chart
           </button>
         </div>
       </section>
@@ -395,10 +392,10 @@ export default function HomePage() {
             Connect with your Cosmic Spirit Guide and receive your daily guidance — instantly and free.
           </p>
           <button 
-            onClick={() => router.push("/login")}
+            onClick={() => router.push("/birth-chart")}
             className="bg-white text-purple-900 px-10 sm:px-12 py-4 sm:py-5 rounded-2xl font-bold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105"
           >
-            Get Your Free Readings
+            Get Your Free Birth Chart
           </button>
         </div>
       </section>

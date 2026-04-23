@@ -23,7 +23,7 @@ export const metadata = {
     type: "website",
     url: "https://cosmicspiritguide.com",
     title: "Cosmic Spiritual Guide - Tarot & Astrology Insights",
-    description: "Get instant, personalized tarot and astrology insights. 3 free credits every day.",
+    description: "Get instant, personalized tarot and astrology insights. Plus a free birth chart calculator — no signup required.",
     images: ["https://cosmicspiritguide.com/CSG_LOGO.svg"],
     siteName: "Cosmic Spiritual Guide",
   },
