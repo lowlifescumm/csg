@@ -154,11 +154,11 @@ export default function ServicesPage() {
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <div className="flex items-center gap-3 mb-4">
                 <Calendar className="w-6 h-6 text-orange-400" />
-                <h3 className="text-2xl font-bold text-white">Birth Chart Reading</h3>
+                <h3 className="text-2xl font-bold text-white">Birth Chart</h3>
+                <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded-full">FREE</span>
               </div>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-yellow-400 mb-2">{getReadingCost('NATAL_CHART')} credits</p>
-                <p className="text-purple-200 text-sm mb-4">Foundation for deeper readings</p>
+                <p className="text-purple-200 text-sm mb-4">Foundation for deeper readings — at no cost</p>
               </div>
               <ul className="space-y-2 mb-4">
                 <li className="text-purple-200 flex items-start gap-2">
