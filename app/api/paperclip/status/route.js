@@ -135,7 +135,7 @@ export async function GET(request) {
         SELECT cc.id, cc.title, cc.target_keyword, cc.status as calendar_status,
                cc.assigned_to, cc.post_id,
                pw.id as workflow_id, pw.step_name, pw.status as step_status, pw.due_date,
-               pw.completed_at, pw.error_message as hold_reason
+               pw.completed_at
         FROM content_calendar cc
         LEFT JOIN publishing_workflow pw ON pw.calendar_id = cc.id
         WHERE cc.status != 'published'
@@ -213,7 +213,6 @@ export async function GET(request) {
         // Figure out which step the agent is working on based on run progress
         let targetStep = null;
         let targetStatus = 'pending';
-        let holdReason = null;
 
         if (isActive) {
           targetStatus = 'in_progress';
@@ -226,14 +225,12 @@ export async function GET(request) {
         } else if (run.outcome?.status === 'error') {
           targetStatus = 'blocked';
           targetStep = stepNames[stepOrder] || 'draft';
-          holdReason = run.outcome?.error || 'Agent encountered an error';
         }
 
         if (targetStep && steps[targetStep]) {
           updates.push({
             workflow_id: steps[targetStep].workflow_id,
             step_status: targetStatus,
-            hold_reason: holdReason,
             step_name: targetStep,
           });
         }
@@ -245,10 +242,9 @@ export async function GET(request) {
       await pool.query(`
         UPDATE publishing_workflow
         SET status = $1,
-            error_message = $2,
             completed_at = CASE WHEN $1 = 'completed' THEN NOW() ELSE completed_at END
-        WHERE id = $3
-      `, [upd.step_status, upd.hold_reason, upd.workflow_id]);
+        WHERE id = $2
+      `, [upd.step_status, upd.workflow_id]);
     }
 
     // Fetch updated calendar with new workflow states
@@ -265,8 +261,7 @@ export async function GET(request) {
               'step_name', pw.step_name,
               'status', pw.status,
               'due_date', pw.due_date,
-              'completed_at', pw.completed_at,
-              'hold_reason', pw.error_message
+              'completed_at', pw.completed_at
             ) ORDER BY pw.due_date ASC
           ) FROM publishing_workflow pw WHERE pw.calendar_id = cc.id),
           '[]'::jsonb
