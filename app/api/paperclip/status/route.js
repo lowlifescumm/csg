@@ -135,7 +135,7 @@ export async function GET(request) {
         SELECT cc.id, cc.title, cc.target_keyword, cc.status as calendar_status,
                cc.assigned_to, cc.post_id,
                pw.id as workflow_id, pw.step_name, pw.status as step_status, pw.due_date,
-               pw.completed_at, pw.hold_reason
+               pw.completed_at, pw.error_message as hold_reason
         FROM content_calendar cc
         LEFT JOIN publishing_workflow pw ON pw.calendar_id = cc.id
         WHERE cc.status != 'published'
@@ -245,7 +245,7 @@ export async function GET(request) {
       await pool.query(`
         UPDATE publishing_workflow
         SET status = $1,
-            hold_reason = $2,
+            error_message = $2,
             completed_at = CASE WHEN $1 = 'completed' THEN NOW() ELSE completed_at END
         WHERE id = $3
       `, [upd.step_status, upd.hold_reason, upd.workflow_id]);
@@ -266,7 +266,7 @@ export async function GET(request) {
               'status', pw.status,
               'due_date', pw.due_date,
               'completed_at', pw.completed_at,
-              'hold_reason', pw.hold_reason
+              'hold_reason', pw.error_message
             ) ORDER BY pw.due_date ASC
           ) FROM publishing_workflow pw WHERE pw.calendar_id = cc.id),
           '[]'::jsonb
