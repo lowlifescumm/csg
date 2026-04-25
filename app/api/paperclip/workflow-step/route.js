@@ -1,6 +1,7 @@
 /**
  * PATCH /api/paperclip/workflow-step
- * Update a single workflow step status in the content_calendar JSONB column.
+ * Update a workflow step in the content_calendar JSONB column.
+ * Pattern: read -> modify in JS -> write back. Works with any JSON structure.
  */
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
@@ -34,46 +35,52 @@ export async function PATCH(request) {
       );
     }
 
-    // Safely update JSONB by replacing the step's status + completed_at in the array.
-    // Uses text replacement on the JSON string — works whether column is JSON or JSONB.
-    const completedAt = status === 'completed'
-      ? new Date().toISOString()
-      : 'null';
+    // Fetch the current calendar entry
+    const current = await pool.query(
+      `SELECT id, title, status as calendar_status, workflow_steps
+       FROM content_calendar WHERE id = $1`,
+      [calendarId]
+    );
 
-    const result = await pool.query(`
-      UPDATE content_calendar
-      SET
-        workflow_steps = (
-          SELECT jsonb_agg(item)
-          FROM (
-            SELECT CASE
-              WHEN (item->>'step_name') = $2 THEN
-                item ||
-                  jsonb_build_object(
-                    'status', $1,
-                    'completed_at',
-                      CASE WHEN $1 = 'completed' THEN NOW()::text ELSE NULL END
-                  )
-              ELSE item
-            END as item
-            FROM jsonb_array_elements(workflow_steps) as item
-          ) updated
-        ),
-        updated_at = NOW()
-      WHERE id = $3
-      RETURNING id, title, status as calendar_status, workflow_steps
-    `, [status, stepName, calendarId]);
-
-    if (result.rows.length === 0) {
+    if (current.rows.length === 0) {
       return NextResponse.json(
         { error: `Calendar entry ${calendarId} not found` },
         { status: 404 }
       );
     }
 
-    const updatedSteps = result.rows[0].workflow_steps;
-    const allStatuses = (updatedSteps || []).map(s => s.status);
+    const row = current.rows[0];
+    let steps = row.workflow_steps;
 
+    // Handle both JSON array and potentially null/missing
+    if (!steps || !Array.isArray(steps)) {
+      steps = [];
+    }
+
+    // Find and update the matching step
+    let found = false;
+    const now = new Date().toISOString();
+    steps = steps.map(step => {
+      if (step.step_name === stepName) {
+        found = true;
+        return {
+          ...step,
+          status,
+          completed_at: status === 'completed' ? now : null
+        };
+      }
+      return step;
+    });
+
+    if (!found) {
+      return NextResponse.json(
+        { error: `Step '${stepName}' not found in calendar entry ${calendarId}` },
+        { status: 404 }
+      );
+    }
+
+    // Compute new calendar status
+    const allStatuses = steps.map(s => s.status);
     let calendarStatus = 'planned';
     if (allStatuses.every(s => s === 'completed')) {
       calendarStatus = 'ready';
@@ -83,12 +90,14 @@ export async function PATCH(request) {
       calendarStatus = 'in_progress';
     }
 
-    if (calendarStatus !== result.rows[0].calendar_status) {
-      await pool.query(
-        `UPDATE content_calendar SET status = $1, updated_at = NOW() WHERE id = $2`,
-        [calendarStatus, calendarId]
-      );
-    }
+    // Update with new steps and optionally new calendar status
+    await pool.query(`
+      UPDATE content_calendar
+      SET workflow_steps = $1,
+          status = CASE WHEN $2 != status THEN $2 ELSE status END,
+          updated_at = NOW()
+      WHERE id = $3
+    `, [JSON.stringify(steps), calendarStatus, calendarId]);
 
     return NextResponse.json({
       success: true,
@@ -96,6 +105,7 @@ export async function PATCH(request) {
       stepName,
       status,
       calendarStatus,
+      completedAt: status === 'completed' ? now : null,
       stepsUpdated: 1
     });
 
