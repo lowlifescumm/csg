@@ -1,8 +1,8 @@
 /**
  * PATCH /api/paperclip/workflow-step
  *
- * Update a workflow step status — used by Paperclip agents to mark
- * content pipeline progress on the calendar dashboard.
+ * Update a workflow step status in the content_calendar JSONB column.
+ * Used by Paperclip agents to mark pipeline progress on the calendar dashboard.
  *
  * Security: x-api-key header (PAPERCLIP_API_KEY env var)
  */
@@ -41,45 +41,76 @@ export async function PATCH(request) {
       );
     }
 
-    // Update the workflow step
+    // Build completed_at timestamp if completing
+    const completedAt = status === 'completed'
+      ? new Date().toISOString()
+      : null;
+
+    // Update the step within the JSONB workflow_steps array
     const result = await pool.query(`
-      UPDATE publishing_workflow
-      SET status = $1,
-          completed_at = CASE WHEN $1 = 'completed' THEN NOW() ELSE NULL END
-      WHERE calendar_id = $2 AND step_name = $3
-      RETURNING *
-    `, [status, calendarId, stepName]);
+      UPDATE content_calendar
+      SET workflow_steps = workflow_steps #=
+        jsonb_build_array(
+          COALESCE(
+            (
+              SELECT jsonb_agg(
+                CASE
+                  WHEN (value->>'step_name') = $2 THEN
+                    value ||
+                      jsonb_build_object(
+                        'status', $1,
+                        'completed_at',
+                          CASE WHEN $1 = 'completed' THEN NOW()::text ELSE NULL END
+                      )
+                  ELSE value
+                END
+              )
+              FROM jsonb_array_elements(workflow_steps)
+            ),
+            '[]'::jsonb
+          )
+        ),
+        updated_at = NOW()
+      WHERE id = $3
+      RETURNING id, title, status as calendar_status, workflow_steps
+    `, [status, stepName, calendarId]);
 
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { error: `Workflow step '${stepName}' not found for calendar ${calendarId}` },
+        { error: `Calendar entry ${calendarId} not found` },
         { status: 404 }
       );
     }
 
-    // Auto-update calendar status based on step progress
-    const allSteps = await pool.query(`
-      SELECT status FROM publishing_workflow WHERE calendar_id = $1
-    `, [calendarId]);
+    const updatedSteps = result.rows[0].workflow_steps;
+    const allStatuses = updatedSteps.map(s => s.status);
 
-    const statuses = allSteps.rows.map(r => r.status);
+    // Auto-update calendar status based on step progress
     let calendarStatus = 'planned';
-    if (statuses.every(s => s === 'completed')) {
+    if (allStatuses.every(s => s === 'completed')) {
       calendarStatus = 'ready';
-    } else if (statuses.some(s => s === 'in_progress')) {
+    } else if (allStatuses.some(s => s === 'in_progress')) {
       calendarStatus = 'writing';
-    } else if (statuses.some(s => s === 'completed')) {
+    } else if (allStatuses.some(s => s === 'completed')) {
       calendarStatus = 'in_progress';
     }
 
-    await pool.query(`
-      UPDATE content_calendar SET status = $1, updated_at = NOW() WHERE id = $2
-    `, [calendarStatus, calendarId]);
+    // Update calendar status if it changed
+    if (calendarStatus !== result.rows[0].calendar_status) {
+      await pool.query(
+        `UPDATE content_calendar SET status = $1, updated_at = NOW() WHERE id = $2`,
+        [calendarStatus, calendarId]
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      step: result.rows[0],
-      calendarStatus
+      calendarId,
+      stepName,
+      status,
+      completedAt,
+      calendarStatus,
+      stepsUpdated: 1
     });
 
   } catch (error) {
@@ -102,13 +133,19 @@ export async function GET(request) {
     }
 
     const result = await pool.query(`
-      SELECT step_name, status, due_date, completed_at
-      FROM publishing_workflow
-      WHERE calendar_id = $1
-      ORDER BY id ASC
+      SELECT id, title, status, workflow_steps
+      FROM content_calendar
+      WHERE id = $1
     `, [calendarId]);
 
-    return NextResponse.json({ success: true, steps: result.rows });
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: 'Calendar entry not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      calendar: result.rows[0]
+    });
 
   } catch (error) {
     console.error('workflow-step GET error:', error);
