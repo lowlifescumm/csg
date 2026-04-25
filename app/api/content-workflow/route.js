@@ -30,9 +30,12 @@ export const dynamic = 'force-dynamic';
 async function authenticate(req) {
   const authHeader = req.headers.get('authorization') || '';
   const token = (authHeader.match(/^Bearer (.+)$/) || [])[1] || '';
-  const secret = (process.env.CRON_SECRET || '').replace(/\r?\n/g, '').trim();
-  if (!secret) return { error: 'CRON_SECRET not configured', status: 500 };
-  if (token !== secret) return { error: 'Unauthorized', status: 401 };
+  // Accept CRON_SECRET (Render dashboard env var) or FRO_API_KEY (Paperclip agent key)
+  const cronSecret  = (process.env.CRON_SECRET  || '').replace(/\r?\n/g, '').trim();
+  const froApiKey   = (process.env.FRO_API_KEY  || '').replace(/\r?\n/g, '').trim();
+  if (!cronSecret && !froApiKey) return { error: 'No auth secret configured', status: 500 };
+  const valid = token === cronSecret || token === froApiKey;
+  if (!valid) return { error: 'Unauthorized', status: 401 };
   return null;
 }
 
