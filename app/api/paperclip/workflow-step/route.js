@@ -1,20 +1,14 @@
 /**
  * PATCH /api/paperclip/workflow-step
- *
- * Update a workflow step status in the content_calendar JSONB column.
- * Used by Paperclip agents to mark pipeline progress on the calendar dashboard.
- *
- * Security: x-api-key header (PAPERCLIP_API_KEY env var)
+ * Update a single workflow step status in the content_calendar JSONB column.
  */
-
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
 const API_KEY = process.env.PAPERCLIP_API_KEY || 'csg-content-pipeline-2026-secure-key';
 
 function authCheck(request) {
-  const key = request.headers.get('x-api-key');
-  return key === API_KEY;
+  return request.headers.get('x-api-key') === API_KEY;
 }
 
 export async function PATCH(request) {
@@ -23,8 +17,7 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { calendarId, stepName, status } = body;
+    const { calendarId, stepName, status } = await request.json();
 
     if (!calendarId || !stepName || !status) {
       return NextResponse.json(
@@ -41,34 +34,30 @@ export async function PATCH(request) {
       );
     }
 
-    // Build completed_at timestamp if completing
+    // Safely update JSONB by replacing the step's status + completed_at in the array.
+    // Uses text replacement on the JSON string — works whether column is JSON or JSONB.
     const completedAt = status === 'completed'
       ? new Date().toISOString()
-      : null;
+      : 'null';
 
-    // Update the step within the JSONB workflow_steps array
     const result = await pool.query(`
       UPDATE content_calendar
-      SET workflow_steps = workflow_steps #=
-        jsonb_build_array(
-          COALESCE(
-            (
-              SELECT jsonb_agg(
-                CASE
-                  WHEN (value->>'step_name') = $2 THEN
-                    value ||
-                      jsonb_build_object(
-                        'status', $1,
-                        'completed_at',
-                          CASE WHEN $1 = 'completed' THEN NOW()::text ELSE NULL END
-                      )
-                  ELSE value
-                END
-              )
-              FROM jsonb_array_elements(workflow_steps)
-            ),
-            '[]'::jsonb
-          )
+      SET
+        workflow_steps = (
+          SELECT jsonb_agg(item)
+          FROM (
+            SELECT CASE
+              WHEN (item->>'step_name') = $2 THEN
+                item ||
+                  jsonb_build_object(
+                    'status', $1,
+                    'completed_at',
+                      CASE WHEN $1 = 'completed' THEN NOW()::text ELSE NULL END
+                  )
+              ELSE item
+            END as item
+            FROM jsonb_array_elements(workflow_steps) as item
+          ) updated
         ),
         updated_at = NOW()
       WHERE id = $3
@@ -83,9 +72,8 @@ export async function PATCH(request) {
     }
 
     const updatedSteps = result.rows[0].workflow_steps;
-    const allStatuses = updatedSteps.map(s => s.status);
+    const allStatuses = (updatedSteps || []).map(s => s.status);
 
-    // Auto-update calendar status based on step progress
     let calendarStatus = 'planned';
     if (allStatuses.every(s => s === 'completed')) {
       calendarStatus = 'ready';
@@ -95,7 +83,6 @@ export async function PATCH(request) {
       calendarStatus = 'in_progress';
     }
 
-    // Update calendar status if it changed
     if (calendarStatus !== result.rows[0].calendar_status) {
       await pool.query(
         `UPDATE content_calendar SET status = $1, updated_at = NOW() WHERE id = $2`,
@@ -108,7 +95,6 @@ export async function PATCH(request) {
       calendarId,
       stepName,
       status,
-      completedAt,
       calendarStatus,
       stepsUpdated: 1
     });
@@ -142,11 +128,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Calendar entry not found' }, { status: 404 });
     }
 
-    return NextResponse.json({
-      success: true,
-      calendar: result.rows[0]
-    });
-
+    return NextResponse.json({ success: true, calendar: result.rows[0] });
   } catch (error) {
     console.error('workflow-step GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
