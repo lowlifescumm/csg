@@ -33,9 +33,22 @@ async function authenticate(req) {
   // Accept CRON_SECRET (Render dashboard env var) or FRO_API_KEY (Paperclip agent key)
   const cronSecret  = (process.env.CRON_SECRET  || '').replace(/\r?\n/g, '').trim();
   const froApiKey   = (process.env.FRO_API_KEY  || '').replace(/\r?\n/g, '').trim();
-  if (!cronSecret && !froApiKey) return { error: 'No auth secret configured', status: 500 };
+  if (!cronSecret && !froApiKey) return { error: 'No auth secret configured', status: 500, cronSet: false, froSet: false };
   const valid = token === cronSecret || token === froApiKey;
-  if (!valid) return { error: 'Unauthorized', status: 401 };
+  if (!valid) {
+    // Debug: return which keys are configured (first 4 chars only, never full values)
+    return {
+      error: 'Unauthorized',
+      status: 401,
+      debug: {
+        cronSet: !!cronSecret,
+        froSet: !!froApiKey,
+        cronPrefix: cronSecret ? cronSecret.slice(0,4) : null,
+        froPrefix:  froApiKey  ? froApiKey.slice(0,4)  : null,
+        tokenPrefix: token     ? token.slice(0,4)       : null,
+      }
+    };
+  }
   return null;
 }
 
@@ -69,7 +82,7 @@ const STEP_DEFAULTS = {
 
 export async function GET(req) {
   const auth = await authenticate(req);
-  if (auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (auth) return NextResponse.json(auth, { status: auth.status });
 
   const { searchParams } = new URL(req.url);
   const calendarId = searchParams.get('calendarId');
@@ -183,7 +196,7 @@ export async function GET(req) {
 
 export async function POST(req) {
   const auth = await authenticate(req);
-  if (auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (auth) return NextResponse.json(auth, { status: auth.status });
 
   const body = await req.json().catch(() => ({}));
   const {
