@@ -30,11 +30,12 @@ export const dynamic = 'force-dynamic';
 async function authenticate(req) {
   const authHeader = req.headers.get('authorization') || '';
   const token = (authHeader.match(/^Bearer (.+)$/) || [])[1] || '';
-  // Accept CRON_SECRET (Render dashboard env var) or FRO_API_KEY (Paperclip agent key)
+  // Accept CRON_SECRET (Render dashboard env var), FRO_API_KEY (Paperclip agent key), or BLOG_API_KEY
   const cronSecret  = (process.env.CRON_SECRET  || '').replace(/\r?\n/g, '').trim();
   const froApiKey   = (process.env.FRO_API_KEY  || '').replace(/\r?\n/g, '').trim();
-  if (!cronSecret && !froApiKey) return { error: 'No auth secret configured', status: 500, cronSet: false, froSet: false };
-  const valid = token === cronSecret || token === froApiKey;
+  const blogApiKey  = (process.env.BLOG_API_KEY  || '').replace(/\r?\n/g, '').trim();
+  if (!cronSecret && !froApiKey && !blogApiKey) return { error: 'No auth secret configured', status: 500, cronSet: false, froSet: false };
+  const valid = token === cronSecret || token === froApiKey || token === blogApiKey;
   if (!valid) {
     // Debug: return which keys are configured (first 4 chars only, never full values)
     return {
@@ -43,8 +44,10 @@ async function authenticate(req) {
       debug: {
         cronSet: !!cronSecret,
         froSet: !!froApiKey,
+        blogSet: !!blogApiKey,
         cronPrefix: cronSecret ? cronSecret.slice(0,4) : null,
         froPrefix:  froApiKey  ? froApiKey.slice(0,4)  : null,
+        blogPrefix: blogApiKey ? blogApiKey.slice(0,4) : null,
         tokenPrefix: token     ? token.slice(0,4)       : null,
       }
     };
