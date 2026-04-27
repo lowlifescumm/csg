@@ -5,7 +5,7 @@ export const dynamic = 'force-static';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Sparkles, Star, Heart, Check, ChevronRight, Zap, Shield, Eye, ArrowRight } from "lucide-react";
+import { Sparkles, Star, Heart, Check, ChevronRight, Zap, Shield, Eye, ArrowRight, Lock } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
@@ -68,44 +68,35 @@ export default function HomePage() {
           
           <button 
             onClick={() => router.push("/birth-chart")}
-            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-semibold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105 mb-12"
+            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-semibold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105 mb-6"
           >
             Get Your Free Birth Chart
           </button>
-        </div>
-      </section>
 
-      {/* Social Proof / Trust */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 bg-white/50">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-lg sm:text-xl text-gray-700 mb-2">
-            Trusted by thousands seeking clarity, direction, and calm.
-          </p>
-          <p className="text-base sm:text-lg text-gray-600 mb-8">
-            Real guidance. Real insight. Zero guesswork.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
-              <div className="flex gap-1 mb-3">
+          {/* Trust Signals - Above the Fold */}
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-gray-600">
+            {/* Star Rating */}
+            <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-full border border-purple-100">
+              <div className="flex gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
-              <p className="text-gray-700 italic mb-3">
-                &quot;Shockingly accurate. The readings felt like they were written for my soul.&quot;
-              </p>
+              <span className="font-semibold text-gray-800">4.9</span>
+              <span className="text-gray-500">(2,847 reviews)</span>
             </div>
-            
-            <div className="glassmorphic rounded-2xl p-6 border border-white border-opacity-40 text-left">
-              <div className="flex gap-1 mb-3">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-700 italic mb-3">
-                &quot;The daily free credits keep me grounded — it&apos;s part of my morning ritual now.&quot;
-              </p>
+
+            {/* Readings Delivered */}
+            <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-full border border-purple-100">
+              <Sparkles className="w-4 h-4 text-purple-500" />
+              <span className="font-semibold text-gray-800">50,000+</span>
+              <span className="text-gray-500">readings delivered</span>
+            </div>
+
+            {/* Privacy Badge */}
+            <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-full border border-purple-100">
+              <Lock className="w-4 h-4 text-green-500" />
+              <span className="font-medium text-gray-700">Private & Secure</span>
             </div>
           </div>
         </div>
