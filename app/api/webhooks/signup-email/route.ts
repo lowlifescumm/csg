@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         // Log failure but don't fail the request
         await client.query(
           `INSERT INTO email_events (user_id, email_type, email_number, status, error_message) VALUES ($1, $2, $3, $4, $5)`,
-          [userId, 'welcome_nurture', 1, 'failed', JSON.stringify(emailResultResult.error)]
+          [userId, 'welcome_nurture', 1, 'failed', JSON.stringify(emailResult.error)]
         );
 
         return NextResponse.json({
