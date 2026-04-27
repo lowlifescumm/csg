@@ -1,25 +1,19 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
-import LowCreditsUpsellBanner from "@/components/LowCreditsUpsellBanner";
-import FloatingUpgradePrompt from "@/components/FloatingUpgradePrompt";
-import ShareCard from "@/components/ShareCard";
 import spreads from "@/lib/tarot-spreads.json";
 
 export default function TarotPage() {
   const [selectedType, setSelectedType] = useState(null);
   const [showCardSelector, setShowCardSelector] = useState(false);
   const [reading, setReading] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [creditsRemaining, setCreditsRemaining] = useState(null);
-  const [isPremium, setIsPremium] = useState(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
+  const [isPremium, setIsPremium] = useState(null);
 
-  // Check credits status on mount
   useEffect(() => {
     checkCreditsStatus();
   }, []);
@@ -29,19 +23,10 @@ export default function TarotPage() {
     try {
       const response = await fetch("/api/credits");
       const data = await response.json();
-
-      if (data.isPremium) {
-        setIsPremium(true);
-        // Tarot basic is unlimited for premium, check for premium tarot
-        setCreditsRemaining(data.credits?.TAROT_PREMIUM?.remaining || 99);
-      } else {
-        setIsPremium(false);
-        setCreditsRemaining(data.credits?.TAROT_BASIC?.remaining || 0);
-      }
+      setIsPremium(data.isPremium || false);
     } catch (error) {
       console.error("Error checking credits:", error);
       setIsPremium(false);
-      setCreditsRemaining(0);
     } finally {
       setLoadingCredits(false);
     }
@@ -51,7 +36,6 @@ export default function TarotPage() {
     setSelectedType(type);
     setShowCardSelector(true);
     setReading(null);
-    setError("");
   };
 
   const handleCardSelectorClose = () => {
@@ -62,7 +46,6 @@ export default function TarotPage() {
   const handleReadingComplete = (readingData) => {
     setReading(readingData);
     setShowCardSelector(false);
-    // Refresh credits after reading
     checkCreditsStatus();
   };
 
@@ -70,10 +53,8 @@ export default function TarotPage() {
     setReading(null);
     setSelectedType(null);
     setShowCardSelector(false);
-    setError("");
   };
 
-  // Show loading state
   if (loadingCredits) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 flex items-center justify-center">
@@ -85,7 +66,6 @@ export default function TarotPage() {
     );
   }
 
-  // Show the reading result
   if (reading) {
     const spread = spreads.find((s) => s.id === selectedType?.spreadType) || spreads.find((s) => s.id === "past_present_future");
     const positions = spread?.layout || ["Card 1", "Card 2", "Card 3"];
@@ -136,17 +116,6 @@ export default function TarotPage() {
                 <MarkdownRenderer text={reading.interpretation} className="text-purple-100" />
               </div>
             </div>
-
-            {reading.id && (
-              <ShareCard
-                interpretation={reading.interpretation}
-                readingId={reading.id}
-                cards={reading.cards}
-                onShareComplete={(credits) => {
-                  console.log(`${credits} credits awarded for sharing!`);
-                }}
-              />
-            )}
           </div>
 
           <button
@@ -163,20 +132,6 @@ export default function TarotPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-6">
-      {/* Show upsell banner when credits are low */}
-      {isPremium && creditsRemaining !== null && creditsRemaining < 2 && (
-        <LowCreditsUpsellBanner
-          currentCredits={creditsRemaining}
-          creditsNeeded={1}
-          creditType="tarot"
-        />
-      )}
-
-      {/* Show floating prompt for errors */}
-      {error && error.includes("subscription required") && (
-        <FloatingUpgradePrompt message={error} duration={7000} />
-      )}
-
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 backdrop-blur-sm">
@@ -186,28 +141,20 @@ export default function TarotPage() {
           <p className="text-xl text-purple-200">Choose your spread and let the cards reveal their wisdom</p>
         </div>
 
-        {error && (
-          <div className="max-w-2xl mx-auto mb-8 bg-red-500 bg-opacity-20 border border-red-500 text-red-100 px-4 py-3 rounded-lg text-center">
-            {error}
-          </div>
-        )}
-
         <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
           <h2 className="text-2xl font-bold text-white mb-6 text-center">Select a Reading Type</h2>
           <TarotReadingTypePicker onPick={handleTypePick} />
         </div>
 
-        {/* Credits info */}
         <div className="mt-8 text-center text-purple-200 text-sm">
           {isPremium ? (
-            <p>✨ You have unlimited tarot readings with your premium membership</p>
+            <p>Premium member - unlimited readings</p>
           ) : (
-            <p>Basic tarot readings are free • Premium spreads require credits</p>
+            <p>Basic tarot readings are free</p>
           )}
         </div>
       </div>
 
-      {/* Card Selector Modal */}
       {showCardSelector && selectedType && (
         <InteractiveTarotSelector
           onClose={handleCardSelectorClose}
