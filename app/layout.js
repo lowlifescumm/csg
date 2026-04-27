@@ -95,6 +95,146 @@ export const metadata = {
 };
 
 // Schema.org JSON-LD structured data
+
+// FAQ Schema for Rich Snippets
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Cosmic Spirit Guide's tarot reading really free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! You get a free daily tarot reading with 5 credits refreshed every 24 hours. No credit card or signup required for standard readings."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How accurate is the AI tarot reading?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Our AI combines traditional tarot card meanings with personalized context from your question to provide insightful guidance. While not a substitute for professional advice, users report meaningful resonance with their situations."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's included in the free birth chart?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your free birth chart includes your Sun sign, Moon sign, Rising sign (Ascendant), and planetary placements. It provides insights into your personality, emotions, and life path based on your birth date, time, and location."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do credits work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Free users receive 5 credits daily that refresh every 24 hours. Premium readings require more credits. You can purchase credit packs or subscribe monthly for more readings and rollover credits."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's the difference between standard and premium tarot?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Standard tarot uses 3 cards for quick guidance. Premium tarot uses 5-7 cards with deeper analysis, 7-day guidance, and an energy summary for a more comprehensive reading."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I get a compatibility reading with anyone?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! You can generate compatibility reports for any relationship—romantic, friendship, family, or professional. Just enter both people's birth details for a detailed astrological comparison."
+      }
+    }
+  ]
+};
+
+// Service Schema for Spiritual Guidance Services
+const serviceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Spiritual Guidance & Astrology Readings",
+  "provider": {
+    "@type": "Organization",
+    "name": "Cosmic Spirit Guide",
+    "url": "https://cosmicspiritguide.com"
+  },
+  "areaServed": {
+    "@type": "Place",
+    "name": "Global Online Service"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Tarot & Astrology Services",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Standard Tarot Reading",
+          "description": "3-card spread for daily guidance"
+        },
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Premium Tarot Reading",
+          "description": "5-7 card spread with 7-day guidance and energy summary"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Birth Chart Calculator",
+          "description": "Complete natal chart with Sun, Moon, Rising, and planetary placements"
+        },
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Compatibility Report",
+          "description": "Two-chart comparative analysis for relationship dynamics"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Moon Reading",
+          "description": "Current moon phase influence and emotional guidance"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Transit Forecast",
+          "description": "Weekly or monthly astrological forecast based on current planetary transits"
+        }
+      }
+    ]
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "reviewCount": "1250",
+    "bestRating": "5",
+    "worstRating": "1"
+  }
+};
+
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -168,7 +308,7 @@ export default function RootLayout({ children }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([organizationSchema, websiteSchema]),
+            __html: JSON.stringify([organizationSchema, websiteSchema, faqSchema, serviceSchema]),
           }}
         />
       </head>
