@@ -386,9 +386,10 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* SEO-rich introductory content */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold gradient-text mb-3">Get Your Free Birth Chart</h1>
-          <p className="text-gray-600">Discover the cosmic blueprint of your soul — no signup required</p>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-3">Calculate Your Astrology Chart</h2>
+          <p className="text-gray-600">Enter your birth details below to generate your personalized natal chart with Sun sign, Moon sign, and Rising sign (Ascendant). No account required — get instant results.</p>
         </div>
         
         <div className="glassmorphic rounded-3xl p-8 space-y-6">

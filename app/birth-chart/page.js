@@ -77,7 +77,22 @@ function BirthChartPageInner() {
   }
 
   // Show the form - user can be logged in or anonymous
-  return <BirthChartForm updateMode={updateMode} user={user} />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
+      {/* Page Header with H1 */}
+      <div className="relative overflow-hidden py-12 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
+            Free Birth Chart Calculator
+          </h1>
+          <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+            Discover your cosmic blueprint based on your birth date, time, and location
+          </p>
+        </div>
+      </div>
+      <BirthChartForm updateMode={updateMode} user={user} />
+    </div>
+  );
 }
 
 export default function BirthChartPage() {

@@ -62,7 +62,7 @@ export default function HomePage() {
             <Eye className="w-16 h-16 sm:w-20 sm:h-20 text-purple-600 mx-auto" />
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text px-2 leading-tight">
-            Free Tarot Reading & Birth Chart Calculator — Get Your First 3 Cards Free
+            Get Your Free Tarot Reading
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-4 max-w-3xl mx-auto px-4">
             Get your <strong className="text-purple-600">first 3-card tarot reading free</strong>. No signup required.
@@ -113,12 +113,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* What You Receive */}
+      {/* What You Receive - Semantic Content Structure */}
       <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
-              Your Cosmic Spirit Guide gives you:
+              Free Tarot, Birth Charts & Cosmic Guidance
             </h2>
           </div>
           
@@ -183,12 +183,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* How It Works - H2 Section */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-purple-50 to-pink-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
-              How It Works
+              How Free Tarot Readings Work
             </h2>
             <p className="text-lg text-gray-600">
               Simple, soulful, and always available.
@@ -223,12 +223,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why People Love This */}
+      {/* Why People Love This - H2 Section */}
       <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
-              Why People Love This
+              Why Thousands Trust Cosmic Spirit Guide
             </h2>
             <p className="text-lg text-gray-600 mb-8">
               You don&apos;t need to be a tarot expert.<br />
@@ -255,12 +255,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Sample Reading Snippet */}
+      {/* Sample Reading - H2 Section */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-bold gradient-text mb-4">
-              Sample Reading Snippet
+              Example Tarot Reading
             </h2>
           </div>
           
@@ -275,12 +275,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Ethics & Transparency */}
+      {/* Ethics & Transparency - H2 Section */}
       <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
-              Ethics & Transparency
+              Honest, Transparent Spiritual Guidance
             </h2>
             <p className="text-xl text-gray-700 mb-8">
               We believe spiritual tools should empower you — not scare you.
@@ -323,12 +323,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* FAQ - H2 Section */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-purple-50 to-pink-50">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-4">
-              FAQ
+              Free Tarot Reading FAQ
             </h2>
           </div>
           
