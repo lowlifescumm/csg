@@ -1,5 +1,5 @@
 import "./globals.css";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+import { Inter, Cormorant_Garamond, Playfair_Display } from "next/font/google";
 import AuthProviderWrapper from "@/components/AuthProviderWrapper";
 import Header from "@/components/Header";
 import ToastContainerWrapper from "@/components/ui/ToastContainerWrapper";
@@ -7,7 +7,11 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ClientErrorCatcher from "@/components/ClientErrorCatcher";
 import Script from "next/script";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ 
+  subsets: ["latin"], 
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -17,9 +21,17 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
 // Next.js 15 requires viewport to be exported separately from metadata
 export const viewport = {
-  themeColor: "#8B5CF6",
+  themeColor: "#1a1a2e",
   width: "device-width",
   initialScale: 1,
 };
@@ -101,8 +113,6 @@ export const metadata = {
 };
 
 // Schema.org JSON-LD structured data
-
-// FAQ Schema for Rich Snippets
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -158,7 +168,6 @@ const faqSchema = {
   ]
 };
 
-// Service Schema for Spiritual Guidance Services
 const serviceSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
@@ -296,7 +305,7 @@ const websiteSchema = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${cormorant.variable} scroll-smooth`}>
+    <html lang="en" className={`${inter.variable} ${cormorant.variable} ${playfair.variable} scroll-smooth`}>
       <head>
         {/* Preload primary logo for LCP optimization */}
         <link
@@ -306,7 +315,7 @@ export default function RootLayout({ children }) {
           type="image/svg+xml"
         />
 
-        {/* Preconnect to Google Fonts for Cormorant Garamond */}
+        {/* Preconnect to Google Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
@@ -320,7 +329,7 @@ export default function RootLayout({ children }) {
       </head>
 
       <body
-        className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 antialiased"
+        className="min-h-screen bg-celestial antialiased"
         suppressHydrationWarning={true}
       >
         <AuthProviderWrapper>
@@ -349,20 +358,20 @@ export default function RootLayout({ children }) {
             </ErrorBoundary>
           </main>
 
-          <footer className="glassmorphic border-t border-white border-opacity-20 py-6 mt-8">
+          <footer className="bg-cosmic-indigo text-white/80 border-t border-white/10 py-8 mt-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
-                <p className="text-xs sm:text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-white/60 font-light tracking-wide">
                   Powered by AI • Tarot • Horoscopes • Birth Charts
                 </p>
                 <div className="mt-4 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6">
-                  <a href="/privacy" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700">
+                  <a href="/privacy" className="text-xs sm:text-sm text-white/50 hover:text-white/80 transition-colors">
                     Privacy Policy
                   </a>
-                  <a href="/terms" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700">
+                  <a href="/terms" className="text-xs sm:text-sm text-white/50 hover:text-white/80 transition-colors">
                     Terms of Service
                   </a>
-                  <a href="/contact" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700">
+                  <a href="/contact" className="text-xs sm:text-sm text-white/50 hover:text-white/80 transition-colors">
                     Contact
                   </a>
                 </div>

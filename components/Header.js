@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -70,15 +70,15 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 overflow-visible ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 overflow-visible ${
         scrolled
-          ? "bg-white/95 backdrop-blur-lg shadow-lg shadow-black/5 border-b border-gray-200/50"
-          : "bg-white/90 backdrop-blur-md border-b border-gray-200/30"
+          ? "bg-cosmic-indigo/95 backdrop-blur-lg shadow-lg shadow-cosmic-indigo/20 border-b border-cosmic-gold/20"
+          : "bg-cosmic-indigo/90 backdrop-blur-md border-b border-white/10"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <Logo variant="primary" />
+          <Logo variant="light" />
 
           <nav className="hidden lg:flex items-center space-x-1">
             {filteredNav.map((item) => {
@@ -87,10 +87,10 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
                     isActive(item.href)
-                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
+                      ? "bg-cosmic-gold text-cosmic-indigo"
+                      : "text-white/90 hover:text-cosmic-gold hover:bg-white/5"
                   }`}
                 >
                   {Icon ? <Icon className="w-4 h-4" /> : null}
@@ -105,28 +105,28 @@ export default function Header() {
               <>
                 <Link
                   href="/pricing"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all shadow-gold"
                 >
                   <Coins className="w-4 h-4" />
                   <span>Get Credits</span>
                 </Link>
                 <Link
                   href="/subscription"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-lavender/20 text-white border border-cosmic-lavender/30 hover:bg-cosmic-lavender/30 transition-all"
                 >
                   <CreditCard className="w-4 h-4" />
                   <span>Premium</span>
                 </Link>
                 <Link
                   href="/dashboard"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-100 transition-all"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-white/80 hover:text-cosmic-gold hover:bg-white/5 transition-all"
                 >
                   <User className="w-4 h-4" />
                   <span>{user.firstName || user.email?.split("@")[0]}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-100 hover:text-red-600 transition-all"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-white/60 hover:text-white/90 hover:bg-white/5 transition-all"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Log Out</span>
@@ -136,13 +136,13 @@ export default function Header() {
               <div className="flex items-center space-x-2">
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-100 transition-all"
+                  className="px-4 py-2 rounded-lg font-medium text-sm text-white/80 hover:text-cosmic-gold hover:bg-white/5 transition-all"
                 >
                   Log In
                 </Link>
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
+                  className="px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all shadow-gold"
                 >
                   Sign Up
                 </Link>
@@ -152,7 +152,7 @@ export default function Header() {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
+            className="lg:hidden p-2 rounded-lg text-white/80 hover:text-cosmic-gold hover:bg-white/5 transition-colors flex-shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
@@ -164,7 +164,7 @@ export default function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-gray-200/50 animate-fade-in max-h-[calc(100vh-80px)] overflow-y-auto">
+          <div className="lg:hidden py-4 border-t border-white/10 animate-fade-in max-h-[calc(100vh-80px)] overflow-y-auto">
             <nav className="flex flex-col space-y-2">
               {filteredNav.map((item) => {
                 const Icon = item.icon;
@@ -175,8 +175,8 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
                       isActive(item.href)
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? "bg-cosmic-gold text-cosmic-indigo"
+                        : "text-white/90 hover:text-cosmic-gold hover:bg-white/5"
                     }`}
                   >
                     {Icon ? <Icon className="w-5 h-5" /> : null}
@@ -189,7 +189,7 @@ export default function Header() {
                   <Link
                     href="/pricing"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-cosmic-gold text-cosmic-indigo"
                   >
                     <Coins className="w-5 h-5" />
                     <span>Get Credits</span>
@@ -197,7 +197,7 @@ export default function Header() {
                   <Link
                     href="/subscription"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-cosmic-lavender/20 text-white border border-cosmic-lavender/30"
                   >
                     <CreditCard className="w-5 h-5" />
                     <span>Premium</span>
@@ -205,7 +205,7 @@ export default function Header() {
                   <Link
                     href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-white/80 hover:text-cosmic-gold hover:bg-white/5"
                   >
                     <User className="w-5 h-5" />
                     <span>Profile</span>
@@ -215,25 +215,25 @@ export default function Header() {
                       setMobileMenuOpen(false);
                       handleLogout();
                     }}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 hover:text-red-600 text-left w-full"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-white/60 hover:text-white/90 hover:bg-white/5 text-left w-full"
                   >
                     <LogOut className="w-5 h-5" />
                     <span>Log Out</span>
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col space-y-2 pt-2 border-t border-gray-200/50">
+                <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 rounded-lg font-medium text-center text-gray-700 hover:bg-gray-100"
+                    className="px-4 py-3 rounded-lg font-medium text-center text-white/80 hover:text-cosmic-gold hover:bg-white/5"
                   >
                     Log In
                   </Link>
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 rounded-lg font-medium text-center bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                    className="px-4 py-3 rounded-lg font-medium text-center bg-cosmic-gold text-cosmic-indigo"
                   >
                     Sign Up
                   </Link>
@@ -246,14 +246,3 @@ export default function Header() {
     </header>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
