@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Calendar, Clock, User, ArrowLeft, Share2, BookOpen, Tag } from 'lucide-react';
 import { getBlogPostBySlug } from '@/lib/blog-server';
+import { BlogRelatedServices } from '@/components/RelatedServices';
+import { getServicesForCategory, extractKeywordLinks } from '@/lib/internal-links/service-map';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -151,6 +153,15 @@ export default async function BlogPostPage({ params }) {
             dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
           />
         </article>
+
+        {/* Contextual Service Links */}
+        <div className="mb-8">
+          <BlogRelatedServices 
+            category={post.category} 
+            tags={post.tags}
+            maxServices={3}
+          />
+        </div>
 
         {/* Related Posts */}
         {related && related.length > 0 && (

@@ -1,5 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { ArrowRight, Heart, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import BirthChartWheel from './BirthChartWheel';
 
@@ -328,6 +330,54 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
             Continue to Dashboard
           </button>
         </div>
+
+        {/* Related Services - Internal Linking */}
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">What to Do Next</h3>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Link 
+              href="/compatibility" 
+              className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-4 hover:shadow-md transition-all group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Heart className="w-5 h-5 text-pink-500" />
+                <span className="font-semibold text-gray-900 group-hover:text-pink-600">Check Compatibility</span>
+              </div>
+              <p className="text-sm text-gray-600">See how your chart aligns with a partner</p>
+              <span className="text-sm text-purple-600 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
+                Try Now <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+            
+            <Link 
+              href="/transits" 
+              className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 hover:shadow-md transition-all group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-blue-500" />
+                <span className="font-semibold text-gray-900 group-hover:text-blue-600">Transit Forecast</span>
+              </div>
+              <p className="text-sm text-gray-600">What's happening in your chart now</p>
+              <span className="text-sm text-purple-600 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
+                View Transits <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+            
+            <Link 
+              href="/forecasts" 
+              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 hover:shadow-md transition-all group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-5 h-5 text-purple-500" />
+                <span className="font-semibold text-gray-900 group-hover:text-purple-600">Personal Forecast</span>
+              </div>
+              <p className="text-sm text-gray-600">Predictions based on your chart</p>
+              <span className="text-sm text-purple-600 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
+                Get Forecast <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -337,7 +387,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
     <div className="w-full max-w-4xl mx-auto p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold gradient-text mb-3">Get Your Free Birth Chart</h2>
+          <h1 className="text-4xl font-bold gradient-text mb-3">Get Your Free Birth Chart</h1>
           <p className="text-gray-600">Discover the cosmic blueprint of your soul — no signup required</p>
         </div>
         

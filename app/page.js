@@ -61,8 +61,8 @@ export default function HomePage() {
           <div className="inline-block float-animation mb-6">
             <Eye className="w-16 h-16 sm:w-20 sm:h-20 text-purple-600 mx-auto" />
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text px-2">
-            Free Tarot Reading — Get Your First 3 Cards Free, Powered by AI
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text px-2 leading-tight">
+            Free Tarot Reading & Birth Chart Calculator — Get Your First 3 Cards Free
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-4 max-w-3xl mx-auto px-4">
             Get your <strong className="text-purple-600">first 3-card tarot reading free</strong>. No signup required.

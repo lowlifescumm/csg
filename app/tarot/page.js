@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Heart, Moon, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
@@ -152,6 +153,38 @@ export default function TarotPage() {
           ) : (
             <p>Basic tarot readings are free</p>
           )}
+        </div>
+
+        {/* Related Services - Internal Linking */}
+        <div className="mt-12 max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-white text-center mb-6">Enhance Your Tarot Practice</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/birth-chart" className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all group">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <span className="text-xl">⭐</span>
+                </div>
+                <h3 className="font-semibold text-white group-hover:text-purple-300">Get Your Birth Chart</h3>
+              </div>
+              <p className="text-purple-200 text-sm">Combine tarot wisdom with your astrological blueprint</p>
+              <span className="text-purple-400 text-sm flex items-center gap-1 mt-3 group-hover:gap-2 transition-all">
+                Free Birth Chart <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+            
+            <Link href="/moon-reading" className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all group">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                  <Moon className="w-5 h-5 text-purple-400" />
+                </div>
+                <h3 className="font-semibold text-white group-hover:text-purple-300">Add Moon Energy</h3>
+              </div>
+              <p className="text-purple-200 text-sm">See how lunar phases influence your tarot readings</p>
+              <span className="text-purple-400 text-sm flex items-center gap-1 mt-3 group-hover:gap-2 transition-all">
+                Moon Reading <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
 

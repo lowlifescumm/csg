@@ -1,6 +1,8 @@
 import Link from 'next/link';
-import { Calendar, Clock, User, Search, Tag, Filter, ArrowRight, BookOpen } from 'lucide-react';
+import { Calendar, Clock, User, Search, Tag, Filter, ArrowRight, BookOpen, Sparkles, Star, Heart } from 'lucide-react';
 import { getBlogPosts, getBlogCategories, getBlogTags } from '@/lib/blog-server';
+import RelatedServices from '@/components/RelatedServices';
+import { getServicesForCategory } from '@/lib/internal-links/service-map';
 
 export const metadata = {
   title: "Spiritual Blog | Cosmic Spirit Guide",
@@ -188,6 +190,18 @@ export default async function BlogPage({ searchParams }) {
                 </article>
               ))}
             </div>
+
+            {/* Featured Services Section */}
+            <RelatedServices
+              services={[
+                { route: '/birth-chart', label: 'Free Birth Chart', description: 'Discover your cosmic blueprint - completely free' },
+                { route: '/tarot', label: 'Daily Tarot', description: 'Get your daily spiritual guidance' },
+                { route: '/compatibility', label: 'Compatibility', description: 'See how your energies align' },
+                { route: '/services', label: 'All Services', description: 'Explore our full spiritual toolkit' },
+              ]}
+              title="Start Your Spiritual Journey"
+              subtitle="Our most popular cosmic tools to complement your learning"
+            />
 
             {/* Pagination */}
             {pagination.pages > 1 && (

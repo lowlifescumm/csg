@@ -26,14 +26,20 @@ export const viewport = {
 
 export const metadata = {
   title: "Free Tarot Reading & Birth Chart Calculator | Cosmic Spirit Guide",
+  titleTemplate: "%s | Cosmic Spirit Guide",
   description:
-    "Get your free daily tarot reading and personalized birth chart. AI-powered astrology insights, compatibility tests, and spiritual guidance.",
+    "Get your free daily tarot reading and personalized birth chart. AI-powered astrology insights, compatibility tests, and spiritual guidance. No signup required for your first reading.",
   keywords: [
     "free tarot reading",
     "birth chart calculator",
-    "astrology compatibility",
+    "natal chart calculator",
+    "astrology compatibility test",
     "daily horoscope",
     "spiritual guidance",
+    "love compatibility",
+    "zodiac compatibility",
+    "moon phase calculator",
+    "free astrology reading",
   ],
   authors: [{ name: "Cosmic Spirit Guide" }],
   creator: "Cosmic Spirit Guide",
