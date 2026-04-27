@@ -426,8 +426,11 @@ export default function HomePage() {
               <h3 className="font-semibold text-white mb-4">Services</h3>
               <ul className="space-y-2 text-sm">
                 <li><button onClick={() => router.push("/dashboard")} className="hover:text-white smooth-transition">Tarot Readings</button></li>
-                <li><button onClick={() => router.push("/birth-chart")} className="hover:text-white smooth-transition">Birth Charts</button></li>
-                <li><button onClick={() => router.push("/compatibility")} className="hover:text-white smooth-transition">Compatibility</button></li>
+                <li><button onClick={() => router.push("/birth-chart")} className="hover:text-white smooth-transition">Free Birth Charts</button></li>
+                <li><button onClick={() => router.push("/compatibility")} className="hover:text-white smooth-transition">Compatibility Reports</button></li>
+                <li><button onClick={() => router.push("/moon-reading")} className="hover:text-white smooth-transition">Moon Readings</button></li>
+                <li><button onClick={() => router.push("/transits")} className="hover:text-white smooth-transition">Transit Forecasts</button></li>
+                <li><button onClick={() => router.push("/services")} className="hover:text-white smooth-transition">View All Services</button></li>
               </ul>
             </div>
             
