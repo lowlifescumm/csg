@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, Star, Heart, Check, ChevronRight, Zap, Shield, Eye, ArrowRight, Lock } from "lucide-react";
+import FreeSampleModal from "@/components/FreeSampleModal";
 
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showSampleModal, setShowSampleModal] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -66,11 +68,20 @@ export default function HomePage() {
             Get your <strong className="text-purple-600">first 3-card tarot reading free</strong>. No signup required.
           </p>
           
+          {/* Primary CTA - Try Sample First */}
+          <button 
+            onClick={() => setShowSampleModal(true)}
+            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-semibold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105 mb-3"
+          >
+            ✨ Try Free Sample Reading
+          </button>
+          
+          {/* Secondary CTA */}
           <button 
             onClick={() => router.push("/dashboard")}
-            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-semibold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105 mb-6"
+            className="text-purple-600 font-medium hover:text-purple-800 smooth-transition mb-6"
           >
-            Get Your Free Reading
+            Already have an account? Get full reading →
           </button>
 
           {/* Trust Signals - Above the Fold */}
@@ -393,6 +404,12 @@ export default function HomePage() {
           </button>
         </div>
       </section>
+
+      {/* Free Sample Modal */}
+      <FreeSampleModal 
+        isOpen={showSampleModal} 
+        onClose={() => setShowSampleModal(false)} 
+      />
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 py-12 px-4 sm:px-6">
