@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createUser, getUserByEmail, generateToken } from '@/lib/auth';
 import { initializeUserCreditsOnSignup } from '@/lib/credits';
+import { initializeEmailSequence, markEmailSent, logEmailEvent } from '@/lib/email-sequence-db';
+import { sendWelcomeEmail } from '@/lib/nurture-emails';
 
 export async function POST(request) {
   try {
@@ -50,6 +52,29 @@ export async function POST(request) {
     } catch (creditsError) {
       console.error('[Signup] Failed to initialize credits:', creditsError);
       // Don't fail signup if credits initialization fails
+    }
+    
+    // Initialize email nurture sequence and send welcome email
+    try {
+      await initializeEmailSequence(user.id);
+      const emailResult = await sendWelcomeEmail({
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      });
+      
+      if (emailResult.success) {
+        await markEmailSent(user.id, 1);
+        await logEmailEvent(user.id, 'welcome_nurture', 1, 'sent');
+        console.log(`[Signup] Welcome email sent to ${user.email}`);
+      } else {
+        await logEmailEvent(user.id, 'welcome_nurture', 1, 'failed', JSON.stringify(emailResult.error));
+        console.error('[Signup] Welcome email failed:', emailResult.error);
+      }
+    } catch (emailError) {
+      console.error('[Signup] Email sequence error:', emailError);
+      // Don't fail signup if email fails
     }
     
     const token = generateToken(user.id);

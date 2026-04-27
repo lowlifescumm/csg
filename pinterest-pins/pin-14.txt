@@ -1,0 +1,14 @@
+PIN TITLE: Synastry Chart Calculator — Decode Your Partner's Planetary Influence
+
+DESCRIPTION: Discover how your partner's planets literally shape your relationship. Our synastry calculator reveals where you trigger each other's growth, drama & harmony.
+
+VISUAL DIRECTION: Deep purple #2D1B69 background, two overlapping birth charts in gold #FFD700 overlay with connecting lines between planets, midnight blue #191970 stars, white serif typography, planetary influence visual
+
+TARGET BLOG URL: /synastry-chart
+BLOG POST: "Synastry vs Composite: Which Chart to Use?"
+
+MARKETING NOTES:
+- Scientific/mystical blend (literally shape, planetary influence)
+- Emotional hook (growth, drama & harmony in relationships)
+- Clear value proposition (decode, discover)
+- Technical but accessible (synastry calculator)
