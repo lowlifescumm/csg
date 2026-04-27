@@ -60,17 +60,17 @@ export default function HomePage() {
             <Eye className="w-16 h-16 sm:w-20 sm:h-20 text-purple-600 mx-auto" />
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text px-2">
-            Free Birth Chart Calculator + Daily Tarot — All Powered by AI
+            Free Tarot Reading — Get Your First 3 Cards Free, Powered by AI
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-4 max-w-3xl mx-auto px-4">
-            Get your <strong className="text-purple-600">free birth chart</strong> (no signup required) plus 3 tarot credits every day.
+            Get your <strong className="text-purple-600">first 3-card tarot reading free</strong>. No signup required.
           </p>
           
           <button 
-            onClick={() => router.push("/birth-chart")}
+            onClick={() => router.push("/dashboard")}
             className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-semibold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105 mb-6"
           >
-            Get Your Free Birth Chart
+            Get Your Free Reading
           </button>
 
           {/* Trust Signals - Above the Fold */}
@@ -162,11 +162,11 @@ export default function HomePage() {
           </div>
           
           <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 sm:p-8 text-center border border-purple-200">
-            <p className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-              3 free credits every day — no commitment, no tricks
+            <p className="text-2xl sm:text-3xl font-bold text-gray-800 mb-3">
+              🎴 Get Your First 3-Card Reading Free
             </p>
-            <p className="text-gray-600">
-              Every reading blends timeless tarot symbolism with advanced AI interpretation to create messages uniquely aligned to you.
+            <p className="text-gray-600 text-lg">
+              No credit card. No commitment. Just instant guidance.
             </p>
           </div>
         </div>
@@ -344,11 +344,11 @@ export default function HomePage() {
 
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer flex items-center justify-between">
-                <span>Do I really get 3 free credits daily?</span>
+                <span>Is the first reading really free?</span>
                 <ChevronRight className="w-5 h-5 transform transition-transform group-open:rotate-90" />
               </summary>
               <p className="mt-4 text-gray-600">
-                Yes. Every day your account refreshes automatically — no card required.
+                Yes. Your first 3-card tarot reading is completely free — no credit card required. Just ask your question and receive instant guidance.
               </p>
             </details>
 
@@ -364,11 +364,11 @@ export default function HomePage() {
 
             <details className="glassmorphic rounded-2xl p-6 apple-shadow border border-white border-opacity-40">
               <summary className="font-semibold text-lg cursor-pointer flex items-center justify-between">
-                <span>Can I use it multiple times a day?</span>
+                <span>Can I get more readings after the free one?</span>
                 <ChevronRight className="w-5 h-5 transform transition-transform group-open:rotate-90" />
               </summary>
               <p className="mt-4 text-gray-600">
-                Yes — use your free credits daily, or get additional readings anytime.
+                Yes — after your free reading, you can purchase individual readings or upgrade to Premium for unlimited access.
               </p>
             </details>
           </div>
@@ -386,10 +386,10 @@ export default function HomePage() {
             Connect with your Cosmic Spirit Guide and receive your daily guidance — instantly and free.
           </p>
           <button 
-            onClick={() => router.push("/birth-chart")}
+            onClick={() => router.push("/dashboard")}
             className="bg-white text-purple-900 px-10 sm:px-12 py-4 sm:py-5 rounded-2xl font-bold text-lg sm:text-xl smooth-transition hover:shadow-2xl hover:scale-105"
           >
-            Get Your Free Birth Chart
+            Get Your Free Reading
           </button>
         </div>
       </section>
