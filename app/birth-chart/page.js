@@ -17,7 +17,7 @@ function BirthChartPageInner() {
     
     async function checkAuthAndChart() {
       try {
-        // Check authentication
+        // Check authentication (but don't require it)
         const res = await fetch('/api/auth/user');
         if (res.ok) {
           const data = await res.json();
@@ -46,17 +46,11 @@ function BirthChartPageInner() {
               // Chart check failed, continue to show form
               console.log('Chart check failed:', chartError);
             }
-          } else {
-            router.push('/login');
-            return;
           }
-        } else {
-          router.push('/login');
-          return;
         }
+        // No user or no chart - show the form (no redirect to login)
       } catch (error) {
-        router.push('/login');
-        return;
+        console.log('Auth check failed, showing form anyway:', error);
       } finally {
         setLoading(false);
         setCheckingChart(false);
@@ -82,10 +76,8 @@ function BirthChartPageInner() {
     );
   }
 
-  if (!user) return null;
-
-  // If we get here, user doesn't have a chart or is updating, show the form
-  return <BirthChartForm updateMode={updateMode} />;
+  // Show the form - user can be logged in or anonymous
+  return <BirthChartForm updateMode={updateMode} user={user} />;
 }
 
 export default function BirthChartPage() {

@@ -1,4 +1,4 @@
-﻿/** @type {import('next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   // Next.js 15 configuration
   reactStrictMode: true,
@@ -7,6 +7,9 @@ const nextConfig = {
     NEXT_PUBLIC_DASHBOARD_V3: process.env.DASHBOARD_V3 ?? "false",
     NEXT_PUBLIC_DASHBOARD_V3_INVITE: process.env.DASHBOARD_V3_INVITE ?? "",
   },
+  
+  // Sitemap configuration
+  siteUrl: 'https://cosmicspiritguide.com',
   
   // Configure headers to remove unnecessary ones and improve security
   async headers() {
@@ -26,9 +29,6 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          // Note: X-XSS-Protection is deprecated and should not be set
-          // Note: Pragma header is set by Next.js/Render and cannot be removed here
-          // Note: Cache-Control headers are managed by Next.js for optimal performance
         ],
       },
     ];
