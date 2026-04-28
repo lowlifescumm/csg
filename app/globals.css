@@ -403,3 +403,29 @@
 .prose a {
   @apply text-purple-600 hover:text-purple-700 underline transition-colors duration-200;
 }
+/* =============================================================================
+   DASHBOARD COLOR OVERRIDE - Force white text in dashboard areas
+   This must be the LAST CSS rule to ensure it wins all cascades
+   ============================================================================= */
+body.dashboard-active,
+body:has(#dashboard-main) {
+  color: white !important;
+}
+
+/* =============================================================================
+   DASHBOARD TEXT COLORS - Explicitly override body color cascade
+   These use !important to beat any inherited color values
+   ============================================================================= */
+.dashboard-text,
+.dashboard-text * {
+  color: white !important;
+}
+
+/* =============================================================================
+   DASHBOARD COLOR CASCADE FIX
+   Force white text on all dashboard content to override any body color
+   ============================================================================= */
+#dashboard-main,
+#dashboard-main * {
+  color: white !important;
+}
