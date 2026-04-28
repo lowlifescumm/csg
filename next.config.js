@@ -10,6 +10,22 @@ const nextConfig = {
   
   // Sitemap configuration
   siteUrl: 'https://cosmicspiritguide.com',
+
+  // Exclude heavy browser-only packages from server bundle
+  serverExternalPackages: [
+    'playwright',
+    '@playwright/test',
+    'playwright-core',
+    'puppeteer',
+    'puppeteer-core',
+    '@sparticuz/chromium',
+    'pdf-lib',
+    '@pdfme/generator',
+    '@pdfme/common',
+    '@pdfme/schemas',
+    '@pdfme/pdf-lib',
+    'fontkit',
+  ],
   
   // Configure headers to remove unnecessary ones and improve security
   async headers() {

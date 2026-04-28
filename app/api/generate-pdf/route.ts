@@ -10,15 +10,11 @@ export const dynamic = 'force-dynamic';
 
 // Import Puppeteer dynamically to avoid bundling issues
 async function getPuppeteer() {
-  try {
-    const puppeteer = await import('puppeteer-core');
-    const chromium = await import('@sparticuz/chromium');
-    return { puppeteer, chromium };
-  } catch (error) {
-    // Fallback to regular puppeteer for local development
-    const puppeteer = await import('puppeteer');
-    return { puppeteer, chromium: null };
-  }
+  // Only puppeteer-core and @sparticuz/chromium are installed (production)
+  // Regular puppeteer is not available
+  const puppeteer = await import('puppeteer-core');
+  const chromium = await import('@sparticuz/chromium');
+  return { puppeteer, chromium };
 }
 
 /**

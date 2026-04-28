@@ -72,13 +72,10 @@ export default function Header() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 overflow-visible ${
         scrolled
-          ? "bg-cosmic-indigo/95 backdrop-blur-lg shadow-lg shadow-cosmic-indigo/20 border-b border-cosmic-gold/20"
-          : "bg-cosmic-indigo/90 backdrop-blur-md border-b border-white/10"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <Logo variant="light" />
 
           <nav className="hidden lg:flex items-center space-x-1">
             {filteredNav.map((item) => {
@@ -89,8 +86,6 @@ export default function Header() {
                   href={item.href}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
                     isActive(item.href)
-                      ? "bg-cosmic-gold text-cosmic-indigo"
-                      : "text-white/90 hover:text-cosmic-gold hover:bg-white/5"
                   }`}
                 >
                   {Icon ? <Icon className="w-4 h-4" /> : null}
@@ -119,14 +114,12 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/dashboard"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-white/80 hover:text-cosmic-gold hover:bg-white/5 transition-all"
                 >
                   <User className="w-4 h-4" />
                   <span>{user.firstName || user.email?.split("@")[0]}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-white/60 hover:text-white/90 hover:bg-white/5 transition-all"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Log Out</span>
@@ -136,7 +129,6 @@ export default function Header() {
               <div className="flex items-center space-x-2">
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-lg font-medium text-sm text-white/80 hover:text-cosmic-gold hover:bg-white/5 transition-all"
                 >
                   Log In
                 </Link>
@@ -152,7 +144,6 @@ export default function Header() {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-white/80 hover:text-cosmic-gold hover:bg-white/5 transition-colors flex-shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
@@ -175,8 +166,6 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
                       isActive(item.href)
-                        ? "bg-cosmic-gold text-cosmic-indigo"
-                        : "text-white/90 hover:text-cosmic-gold hover:bg-white/5"
                     }`}
                   >
                     {Icon ? <Icon className="w-5 h-5" /> : null}
@@ -205,7 +194,6 @@ export default function Header() {
                   <Link
                     href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-white/80 hover:text-cosmic-gold hover:bg-white/5"
                   >
                     <User className="w-5 h-5" />
                     <span>Profile</span>
@@ -215,7 +203,6 @@ export default function Header() {
                       setMobileMenuOpen(false);
                       handleLogout();
                     }}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-white/60 hover:text-white/90 hover:bg-white/5 text-left w-full"
                   >
                     <LogOut className="w-5 h-5" />
                     <span>Log Out</span>
@@ -226,7 +213,6 @@ export default function Header() {
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 rounded-lg font-medium text-center text-white/80 hover:text-cosmic-gold hover:bg-white/5"
                   >
                     Log In
                   </Link>

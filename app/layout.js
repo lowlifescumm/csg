@@ -329,7 +329,7 @@ export default function RootLayout({ children }) {
       </head>
 
       <body
-        className="min-h-screen bg-celestial antialiased"
+        className="min-h-screen bg-gradient-to-br from-violet-950 via-purple-950 to-indigo-950 antialiased"
         suppressHydrationWarning={true}
       >
         <AuthProviderWrapper>

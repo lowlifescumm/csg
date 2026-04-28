@@ -49,8 +49,12 @@
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
-    background-color: var(--color-cream);
+    background-color: transparent;
     color: var(--color-indigo);
+  }
+
+  html {
+    background-color: #1a1033;
   }
 
   /* Prevent horizontal scroll on all elements */

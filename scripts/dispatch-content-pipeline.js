@@ -15,24 +15,32 @@ const https = require('https');
 
 const PAPERCLIP_API = 'http://127.0.0.1:3100';
 const COMPANY_ID    = '84898c57-acb2-43a9-a0e7-b22d600d3434';
-const PAPERCLIP_KEY_FILE = '/home/ethan/.openclaw/workspace/paperclip-claimed-api-key.json';
 const CSG_API_BASE  = 'https://cosmicspiritguide.com';
 
+// Paperclip FRO key (from Render dashboard env: FRO_API_KEY)
+const PAPERCLIP_KEY = process.env.FRO_API_KEY ||
+  (() => { try { return require('/home/ethan/.openclaw/workspace/paperclip-claimed-api-key.json').token; } catch { return ''; } })();
+
+// Same key authenticates calls to the CSG content-workflow API
+const CSG_API_KEY = process.env.FRO_API_KEY || PAPERCLIP_KEY;
+
 const AGENT_IDS = {
-  content_writer:      '59abdbaf-a9b0-4e74-8877-8872f3ded085', // Founding Engineer
+  // content_writer — handled externally by Hermes blog pipeline (hermes-supervisor.js)
+  // No Paperclip agent assigned; Hermes owns all research/draft/edit steps
+  content_writer:      null,   // DO NOT ASSIGN — Hermes handles this
   seo_strategist:      '959f10bc-d0f2-4022-86c0-3b1e9634f117', // SEO Strategist
   social_media_manager: 'cd00a527-5249-4025-b9e8-ff9f30cc23e0', // Social Media Manager
   editor:              '48ec7111-983c-44fe-a498-5871b39a41f9', // COO v2
   visual_artist:       'cd00a527-5249-4025-b9e8-ff9f30cc23e0', // Social Media Manager (temp)
-  content_manager:     '48ec7111-983c-44fe-a498-5871b39a41f9', // COO v2
+  content_manager:     '48ec7111-983c-44fe-a498-5871b39a41f9', // COO v2 — coordinator gatekeeper only
   ceo:                 '38177575-f35e-44d3-a243-91d49adef723', // CEO Frank
 };
 
 // Step → agent type mapping
 const STEP_AGENT = {
-  research:    'content_writer',
-  outline:     'content_writer',
-  draft:       'content_writer',
+  research:    null, // Hermes pipeline — DO NOT DISPATCH
+  outline:     null, // Hermes pipeline — DO NOT DISPATCH
+  draft:       null, // Hermes pipeline — DO NOT DISPATCH
   edit:        'editor',
   seo_review:  'seo_strategist',
   images:      'visual_artist',
@@ -48,10 +56,7 @@ const WORKFLOW_STEPS = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function loadPaperclipKey() {
-  const fs = require('fs');
-  return JSON.parse(fs.readFileSync(PAPERCLIP_KEY_FILE, 'utf8')).token;
-}
+function loadPaperclipKey() { return PAPERCLIP_KEY; }
 
 async function paperclipGet(path) {
   const key = loadPaperclipKey();
@@ -105,9 +110,10 @@ function stepDueDate(publishDate, step) {
 
 // ─── HTTP helper ───────────────────────────────────────────────────────────────
 
-function httpGet(url) {
+function httpGet(url, extraHeaders) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { headers: { 'Content-Type': 'application/json' } }, res => {
+    const headers = { 'Content-Type': 'application/json', ...(extraHeaders || {}) };
+    const req = https.get(url, { headers }, res => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => { try { resolve(JSON.parse(data)); } catch { resolve(data); } });
@@ -117,16 +123,19 @@ function httpGet(url) {
   });
 }
 
-function httpPost(url, body) {
+function httpPost(url, body, extraHeaders) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(body);
-    const opts = {
-      hostname: new URL(url).hostname,
-      path: new URL(url).pathname,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) }
+    const hostname = new URL(url).hostname;
+    const path = new URL(url).pathname;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(data),
+      ...(extraHeaders || {})
     };
-    const req = https.request({ ...opts, ...url.includes('127.0.0.1') && { hostname: '127.0.0.1', rejectUnauthorized: false } }, res => {
+    const opts = { hostname, path, method: 'POST', headers };
+    if (url.includes('127.0.0.1')) { opts.hostname = '127.0.0.1'; opts.rejectUnauthorized = false; }
+    const req = https.request(opts, res => {
       let d = '';
       res.on('data', c => d += c);
       res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve(d); } });
@@ -140,7 +149,7 @@ function httpPost(url, body) {
 // ─── Get overdue steps from CSG API ──────────────────────────────────────────
 
 async function getOverdueSteps() {
-  const data = await httpGet(`${CSG_API_BASE}/api/content-calendar?upcoming=true`);
+  const data = await httpGet(`${CSG_API_BASE}/api/content-calendar?upcoming=true`, { 'Authorization': `Bearer ${CSG_API_KEY}` });
   const items = data.calendar || [];
   const now = new Date().toISOString().split('T')[0];
 
@@ -363,7 +372,8 @@ POST: { "calendarId": ${calendarItem.calendar_id}, "step": "promote", "action": 
 async function dispatchAgent(issue, agentType) {
   const agentId = AGENT_IDS[agentType];
   if (!agentId) {
-    console.log(`  [SKIP] No agent mapped for type: ${agentType}`);
+    // Hermes handles content_writer — log and skip Paperclip assignment
+    console.log(`  [SKIP] ${agentType} is handled by Hermes blog pipeline — not assigning in Paperclip`);
     return;
   }
 
@@ -394,7 +404,9 @@ async function main() {
   const dryRun = process.argv.includes('--dry-run');
   console.log(`\n🚀 Content Pipeline Dispatch${dryRun ? ' [DRY RUN]' : ''} — ${new Date().toISOString()}\n`);
 
-  // 1. Get overdue steps via CSG live API
+  const authHeader = { 'Authorization': `Bearer ${CSG_API_KEY}` };
+
+  // 1. Get overdue steps
   const overdueSteps = await getOverdueSteps();
   console.log(`📋 Found ${overdueSteps.length} overdue/in-progress steps\n`);
 
