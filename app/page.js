@@ -44,7 +44,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16 sm:py-20 md:py-24 px-4 sm:px-6">
         <div className="absolute inset-0 opacity-20">
@@ -254,7 +254,7 @@ export default function HomePage() {
       </section>
 
       {/* Sample Reading Snippet */}
-      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-blue-50 to-purple-50">
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-bold gradient-text mb-4">
