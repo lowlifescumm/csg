@@ -39,7 +39,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.className} scroll-smooth`}>
       <body 
-        className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50"
+        className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900"
         suppressHydrationWarning={true}
       >
         <AuthProviderWrapper>
