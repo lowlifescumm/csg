@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dashboard background fix - prevent cream body from showing through gradient gaps */
+html {
+  background-color: #1a1033;
+}
+body {
+  background-color: transparent;
+}
+
 /* Logo sizing fix - preserve 10:3 aspect ratio */
 .logo-text {
   width: clamp(110px, 16vw, 180px);
