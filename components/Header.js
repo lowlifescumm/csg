@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard, Coins } from "lucide-react";
+import { Logo } from "./Logo";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -78,11 +79,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href="/" className="flex items-center group logo-wrapper">
-            <img 
-              src="/CSG_LOGO.svg" 
-              alt="Cosmic Spirit Guide" 
-              className="flex-none h-10 w-auto group-hover:scale-105 transition-transform duration-300 block" 
-            />
+            <Logo variant="primary" alt="Cosmic Spirit Guide" />
           </Link>
 
           <nav className="hidden lg:flex items-center space-x-1">
