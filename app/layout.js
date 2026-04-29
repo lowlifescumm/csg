@@ -24,14 +24,14 @@ export const metadata = {
     url: "https://cosmicspiritguide.com",
     title: "Cosmic Spiritual Guide - Tarot & Astrology Insights",
     description: "Get instant, personalized tarot and astrology insights. 3 free credits every day.",
-    images: ["https://cosmicspiritguide.com/CSG_LOGO.svg"],
+    images: ["https://cosmicspiritguide.com/logos/csg-logo-primary.svg"],
     siteName: "Cosmic Spiritual Guide",
   },
   twitter: {
     card: "summary_large_image",
     title: "Cosmic Spiritual Guide",
     description: "Personalized AI-enhanced tarot and astrology.",
-    images: ["https://cosmicspiritguide.com/CSG_LOGO.svg"],
+    images: ["https://cosmicspiritguide.com/logos/csg-logo-primary.svg"],
   },
 };
 
