@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { drawCards } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
-import { generateTarotReading } from @/lib/groq;
+import { generateTarotReading } from "@/lib/groq";
 import { saveReading } from "@/lib/db";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
