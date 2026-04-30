@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -60,28 +60,30 @@ export default function Header() {
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
-    { name: "Services", href: "/services", icon: Sparkles },
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, auth: true },
+    { name: "Readings", href: "/tarot", icon: Sparkles },
+    { name: "Pricing", href: "/pricing", icon: CreditCard },
     { name: "Blog", href: "/blog", icon: BookOpen },
-    { name: "Forecasts", href: "/forecasts", icon: Sparkles, auth: true },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, auth: true },
   ];
 
-  const filteredNav = (!user ? [...navigation, { name: "Log In", href: "/login" }, { name: "Start Free Reading", href: "/login" }] : navigation).filter((item) => !item.auth || user);
+  const filteredNav = navigation.filter((item) => !item.auth || user);
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 overflow-visible ${
-        scrolled
-          ? "bg-white/95 backdrop-blur-lg shadow-lg shadow-black/5 border-b border-gray-200/50"
-          : "bg-white/90 backdrop-blur-md border-b border-gray-200/30"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 overflow-visible ${
+        scrolled 
+          ? 'bg-cosmic-indigo/95 backdrop-blur-md shadow-lg shadow-cosmic-midnight/20' 
+          : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <Link href="/" className="flex items-center group logo-wrapper">
-            <Logo variant="primary" alt="Cosmic Spirit Guide" />
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3">
+            <Logo />
           </Link>
 
+          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
             {filteredNav.map((item) => {
               const Icon = item.icon;
@@ -89,62 +91,49 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
                     isActive(item.href)
-                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
+                      ? 'text-cosmic-gold bg-cosmic-gold/10'
+                      : 'text-white/80 hover:text-cosmic-gold hover:bg-white/5'
                   }`}
                 >
-                  {Icon ? <Icon className="w-4 h-4" /> : null}
+                  <Icon className="w-4 h-4" />
                   <span className="whitespace-nowrap">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="hidden lg:flex items-center space-x-2 lg:space-x-3">
+          {/* Right side buttons */}
+          <div className="hidden lg:flex items-center space-x-2">
             {user ? (
               <>
                 <Link
                   href="/pricing"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all"
                 >
                   <Coins className="w-4 h-4" />
                   <span>Get Credits</span>
                 </Link>
                 <Link
-                  href="/subscription"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>Premium</span>
-                </Link>
-                <Link
                   href="/dashboard"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-100 transition-all"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-white hover:text-cosmic-gold transition-all"
                 >
                   <User className="w-4 h-4" />
                   <span>{user.firstName || user.email?.split("@")[0]}</span>
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-100 hover:text-red-600 transition-all"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Log Out</span>
-                </button>
               </>
             ) : (
               <div className="flex items-center space-x-2">
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-100 transition-all"
+                  className="px-4 py-2 rounded-lg font-medium text-sm text-white/80 hover:text-white transition-all"
                 >
                   Log In
                 </Link>
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
+                  className="px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all"
                 >
                   Sign Up
                 </Link>
@@ -152,21 +141,19 @@ export default function Header() {
             )}
           </div>
 
+          {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
+            className="lg:hidden p-2 text-white/80 hover:text-white"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
+        {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-gray-200/50 animate-fade-in max-h-[calc(100vh-80px)] overflow-y-auto">
+          <div className="lg:hidden py-4 border-t border-white/10 bg-cosmic-indigo/95 backdrop-blur-md">
             <nav className="flex flex-col space-y-2">
               {filteredNav.map((item) => {
                 const Icon = item.icon;
@@ -175,71 +162,37 @@ export default function Header() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-sm ${
                       isActive(item.href)
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? 'text-cosmic-gold bg-cosmic-gold/10'
+                        : 'text-white/80'
                     }`}
                   >
-                    {Icon ? <Icon className="w-5 h-5" /> : null}
+                    <Icon className="w-5 h-5" />
                     <span>{item.name}</span>
                   </Link>
                 );
               })}
-              {user ? (
+              
+              {!user && (
                 <>
                   <Link
-                    href="/pricing"
+                    href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                  >
-                    <Coins className="w-5 h-5" />
-                    <span>Get Credits</span>
-                  </Link>
-                  <Link
-                    href="/subscription"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
-                  >
-                    <CreditCard className="w-5 h-5" />
-                    <span>Premium</span>
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-sm text-white/80"
                   >
                     <User className="w-5 h-5" />
-                    <span>Profile</span>
+                    <span>Log In</span>
                   </Link>
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      handleLogout();
-                    }}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 hover:text-red-600 text-left w-full"
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-indigo"
                   >
-                    <LogOut className="w-5 h-5" />
-                    <span>Log Out</span>
-                  </button>
+                    <Sparkles className="w-5 h-5" />
+                    <span>Sign Up</span>
+                  </Link>
                 </>
-              ) : (
-                <div className="flex flex-col space-y-2 pt-2 border-t border-gray-200/50">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 rounded-lg font-medium text-center text-gray-700 hover:bg-gray-100"
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 rounded-lg font-medium text-center bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
               )}
             </nav>
           </div>
@@ -248,14 +201,3 @@ export default function Header() {
     </header>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
