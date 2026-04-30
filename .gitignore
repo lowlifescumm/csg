@@ -54,6 +54,7 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
+csg.env
 
 # IDE
 .vscode/
@@ -93,3 +94,4 @@ meditations/
 artifacts/
 # Cursor rules - should not be committed
 .cursor/rules/
+backup/

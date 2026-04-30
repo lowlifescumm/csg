@@ -17,8 +17,8 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: "Cosmic Spiritual Guide - Tarot & Astrology Insights",
-  description: "Get instant, personalized tarot and astrology insights. AI-enhanced readings for love, career, and life guidance.",
+  title: "Free Tarot Reading & Birth Chart Calculator | Cosmic Spirit Guide",
+  description: "Get your free daily tarot reading and personalized birth chart. AI-powered astrology insights, compatibility tests, and spiritual guidance. 3 free readings daily.",
   openGraph: {
     type: "website",
     url: "https://cosmicspiritguide.com",

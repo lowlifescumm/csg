@@ -35,7 +35,8 @@ export default function DashboardLayoutShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
+    // Inline color:white overrides inherited body{color:var(--color-indigo)} cascade
+    <div className="relative min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900" style={{ color: 'white' }}>
         <BackgroundStars />
         
         {/* Aria live region for dynamic content updates */}

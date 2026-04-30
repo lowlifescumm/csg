@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import OpenAI from 'openai';
+import Groq from 'groq-sdk';
 import { pool } from '@/lib/db.js';
 import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const parseJsonSafely = (payload, label) => {
   if (!payload) return null;

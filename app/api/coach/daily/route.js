@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { getPinecone } from "@/lib/pinecone";
 import { pool } from "@/lib/db";
-import { createEmbedding, generateCoachReply } from "@/lib/openai";
+import { createEmbedding, generateCoachReply } from @/lib/groq;
 
 export const runtime = "nodejs";
 

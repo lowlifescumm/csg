@@ -5,7 +5,7 @@ import spreads from "@/lib/tarot-spreads.json";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { drawCards } from "@/lib/tarot-data";
 import { saveReading, getReadingById, pool } from "@/lib/db";
-import { generateTarotReading, generateTarotSummary, createEmbedding } from "@/lib/openai";
+import { generateTarotReading, generateTarotSummary, createEmbedding } from @/lib/groq;
 import { getPinecone } from "@/lib/pinecone";
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
