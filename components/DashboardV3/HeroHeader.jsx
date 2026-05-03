@@ -90,15 +90,15 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
 
   return (
     <>
-      <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg border border-purple-100 mb-6">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between gap-6">
           {/* Left: Title and Greeting */}
           <div className="flex-1">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
               Your cosmic field is open ✨
             </h1>
-            <p className="text-lg text-purple-200">
+            <p className="text-lg text-gray-600">
               {getGreeting()}, {user?.firstName || user?.email?.split("@")[0] || "there"}
             </p>
           </div>
@@ -106,17 +106,17 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
           {/* Middle: Moon Phase Widget */}
           <div className="flex items-center gap-3 px-4">
             {safeMoonPhase ? (
-              <div className="flex items-center gap-3 bg-white bg-opacity-10 rounded-xl px-4 py-2 border border-white border-opacity-20">
+              <div className="flex items-center gap-3 bg-purple-50 rounded-xl px-4 py-2 border border-purple-100">
                 <div className="text-3xl">{safeMoonPhase.phaseEmoji || "🌙"}</div>
                 <div>
-                  <div className="text-sm font-semibold text-white">{safeMoonPhase.phaseName || "Loading..."}</div>
-                  <div className="text-xs text-purple-200">Moon Phase</div>
+                  <div className="text-sm font-semibold text-gray-800">{safeMoonPhase.phaseName || "Loading..."}</div>
+                  <div className="text-xs text-gray-500">Moon Phase</div>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3 bg-white bg-opacity-10 rounded-xl px-4 py-2 border border-white border-opacity-20">
-                <Moon className="w-6 h-6 text-purple-200 animate-pulse" />
-                <div className="text-sm text-purple-200">Loading moon...</div>
+              <div className="flex items-center gap-3 bg-purple-50 rounded-xl px-4 py-2 border border-purple-100">
+                <Moon className="w-6 h-6 text-purple-400 animate-pulse" />
+                <div className="text-sm text-gray-600">Loading moon...</div>
               </div>
             )}
           </div>
@@ -126,27 +126,27 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
             {/* Credits */}
             <button
               onClick={() => setShowPurchaseModal(true)}
-              className={`flex items-center gap-2 px-4 py-2 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20 hover:bg-opacity-20 smooth-transition ${
+              className={`flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-xl border border-purple-100 hover:bg-purple-100 smooth-transition ${
                 hasZeroCredits ? "animate-pulse" : ""
               }`}
             >
-              <CreditCard className={`w-5 h-5 ${hasZeroCredits ? "text-yellow-400" : "text-white"}`} />
-              <span className="text-white font-semibold">{totalCredits}</span>
+              <CreditCard className={`w-5 h-5 ${hasZeroCredits ? "text-yellow-500" : "text-purple-500"}`} />
+              <span className="text-gray-800 font-semibold">{totalCredits}</span>
             </button>
 
             {/* Streak */}
             {currentStreak > 0 && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20">
-                <Zap className="w-5 h-5 text-yellow-400" />
-                <span className="text-white font-semibold">{currentStreak}</span>
-                <span className="text-xs text-purple-200">days</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 rounded-xl border border-yellow-200">
+                <Zap className="w-5 h-5 text-yellow-500" />
+                <span className="text-gray-800 font-semibold">{currentStreak}</span>
+                <span className="text-xs text-gray-500">days</span>
               </div>
             )}
 
             {/* Upgrade CTA */}
             <Link
               href="/subscription"
-              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition apple-shadow flex items-center gap-2"
+              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition shadow-lg flex items-center gap-2"
             >
               <Crown className="w-4 h-4" />
               <span>Upgrade</span>
@@ -158,27 +158,27 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
         <div className="md:hidden space-y-4">
           {/* Title and Greeting */}
           <div>
-            <h1 className="text-2xl font-bold text-white mb-1">
+            <h1 className="text-2xl font-bold text-gray-800 mb-1">
               Your cosmic field is open ✨
             </h1>
-            <p className="text-base text-purple-200">
+            <p className="text-base text-gray-600">
               {getGreeting()}, {user?.firstName || user?.email?.split("@")[0] || "there"}
             </p>
           </div>
 
           {/* Moon Phase */}
           {safeMoonPhase ? (
-            <div className="flex items-center gap-3 bg-white bg-opacity-10 rounded-xl px-4 py-3 border border-white border-opacity-20">
+            <div className="flex items-center gap-3 bg-purple-50 rounded-xl px-4 py-3 border border-purple-100">
               <div className="text-2xl">{safeMoonPhase.phaseEmoji || "🌙"}</div>
               <div>
-                <div className="text-sm font-semibold text-white">{safeMoonPhase.phaseName || "Loading..."}</div>
-                <div className="text-xs text-purple-200">Moon Phase</div>
+                <div className="text-sm font-semibold text-gray-800">{safeMoonPhase.phaseName || "Loading..."}</div>
+                <div className="text-xs text-gray-500">Moon Phase</div>
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 bg-white bg-opacity-10 rounded-xl px-4 py-3 border border-white border-opacity-20">
-              <Moon className="w-5 h-5 text-purple-200 animate-pulse" />
-              <div className="text-sm text-purple-200">Loading moon...</div>
+            <div className="flex items-center gap-3 bg-purple-50 rounded-xl px-4 py-3 border border-purple-100">
+              <Moon className="w-5 h-5 text-purple-400 animate-pulse" />
+              <div className="text-sm text-gray-600">Loading moon...</div>
             </div>
           )}
 
@@ -186,24 +186,24 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowPurchaseModal(true)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20 hover:bg-opacity-20 smooth-transition ${
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-50 rounded-xl border border-purple-100 hover:bg-purple-100 smooth-transition ${
                 hasZeroCredits ? "animate-pulse" : ""
               }`}
             >
-              <CreditCard className={`w-4 h-4 ${hasZeroCredits ? "text-yellow-400" : "text-white"}`} />
-              <span className="text-white font-semibold text-sm">{totalCredits}</span>
+              <CreditCard className={`w-4 h-4 ${hasZeroCredits ? "text-yellow-500" : "text-purple-500"}`} />
+              <span className="text-gray-800 font-semibold text-sm">{totalCredits}</span>
             </button>
 
             {currentStreak > 0 && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20">
-                <Zap className="w-4 h-4 text-yellow-400" />
-                <span className="text-white font-semibold text-sm">{currentStreak}</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 rounded-xl border border-yellow-200">
+                <Zap className="w-4 h-4 text-yellow-500" />
+                <span className="text-gray-800 font-semibold text-sm">{currentStreak}</span>
               </div>
             )}
 
             <Link
               href="/subscription"
-              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition apple-shadow flex items-center gap-2 text-sm"
+              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition shadow-lg flex items-center gap-2 text-sm"
             >
               <Crown className="w-4 h-4" />
               <span>Upgrade</span>
@@ -216,32 +216,32 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
       {showPurchaseModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={handleCloseModal}>
           <div 
-            className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-purple-100 max-w-md w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Purchase Credits</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Purchase Credits</h2>
               <button
                 onClick={handleCloseModal}
-                className="text-purple-200 hover:text-white smooth-transition"
+                className="text-gray-500 hover:text-gray-700 smooth-transition"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Current Credits Display */}
-            <div className="mb-6 p-4 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20">
+            <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
               <div className="flex items-center justify-between">
-                <span className="text-purple-200 text-sm">Current Credits</span>
-                <span className="text-white font-semibold text-lg">{totalCredits}</span>
+                <span className="text-gray-600 text-sm">Current Credits</span>
+                <span className="text-gray-800 font-semibold text-lg">{totalCredits}</span>
               </div>
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-400 rounded-xl">
-                <p className="text-red-200 text-sm">{error}</p>
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+                <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
 
@@ -251,14 +251,14 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
                 <button
                   key={pack.size}
                   onClick={() => handlePurchaseClick(pack)}
-                  className="w-full p-4 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20 hover:bg-opacity-20 smooth-transition text-left"
+                  className="w-full p-4 bg-purple-50 rounded-xl border border-purple-100 hover:bg-purple-100 smooth-transition text-left"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-white font-semibold mb-1">{pack.name}</div>
-                      <div className="text-purple-200 text-sm">{pack.description}</div>
+                      <div className="text-gray-800 font-semibold mb-1">{pack.name}</div>
+                      <div className="text-gray-500 text-sm">{pack.description}</div>
                     </div>
-                    <div className="text-white font-bold text-lg">
+                    <div className="text-gray-800 font-bold text-lg">
                       ${(pack.price / 100).toFixed(2)}
                     </div>
                   </div>
@@ -268,15 +268,15 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
 
             {/* Selected Pack Checkout */}
             {selectedPack && (
-              <div className="mt-6 p-4 bg-white bg-opacity-10 rounded-xl border border-white border-opacity-20">
+              <div className="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
                 <div className="mb-4">
-                  <h3 className="text-white font-semibold mb-2">Selected Pack</h3>
+                  <h3 className="text-gray-800 font-semibold mb-2">Selected Pack</h3>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-white font-semibold">{selectedPack.name}</div>
-                      <div className="text-purple-200 text-sm">{selectedPack.description}</div>
+                      <div className="text-gray-800 font-semibold">{selectedPack.name}</div>
+                      <div className="text-gray-500 text-sm">{selectedPack.description}</div>
                     </div>
-                    <div className="text-white font-bold">
+                    <div className="text-gray-800 font-bold">
                       ${(selectedPack.price / 100).toFixed(2)}
                     </div>
                   </div>
@@ -286,11 +286,11 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
                   disabled={loading}
                   className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 smooth-transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Processing..." : `Continue to Checkout - $${(selectedPack.price / 100).toFixed(2)}`}
+                  {loading ? "Processing..." : `Continue to Checkout - ${(selectedPack.price / 100).toFixed(2)}`}
                 </button>
                 <button
                   onClick={() => setSelectedPack(null)}
-                  className="w-full mt-2 px-6 py-2 text-purple-200 hover:text-white smooth-transition text-sm"
+                  className="w-full mt-2 px-6 py-2 text-gray-600 hover:text-gray-800 smooth-transition text-sm"
                 >
                   Change Selection
                 </button>
@@ -298,14 +298,14 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
             )}
 
             {/* Footer */}
-            <div className="mt-6 pt-6 border-t border-white border-opacity-20 space-y-3">
-              <p className="text-purple-200 text-xs text-center">
+            <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
+              <p className="text-gray-500 text-xs text-center">
                 Each reading costs 1 credit. Credits never expire.
               </p>
               <Link
                 href="/credits"
                 onClick={handleCloseModal}
-                className="block text-center text-purple-200 hover:text-white smooth-transition text-sm font-medium"
+                className="block text-center text-purple-600 hover:text-purple-700 smooth-transition text-sm font-medium"
               >
                 View all purchase options →
               </Link>

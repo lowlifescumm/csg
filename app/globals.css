@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dashboard background fix - prevent cream body from showing through gradient gaps */
+/* Dashboard background - light theme matching landing page */
 html {
-  background-color: #1a1033;
+  background-color: #f9fafb;
 }
 body {
   background-color: transparent;
@@ -412,28 +412,13 @@ body {
   @apply text-purple-600 hover:text-purple-700 underline transition-colors duration-200;
 }
 /* =============================================================================
-   DASHBOARD COLOR OVERRIDE - Force white text in dashboard areas
-   This must be the LAST CSS rule to ensure it wins all cascades
+   DASHBOARD THEME - Light theme matching landing page
    ============================================================================= */
-body.dashboard-active,
-body:has(#dashboard-main) {
-  color: white !important;
+body.dashboard-active {
+  color: #374151;
 }
 
-/* =============================================================================
-   DASHBOARD TEXT COLORS - Explicitly override body color cascade
-   These use !important to beat any inherited color values
-   ============================================================================= */
-.dashboard-text,
-.dashboard-text * {
-  color: white !important;
-}
-
-/* =============================================================================
-   DASHBOARD COLOR CASCADE FIX
-   Force white text on all dashboard content to override any body color
-   ============================================================================= */
 #dashboard-main,
 #dashboard-main * {
-  color: white !important;
+  color: #374151;
 }

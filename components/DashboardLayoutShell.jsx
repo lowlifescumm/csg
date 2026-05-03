@@ -35,9 +35,9 @@ export default function DashboardLayoutShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    // Inline color:white overrides inherited body{color:var(--color-indigo)} cascade
-    <div className="relative min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900" style={{ color: 'white' }}>
-        <BackgroundStars />
+    // Light theme - matching landing page style
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50" style={{ color: '#374151' }}>
+        {/* Background removed for light theme - uncomment if you want subtle effects */}
         
         {/* Aria live region for dynamic content updates */}
         <div aria-live="polite" aria-atomic="true" className="sr-only">
