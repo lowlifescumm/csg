@@ -83,18 +83,21 @@ body {
   }
 
   /* Enhanced Gradients */
+  /* Enhanced Gradients */
   .gradient-text {
-    @apply bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent;
+    background: linear-gradient(to right, #9333ea, #db2777, #2563eb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   
   .gradient-bg-primary {
-    @apply bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500;
+    background: linear-gradient(to bottom right, #a855f7, #ec4899, #3b82f6);
   }
   
   .gradient-bg-secondary {
-    @apply bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500;
+    background: linear-gradient(to bottom right, #3b82f6, #a855f7, #ec4899);
   }
-
   /* Smooth Transitions */
   .smooth-transition {
     @apply transition-all duration-300 ease-in-out;
