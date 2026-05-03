@@ -113,7 +113,8 @@ body {
 
   /* Enhanced Button Styles */
   .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl smooth-transition hover:shadow-lg hover:scale-105 active:scale-95;
+    @apply px-6 py-3 text-white font-semibold rounded-xl smooth-transition hover:shadow-lg hover:scale-105 active:scale-95;
+    background: linear-gradient(to right, #9333ea, #db2777);
   }
   
   .btn-secondary {
