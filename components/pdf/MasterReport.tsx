@@ -16,6 +16,7 @@ interface UserData {
   moonSign?: string;
   risingSign?: string;
   birthChartSvg?: string;
+  partnerBirthChartSvg?: string;
   compatibilityChartSvg?: string;
   sections?: ReportSection[];
   compatibilityScores?: CompatibilityScores;
@@ -158,6 +159,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
     moonSign,
     risingSign,
     birthChartSvg,
+    partnerBirthChartSvg,
     compatibilityChartSvg,
     sections = [],
     compatibilityScores,
@@ -166,6 +168,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
   } = userData;
 
   const processedBirthChartSvg = ensurePreserveAspectRatio(birthChartSvg);
+  const processedPartnerBirthChartSvg = ensurePreserveAspectRatio(partnerBirthChartSvg);
   const processedCompatibilityChartSvg = ensurePreserveAspectRatio(compatibilityChartSvg);
   const backgroundImageUrl = toDataUrl(base64BackgroundImage);
   
@@ -185,6 +188,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
   };
   
   const finalBirthChartSvg = processSvgForPdf(processedBirthChartSvg);
+  const finalPartnerBirthChartSvg = processSvgForPdf(processedPartnerBirthChartSvg);
   const finalCompatibilityChartSvg = processSvgForPdf(processedCompatibilityChartSvg);
 
   // Helper to render section content
@@ -315,6 +319,18 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
             <div className="birth-chart-isolated chart-page-container">
               <div className="chart-container chart-page-only">
                 <div dangerouslySetInnerHTML={{ __html: finalBirthChartSvg }} />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'partner_birth_chart':
+        if (!finalPartnerBirthChartSvg) return null;
+        return (
+          <div className="report-container">
+            <div className="birth-chart-isolated chart-page-container">
+              <div className="chart-container chart-page-only">
+                <div dangerouslySetInnerHTML={{ __html: finalPartnerBirthChartSvg }} />
               </div>
             </div>
           </div>
@@ -880,7 +896,6 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
 };
 
 export default MasterReport;
-
 
 
 

@@ -13,23 +13,36 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // NEW DESIGN SYSTEM: Spiritual/Mystical Palette
         cosmic: {
-          purple: '#8B5CF6',
-          pink: '#EC4899',
-          indigo: '#6366F1',
+          indigo: '#1a1a2e',      // Primary: Deep indigo - spiritual, mysterious
+          gold: '#d4af37',        // Accent: Gold - premium, trustworthy
+          lavender: '#b19cd9',    // Secondary: Soft lavender - calming
+          purple: '#7c3aed',      // CTA: Vibrant purple - action
+          cream: '#faf8f5',       // Light background
+          midnight: '#0f0f1a',    // Darker variant
         },
+        // Legacy colors (for gradual migration)
+        pink: '#EC4899',
         // Theme accent colors
         accent: {
-          1: '#ff5db4',
-          2: '#ff7a59',
-          3: '#a86bff',
-          4: '#ffb86b',
+          1: '#d4af37',  // Gold
+          2: '#b19cd9',  // Lavender
+          3: '#7c3aed',  // Purple
+          4: '#1a1a2e',  // Indigo
         },
         // Text colors
         text: {
-          DEFAULT: '#ffffff',
-          muted: 'rgba(255, 255, 255, 0.62)',
+          DEFAULT: '#1a1a2e',
+          muted: 'rgba(26, 26, 46, 0.62)',
+          light: '#faf8f5',
         },
+      },
+      fontFamily: {
+        // NEW: Elegant serif for headlines
+        display: ['var(--font-playfair)', 'var(--font-cormorant)', 'Georgia', 'serif'],
+        // NEW: Clean sans-serif for body
+        body: ['var(--font-inter)', 'var(--font-source)', 'system-ui', 'sans-serif'],
       },
       spacing: {
         // Using spacing unit (8px) as base
@@ -45,38 +58,43 @@ module.exports = {
         md: 'var(--radius-md)',
       },
       boxShadow: {
-        soft: 'var(--shadow-soft)',
-        'focus-ring': 'var(--focus-ring)',
-      },
-      backdropBlur: {
-        glass: 'var(--glass-blur)',
+        soft: '0 4px 20px rgba(26, 26, 46, 0.08)',
+        'focus-ring': '0 0 0 3px rgba(124, 58, 237, 0.3)',
+        gold: '0 4px 20px rgba(212, 175, 55, 0.25)',
+        purple: '0 4px 20px rgba(124, 58, 237, 0.25)',
       },
       backgroundImage: {
-        'gradient-bg': 'var(--bg-gradient)',
-        'page-overlay': 'var(--page-bg-overlay)',
-        'card-border': 'var(--card-border)',
-      },
-      backgroundColor: {
-        'card-bg': 'var(--card-bg)',
+        // NEW: Subtle celestial gradients (NOT generic)
+        'celestial': 'radial-gradient(ellipse at top, rgba(177, 156, 217, 0.15), transparent 70%)',
+        'stars': 'radial-gradient(ellipse at bottom, rgba(26, 26, 46, 0.05), transparent 70%)',
+        'gold-gradient': 'linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%)',
+        'indigo-gradient': 'linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in',
-        'pulse-subtle': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'bounce-subtle': 'bounce 2s infinite',
-        'gradient-pulse': 'gradientPulse 3s ease infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'twinkle': 'twinkle 3s ease-in-out infinite',
+        'glow': 'glow 2s ease-in-out infinite alternate',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
-        gradientPulse: {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        twinkle: {
+          '0%, 100%': { opacity: '0.3' },
+          '50%': { opacity: '1' },
+        },
+        glow: {
+          '0%': { boxShadow: '0 0 5px rgba(212, 175, 55, 0.3)' },
+          '100%': { boxShadow: '0 0 20px rgba(212, 175, 55, 0.6), 0 0 40px rgba(212, 175, 55, 0.3)' },
         },
       },
     },
   },
   plugins: [],
 }
-

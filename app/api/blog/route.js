@@ -90,29 +90,45 @@ export async function GET(request) {
   }
 }
 
+// Auth helper: supports both cookie (browser) and API key (programmatic)
+async function authenticate(request) {
+  // Check API key first (for programmatic access)
+  const apiKey = request.headers.get('x-api-key');
+  if (apiKey) {
+    if (!process.env.BLOG_API_KEY || apiKey !== process.env.BLOG_API_KEY) {
+      return { error: 'Invalid API key', status: 401 };
+    }
+    // API key is valid — use service account (userId = 1 or first admin found)
+    const { rows } = await pool.query(
+      "SELECT id FROM users WHERE role='admin' ORDER BY id ASC LIMIT 1"
+    );
+    return rows[0] ? { userId: rows[0].id, isAdmin: true } : { error: 'No admin found', status: 500 };
+  }
+
+  // Fall back to cookie auth
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+  if (!token) return { error: 'Unauthorized', status: 401 };
+
+  const decoded = verifyToken(token);
+  if (!decoded) return { error: 'Unauthorized', status: 401 };
+
+  const { rows: userRows } = await pool.query(
+    "SELECT role FROM users WHERE id=$1",
+    [decoded.userId]
+  );
+  if (!userRows[0] || userRows[0].role !== 'admin') {
+    return { error: 'Forbidden', status: 403 };
+  }
+  return { userId: decoded.userId, isAdmin: true };
+}
+
 // POST /api/blog - Create new blog post
 export async function POST(request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { rows: userRows } = await pool.query(
-      "SELECT role FROM users WHERE id=$1",
-      [decoded.userId]
-    );
-    
-    if (!userRows[0] || userRows[0].role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const auth = await authenticate(request);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     const body = await request.json();
@@ -210,7 +226,7 @@ export async function POST(request) {
       category,
       meta_title,
       meta_description,
-      author_id || decoded.userId,
+        author_id || auth.userId,
       status === 'published' ? new Date() : null
     ]);
 
@@ -228,26 +244,9 @@ export async function POST(request) {
 // PUT /api/blog - Update blog post
 export async function PUT(request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { rows: userRows } = await pool.query(
-      "SELECT role FROM users WHERE id=$1",
-      [decoded.userId]
-    );
-    
-    if (!userRows[0] || userRows[0].role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const auth = await authenticate(request);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     const body = await request.json();
@@ -321,26 +320,9 @@ export async function PUT(request) {
 // DELETE /api/blog - Delete blog post
 export async function DELETE(request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { rows: userRows } = await pool.query(
-      "SELECT role FROM users WHERE id=$1",
-      [decoded.userId]
-    );
-    
-    if (!userRows[0] || userRows[0].role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const auth = await authenticate(request);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     const { searchParams } = new URL(request.url);

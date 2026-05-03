@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Daily Astrology Forecasts & Transits | Cosmic Spirit Guide",
-  description: "Get personalized daily astrology forecasts and transit reports. Know what the stars have in store for you today.",
+  title: "Free Daily Astrology Forecast & Horoscope | Cosmic Spirit Guide",
+  description: "Get your free daily astrology forecast & horoscope. Personalized zodiac predictions, planetary transits & what the stars say about your day ahead.",
 };
 
 export default function ForecastsLayout({ children }) {

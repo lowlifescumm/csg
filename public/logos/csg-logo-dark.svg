@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <defs>
+    <!-- Lighter gold for dark backgrounds -->
+    <linearGradient id="goldLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FAF3E0"/>
+      <stop offset="50%" style="stop-color:#F4E4BC"/>
+      <stop offset="100%" style="stop-color:#D4AF37"/>
+    </linearGradient>
+    <!-- Soft violet for dark mode -->
+    <linearGradient id="violetLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C4B5FD"/>
+      <stop offset="100%" style="stop-color:#A78BFA"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Celestial Eye Icon - Light Version for Dark Backgrounds -->
+  <g transform="translate(5, 5)">
+    <!-- Outer 8-point star -->
+    <path d="M25 0 L27 8 L35 5 L30 12 L38 15 L30 18 L35 25 L27 22 L25 30 L23 22 L15 25 L20 18 L12 15 L20 12 L15 5 L23 8 Z" 
+          fill="none" 
+          stroke="url(#goldLight)" 
+          stroke-width="1.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Eye shape -->
+    <path d="M25 10 Q35 15 25 20 Q15 15 25 10" 
+          fill="none" 
+          stroke="url(#goldLight)" 
+          stroke-width="1.5"
+          stroke-linecap="round"/>
+    
+    <!-- Eye inner almond -->
+    <path d="M25 11 Q33 15 25 19 Q17 15 25 11" 
+          fill="none" 
+          stroke="url(#goldLight)" 
+          stroke-width="0.8"/>
+    
+    <!-- Iris - celestial pattern -->
+    <circle cx="25" cy="15" r="3.5" 
+            fill="none" 
+            stroke="url(#violetLight)" 
+            stroke-width="0.6"/>
+    
+    <!-- Constellation dots in iris -->
+    <circle cx="25" cy="15" r="1.2" fill="url(#violetLight)"/>
+    <circle cx="23.5" cy="13.5" r="0.4" fill="url(#goldLight)" opacity="0.8"/>
+    <circle cx="26.5" cy="13.5" r="0.4" fill="url(#goldLight)" opacity="0.8"/>
+    <circle cx="23.5" cy="16.5" r="0.4" fill="url(#goldLight)" opacity="0.8"/>
+    <circle cx="26.5" cy="16.5" r="0.4" fill="url(#goldLight)" opacity="0.8"/>
+    
+    <!-- Crescent moon in pupil -->
+    <path d="M25 13.5 Q26.5 15 25 16.5 Q24.2 15 25 13.5" 
+          fill="url(#goldLight)"/>
+    
+    <!-- Decorative orbit ring -->
+    <ellipse cx="25" cy="15" rx="6" ry="2" 
+             fill="none" 
+             stroke="url(#violetLight)" 
+             stroke-width="0.3" 
+             opacity="0.6"/>
+    <ellipse cx="25" cy="15" rx="2" ry="6" 
+             fill="none" 
+             stroke="url(#violetLight)" 
+             stroke-width="0.3" 
+             opacity="0.6"/>
+  </g>
+  
+  <!-- Wordmark: Cosmic Spirit Guide -->
+  <g transform="translate(50, 20)">
+    <!-- Cosmic -->
+    <text x="0" y="0" 
+          font-family="'Cormorant Garamond', Georgia, serif" 
+          font-size="22" 
+          font-weight="500" 
+          font-style="italic"
+          fill="#C4B5FD">Cosmic</text>
+    
+    <!-- Spirit -->
+    <text x="0" y="24" 
+          font-family="'Cormorant Garamond', Georgia, serif" 
+          font-size="22" 
+          font-weight="600" 
+          font-style="italic"
+          fill="url(#goldLight)">Spirit</text>
+    
+    <!-- Guide -->
+    <text x="55" y="24" 
+          font-family="'Cormorant Garamond', Georgia, serif" 
+          font-size="22" 
+          font-weight="400" 
+          font-style="italic"
+          fill="#C4B5FD">Guide</text>
+    
+    <!-- Decorative underline -->
+    <path d="M0 30 Q75 32 150 30" 
+          fill="none" 
+          stroke="url(#violetLight)" 
+          stroke-width="0.5" 
+          opacity="0.4"/>
+  </g>
+</svg>

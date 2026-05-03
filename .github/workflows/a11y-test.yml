@@ -31,6 +31,11 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-for-ci-builds-only
+          NEXTAUTH_SECRET: test-nextauth-secret-for-ci-builds-only
+          NEXTAUTH_URL: http://localhost:3000
+          GOOGLE_CLIENT_ID: test-google-client-id
+          GOOGLE_CLIENT_SECRET: test-google-client-secret
 
       - name: Run accessibility tests
         run: npm run test:a11y

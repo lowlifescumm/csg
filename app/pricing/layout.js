@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Pricing & Plans | Cosmic Spirit Guide",
-  description: "Choose your spiritual journey. Free daily readings or premium unlimited access. Affordable astrology and tarot subscription plans.",
+  title: "Unlimited Tarot & Astrology Plans | Cosmic Spirit Guide",
+  description: "Free daily tarot readings or unlimited premium access. Affordable astrology subscription plans with birth charts, compatibility tests & spiritual insights.",
 };
 
 export default function PricingLayout({ children }) {

@@ -1,47 +1,40 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Calendar, Clock, User, ArrowLeft, Share2, BookOpen, Tag } from 'lucide-react';
+import { getBlogPostBySlug } from '@/lib/blog-server';
+import { BlogRelatedServices } from '@/components/RelatedServices';
+import { getServicesForCategory, extractKeywordLinks } from '@/lib/internal-links/service-map';
 
-export default function BlogPostPage() {
-  const params = useParams();
-  const [post, setPost] = useState(null);
-  const [relatedPosts, setRelatedPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const result = await getBlogPostBySlug(slug);
+  
+  if (!result?.post) {
+    return {
+      title: 'Article Not Found | Cosmic Spirit Guide',
+    };
+  }
 
-  useEffect(() => {
-    if (params.slug) {
-      fetchPost();
-    }
-  }, [params.slug]);
-
-  const fetchPost = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/blog/${params.slug}`);
-      
-      if (response.status === 404) {
-        setError('Post not found');
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch post');
-      }
-
-      const data = await response.json();
-      setPost(data.post);
-      setRelatedPosts(data.related || []);
-    } catch (error) {
-      console.error('Failed to fetch post:', error);
-      setError('Failed to load post');
-    } finally {
-      setLoading(false);
-    }
+  const { post } = result;
+  
+  return {
+    title: `${post.title} | Cosmic Spirit Guide`,
+    description: post.excerpt || post.meta_description || `Read ${post.title} on Cosmic Spirit Guide`,
+    openGraph: post.featured_image ? {
+      images: [post.featured_image],
+    } : undefined,
   };
+}
+
+export default async function BlogPostPage({ params }) {
+  const { slug } = await params;
+  const result = await getBlogPostBySlug(slug);
+  
+  if (!result?.post) {
+    notFound();
+  }
+
+  const { post, related } = result;
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -64,69 +57,22 @@ export default function BlogPostPage() {
     
     // Convert plain text to HTML with proper formatting
     return content
+      // Convert **bold** to <strong>
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Convert *italic* to <em>
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
       // Convert line breaks to <br> tags
       .replace(/\n/g, '<br>')
       // Convert double line breaks to paragraphs
-      .replace(/\n\n/g, '</p><p>')
+      .replace(/<br><br>/g, '</p><p>')
       // Wrap in paragraph tags if not already wrapped
       .replace(/^(?!<p>)/, '<p>')
       .replace(/(?!<\/p>)$/, '</p>')
       // Clean up empty paragraphs
       .replace(/<p><\/p>/g, '')
-      // Convert **bold** to <strong>
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Convert *italic* to <em>
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
       // Convert URLs to links
       .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-700 underline">$1</a>');
   };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: post.title,
-          text: post.excerpt,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.log('Error sharing:', error);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading article...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !post) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Article Not Found</h1>
-          <p className="text-gray-600 mb-6">The article you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-          <Link
-            href="/blog"
-            className="px-6 py-3 bg-purple-500 text-white font-semibold rounded-xl hover:bg-purple-600 smooth-transition"
-          >
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
@@ -141,14 +87,6 @@ export default function BlogPostPage() {
               <ArrowLeft className="w-5 h-5" />
               <span>Back to Blog</span>
             </Link>
-            
-            <button
-              onClick={handleShare}
-              className="flex items-center space-x-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 smooth-transition"
-            >
-              <Share2 className="w-4 h-4" />
-              <span>Share</span>
-            </button>
           </div>
         </div>
       </div>
@@ -216,12 +154,21 @@ export default function BlogPostPage() {
           />
         </article>
 
+        {/* Contextual Service Links */}
+        <div className="mb-8">
+          <BlogRelatedServices 
+            category={post.category} 
+            tags={post.tags}
+            maxServices={3}
+          />
+        </div>
+
         {/* Related Posts */}
-        {relatedPosts.length > 0 && (
+        {related && related.length > 0 && (
           <section className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Articles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedPosts.map((relatedPost) => (
+              {related.map((relatedPost) => (
                 <article key={relatedPost.id} className="glassmorphic rounded-2xl overflow-hidden apple-shadow-lg hover:shadow-xl smooth-transition group">
                   {relatedPost.featured_image && (
                     <div className="aspect-video overflow-hidden">
@@ -241,7 +188,7 @@ export default function BlogPostPage() {
                     </h3>
 
                     <p className="text-gray-600 mb-4 line-clamp-2">
-                      {relatedPost.excerpt || relatedPost.content.substring(0, 100) + '...'}
+                      {relatedPost.excerpt || (relatedPost.content ? relatedPost.content.substring(0, 100) + '...' : '')}
                     </p>
 
                     <div className="flex items-center justify-between text-sm text-gray-500">

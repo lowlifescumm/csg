@@ -2,73 +2,51 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * BackgroundStars - Animated starry background with parallax effect, gradient blobs, and grain texture
+ * BackgroundStars - Elegant celestial background with subtle stars
  * 
- * Features:
- * - ~200 animated white dots with varied opacity
- * - Parallax effect on mouse movement
- * - Two large radial gradient blobs (purple top-right, blue bottom-left)
- * - Subtle grain/noise overlay
- * - Performance optimized: stops on tab blur, throttled to 30fps
+ * NEW DESIGN: Minimalist celestial aesthetic
+ * - Soft cream background with subtle indigo accents
+ * - Gentle floating orbs (NOT generic gradients)
+ * - Sparse, elegant star field
+ * - Subtle nebula effects in brand colors
  */
 export default function BackgroundStars() {
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(null);
   const lastFrameTimeRef = useRef(0);
-  const mousePositionRef = useRef({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(true);
   const starsRef = useRef([]);
   
-  // Target FPS: 30 (frame time: ~33.33ms)
   const TARGET_FPS = 30;
   const FRAME_TIME = 1000 / TARGET_FPS;
 
-  // Generate stars and handle resize
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || typeof window === "undefined") return;
 
     const generateStars = () => {
       const stars = [];
-      const numStars = 200;
+      const numStars = 80; // Reduced for elegance
 
-      // Initialize stars with random positions and properties
       for (let i = 0; i < numStars; i++) {
         stars.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          radius: Math.random() * 1.5 + 0.5, // 0.5 to 2px
-          opacity: Math.random() * 0.6 + 0.2, // 0.2 to 0.8
-          speed: Math.random() * 0.3 + 0.1, // Slow drift
+          radius: Math.random() * 1 + 0.5, // Smaller, more subtle
+          opacity: Math.random() * 0.4 + 0.1, // More subtle
+          speed: Math.random() * 0.1 + 0.05, // Slower
           angle: Math.random() * Math.PI * 2,
-          baseOpacity: Math.random() * 0.6 + 0.2,
+          baseOpacity: Math.random() * 0.4 + 0.1,
+          twinklePhase: Math.random() * Math.PI * 2,
         });
       }
-
       return stars;
     };
 
-    // Initialize stars
     starsRef.current = generateStars();
-
-    // Regenerate stars on resize (will be handled in animation loop)
     return () => {};
   }, []);
 
-  // Handle mouse movement for parallax
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      mousePositionRef.current = {
-        x: e.clientX,
-        y: e.clientY,
-      };
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  // Handle visibility change (tab blur/focus)
   useEffect(() => {
     const handleVisibilityChange = () => {
       setIsVisible(!document.hidden);
@@ -82,7 +60,6 @@ export default function BackgroundStars() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
-  // Animation loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || typeof window === "undefined") return;
@@ -95,11 +72,9 @@ export default function BackgroundStars() {
       canvas.height = window.innerHeight;
     };
 
-    // Initial resize
     resizeCanvas();
 
     const draw = (currentTime) => {
-      // Throttle to 30fps
       if (currentTime - lastFrameTimeRef.current < FRAME_TIME) {
         animationId = requestAnimationFrame(draw);
         return;
@@ -112,72 +87,51 @@ export default function BackgroundStars() {
         return;
       }
 
-      // Resize check and regenerate stars if needed
       const currentWidth = window.innerWidth;
       const currentHeight = window.innerHeight;
       if (canvas.width !== currentWidth || canvas.height !== currentHeight) {
         canvas.width = currentWidth;
         canvas.height = currentHeight;
-        // Regenerate stars for new canvas size
         const stars = [];
-        for (let i = 0; i < 200; i++) {
+        for (let i = 0; i < 80; i++) {
           stars.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            radius: Math.random() * 1.5 + 0.5,
-            opacity: Math.random() * 0.6 + 0.2,
-            speed: Math.random() * 0.3 + 0.1,
+            radius: Math.random() * 1 + 0.5,
+            opacity: Math.random() * 0.4 + 0.1,
+            speed: Math.random() * 0.1 + 0.05,
             angle: Math.random() * Math.PI * 2,
-            baseOpacity: Math.random() * 0.6 + 0.2,
+            baseOpacity: Math.random() * 0.4 + 0.1,
+            twinklePhase: Math.random() * Math.PI * 2,
           });
         }
         starsRef.current = stars;
       }
 
-      // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Calculate parallax offset based on mouse position
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const mouseX = mousePositionRef.current.x;
-      const mouseY = mousePositionRef.current.y;
-      
-      // Parallax intensity (how much stars move relative to mouse)
-      const parallaxIntensity = 0.02;
-      const offsetX = (mouseX - centerX) * parallaxIntensity;
-      const offsetY = (mouseY - centerY) * parallaxIntensity;
-
-      // Draw stars
-      ctx.fillStyle = "#ffffff";
+      // Draw stars with subtle twinkle
       starsRef.current.forEach((star) => {
-        // Update star position with slow drift
         star.x += Math.cos(star.angle) * star.speed;
         star.y += Math.sin(star.angle) * star.speed;
 
-        // Wrap around edges
         if (star.x < 0) star.x = canvas.width;
         if (star.x > canvas.width) star.x = 0;
         if (star.y < 0) star.y = canvas.height;
         if (star.y > canvas.height) star.y = 0;
 
-        // Apply parallax offset
-        const parallaxX = star.x + offsetX;
-        const parallaxY = star.y + offsetY;
+        // Gentle twinkle
+        const twinkle = Math.sin(currentTime * 0.001 + star.twinklePhase) * 0.15;
+        const opacity = Math.max(0.05, Math.min(0.5, star.baseOpacity + twinkle));
 
-        // Subtle pulsing opacity
-        const timePulse = Math.sin(currentTime * 0.001 + star.angle) * 0.1;
-        const opacity = Math.max(0.1, Math.min(0.9, star.baseOpacity + timePulse));
-
-        // Draw star
         ctx.globalAlpha = opacity;
+        ctx.fillStyle = "#1a1a2e";
         ctx.beginPath();
-        ctx.arc(parallaxX, parallaxY, star.radius, 0, Math.PI * 2);
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
         ctx.fill();
       });
 
       ctx.globalAlpha = 1;
-
       animationId = requestAnimationFrame(draw);
       animationFrameRef.current = animationId;
     };
@@ -193,45 +147,16 @@ export default function BackgroundStars() {
     };
   }, [isVisible]);
 
-  // Generate noise texture as data URL (memoized)
-  const [noiseTexture, setNoiseTexture] = useState("");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const generateNoiseTexture = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 200;
-      canvas.height = 200;
-      const ctx = canvas.getContext("2d");
-      const imageData = ctx.createImageData(canvas.width, canvas.height);
-      const data = imageData.data;
-
-      // Generate random noise
-      for (let i = 0; i < data.length; i += 4) {
-        const value = Math.random() * 255;
-        data[i] = value; // R
-        data[i + 1] = value; // G
-        data[i + 2] = value; // B
-        data[i + 3] = 255; // A
-      }
-
-      ctx.putImageData(imageData, 0, 0);
-      return canvas.toDataURL();
-    };
-
-    setNoiseTexture(generateNoiseTexture());
-  }, []);
-
   return (
     <>
       <style jsx>{`
-        .background-stars-container {
+        .celestial-background {
           position: fixed;
           inset: 0;
           pointer-events: none;
           z-index: 0;
           overflow: hidden;
+          background: linear-gradient(180deg, #faf8f5 0%, #f5f3f0 100%);
         }
 
         .stars-canvas {
@@ -241,62 +166,62 @@ export default function BackgroundStars() {
           height: 100%;
         }
 
-        .gradient-blobs {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-        }
-
-        .gradient-blob {
+        /* Subtle celestial orbs - NOT generic gradients */
+        .celestial-orb {
           position: absolute;
           border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.4;
+          filter: blur(60px);
+          opacity: 0.15;
         }
 
-        .gradient-blob-purple {
-          width: 600px;
-          height: 600px;
-          background: radial-gradient(circle, rgba(168, 107, 255, 0.6), transparent 70%);
-          top: -200px;
-          right: -200px;
+        .orb-lavender {
+          width: 400px;
+          height: 400px;
+          background: radial-gradient(circle, rgba(177, 156, 217, 0.4), transparent 70%);
+          top: -100px;
+          right: 10%;
+          animation: float 20s ease-in-out infinite;
         }
 
-        .gradient-blob-blue {
-          width: 500px;
-          height: 500px;
-          background: radial-gradient(circle, rgba(99, 102, 241, 0.5), transparent 70%);
-          bottom: -150px;
-          left: -150px;
+        .orb-indigo {
+          width: 300px;
+          height: 300px;
+          background: radial-gradient(circle, rgba(26, 26, 46, 0.08), transparent 70%);
+          bottom: 10%;
+          left: 5%;
+          animation: float 25s ease-in-out infinite reverse;
         }
 
-        .grain-overlay {
-          position: absolute;
-          inset: 0;
-          opacity: 0.02;
-          background-image: url("${noiseTexture}");
-          background-repeat: repeat;
-          pointer-events: none;
+        .orb-gold {
+          width: 250px;
+          height: 250px;
+          background: radial-gradient(circle, rgba(212, 175, 55, 0.15), transparent 70%);
+          top: 40%;
+          left: 30%;
+          animation: float 18s ease-in-out infinite;
+          animation-delay: -5s;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0); }
+          25% { transform: translate(20px, -30px); }
+          50% { transform: translate(-10px, 20px); }
+          75% { transform: translate(30px, 10px); }
         }
       `}</style>
-      <div className="background-stars-container">
-        {/* Animated stars canvas */}
+      <div className="celestial-background">
+        {/* Stars canvas */}
         <canvas
           ref={canvasRef}
           className="stars-canvas"
-          style={{ opacity: 0.6 }}
+          style={{ opacity: 0.7 }}
         />
 
-        {/* Gradient blobs */}
-        <div className="gradient-blobs">
-          <div className="gradient-blob gradient-blob-purple" />
-          <div className="gradient-blob gradient-blob-blue" />
-        </div>
-
-        {/* Grain/noise overlay */}
-        <div className="grain-overlay" />
+        {/* Subtle celestial orbs */}
+        <div className="celestial-orb orb-lavender" />
+        <div className="celestial-orb orb-indigo" />
+        <div className="celestial-orb orb-gold" />
       </div>
     </>
   );
 }
-

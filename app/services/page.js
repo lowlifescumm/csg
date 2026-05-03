@@ -1,8 +1,9 @@
 "use client";
 
 import { CREDIT_PACKS, READING_COSTS, SUBSCRIPTION_TIERS, PREMIUM_REPORTS, FREE_CREDITS } from "@/lib/pricing";
-import { Sparkles, Moon, Calendar, Heart, TrendingUp, FileText, Gift, Crown, Zap } from "lucide-react";
+import { Sparkles, Moon, Calendar, Heart, TrendingUp, FileText, Gift, Crown, Zap, ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
+import { ServiceRelatedLinks } from "@/components/RelatedServices";
 
 export default function ServicesPage() {
   // Format price in cents to dollars
@@ -154,11 +155,11 @@ export default function ServicesPage() {
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <div className="flex items-center gap-3 mb-4">
                 <Calendar className="w-6 h-6 text-orange-400" />
-                <h3 className="text-2xl font-bold text-white">Birth Chart Reading</h3>
+                <h3 className="text-2xl font-bold text-white">Birth Chart</h3>
+                <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded-full">FREE</span>
               </div>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-yellow-400 mb-2">{getReadingCost('NATAL_CHART')} credits</p>
-                <p className="text-purple-200 text-sm mb-4">Foundation for deeper readings</p>
+                <p className="text-purple-200 text-sm mb-4">Foundation for deeper readings — at no cost</p>
               </div>
               <ul className="space-y-2 mb-4">
                 <li className="text-purple-200 flex items-start gap-2">
@@ -337,6 +338,56 @@ export default function ServicesPage() {
                 </button>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Related Tools - Internal Linking */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-white mb-8 text-center">Quick Access to Tools</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="/tarot" className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all group">
+              <div className="flex items-center gap-3 mb-3">
+                <Sparkles className="w-6 h-6 text-yellow-400" />
+                <h3 className="text-lg font-semibold text-white">Tarot Readings</h3>
+              </div>
+              <p className="text-purple-200 text-sm mb-3">Get instant card guidance for any question</p>
+              <span className="text-purple-400 text-sm flex items-center gap-1 group-hover:text-white transition-colors">
+                Start Reading <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+            
+            <Link href="/birth-chart" className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all group">
+              <div className="flex items-center gap-3 mb-3">
+                <Star className="w-6 h-6 text-blue-400" />
+                <h3 className="text-lg font-semibold text-white">Birth Chart</h3>
+              </div>
+              <p className="text-purple-200 text-sm mb-3">Discover your cosmic blueprint - completely free</p>
+              <span className="text-purple-400 text-sm flex items-center gap-1 group-hover:text-white transition-colors">
+                Create Chart <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+            
+            <Link href="/compatibility" className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all group">
+              <div className="flex items-center gap-3 mb-3">
+                <Heart className="w-6 h-6 text-pink-400" />
+                <h3 className="text-lg font-semibold text-white">Compatibility</h3>
+              </div>
+              <p className="text-purple-200 text-sm mb-3">See how your energies align with a partner</p>
+              <span className="text-purple-400 text-sm flex items-center gap-1 group-hover:text-white transition-colors">
+                Check Match <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+            
+            <Link href="/dashboard" className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all group">
+              <div className="flex items-center gap-3 mb-3">
+                <Zap className="w-6 h-6 text-green-400" />
+                <h3 className="text-lg font-semibold text-white">Dashboard</h3>
+              </div>
+              <p className="text-purple-200 text-sm mb-3">Access all your readings and spiritual tools</p>
+              <span className="text-purple-400 text-sm flex items-center gap-1 group-hover:text-white transition-colors">
+                Go to Dashboard <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
           </div>
         </section>
 

@@ -165,8 +165,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   }, [user?.id]);
 
   return (
-    <div className="w-full text-gray-700">
-      {/* Main Content - Matching landing page light theme */}
+    <div className="w-full">
+      {/* Main Content - No wrapper needed, layout shell handles it */}
       <div className="space-y-8">
           {/* Hero Header */}
           <HeroHeader
@@ -177,40 +177,40 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           />
 
           {/* Why Us - Value Proposition */}
-          <div className="bg-white rounded-3xl p-4 sm:p-6 md:p-8 shadow-lg border border-purple-100">
+          <div className="celestial-card p-4 sm:p-6 md:p-8">
             <div className="text-center mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text mb-3">Why Choose Cosmic Spiritual Guide?</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-cosmic-indigo mb-3">Why Choose Cosmic Spiritual Guide?</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               <div className="text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-cosmic-indigo flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-cosmic-gold" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Precision</h3>
-                <p className="text-gray-600 text-sm sm:text-base leading-relaxed">NASA-quality astrological calculations powered by advanced astronomy algorithms</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-cosmic-indigo mb-2">Precision</h3>
+                <p className="text-cosmic-indigo/60 text-sm sm:text-base leading-relaxed">NASA-quality astrological calculations powered by advanced astronomy algorithms</p>
               </div>
               <div className="text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-cosmic-purple flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
                   <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Clarity</h3>
-                <p className="text-gray-600 text-sm sm:text-base leading-relaxed">AI-powered interpretations that make complex astrological insights accessible and actionable</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-cosmic-indigo mb-2">Clarity</h3>
+                <p className="text-cosmic-indigo/60 text-sm sm:text-base leading-relaxed">AI-powered interpretations that make complex astrological insights accessible and actionable</p>
               </div>
               <div className="text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-                  <Star className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-cosmic-gold flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                  <Star className="w-6 h-6 sm:w-8 sm:h-8 text-cosmic-indigo" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Free Daily Credits</h3>
-                <p className="text-gray-600 text-sm sm:text-base leading-relaxed">3 credits refresh every day - explore tarot readings without spending a dime</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-cosmic-indigo mb-2">Free Daily Credits</h3>
+                <p className="text-cosmic-indigo/60 text-sm sm:text-base leading-relaxed">3 credits refresh every day - explore tarot readings without spending a dime</p>
               </div>
             </div>
           </div>
 
           {/* Section A: Daily Guidance (Quick/Free Zone) */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg border border-purple-100">
+          <div className="celestial-card p-6 sm:p-8">
             <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Daily Guidance</h2>
-              <p className="text-gray-600 text-sm sm:text-base">Quick access to your daily cosmic insights - perfect for starting your day</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-cosmic-indigo mb-2">Daily Guidance</h2>
+              <p className="text-cosmic-indigo/60 text-sm sm:text-base">Quick access to your daily cosmic insights - perfect for starting your day</p>
             </div>
 
             {/* Daily Horoscope */}
@@ -225,33 +225,33 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   setTarotSelectorConfig({ spreadType: "daily", readingType: "daily" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg flex items-center justify-center gap-3 relative"
+                className="btn-primary flex items-center justify-center gap-3 relative group"
               >
-                <Sparkles className="w-5 h-5 group-hover:animate-bounce-gentle" />
+                <Sparkles className="w-5 h-5" />
                 <span>Daily Tarot</span>
-                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
+                <span className="absolute top-2 right-2 bg-white/30 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
               <button
                 onClick={() => {
                   setTarotSelectorConfig({ spreadType: "daily-love", readingType: "daily-love" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg flex items-center justify-center gap-3 relative"
+                className="px-8 py-4 rounded-xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 relative group bg-gradient-to-r from-rose-500 to-pink-500 hover:shadow-lg hover:-translate-y-0.5"
               >
                 <Heart className="w-5 h-5" />
                 <span>Love Tarot</span>
-                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
+                <span className="absolute top-2 right-2 bg-white/30 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
               <button
                 onClick={() => {
                   setTarotSelectorConfig({ spreadType: "career", readingType: "career" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white px-6 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg flex items-center justify-center gap-3 relative"
+                className="px-8 py-4 rounded-xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 relative group bg-gradient-to-r from-cosmic-indigo to-cosmic-purple hover:shadow-lg hover:-translate-y-0.5"
               >
                 <Briefcase className="w-5 h-5" />
                 <span>Career Tarot</span>
-                <span className="absolute top-2 right-2 bg-white/20 text-xs px-2 py-1 rounded-full">1 Credit</span>
+                <span className="absolute top-2 right-2 bg-white/30 text-xs px-2 py-1 rounded-full">1 Credit</span>
               </button>
             </div>
 
@@ -262,17 +262,17 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           </div>
 
           {/* Section B: Deep Dive Insights (Pay-per-use Zone) */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg border border-purple-100">
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40">
             <div className="mb-6">
               <h2 className="text-2xl sm:text-3xl font-semibold gradient-text mb-2">Deep Dive Insights</h2>
-              <p className="text-gray-600 text-sm sm:text-base">Comprehensive readings and analyses to deepen your spiritual understanding</p>
+              <p className="text-purple-200 text-sm sm:text-base">Comprehensive readings and analyses to deepen your spiritual understanding</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Birth Chart */}
               <Link
                 href={hasBirthChart === true ? "/my-chart" : "/birth-chart"}
-                className="group bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
+                className="group bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Star className="w-8 h-8" />
                 <span>{hasBirthChart === true ? "My Birth Chart" : "Create Chart (Free)"}</span>
@@ -287,7 +287,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               {/* Compatibility Report */}
               <Link
                 href="/compatibility"
-                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
+                className="group bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Heart className="w-8 h-8" />
                 <span>Compatibility Report</span>
@@ -297,7 +297,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               {/* Moon Reading */}
               <Link
                 href="/moon-reading"
-                className="group bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
+                className="group bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Moon className="w-8 h-8" />
                 <span>Moon Reading</span>
@@ -310,7 +310,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   setTarotSelectorConfig({ spreadType: "breakup", readingType: "breakup" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
+                className="group bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Heart className="w-8 h-8" />
                 <span>Breakup Tarot</span>
@@ -323,7 +323,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   setTarotSelectorConfig({ spreadType: "ppf", readingType: "ppf" });
                   setShowTarotSelector(true);
                 }}
-                className="group bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
+                className="group bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 relative"
               >
                 <Sparkles className="w-8 h-8" />
                 <span>Past Present Future</span>
@@ -335,7 +335,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 onClick={() => {
                   setShowTarotTypePicker(true);
                 }}
-                className="group bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 border-2 border-white/30"
+                className="group bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white p-6 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg text-center min-h-[120px] flex flex-col items-center justify-center gap-3 border-2 border-white border-opacity-30"
               >
                 <Sparkles className="w-8 h-8" />
                 <span>More Tarot Types</span>
@@ -350,7 +350,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
           </div>
 
           {/* Section C: Cosmic Intelligence (Premium Dashboard) */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg border-2 border-yellow-400/50 relative overflow-hidden">
+          <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border-2 border-yellow-400/50 bg-gradient-to-br from-yellow-500/10 via-orange-500/10 to-pink-500/10 relative overflow-hidden">
             {/* Premium Badge */}
             <div className="absolute top-4 right-4">
               <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-purple-900 text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
@@ -366,7 +366,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 </div>
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-semibold gradient-text">Cosmic Intelligence</h2>
-                  <p className="text-gray-600 text-sm sm:text-base">Advanced planetary analysis and AI-powered insights</p>
+                  <p className="text-purple-200 text-sm sm:text-base">Advanced planetary analysis and AI-powered insights</p>
                 </div>
               </div>
             </div>
@@ -375,7 +375,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               {/* Transit Dashboard */}
               <Link
                 href={isPremium ? "/transits" : "/subscription"}
-                className="group bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white p-8 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg relative overflow-hidden"
+                className="group bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white p-8 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] apple-shadow-lg relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative z-10">
@@ -406,41 +406,44 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
               </Link>
 
               {/* AI Interpretations Info */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200">
+              <div className="bg-white/10 rounded-2xl p-8 border border-white/20">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-1">AI Interpretations</h3>
-                    <p className="text-gray-600 text-sm">Powered by GPT-4o-mini</p>
+                    <h3 className="text-2xl font-bold text-white mb-1">AI Interpretations</h3>
+                    <p className="text-purple-200 text-sm">Powered by GPT-4o-mini</p>
                   </div>
                 </div>
-                <p className="text-gray-700 mb-4">
+                <p className="text-white/90 mb-4">
                   Get detailed, personalized interpretations of your readings, transits, and astrological insights enhanced by advanced AI.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Priority Processing</span>
-                  <span className="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-semibold rounded-full">Enhanced Detail</span>
-                  <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">Personalized</span>
+                  <span className="px-3 py-1 bg-purple-500/30 text-purple-200 text-xs font-semibold rounded-full">Priority Processing</span>
+                  <span className="px-3 py-1 bg-pink-500/30 text-pink-200 text-xs font-semibold rounded-full">Enhanced Detail</span>
+                  <span className="px-3 py-1 bg-orange-500/30 text-orange-200 text-xs font-semibold rounded-full">Personalized</span>
                 </div>
               </div>
             </div>
 
             {!isPremium && (
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                <p className="text-yellow-800 text-sm text-center mb-3">
+              <div className="mt-6 p-4 bg-yellow-500/20 border border-yellow-400/50 rounded-xl">
+                <p className="text-yellow-200 text-sm text-center mb-3">
                   <strong>Premium Feature:</strong> Unlock unlimited access to Transit Dashboard and priority AI interpretations
                 </p>
                 <Link
                   href="/subscription"
-                  className="block w-full text-center px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition shadow-lg"
+                  className="block w-full text-center px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition"
                 >
                   Upgrade to Premium
                 </Link>
               </div>
             )}
           </div>
+
+          {/* Compact Daily Streak - Replaces GrowthBar + DailyTasks for space saving */}
+          {/* Note: Full DailyTasks component removed from main view, can be accessed via CompactDailyStreak if needed */}
 
           {/* Energy Chart */}
           <EnergyChart 
@@ -478,52 +481,52 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-100 hover:shadow-xl transition-shadow">
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
                   <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-gray-600 font-medium">Credits</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-gray-800 truncate">{totalCredits}</p>
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Credits</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{totalCredits}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-100 hover:shadow-xl transition-shadow">
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                   <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-gray-600 font-medium">Readings</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-gray-800 truncate">{readingCount + chartCount}</p>
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Readings</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">{readingCount + chartCount}</p>
                 </div>
               </div>
             </div>
 
             {safeStreak && safeStreak.currentStreak > 0 && (
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-100 hover:shadow-xl transition-shadow">
+              <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center flex-shrink-0">
                     <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium">Streak</p>
-                    <p className="text-xl sm:text-2xl font-semibold text-gray-800 truncate">{safeStreak.currentStreak} days</p>
+                    <p className="text-xs sm:text-sm text-purple-200 font-medium">Streak</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-white truncate">{safeStreak.currentStreak} days</p>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-100 hover:shadow-xl transition-shadow">
+            <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow border border-white border-opacity-40 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
                   <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-gray-600 font-medium">Status</p>
-                  <p className="text-xl sm:text-2xl font-semibold text-gray-800 truncate">
+                  <p className="text-xs sm:text-sm text-purple-200 font-medium">Status</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-white truncate">
                     {isPremium ? "Premium" : "Free"}
                   </p>
                 </div>
@@ -533,20 +536,20 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
           {/* Premium Banner */}
           {!isPremium && (
-            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 mb-8 border border-purple-200 shadow-lg">
+            <div className="glassmorphic rounded-2xl p-6 mb-8 border border-yellow-400/30 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 apple-shadow-lg">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center">
                     <Crown className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-1">Unlock Premium Features</h3>
-                    <p className="text-sm text-gray-600">Access unlimited readings and exclusive features</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">Unlock Premium Features</h3>
+                    <p className="text-sm text-purple-200">Access unlimited readings and exclusive features</p>
                   </div>
                 </div>
                 <Link
                   href="/subscription"
-                  className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition shadow-lg"
+                  className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 smooth-transition apple-shadow"
                 >
                   Upgrade Now
                 </Link>
@@ -556,7 +559,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
 
           {/* Reading History Preview */}
           {readings && (readings.readings?.tarot?.length > 0 || readings.readings?.birthCharts?.length > 0) && (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg border border-purple-100">
+            <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40">
               <h2 className="text-2xl font-semibold gradient-text mb-6">Recent Readings</h2>
               <div className="space-y-3">
                 {[...(readings.readings.tarot || []), ...(readings.readings.birthCharts || [])]
@@ -564,17 +567,17 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   .map((reading) => (
                     <div
                       key={reading.id}
-                      className="bg-purple-50 rounded-xl p-4 shadow border border-purple-100 hover:bg-purple-100 smooth-transition"
+                      className="bg-white bg-opacity-10 rounded-xl p-4 apple-shadow border border-white border-opacity-20 hover:bg-opacity-20 smooth-transition"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-purple-200">
                           {new Date(reading.created_at).toLocaleDateString()}
                         </span>
-                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-500/30 text-white">
                           {reading.type === "tarot" ? "Tarot" : "Birth Chart"}
                         </span>
                       </div>
-                      <p className="text-sm font-medium text-gray-700 line-clamp-1">
+                      <p className="text-sm font-medium text-white line-clamp-1">
                         {reading.question || "Reading"}
                       </p>
                     </div>
@@ -584,7 +587,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                 <div className="text-center mt-6">
                   <Link
                     href="/dashboard"
-                    className="px-6 py-3 bg-purple-100 text-purple-700 font-semibold rounded-xl hover:bg-purple-200 smooth-transition inline-block"
+                    className="btn-secondary"
                   >
                     View All Readings
                   </Link>
@@ -597,18 +600,18 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
         {/* Tarot Reading Type Picker Modal */}
         {showTarotTypePicker && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto">
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-5xl w-full max-h-[95vh] overflow-y-auto shadow-xl border border-purple-100 my-4">
+            <div className="glassmorphic rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-5xl w-full max-h-[95vh] overflow-y-auto apple-shadow-lg border border-white border-opacity-40 my-4">
               <div className="flex items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
                 <div className="min-w-0 flex-1">
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold gradient-text mb-1 sm:mb-2">Choose Your Tarot Reading</h2>
-                  <p className="text-gray-500 text-xs sm:text-sm md:text-base">Select a reading type to begin your journey</p>
+                  <p className="text-purple-200 text-xs sm:text-sm md:text-base">Select a reading type to begin your journey</p>
                 </div>
                 <button
                   onClick={() => setShowTarotTypePicker(false)}
-                  className="p-2 rounded-xl hover:bg-purple-100 smooth-transition flex-shrink-0"
+                  className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition flex-shrink-0"
                   aria-label="Close modal"
                 >
-                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </button>
               </div>
               <TarotReadingTypePicker

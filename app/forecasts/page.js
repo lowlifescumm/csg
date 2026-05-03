@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-static';
+
 import { useState, useEffect } from 'react';
 import { 
   Calendar, Star, Sparkles, TrendingUp, AlertTriangle, 

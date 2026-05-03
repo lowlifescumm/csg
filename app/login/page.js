@@ -1,10 +1,18 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
-export default function LoginPage() {
+// Prevent static prerendering since this page uses useSearchParams
+export const dynamic = 'force-dynamic';
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  return <LoginPageContent router={router} searchParams={searchParams} />;
+}
+
+function LoginPageContent({ router, searchParams }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: "",
@@ -16,14 +24,20 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [returnUrl, setReturnUrl] = useState("/dashboard");
 
-  // Ensure component is mounted before using NextAuth functions (important for mobile)
+  // Ensure component is mounted before using NextAuth functions
   useEffect(() => {
     setMounted(true);
     
+    // Get return URL from query params
+    const urlReturn = searchParams.get('returnUrl');
+    if (urlReturn) {
+      setReturnUrl(decodeURIComponent(urlReturn));
+    }
+    
     // Check for error in URL query parameters (from NextAuth redirect)
-    const urlParams = new URLSearchParams(window.location.search);
-    const errorParam = urlParams.get('error');
+    const errorParam = searchParams.get('error');
     if (errorParam) {
       let errorMessage = 'Authentication failed. Please try again.';
       if (errorParam === 'google') {
@@ -37,7 +51,7 @@ export default function LoginPage() {
       }
       setError(errorMessage);
     }
-  }, []);
+  }, [searchParams]);
 
   const handleGoogleSignIn = () => {
     // Wait for component to mount and SessionProvider to be ready
@@ -50,20 +64,15 @@ export default function LoginPage() {
     setError("");
     
     // Use public origin to ensure we hit the correct domain
-    const callbackUrl = `${window.location.origin}/dashboard`;
+    const callbackUrl = `${window.location.origin}${returnUrl}`;
     
     console.log('[Login] Initiating Google sign-in with callbackUrl:', callbackUrl);
     
-    // Let NextAuth handle the redirect - this will navigate to Google OAuth
-    // The redirect: true (default) will cause a full page navigation to Google
+    // Let NextAuth handle the redirect
     signIn("google", {
       callbackUrl: callbackUrl,
-      redirect: true  // Explicitly enable redirect to prevent cancelled requests
+      redirect: true
     });
-    
-    // Note: We don't set loading to false here because the page will redirect
-    // If the redirect fails, NextAuth will redirect back with an error parameter
-    // which is handled by the useEffect hook above
   };
 
   const handleSubmit = async (e) => {
@@ -84,9 +93,10 @@ export default function LoginPage() {
       if (res.ok) {
         // Clear any existing errors
         setError("");
-        // Small delay to ensure cookie is set (especially important on mobile)
+        // Small delay to ensure cookie is set
         await new Promise(resolve => setTimeout(resolve, 100));
-        router.push("/dashboard");
+        // Redirect to return URL
+        router.push(returnUrl);
         router.refresh();
       } else {
         setError(data.error || "Something went wrong");
@@ -99,7 +109,7 @@ export default function LoginPage() {
     }
   };
 
-  // Don't render until mounted (prevents hydration mismatches on mobile)
+  // Don't render until mounted (prevents hydration mismatches)
   if (!mounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center p-6">
@@ -126,7 +136,9 @@ export default function LoginPage() {
             <img src="/logo.png" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-4 object-contain" />
           </div>
           <h1 className="text-3xl font-semibold gradient-text mb-2">Cosmic Spirit Guide</h1>
-          <p className="text-gray-600">Welcome back to your spiritual journey</p>
+          <p className="text-gray-600">
+            {returnUrl !== '/dashboard' ? 'Sign in to continue your journey' : 'Welcome back to your spiritual journey'}
+          </p>
         </div>
 
         <div className="flex gap-2 mb-8 bg-gray-100 bg-opacity-50 rounded-2xl p-1">
@@ -297,5 +309,28 @@ export default function LoginPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+// Main export with Suspense wrapper
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center p-6">
+        <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 w-full max-w-md">
+          <div className="text-center">
+            <div className="inline-block float-animation">
+              <div className="flex flex-col items-center mb-4">
+                <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
+                <img src="/logo-text.svg" alt="Cosmic Spirit Guide" className="h-8 object-contain" />
+              </div>
+            </div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

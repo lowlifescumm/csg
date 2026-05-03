@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Astrology Blog & Spiritual Insights | Cosmic Spirit Guide",
-  description: "Explore astrology insights, tarot guidance, moon phases, and spiritual wisdom. Learn about birth charts, compatibility, and cosmic energy.",
+  title: "Tarot & Astrology Blog | Birth Charts, Zodiac & Spiritual Guides | Cosmic Spirit Guide",
+  description: "Read our astrology blog for tarot guides, birth chart tutorials, zodiac compatibility tips & spiritual insights. Learn to read your cosmic energy.",
 };
 
 export default function BlogLayout({ children }) {

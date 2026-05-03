@@ -14,12 +14,12 @@ const DashboardV3Client = nextDynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-celestial flex items-center justify-center">
         <div className="text-center animate-fade-in">
           <div className="relative mb-6">
-            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
+            <div className="w-16 h-16 border-4 border-cosmic-lavender/30 border-t-cosmic-purple rounded-full animate-spin mx-auto"></div>
           </div>
-          <p className="text-gray-600 animate-pulse mb-4">Loading your cosmic journey...</p>
+          <p className="text-cosmic-indigo/60 animate-pulse mb-4">Loading your cosmic journey...</p>
         </div>
       </div>
     ),
@@ -77,12 +77,12 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50 flex items-center justify-center">
+        <div className="min-h-screen bg-celestial flex items-center justify-center">
           <div className="text-center animate-fade-in">
             <div className="relative mb-6">
-              <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
+              <div className="w-16 h-16 border-4 border-cosmic-lavender/30 border-t-cosmic-purple rounded-full animate-spin mx-auto"></div>
             </div>
-            <p className="text-gray-600 animate-pulse mb-4">Loading your cosmic journey...</p>
+            <p className="text-cosmic-indigo/60 animate-pulse mb-4">Loading your cosmic journey...</p>
           </div>
         </div>
       }

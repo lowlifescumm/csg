@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "My Personal Astrology Chart | Cosmic Spirit Guide",
-  description: "View and manage your personal birth chart, saved readings, and astrological profile.",
+  title: "My Birth Chart & Saved Tarot Readings | Cosmic Spirit Guide",
+  description: "View your personal birth chart, save tarot readings, track astrology transits & manage your spiritual profile. Access your cosmic insights anytime.",
 };
 
 export default function MyChartLayout({ children }) {

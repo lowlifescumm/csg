@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { pool } from '@/lib/db.js';
-import { interpretBirthChart } from '@/lib/astrology.js';
+import { interpretBirthChart, calculateBirthChart } from '@/lib/astrology.js';
 import { canAccessReading, consumeCreditsForReading, claimFreeNatalChart } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { getAuthenticatedUser } from '@/lib/auth.js';
@@ -11,20 +11,13 @@ import { hydrateReportData } from '@/src/services/chartHydrator';
 /**
  * POST /api/birth-chart
  * Create a new birth chart
+ * Now supports anonymous users (returns chart preview without saving)
  */
 export async function POST(req) {
   try {
-    // Get authenticated user (supports both NextAuth and JWT)
-    const authResult = await getAuthenticatedUser(req.cookies, authOptions);
-    
-    if (!authResult) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const { userId } = authResult;
-
+    // Parse request body first
     const body = await req.json();
-    const { date, time, location, latitude, longitude, generateInterpretation } = body;
+    const { date, time, location, latitude, longitude, generateInterpretation, userId } = body;
 
     if (!date || !time || !location || latitude === undefined || longitude === undefined) {
       return NextResponse.json({ 
@@ -36,25 +29,54 @@ export async function POST(req) {
     const latNumber = typeof latitude === 'number' ? latitude : parseFloat(latitude);
     const lonNumber = typeof longitude === 'number' ? longitude : parseFloat(longitude);
 
-    const hydrationInput = {
-      name: body.name || 'Primary Chart',
-      birthDate: date,
-      birthTime: time,
-      birthCity: location,
-      birthLatitude: latNumber,
-      birthLongitude: lonNumber,
-    };
+    // Calculate birth chart (this is free)
+    let chartData;
+    try {
+      const hydrationInput = {
+        name: body.name || 'Primary Chart',
+        birthDate: date,
+        birthTime: time,
+        birthCity: location,
+        birthLatitude: latNumber,
+        birthLongitude: lonNumber,
+      };
 
-    const hydrated = await hydrateReportData(hydrationInput);
+      const hydrated = await hydrateReportData(hydrationInput);
+      chartData = hydrated.rawChart;
+    } catch (error) {
+      console.error('Error calculating chart:', error);
+      // Fallback to direct calculation
+      chartData = calculateBirthChart(date, time, latNumber, lonNumber);
+    }
 
-    // Calculate birth chart - NOW FREE (no credit check)
-    const chartData = hydrated.rawChart;
+    // Get authenticated user (optional - anonymous users allowed for preview)
+    const authResult = await getAuthenticatedUser(req.cookies, authOptions);
+    
+    // If no auth, return chart preview for anonymous user
+    if (!authResult) {
+      return NextResponse.json({
+        success: true,
+        chart: chartData,
+        isPreview: true,
+        message: 'Chart generated. Sign in free to save your chart and unlock full features.',
+        birthInfo: {
+          date,
+          time,
+          location,
+          latitude: latNumber,
+          longitude: lonNumber
+        }
+      });
+    }
+
+    // User is authenticated - save the chart
+    const { userId: authenticatedUserId } = authResult;
 
     // Generate AI interpretation ONLY if requested and user has credits
     let interpretation = '';
     if (generateInterpretation) {
       // Check access permissions for interpretation generation
-      const accessCheck = await canAccessReading(userId, 'NATAL_CHART');
+      const accessCheck = await canAccessReading(authenticatedUserId, 'NATAL_CHART');
       
       if (!accessCheck.allowed) {
         if (accessCheck.reason === 'insufficient_credits') {
@@ -82,7 +104,7 @@ export async function POST(req) {
       }
 
       // Consume credits for the interpretation (if not subscription-included)
-      const creditResult = await consumeCreditsForReading(userId, 'NATAL_CHART');
+      const creditResult = await consumeCreditsForReading(authenticatedUserId, 'NATAL_CHART');
       
       if (!creditResult.success) {
         const errorResponse = formatCreditError(creditResult);
@@ -94,30 +116,25 @@ export async function POST(req) {
 
       // Handle free natal chart for new subscribers
       if (accessCheck.reason === 'subscription_included') {
-        const freeChartResult = await claimFreeNatalChart(userId);
+        const freeChartResult = await claimFreeNatalChart(authenticatedUserId);
         if (freeChartResult.success) {
-          console.log(`[Birth Chart] Free natal chart claimed for user ${userId}`);
+          console.log(`[Birth Chart] Free natal chart claimed for user ${authenticatedUserId}`);
         }
       }
     }
 
-    // Save to both tables for compatibility
-    
-    // 1. Save to old birth_charts table (includes all premium data points in chart_data JSON)
+    // Save to database for authenticated user
+    // 1. Save to birth_charts table
     const oldResult = await pool.query(
       `INSERT INTO birth_charts 
         (user_id, birth_date, birth_time, location, latitude, longitude, chart_data, interpretation)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id`,
-      [userId, date, time, location, latNumber, lonNumber, JSON.stringify(chartData), interpretation]
+      [authenticatedUserId, date, time, location, latNumber, lonNumber, JSON.stringify(chartData), interpretation]
     );
-    // Note: chartData now includes: planetSignHouseCombinations, houseCuspsDetailed, 
-    // chartRulerLocation, majorAspects, midpoints - all stored in chart_data JSON
 
     // 2. Save to new natal_charts table if it exists
     try {
-      // Save premium data points to natal_charts table
-      // Store premium data in a JSONB column or add new columns
       await pool.query(
         `INSERT INTO natal_charts 
           (user_id, name, birth_date, birth_time, location, latitude, longitude, timezone,
@@ -139,7 +156,7 @@ export async function POST(req) {
            interpretation = EXCLUDED.interpretation,
            updated_at = CURRENT_TIMESTAMP`,
         [
-          userId, 
+          authenticatedUserId, 
           'Primary Chart',
           date,
           time,
@@ -149,7 +166,6 @@ export async function POST(req) {
           'UTC', // Default timezone
           JSON.stringify({
             ...chartData.planets,
-            // Include premium data points in natal_positions JSONB
             _premium_data: {
               planetSignHouseCombinations: chartData.planetSignHouseCombinations || [],
               houseCuspsDetailed: chartData.houseCuspsDetailed || [],
@@ -160,7 +176,6 @@ export async function POST(req) {
           }),
           JSON.stringify({
             ...chartData.houses,
-            // Include house cusps detailed in houses JSONB
             _cusps_detailed: chartData.houseCuspsDetailed || []
           }),
           JSON.stringify({
@@ -179,7 +194,6 @@ export async function POST(req) {
           JSON.stringify(chartData.chartPatterns || []),
           JSON.stringify({
             ...chartData.planetHouses || {},
-            // Include planet-sign-house combinations
             _combinations: chartData.planetSignHouseCombinations || []
           })
         ]
@@ -191,9 +205,11 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       chart: chartData,
-      interpretation: interpretation || null, // null if not generated
+      interpretation: interpretation || null,
       chartId: oldResult.rows[0].id,
-      hasInterpretation: !!interpretation
+      hasInterpretation: !!interpretation,
+      isPreview: false,
+      saved: true
     });
 
   } catch (error) {
@@ -208,14 +224,19 @@ export async function POST(req) {
 /**
  * GET /api/birth-chart
  * Fetch the user's saved birth chart
+ * Requires authentication
  */
 export async function GET(req) {
   try {
-    // Get authenticated user (supports both NextAuth and JWT)
+    // Get authenticated user
     const authResult = await getAuthenticatedUser(req.cookies, authOptions);
     
     if (!authResult) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        hasChart: false,
+        error: 'Authentication required',
+        message: 'Please sign in to view your saved birth chart.'
+      }, { status: 401 });
     }
     
     const { userId } = authResult;

@@ -543,6 +543,36 @@ function CompatibilityReport({ result, person1, person2, creditsRemaining, onBac
           <ChevronLeft className="w-5 h-5" />
           Calculate Another Compatibility
         </button>
+
+        {/* Related Services - Internal Linking */}
+        <div className="mt-12 pt-8 border-t border-white/20">
+          <h3 className="text-xl font-bold text-white mb-4 text-center">Explore More Cosmic Tools</h3>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Link href="/birth-chart" className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">⭐</span>
+                <span className="font-semibold text-white">Birth Charts</span>
+              </div>
+              <p className="text-sm text-purple-200">Both partners need charts for best results</p>
+            </Link>
+            
+            <Link href="/tarot" className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-5 h-5 text-yellow-400" />
+                <span className="font-semibold text-white">Relationship Tarot</span>
+              </div>
+              <p className="text-sm text-purple-200">Tarot insights for your relationship</p>
+            </Link>
+            
+            <Link href="/forecasts" className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-5 h-5 text-blue-400" />
+                <span className="font-semibold text-white">Relationship Forecast</span>
+              </div>
+              <p className="text-sm text-purple-200">See upcoming energies for your connection</p>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

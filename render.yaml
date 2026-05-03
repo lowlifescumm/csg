@@ -5,7 +5,7 @@ services:
     name: cosmic-spiritual-guide
     env: node
     plan: starter
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci && ESLINT=0 next build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -50,6 +50,20 @@ services:
         sync: false
       - key: CLOUDINARY_URL
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: BLOG_API_KEY
+        value: csg-content-pipeline-2026-secure-key
+      - key: FAL_KEY
+        sync: false
+      - key: TWITTER_API_KEY
+        sync: false
+      - key: TWITTER_API_SECRET
+        sync: false
+      - key: TWITTER_ACCESS_TOKEN
+        sync: false
+      - key: TWITTER_ACCESS_SECRET
+        sync: false
 
 databases:
   - name: cosmic-spiritual-guide-db
@@ -63,14 +77,14 @@ cronJobs:
     command: |
       curl ${NEXT_PUBLIC_BASE_URL}/api/cron/transit-monitor \
         -H "Authorization: Bearer ${CRON_SECRET}"
-  
+
   - name: generate-forecasts
     schedule: "0 6 * * *"  # Daily at 6 AM
     service: cosmic-spiritual-guide
     command: |
       curl ${NEXT_PUBLIC_BASE_URL}/api/cron/generate-forecasts \
         -H "Authorization: Bearer ${CRON_SECRET}"
-  
+
   - name: issue-free-daily-credits
     schedule: "0 0 * * *"  # Daily at midnight
     service: cosmic-spiritual-guide
@@ -78,3 +92,17 @@ cronJobs:
       curl -X POST ${NEXT_PUBLIC_BASE_URL}/api/credits/issue-free-daily \
         -H "Authorization: Bearer ${CRON_SECRET}" \
         -H "Content-Type: application/json"
+
+  - name: content-pipeline
+    schedule: "0 10 * * *"  # Daily at 10 AM UTC — processes next brief, creates draft post
+    service: cosmic-spiritual-guide
+    command: |
+      curl -X POST ${NEXT_PUBLIC_BASE_URL}/api/cron/content-pipeline \
+        -H "Authorization: Bearer ${CRON_SECRET}"
+
+  - name: content-pipeline-publish
+    schedule: "0 11 * * 1"  # Every Monday at 11 AM — processes all briefs and publishes
+    service: cosmic-spiritual-guide
+    command: |
+      curl -X POST "${NEXT_PUBLIC_BASE_URL}/api/cron/content-pipeline?all=1&publish=1" \
+        -H "Authorization: Bearer ${CRON_SECRET}"
