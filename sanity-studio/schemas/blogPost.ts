@@ -1,0 +1,137 @@
+export default {
+  name: 'blogPost',
+  title: 'Blog Post',
+  type: 'document',
+  groups: [
+    { name: 'content', title: 'Content', default: true },
+    { name: 'seo', title: 'SEO' },
+    { name: 'media', title: 'Media' },
+  ],
+  fields: [
+    {
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      group: 'content',
+      validation: (Rule) => Rule.required().max(120),
+    },
+    {
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      group: 'content',
+      options: {
+        source: 'title',
+        maxLength: 96,
+      },
+      validation: (Rule) => Rule.required(),
+    },
+    {
+      name: 'excerpt',
+      title: 'Excerpt',
+      type: 'text',
+      group: 'content',
+      rows: 3,
+      validation: (Rule) => Rule.max(300),
+    },
+    {
+      name: 'content',
+      title: 'Body',
+      type: 'array',
+      group: 'content',
+      of: [
+        { type: 'block' },
+        {
+          type: 'image',
+          options: { hotspot: true },
+          fields: [
+            { name: 'alt', type: 'string', title: 'Alt Text' },
+            { name: 'caption', type: 'string', title: 'Caption' },
+          ],
+        },
+        { type: 'code' },
+      ],
+    },
+    {
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      group: 'content',
+      options: {
+        list: [
+          { title: 'Draft', value: 'draft' },
+          { title: 'Published', value: 'published' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'draft',
+      validation: (Rule) => Rule.required(),
+    },
+    {
+      name: 'publishedAt',
+      title: 'Published At',
+      type: 'datetime',
+      group: 'content',
+    },
+    {
+      name: 'category',
+      title: 'Category',
+      type: 'reference',
+      group: 'content',
+      to: [{ type: 'category' }],
+    },
+    {
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
+      group: 'content',
+      of: [{ type: 'reference', to: { type: 'tag' } }],
+    },
+    {
+      name: 'featuredImage',
+      title: 'Featured Image',
+      type: 'image',
+      group: 'media',
+      options: { hotspot: true },
+      fields: [
+        { name: 'alt', type: 'string', title: 'Alt Text' },
+      ],
+    },
+    {
+      name: 'metaTitle',
+      title: 'SEO Title',
+      type: 'string',
+      group: 'seo',
+      validation: (Rule) => Rule.max(60),
+    },
+    {
+      name: 'metaDescription',
+      title: 'SEO Description',
+      type: 'text',
+      group: 'seo',
+      rows: 2,
+      validation: (Rule) => Rule.max(160),
+    },
+    {
+      name: 'readingTime',
+      title: 'Reading Time (minutes)',
+      type: 'number',
+      group: 'content',
+      initialValue: 5,
+    },
+    {
+      name: 'author',
+      title: 'Author',
+      type: 'string',
+      group: 'content',
+      initialValue: 'Cosmic Spirit Guide',
+    },
+  ],
+  preview: {
+    select: {
+      title: 'title',
+      subtitle: 'excerpt',
+      media: 'featuredImage',
+    },
+  },
+}
