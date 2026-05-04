@@ -228,25 +228,25 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
           <div className="text-center mb-6">
             <div className="text-5xl mb-4">✨</div>
             <h2 className="text-3xl font-bold gradient-text mb-2">Your Birth Chart is Ready!</h2>
-            <p className="text-gray-600">Sign in free to save your chart and unlock personalized readings</p>
+            <p className="text-white/50">Sign in free to save your chart and unlock personalized readings</p>
           </div>
           
           <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-3xl mb-2">☀️</div>
-                <div className="text-sm text-gray-600">Sun Sign</div>
-                <div className="text-xl font-bold text-purple-600">{chart.planets?.sun?.sign}</div>
+                <div className="text-sm text-white/50">Sun Sign</div>
+                <div className="text-xl font-bold text-cosmic-purple">{chart.planets?.sun?.sign}</div>
               </div>
               <div>
                 <div className="text-3xl mb-2">🌙</div>
-                <div className="text-sm text-gray-600">Moon Sign</div>
-                <div className="text-xl font-bold text-purple-600">{chart.planets?.moon?.sign}</div>
+                <div className="text-sm text-white/50">Moon Sign</div>
+                <div className="text-xl font-bold text-cosmic-purple">{chart.planets?.moon?.sign}</div>
               </div>
               <div>
                 <div className="text-3xl mb-2">⬆️</div>
-                <div className="text-sm text-gray-600">Rising Sign</div>
-                <div className="text-xl font-bold text-purple-600">{chart.ascendant}</div>
+                <div className="text-sm text-white/50">Rising Sign</div>
+                <div className="text-xl font-bold text-cosmic-purple">{chart.ascendant}</div>
               </div>
             </div>
           </div>
@@ -263,13 +263,13 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                 setChart(null);
                 setShowLoginPrompt(false);
               }}
-              className="w-full bg-white text-gray-700 py-3 rounded-2xl font-medium hover:bg-gray-50 smooth-transition"
+              className="w-full bg-white text-white/60 py-3 rounded-2xl font-medium hover:bg-cosmic-indigo smooth-transition"
             >
               Create Another Chart
             </button>
           </div>
           
-          <p className="text-center text-sm text-gray-500 mt-4">
+          <p className="text-center text-sm text-white/40 mt-4">
             ✓ Free account includes: saved birth chart, daily tarot credits, and personalized horoscopes
           </p>
         </div>
@@ -280,18 +280,44 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
   // Show full chart if logged in
   if (chart && user) {
     return (
-      <div className="w-full max-w-4xl mx-auto p-6 space-y-8">
+        <div className="w-full max-w-4xl mx-auto p-6 space-y-8">
+        {/* Upsell banner */}
+        <div className="bg-gradient-to-r from-amber-500/10 to-cosmic-indigo/10 border border-amber-500/20 rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="bg-gradient-to-br from-amber-400 to-yellow-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl">✨</span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-white mb-1">Unlock Your Full Birth Chart Report</h3>
+              <p className="text-white/60 text-sm mb-3">
+                Get a 20+ page PDF with detailed interpretations of all planets, houses, aspects, and personalized life guidance.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {['Detailed PDF', 'All 12 Houses', 'Planet Aspects', 'Life Purpose'].map(tag => (
+                  <span key={tag} className="text-xs bg-white/5 text-white/50 px-3 py-1 rounded-full border border-white/10">{tag}</span>
+                ))}
+              </div>
+              <button
+                onClick={() => window.location.href = '/pricing'}
+                className="bg-gradient-to-r from-amber-500 to-yellow-500 text-indigo-950 px-6 py-3 rounded-xl font-semibold smooth-transition hover:shadow-lg hover:scale-[1.02] text-sm"
+              >
+                Get Full Report — Starting at $19
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-between items-center">
           <h2 className="text-4xl font-bold gradient-text">Your Birth Chart</h2>
           <button
             onClick={() => setChart(null)}
-            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl smooth-transition"
+            className="px-6 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 rounded-xl smooth-transition"
           >
             New Chart
           </button>
         </div>
 
-        <div className="glassmorphic rounded-3xl p-8 border border-white border-opacity-40">
+        <div className="glassmorphic rounded-3xl p-8 border border-white/10">
           <BirthChartWheel chartData={chart} birthInfo={{
             date: formData.birthDate,
             time: formData.birthTime,
@@ -300,79 +326,85 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
         </div>
 
         <div className="grid md:grid-cols-3 gap-4">
-          <div className="glassmorphic bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-2xl border border-white border-opacity-40">
+          <div className="glassmorphic bg-gradient-to-br from-yellow-500/5 to-orange-500/5 p-6 rounded-2xl border border-white/10">
             <div className="text-4xl mb-3">☀️</div>
-            <div className="text-sm text-gray-600 mb-1 font-medium">Sun Sign</div>
+            <div className="text-sm text-white/50 mb-1 font-medium">Sun Sign</div>
             <div className="text-3xl font-bold gradient-text">{chart.planets?.sun?.sign}</div>
-            <div className="text-sm mt-2 text-gray-600">Your core identity</div>
+            <div className="text-sm mt-2 text-white/40">Your core identity &amp; ego</div>
           </div>
 
-          <div className="glassmorphic bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-2xl border border-white border-opacity-40">
+          <div className="glassmorphic bg-gradient-to-br from-blue-500/5 to-cosmic-indigo0/5 p-6 rounded-2xl border border-white/10">
             <div className="text-4xl mb-3">🌙</div>
-            <div className="text-sm text-gray-600 mb-1 font-medium">Moon Sign</div>
+            <div className="text-sm text-white/50 mb-1 font-medium">Moon Sign</div>
             <div className="text-3xl font-bold gradient-text">{chart.planets?.moon?.sign}</div>
-            <div className="text-sm mt-2 text-gray-600">Your emotional nature</div>
+            <div className="text-sm mt-2 text-white/40">Your emotional nature &amp; inner world</div>
           </div>
 
-          <div className="glassmorphic bg-gradient-to-br from-pink-50 to-red-50 p-6 rounded-2xl border border-white border-opacity-40">
+          <div className="glassmorphic bg-gradient-to-br from-pink-500/5 to-red-500/5 p-6 rounded-2xl border border-white/10">
             <div className="text-4xl mb-3">⬆️</div>
-            <div className="text-sm text-gray-600 mb-1 font-medium">Rising Sign</div>
+            <div className="text-sm text-white/50 mb-1 font-medium">Rising Sign</div>
             <div className="text-3xl font-bold gradient-text">{chart.ascendant}</div>
-            <div className="text-sm mt-2 text-gray-600">How you appear</div>
+            <div className="text-sm mt-2 text-white/40">How the world sees you</div>
           </div>
         </div>
 
-        <div className="text-center">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={handleSaveChart}
-            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] text-lg"
+            className="flex-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] text-lg"
           >
-            Continue to Dashboard
+            ✨ Save to My Dashboard
+          </button>
+          <button
+            onClick={() => window.location.href = '/pricing'}
+            className="sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-500 text-indigo-950 rounded-2xl font-semibold smooth-transition hover:shadow-lg hover:scale-[1.02] text-lg"
+          >
+            📄 Get Full Report
           </button>
         </div>
 
-        {/* Related Services - Internal Linking */}
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">What to Do Next</h3>
+        {/* Related Services — Internal Linking */}
+        <div className="mt-8 pt-8 border-t border-white/10">
+          <h3 className="text-xl font-bold text-white mb-4">Explore Your Cosmic Profile</h3>
           <div className="grid md:grid-cols-3 gap-4">
             <Link 
               href="/compatibility" 
-              className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-4 hover:shadow-md transition-all group"
+              className="glassmorphic rounded-xl p-4 hover:bg-white/10 transition-all group border border-white/10"
             >
               <div className="flex items-center gap-2 mb-2">
-                <Heart className="w-5 h-5 text-pink-500" />
-                <span className="font-semibold text-gray-900 group-hover:text-pink-600">Check Compatibility</span>
+                <Heart className="w-5 h-5 text-cosmic-purple" />
+                <span className="font-semibold text-white group-hover:text-pink-300 transition-colors">Check Compatibility</span>
               </div>
-              <p className="text-sm text-gray-600">See how your chart aligns with a partner</p>
-              <span className="text-sm text-purple-600 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
+              <p className="text-sm text-white/50">See how your chart aligns with a partner</p>
+              <span className="text-sm text-white/80 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
                 Try Now <ArrowRight className="w-4 h-4" />
               </span>
             </Link>
             
             <Link 
               href="/transits" 
-              className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 hover:shadow-md transition-all group"
+              className="glassmorphic rounded-xl p-4 hover:bg-white/10 transition-all group border border-white/10"
             >
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
-                <span className="font-semibold text-gray-900 group-hover:text-blue-600">Transit Forecast</span>
+                <TrendingUp className="w-5 h-5 text-cosmic-teal" />
+                <span className="font-semibold text-white group-hover:text-blue-300 transition-colors">Transit Forecast</span>
               </div>
-              <p className="text-sm text-gray-600">What's happening in your chart now</p>
-              <span className="text-sm text-purple-600 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
+              <p className="text-sm text-white/50">What's happening in your chart now</p>
+              <span className="text-sm text-white/80 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
                 View Transits <ArrowRight className="w-4 h-4" />
               </span>
             </Link>
             
             <Link 
               href="/forecasts" 
-              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 hover:shadow-md transition-all group"
+              className="glassmorphic rounded-xl p-4 hover:bg-white/10 transition-all group border border-white/10"
             >
               <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-5 h-5 text-purple-500" />
-                <span className="font-semibold text-gray-900 group-hover:text-purple-600">Personal Forecast</span>
+                <Calendar className="w-5 h-5 text-purple-400" />
+                <span className="font-semibold text-white group-hover:text-white/80 transition-colors">Personal Forecast</span>
               </div>
-              <p className="text-sm text-gray-600">Predictions based on your chart</p>
-              <span className="text-sm text-purple-600 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
+              <p className="text-sm text-white/50">Predictions based on your chart</p>
+              <span className="text-sm text-white/80 flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
                 Get Forecast <ArrowRight className="w-4 h-4" />
               </span>
             </Link>
@@ -389,26 +421,26 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
         {/* SEO-rich introductory content */}
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-3">Calculate Your Astrology Chart</h2>
-          <p className="text-gray-600">Enter your birth details below to generate your personalized natal chart with Sun sign, Moon sign, and Rising sign (Ascendant). No account required — get instant results.</p>
+          <p className="text-white/50">Enter your birth details below to generate your personalized natal chart with Sun sign, Moon sign, and Rising sign (Ascendant). No account required — get instant results.</p>
         </div>
         
         <div className="glassmorphic rounded-3xl p-8 space-y-6">
           <div>
-            <label htmlFor="birthDate" className="block text-sm font-medium mb-2 text-gray-700">Birth Date</label>
+            <label htmlFor="birthDate" className="block text-sm font-medium mb-2 text-white/60">Birth Date</label>
             <input
               id="birthDate"
               name="birthDate"
               type="date"
               value={formData.birthDate}
               onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full p-3 border border-white/15 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
               placeholder="Select your birth date"
             />
           </div>
 
           <div>
-            <label htmlFor="birthTime" className="block text-sm font-medium mb-2 text-gray-700">
+            <label htmlFor="birthTime" className="block text-sm font-medium mb-2 text-white/60">
               Birth Time
             </label>
             <input
@@ -417,17 +449,17 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
               type="time"
               value={formData.birthTime}
               onChange={(e) => setFormData({...formData, birthTime: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full p-3 border border-white/15 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
               placeholder="Select your birth time"
             />
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-white/40 mt-1">
               Your Rising Sign depends on exact birth time
             </p>
           </div>
 
           <div>
-            <label htmlFor="birthLocation" className="block text-sm font-medium mb-2 text-gray-700">Birth Location</label>
+            <label htmlFor="birthLocation" className="block text-sm font-medium mb-2 text-white/60">Birth Location</label>
             <div className="flex gap-2">
               <input
                 id="birthLocation"
@@ -436,7 +468,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                 value={formData.location}
                 onChange={(e) => setFormData({...formData, location: e.target.value})}
                 placeholder="e.g., New York, USA"
-                className="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="flex-1 p-3 border border-white/15 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required={!showManualEntry}
               />
               <button
@@ -450,22 +482,22 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
             </div>
             
             {locationError && (
-              <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="mt-2 p-3 bg-cosmic-gold/5 border border-yellow-200 rounded-lg">
                 <p className="text-sm text-yellow-800">{locationError}</p>
               </div>
             )}
             
             {coordinates && !showManualEntry && (
-              <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+              <p className="text-sm text-cosmic-teal mt-2 flex items-center gap-1">
                 <span>✓</span>
                 Location found: {coordinates.latitude.toFixed(4)}°, {coordinates.longitude.toFixed(4)}°
               </p>
             )}
             
             {showManualEntry && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="mt-4 p-4 bg-cosmic-indigo rounded-xl border border-white/10">
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-medium text-gray-700">Manual Coordinate Entry</label>
+                  <label className="text-sm font-medium text-white/60">Manual Coordinate Entry</label>
                   <button
                     type="button"
                     onClick={() => {
@@ -473,14 +505,14 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                       setLocationError('');
                       setCoordinates(null);
                     }}
-                    className="text-xs text-gray-500 hover:text-gray-700"
+                    className="text-xs text-white/40 hover:text-white/60"
                   >
                     Cancel
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-600 block mb-1">Latitude (-90 to 90)</label>
+                    <label className="text-xs text-white/50 block mb-1">Latitude (-90 to 90)</label>
                     <input
                       type="number"
                       step="0.0001"
@@ -493,11 +525,11 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                         }
                         setFormData({...formData, manualLat: e.target.value});
                       }}
-                      className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                      className="w-full p-2 border border-white/15 rounded-lg text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-600 block mb-1">Longitude (-180 to 180)</label>
+                    <label className="text-xs text-white/50 block mb-1">Longitude (-180 to 180)</label>
                     <input
                       type="number"
                       step="0.0001"
@@ -510,18 +542,18 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                         }
                         setFormData({...formData, manualLon: e.target.value});
                       }}
-                      className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                      className="w-full p-2 border border-white/15 rounded-lg text-sm"
                     />
                   </div>
                 </div>
                 {coordinates && showManualEntry && (
-                  <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                  <p className="text-sm text-cosmic-teal mt-2 flex items-center gap-1">
                     <span>✓</span>
                     Coordinates set: {coordinates.latitude.toFixed(4)}°, {coordinates.longitude.toFixed(4)}°
                   </p>
                 )}
-                <p className="text-xs text-gray-500 mt-2">
-                  💡 Tip: Find coordinates at <a href="https://www.latlong.net/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">latlong.net</a>
+                <p className="text-xs text-white/40 mt-2">
+                  💡 Tip: Find coordinates at <a href="https://www.latlong.net/" target="_blank" rel="noopener noreferrer" className="text-cosmic-teal hover:underline">latlong.net</a>
                 </p>
               </div>
             )}
@@ -530,7 +562,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
               <button
                 type="button"
                 onClick={() => setShowManualEntry(true)}
-                className="text-xs text-gray-500 hover:text-gray-700 mt-2"
+                className="text-xs text-white/40 hover:text-white/60 mt-2"
               >
                 Can't find location? Enter coordinates manually
               </button>
@@ -544,7 +576,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
           >
             {loading ? 'Creating Your Chart...' : 'Generate My Free Birth Chart'}
           </button>
-          <p className="text-center text-sm text-purple-600 font-medium">✓ No credit card required • Instant results • Save for free</p>
+          <p className="text-center text-sm text-cosmic-purple font-medium">✓ No credit card required • Instant results • Save for free</p>
         </div>
       </form>
     </div>

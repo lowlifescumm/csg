@@ -105,8 +105,7 @@ export default function HomePage() {
 
             <div className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full border border-cosmic-lavender/20">
               <Sparkles className="w-4 h-4 text-cosmic-purple" />
-              <span className="font-semibold text-cosmic-indigo">50,000+</span>
-              <span className="text-cosmic-indigo/50">readings delivered</span>
+              <span className="font-medium text-cosmic-indigo/70">Free readings daily</span>
             </div>
 
             <div className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full border border-cosmic-lavender/20">
