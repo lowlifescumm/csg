@@ -31,7 +31,7 @@ const playfair = Playfair_Display({
 
 // Next.js 15 requires viewport to be exported separately from metadata
 export const viewport = {
-  themeColor: "#1a1a2e",
+  themeColor: "#0c0a14",
   width: "device-width",
   initialScale: 1,
 };
