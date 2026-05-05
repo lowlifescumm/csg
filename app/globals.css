@@ -443,17 +443,17 @@ body.dashboard-active {
 .bg-cosmic-void .prose strong,
 #dashboard-main .prose strong {
   color: #e8d5c4 !important;
-=======
+}
+
 /* ─── DASHBOARD THEME ───
-   Dashboard uses light theme for readability. Override when dashboard-active. */
+   Dashboard uses dark cosmic void theme for consistency. */
 body.dashboard-active {
-  color: #374151;
-  background-color: #f9fafb;
+  color: #d8d4e0;
+  background-color: transparent;
 }
 body.dashboard-active #dashboard-main,
 body.dashboard-active #dashboard-main * {
-  color: #374151;
->>>>>>> 841545db53746ce4ddca3705fd62db16f27aa9b4
+  color: inherit;
 }
 
 /* Print */
