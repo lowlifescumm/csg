@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
+import { createPostInSanity } from '@/lib/sanity-write.js';
 
 // use shared pool from lib/db which handles SSL for local/prod
 
@@ -226,9 +227,28 @@ export async function POST(request) {
       category,
       meta_title,
       meta_description,
-        author_id || auth.userId,
+      author_id || auth.userId,
       status === 'published' ? new Date() : null
     ]);
+
+    // ─── DUAL-WRITE to Sanity CMS ──────────────────────────────────────
+    try {
+      await createPostInSanity({
+        title,
+        slug: finalSlug,
+        excerpt,
+        content,
+        featured_image,
+        status,
+        category,
+        meta_title: meta_title || title,
+        meta_description,
+        tags: tagsArray,
+      });
+      console.log(`[Sanity] Synced: ${finalSlug}`);
+    } catch (sErr) {
+      console.warn(`[Sanity] Sync failed, DB post still created: ${sErr.message}`);
+    }
 
     return NextResponse.json({
       success: true,
