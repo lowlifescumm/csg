@@ -15,10 +15,11 @@ module.exports = {
       colors: {
         // WARM NEBULA DESIGN SYSTEM
         cosmic: {
-          // Deep warm darks
-          indigo: '#14121c',
-          midnight: '#0c0a14',
-          deep: '#0a0c12',
+      // Deep warm darks
+      void: '#0a0c12',
+      indigo: '#14121c',
+      midnight: '#0c0a14',
+      deep: '#0a0c12',
           
           // Warm copper/gold accent
           gold: '#e8a87c',

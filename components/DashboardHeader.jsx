@@ -94,13 +94,13 @@ export default function DashboardHeader({
         {/* Left: Greeting Block */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-2">
-            <h1 className="text-xl sm:text-2xl md:text-[28px] lg:text-[36px] font-bold text-gray-800 break-words">
+            <h1 className="text-xl sm:text-2xl md:text-[28px] lg:text-[36px] font-bold text-cosmic-lavender break-words">
               {getGreeting()}, {userName}
             </h1>
-            <span className="text-xl sm:text-2xl md:text-[28px] lg:text-[36px] font-bold text-gray-800">{totalCredits}</span>
+            <span className="text-xl sm:text-2xl md:text-[28px] lg:text-[36px] font-bold text-cosmic-gold">{totalCredits}</span>
           </div>
           {mounted && currentDate && (
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-cosmic-taupe">
               <span className="break-words">{formatDate(currentDate)}</span>
               {moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 && (
                 <span className="flex items-center gap-1.5">
@@ -115,14 +115,14 @@ export default function DashboardHeader({
         {/* Right: Horizontal Stack of 4 Stat Cards */}
         <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 justify-end flex-wrap w-full md:w-auto">
           {/* Energy Level Card */}
-          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px] bg-white border border-purple-100">
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px] bg-cosmic-void/90 border border-cosmic-gold/15 backdrop-blur-md">
             <div className="flex items-center gap-2 mb-2">
-              <Sun className="w-4 h-4 text-yellow-500" aria-hidden="true" />
-              <h4 className="text-gray-700 font-semibold text-xs">Energy</h4>
+              <Sun className="w-4 h-4 text-cosmic-gold" aria-hidden="true" />
+              <h4 className="text-cosmic-lavender font-semibold text-xs">Energy</h4>
             </div>
             <div className="progress-bar-container relative">
               <div 
-                className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-1"
+                className="w-full h-1.5 bg-cosmic-indigo/50 rounded-full overflow-hidden mb-1"
                 role="progressbar"
                 aria-valuenow={energy}
                 aria-valuemin={0}
@@ -138,8 +138,8 @@ export default function DashboardHeader({
                 />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-700 font-semibold text-xs">{energy}%</span>
-                <span className="text-green-500 text-xs flex items-center gap-0.5">
+                <span className="text-cosmic-lavender font-semibold text-xs">{energy}%</span>
+                <span className="text-cosmic-gold text-xs flex items-center gap-0.5">
                   <TrendingUp className="w-3 h-3" aria-hidden="true" />
                   ↑{energyChange}%
                 </span>
@@ -148,34 +148,34 @@ export default function DashboardHeader({
           </Card>
 
           {/* Love Reading Card */}
-          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px] bg-white border border-purple-100">
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px] bg-cosmic-void/90 border border-cosmic-gold/15 backdrop-blur-md">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
-                <Heart className="w-4 h-4 text-pink-500" aria-hidden="true" />
-                <h4 className="text-gray-700 font-semibold text-xs">Love</h4>
+                <Heart className="w-4 h-4 text-cosmic-rose" aria-hidden="true" />
+                <h4 className="text-cosmic-lavender font-semibold text-xs">Love</h4>
               </div>
-              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-pink-100 text-pink-600">
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-cosmic-rose/15 text-cosmic-rose">
                 Today
               </span>
             </div>
-            <p className="text-xs truncate text-gray-500">Venus aligns</p>
+            <p className="text-xs truncate text-cosmic-taupe">Venus aligns</p>
             <Link 
               href="/dashboard#tarot-section"
-              className="text-[10px] font-medium smooth-transition mt-1 inline-block text-purple-600 hover:text-purple-700"
+              className="text-[10px] font-medium smooth-transition mt-1 inline-block text-cosmic-gold hover:text-cosmic-amber"
             >
               View &gt;
             </Link>
           </Card>
 
           {/* Spiritual Growth Card */}
-          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px] bg-white border border-purple-100">
+          <Card size="sm" className="header-stat-card flex-shrink-0 w-full sm:w-[160px] md:w-[180px] lg:w-[200px] bg-cosmic-void/90 border border-cosmic-gold/15 backdrop-blur-md">
             <div className="flex items-center gap-1.5 mb-2">
               <span className="text-sm">🕉️</span>
-              <h4 className="text-gray-700 font-semibold text-xs">Growth</h4>
+              <h4 className="text-cosmic-lavender font-semibold text-xs">Growth</h4>
             </div>
             <div className="progress-bar-container relative mb-1">
               <div 
-                className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden"
+                className="w-full h-1.5 bg-cosmic-indigo/50 rounded-full overflow-hidden"
                 role="progressbar"
                 aria-valuenow={Math.round(spiritualGrowthPercentage)}
                 aria-valuemin={0}
@@ -192,24 +192,24 @@ export default function DashboardHeader({
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-gray-500">{xpCurrent.toLocaleString()}/{xpTarget.toLocaleString()}</span>
-              <span className="text-gray-700 font-semibold text-xs">Lv.{level}</span>
+              <span className="text-[10px] text-cosmic-taupe">{xpCurrent.toLocaleString()}/{xpTarget.toLocaleString()}</span>
+              <span className="text-cosmic-lavender font-semibold text-xs">Lv.{level}</span>
             </div>
           </Card>
 
           {/* Daily Bonus Card */}
-          <Card size="sm" className="header-stat-card flex-shrink-0 relative w-full sm:w-[160px] md:w-[180px] lg:w-[200px] bg-white border border-purple-100">
-            <span className="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-yellow-400 text-purple-900">
+          <Card size="sm" className="header-stat-card flex-shrink-0 relative w-full sm:w-[160px] md:w-[180px] lg:w-[200px] bg-cosmic-void/90 border border-cosmic-gold/15 backdrop-blur-md">
+            <span className="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-cosmic-gold text-cosmic-midnight">
               NEW
             </span>
             <div className="flex items-center gap-1.5 mb-2">
-              <Gift className="w-4 h-4 text-yellow-500" aria-hidden="true" />
-              <h4 className="text-gray-700 font-semibold text-xs">Bonus</h4>
+              <Gift className="w-4 h-4 text-cosmic-gold" aria-hidden="true" />
+              <h4 className="text-cosmic-lavender font-semibold text-xs">Bonus</h4>
             </div>
-            <p className="text-xs truncate mb-1 text-gray-500">Free reading</p>
+            <p className="text-xs truncate mb-1 text-cosmic-taupe">Free reading</p>
             <Link 
               href="/dashboard#tarot-section"
-              className="text-[10px] font-medium smooth-transition inline-block text-purple-600 hover:text-purple-700"
+              className="text-[10px] font-medium smooth-transition inline-block text-cosmic-gold hover:text-cosmic-amber"
             >
               Claim &gt;
             </Link>
