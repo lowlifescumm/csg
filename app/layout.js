@@ -31,7 +31,7 @@ const playfair = Playfair_Display({
 
 // Next.js 15 requires viewport to be exported separately from metadata
 export const viewport = {
-  themeColor: "#0c0a14",
+  themeColor: "#050214",
   width: "device-width",
   initialScale: 1,
 };
@@ -329,7 +329,7 @@ export default function RootLayout({ children }) {
       </head>
 
       <body
-        className="min-h-screen bg-gradient-to-br from-violet-950 via-purple-950 to-indigo-950 antialiased"
+        className="min-h-screen bg-cosmic-void antialiased"
         suppressHydrationWarning={true}
       >
         <AuthProviderWrapper>

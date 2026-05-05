@@ -65,6 +65,9 @@ services:
       - key: TWITTER_ACCESS_SECRET
         sync: false
 
+      - key: SANITY_API_TOKEN
+        sync: false
+
 databases:
   - name: cosmic-spiritual-guide-db
     plan: starter

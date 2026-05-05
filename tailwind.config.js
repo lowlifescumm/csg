@@ -15,31 +15,22 @@ module.exports = {
       colors: {
         // WARM NEBULA DESIGN SYSTEM
         cosmic: {
-      // Deep warm darks
-      void: '#0a0c12',
-      indigo: '#14121c',
-      midnight: '#0c0a14',
-      deep: '#0a0c12',
+          void: '#050214',        // Deepest space black-purple
+          indigo: '#1a0f3c',      // Rich cosmic indigo
+          violet: '#7c3aed',      // Electric violet accents
+          gold: '#d4af37',        // Mystical gold
+          rose: '#c45b7a',        // Warm cosmic rose
+          lavender: '#c4b5fd',    // Soft lilac text
+          cream: '#faf8f5',       // Light background (legacy)
+          midnight: '#0f0f1a',    // Darker variant (legacy)
+          purple: '#7c3aed',      // LEGACY ALIAS for cosmic-violet
           
-          // Warm copper/gold accent
-          gold: '#e8a87c',
+          // Additional warm nebula tokens
           amber: '#d4936a',
-          
-          // Warm rose
-          purple: '#c45b7a',
-          rose: '#a84a6a',
-          
-          // Soft teal highlight
           teal: '#5b8a8a',
           aqua: '#7ab5b5',
-          
-          // Warm neutrals
-          lavender: '#b8a9a1',
           taupe: '#9a8b84',
-          
-          // Warm light bg
-          cream: '#f5efe6',
-          linen: '#ebe4d8',
+          deep: '#0a0c12',
         },
         
         // Legacy aliases

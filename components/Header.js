@@ -70,12 +70,17 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 overflow-visible ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
+          ? "bg-cosmic-void/90 backdrop-blur-lg border-b border-cosmic-violet/20"
+          : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
+          <Link href="/" className="flex items-center gap-2">
+            <Logo />
+          </Link>
 
           <nav className="hidden lg:flex items-center space-x-1">
             {filteredNav.map((item) => {
@@ -86,6 +91,8 @@ export default function Header() {
                   href={item.href}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
                     isActive(item.href)
+                      ? "text-cosmic-gold bg-cosmic-gold/10"
+                      : "text-cosmic-lavender hover:text-white hover:bg-white/5"
                   }`}
                 >
                   {Icon ? <Icon className="w-4 h-4" /> : null}
@@ -100,26 +107,28 @@ export default function Header() {
               <>
                 <Link
                   href="/pricing"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all shadow-gold"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-void hover:bg-cosmic-gold/90 transition-all"
                 >
                   <Coins className="w-4 h-4" />
                   <span>Get Credits</span>
                 </Link>
                 <Link
                   href="/subscription"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-lavender/20 text-white border border-cosmic-lavender/30 hover:bg-cosmic-lavender/30 transition-all"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm border border-cosmic-violet/30 text-cosmic-lavender hover:bg-cosmic-violet/10 transition-all"
                 >
                   <CreditCard className="w-4 h-4" />
                   <span>Premium</span>
                 </Link>
                 <Link
                   href="/dashboard"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-cosmic-lavender hover:text-white transition-all"
                 >
                   <User className="w-4 h-4" />
                   <span>{user.firstName || user.email?.split("@")[0]}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-cosmic-lavender hover:text-red-400 transition-all"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Log Out</span>
@@ -129,12 +138,13 @@ export default function Header() {
               <div className="flex items-center space-x-2">
                 <Link
                   href="/login"
+                  className="px-4 py-2 rounded-lg font-medium text-sm text-cosmic-lavender hover:text-white transition-all"
                 >
                   Log In
                 </Link>
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all shadow-gold"
+                  className="px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-void hover:bg-cosmic-gold/90 transition-all"
                 >
                   Sign Up
                 </Link>
@@ -145,6 +155,7 @@ export default function Header() {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
+            className="lg:hidden p-2 text-cosmic-lavender hover:text-white"
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -166,6 +177,8 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
                       isActive(item.href)
+                        ? "text-cosmic-gold bg-cosmic-gold/10"
+                        : "text-cosmic-lavender hover:text-white hover:bg-white/5"
                     }`}
                   >
                     {Icon ? <Icon className="w-5 h-5" /> : null}
@@ -178,7 +191,7 @@ export default function Header() {
                   <Link
                     href="/pricing"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-cosmic-gold text-cosmic-indigo"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-cosmic-gold text-cosmic-void"
                   >
                     <Coins className="w-5 h-5" />
                     <span>Get Credits</span>
@@ -186,7 +199,7 @@ export default function Header() {
                   <Link
                     href="/subscription"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium bg-cosmic-lavender/20 text-white border border-cosmic-lavender/30"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium border border-cosmic-violet/30 text-cosmic-lavender hover:bg-cosmic-violet/10"
                   >
                     <CreditCard className="w-5 h-5" />
                     <span>Premium</span>
@@ -194,6 +207,7 @@ export default function Header() {
                   <Link
                     href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-cosmic-lavender hover:text-white"
                   >
                     <User className="w-5 h-5" />
                     <span>Profile</span>
@@ -203,6 +217,7 @@ export default function Header() {
                       setMobileMenuOpen(false);
                       handleLogout();
                     }}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium text-cosmic-lavender hover:text-red-400"
                   >
                     <LogOut className="w-5 h-5" />
                     <span>Log Out</span>
@@ -213,13 +228,14 @@ export default function Header() {
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
+                    className="px-4 py-3 rounded-lg font-medium text-cosmic-lavender hover:text-white hover:bg-white/5"
                   >
                     Log In
                   </Link>
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 rounded-lg font-medium text-center bg-cosmic-gold text-cosmic-indigo"
+                    className="px-4 py-3 rounded-lg font-medium text-center bg-cosmic-gold text-cosmic-void"
                   >
                     Sign Up
                   </Link>

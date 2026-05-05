@@ -12,6 +12,8 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { pool } from '@/lib/db';
 import { loadBriefs, buildImageUrl, generateSocialCopy, slugify, generateArticleContent, getThemeForPost } from '@/lib/content-pipeline-lib.js';
+import { createPostInSanity } from '@/lib/sanity-write.js';
+import { sanityClient } from '@/lib/sanity.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -197,6 +199,26 @@ async function createBlogPost(post, imageUrl, publish, blogApiKey) {
     }
 
     const data = await res.json();
+
+    // ─── DUAL-WRITE: also create in Sanity CMS ─────────────────────────────
+    try {
+      const sanityResult = await createPostInSanity({
+        title,
+        slug: data.slug || slug,
+        excerpt: metaDesc,
+        content,
+        featured_image: imageUrl,
+        status: publish ? 'published' : 'draft',
+        category: theme.category,
+        meta_title: title,
+        meta_description: metaDesc,
+        tags: [keyword, theme.category.toLowerCase()],
+      });
+      log('ok', `Synced to Sanity CMS: ${sanityResult._id}`);
+    } catch (sanityErr) {
+      log('warn', `Sanity sync failed (post still created in DB): ${sanityErr.message}`);
+    }
+
     log('post', `Blog post ${publish ? 'published' : 'created'}: ${siteUrl}/blog/${data.slug}`);
     return data;
   } catch (err) {
