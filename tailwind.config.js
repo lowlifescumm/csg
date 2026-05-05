@@ -15,12 +15,15 @@ module.exports = {
       colors: {
         // NEW DESIGN SYSTEM: Spiritual/Mystical Palette
         cosmic: {
-          indigo: '#1a1a2e',      // Primary: Deep indigo - spiritual, mysterious
-          gold: '#d4af37',        // Accent: Gold - premium, trustworthy
-          lavender: '#b19cd9',    // Secondary: Soft lavender - calming
-          purple: '#7c3aed',      // CTA: Vibrant purple - action
-          cream: '#faf8f5',       // Light background
-          midnight: '#0f0f1a',    // Darker variant
+          void: '#050214',        // Deepest space black-purple
+          indigo: '#1a0f3c',      // Rich cosmic indigo
+          violet: '#7c3aed',      // Electric violet accents
+          gold: '#d4af37',        // Mystical gold
+          rose: '#c45b7a',        // Warm cosmic rose
+          lavender: '#c4b5fd',    // Soft lilac text
+          cream: '#faf8f5',       // Light background (legacy)
+          midnight: '#0f0f1a',    // Darker variant (legacy)
+          purple: '#7c3aed',      // LEGACY ALIAS for cosmic-violet
         },
         // Legacy colors (for gradual migration)
         pink: '#EC4899',
