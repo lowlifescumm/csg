@@ -354,10 +354,7 @@ body.dashboard-active {
 }
 
 /* Muted paragraph text inside dark dashboard */
-#dashboard-main .celestial-card p,
-#dashboard-main p.text-cosmic-indigo/60,
-#dashboard-main .text-cosmic-indigo/60,
-#dashboard-main .text-cosmic-indigo/70 {
+#dashboard-main .celestial-card p {
   color: #b098a8 !important;
 }
 
@@ -418,17 +415,6 @@ body.dashboard-active {
 /* Override gray border colors */
 .bg-cosmic-void .border-gray-200,
 #dashboard-main .border-gray-200 {
-  border-color: rgba(232, 168, 124, 0.12) !important;
-}
-
-/* Ensure glassmorphic elements inside dashboard look right */
-.bg-cosmic-void .bg-white/10,
-#dashboard-main .bg-white/10,
-.bg-cosmic-void .bg-white/20,
-#dashboard-main .bg-white/20,
-.bg-cosmic-void .bg-white/30,
-#dashboard-main .bg-white/30 {
-  background: rgba(255, 255, 255, 0.08) !important;
   border-color: rgba(232, 168, 124, 0.12) !important;
 }
 
