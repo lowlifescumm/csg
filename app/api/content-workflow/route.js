@@ -312,7 +312,7 @@ export async function POST(req) {
   // ── COMPLETE a step ───────────────────────────────────────────────────────
   if (action === 'complete') {
     // Validate required content for each step
-    const validation = validateStepOutput(step, { content, excerpt, metaTitle, outline, targetKeyword });
+    const validation = validateStepOutput(step, { content, excerpt, metaTitle, outline, targetKeyword, featuredImage });
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
