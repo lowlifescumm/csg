@@ -78,7 +78,7 @@ function BirthChartPageInner() {
 
   // Show the form - user can be logged in or anonymous
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
       {/* Page Header with H1 */}
       <div className="relative overflow-hidden py-12 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center relative z-10">

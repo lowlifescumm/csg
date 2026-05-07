@@ -205,9 +205,9 @@ export default function PricingTiers() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
             Choose Your Cosmic Path
-          </h2>
+          </h1>
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">
             Select the plan that aligns with your spiritual journey
           </p>
@@ -221,7 +221,7 @@ export default function PricingTiers() {
         )}
 
         {/* 3-Column Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
           
           {/* Column 1: The "Curious" - Free */}
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20 relative">
@@ -230,7 +230,7 @@ export default function PricingTiers() {
                 <Sparkles className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">The Curious</h3>
-              <div className="text-5xl font-bold text-white mb-1">$0</div>
+              <div className="text-4xl xl:text-5xl font-bold text-white mb-1 break-words">$0</div>
               <p className="text-purple-200 text-sm">Always Free</p>
             </div>
 
@@ -291,7 +291,7 @@ export default function PricingTiers() {
                 <Zap className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">The Seeker</h3>
-              <div className="text-5xl font-bold text-white mb-1">From ${(CREDIT_PACKS.CURIOUS_SEEKER.priceInCents / 100).toFixed(2)}</div>
+              <div className="text-4xl xl:text-5xl font-bold text-white mb-1 break-words">From ${(CREDIT_PACKS.CURIOUS_SEEKER.priceInCents / 100).toFixed(2)}</div>
               <p className="text-purple-200 text-sm">Pay as you go</p>
             </div>
 
@@ -397,7 +397,7 @@ export default function PricingTiers() {
                 <Crown className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">The Mystic</h3>
-              <div className="text-5xl font-bold text-white mb-1">
+              <div className="text-4xl xl:text-5xl font-bold text-white mb-1 break-words">
                 ${(SUBSCRIPTION.MONTHLY_PRICE_IN_CENTS / 100).toFixed(2)}
                 <span className="text-2xl text-purple-200">/mo</span>
               </div>
