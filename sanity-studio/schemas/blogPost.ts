@@ -97,6 +97,13 @@ export default {
       ],
     },
     {
+      name: 'featuredImageUrl',
+      title: 'External Featured Image URL',
+      type: 'url',
+      group: 'media',
+      description: 'Used by the automated pipeline when the image is hosted outside Sanity.',
+    },
+    {
       name: 'metaTitle',
       title: 'SEO Title',
       type: 'string',
