@@ -9,6 +9,43 @@ import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control
 import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { hydrateReportData } from '@/src/services/chartHydrator';
 
+function isCompatibilityReportPrimaryKeyCollision(error) {
+  return (
+    error?.code === '23505' &&
+    (error?.constraint === 'compatibility_reports_pkey' ||
+      String(error?.message || '').includes('compatibility_reports_pkey'))
+  );
+}
+
+async function syncCompatibilityReportsIdSequence() {
+  await pool.query(`
+    SELECT setval(
+      pg_get_serial_sequence('compatibility_reports', 'id'),
+      COALESCE((SELECT MAX(id) FROM compatibility_reports), 1),
+      (SELECT COUNT(*) > 0 FROM compatibility_reports)
+    )
+  `);
+}
+
+async function insertCompatibilityReport(values) {
+  const insertQuery = `INSERT INTO compatibility_reports 
+       (user_id, chart1_data, chart2_data, person1_name, person2_name, scores, report, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, NOW())
+       RETURNING id`;
+
+  try {
+    return await pool.query(insertQuery, values);
+  } catch (error) {
+    if (!isCompatibilityReportPrimaryKeyCollision(error)) {
+      throw error;
+    }
+
+    console.warn('[compatibility] compatibility_reports id sequence out of sync; repairing and retrying insert');
+    await syncCompatibilityReportsIdSequence();
+    return pool.query(insertQuery, values);
+  }
+}
+
 
 export async function POST(request) {
   try {
@@ -92,54 +129,52 @@ export async function POST(request) {
       person2Name || 'Person 2'
     );
 
-    // Consume credits for the reading
-    const creditResult = await consumeCreditsForReading(userId, 'COMPATIBILITY_REPORT');
+    const insertResult = await insertCompatibilityReport([
+      userId,
+      JSON.stringify({
+        ...chart1,
+        // Include premium data points in chart1_data
+        _premium_data: {
+          synastryAspects: result.synastryAspects || [],
+          houseOverlays: result.houseOverlays || [],
+          compositeChart: result.compositeChart || null
+        }
+      }),
+      JSON.stringify({
+        ...chart2,
+        // Include premium data points reference in chart2_data
+        _premium_data_ref: true
+      }),
+      person1Name || 'Person 1',
+      person2Name || 'Person 2',
+      JSON.stringify({
+        ...result.scores,
+        // Include premium data in scores JSONB
+        _premium_data: {
+          synastryAspects: result.synastryAspects || [],
+          houseOverlays: result.houseOverlays || [],
+          compositeChart: result.compositeChart || null
+        }
+      }),
+      result.report
+    ]);
+
+    const reportId = insertResult.rows[0].id;
+
+    // Consume credits only after the report is safely persisted. If credit consumption
+    // unexpectedly fails after the pre-check, remove the saved report rather than
+    // delivering an unpaid premium report.
+    const creditResult = await consumeCreditsForReading(userId, 'COMPATIBILITY_REPORT', reportId);
     
     if (!creditResult.success) {
+      await pool.query('DELETE FROM compatibility_reports WHERE id = $1 AND user_id = $2', [reportId, userId]);
       const errorResponse = formatCreditError(creditResult);
       return NextResponse.json(errorResponse, { status: errorResponse.status });
     }
 
-    const insertResult = await pool.query(
-      `INSERT INTO compatibility_reports 
-       (user_id, chart1_data, chart2_data, person1_name, person2_name, scores, report, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, NOW())
-       RETURNING id`,
-      [
-        userId,
-        JSON.stringify({
-          ...chart1,
-          // Include premium data points in chart1_data
-          _premium_data: {
-            synastryAspects: result.synastryAspects || [],
-            houseOverlays: result.houseOverlays || [],
-            compositeChart: result.compositeChart || null
-          }
-        }),
-        JSON.stringify({
-          ...chart2,
-          // Include premium data points reference in chart2_data
-          _premium_data_ref: true
-        }),
-        person1Name || 'Person 1',
-        person2Name || 'Person 2',
-        JSON.stringify({
-          ...result.scores,
-          // Include premium data in scores JSONB
-          _premium_data: {
-            synastryAspects: result.synastryAspects || [],
-            houseOverlays: result.houseOverlays || [],
-            compositeChart: result.compositeChart || null
-          }
-        }),
-        result.report
-      ]
-    );
-
-    const reportId = insertResult.rows[0].id;
-
     return NextResponse.json({
       success: true,
+      reportId,
       scores: result.scores,
       report: result.report,
       insights: result.insights,
