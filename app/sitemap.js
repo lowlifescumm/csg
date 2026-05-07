@@ -1,4 +1,4 @@
-import { MetadataRoute } from 'next';
+import { getNextTransitDates, zodiacSigns } from '@/lib/pseo/astrology';
 
 export default function sitemap() {
   const baseUrl = 'https://cosmicspiritguide.com';
@@ -38,5 +38,21 @@ export default function sitemap() {
     priority: page.priority,
   }));
 
-  return sitemapEntries;
+  const sunMoonPages = zodiacSigns.flatMap((sun) =>
+    zodiacSigns.map((moon) => ({
+      url: `${baseUrl}/astrology/${sun.slug}/${moon.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    }))
+  );
+
+  const transitPages = getNextTransitDates(30).map((date) => ({
+    url: `${baseUrl}/transits/${date}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 0.75,
+  }));
+
+  return [...sitemapEntries, ...sunMoonPages, ...transitPages];
 }
