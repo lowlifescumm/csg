@@ -22,6 +22,8 @@
 
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
+import { createPostInSanity, updatePostInSanity } from '@/lib/sanity-write.js';
+import { sanityClient } from '@/lib/sanity.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -267,6 +269,11 @@ export async function POST(req) {
 
   // ── BEGIN a step ───────────────────────────────────────────────────────────
   if (action === 'begin') {
+    const gate = await validateStepGate(pool, calendarId, step);
+    if (!gate.valid) {
+      return NextResponse.json({ error: gate.error, blocked_by: gate.blockedBy }, { status: 409 });
+    }
+
     // Only allow beginning if step is pending
     if (stepRecord.status !== 'pending') {
       return NextResponse.json({
@@ -311,26 +318,33 @@ export async function POST(req) {
 
   // ── COMPLETE a step ───────────────────────────────────────────────────────
   if (action === 'complete') {
+    const gate = await validateStepGate(pool, calendarId, step);
+    if (!gate.valid) {
+      return NextResponse.json({ error: gate.error, blocked_by: gate.blockedBy }, { status: 409 });
+    }
+
     // Validate required content for each step
     const validation = validateStepOutput(step, { content, excerpt, metaTitle, outline, targetKeyword, featuredImage });
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    // Complete the workflow step
+    // Advance the calendar + produce content based on step before marking the
+    // workflow step complete. This prevents false-success states where the API
+    // reports completion even though no linked blog_post was actually updated.
+    await advanceWorkflow(pool, calendar, step, {
+      content, excerpt, metaTitle, metaDescription, tags, featuredImage,
+      scheduledAt, socialCopy, targetKeyword, secondaryKeywords, searchIntent,
+      targetWordCount, outline, keyPoints, ctaStrategy,
+    });
+
+    // Complete the workflow step only after the step output has persisted.
     await pool.query(`
       UPDATE publishing_workflow
       SET status = 'completed', completed_at = NOW(), assigned_to = COALESCE($1, assigned_to),
           notes = COALESCE($2, notes), updated_at = NOW()
       WHERE id = $3
     `, [agentId || agentType, notes, stepRecord.id]);
-
-    // Advance the calendar + produce content based on step
-    await advanceWorkflow(pool, calendar, step, {
-      content, excerpt, metaTitle, metaDescription, tags, featuredImage,
-      scheduledAt, socialCopy, targetKeyword, secondaryKeywords, searchIntent,
-      targetWordCount, outline, keyPoints, ctaStrategy,
-    });
 
     // Determine next step
     const stepIndex = WORKFLOW_STEPS.indexOf(step);
@@ -371,6 +385,71 @@ async function getBrief(pool, calendarId) {
   return rows[0] || null;
 }
 
+async function validateStepGate(pool, calendarId, step) {
+  const stepIndex = WORKFLOW_STEPS.indexOf(step);
+  if (stepIndex <= 0) return { valid: true };
+
+  const { rows } = await pool.query(
+    'SELECT step_name, status FROM publishing_workflow WHERE calendar_id = $1',
+    [calendarId]
+  );
+
+  const statusByStep = new Map(rows.map(row => [row.step_name, row.status]));
+  const incomplete = WORKFLOW_STEPS
+    .slice(0, stepIndex)
+    .filter(prevStep => statusByStep.get(prevStep) !== 'completed');
+
+  if (incomplete.length > 0) {
+    return {
+      valid: false,
+      blockedBy: incomplete,
+      error: `Cannot ${step} before previous workflow steps are completed: ${incomplete.join(', ')}`,
+    };
+  }
+
+  if (['edit', 'seo_review', 'images', 'schedule', 'publish', 'promote'].includes(step)) {
+    const postCheck = await validateCalendarPostReady(pool, calendarId, step);
+    if (!postCheck.valid) return postCheck;
+  }
+
+  return { valid: true };
+}
+
+async function validateCalendarPostReady(pool, calendarId, step) {
+  const { rows } = await pool.query(`
+    SELECT bp.id, bp.title, bp.slug, bp.content, bp.excerpt, bp.featured_image,
+           bp.meta_title, bp.meta_description, bp.status
+    FROM content_calendar cc
+    LEFT JOIN blog_posts bp ON cc.post_id = bp.id
+    WHERE cc.id = $1
+  `, [calendarId]);
+
+  const post = rows[0];
+  if (!post?.id) {
+    return { valid: false, blockedBy: ['outline'], error: `Cannot ${step}: no blog post is linked to this calendar item` };
+  }
+
+  const textContent = String(post.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (['edit', 'seo_review', 'images', 'schedule', 'publish', 'promote'].includes(step) && textContent.length < 800) {
+    return { valid: false, blockedBy: ['draft'], error: `Cannot ${step}: blog post content is missing or too thin (${textContent.length} chars)` };
+  }
+
+  if (textContent.includes('This section covers') && textContent.includes('meaningful insights into your relational dynamics')) {
+    return { valid: false, blockedBy: ['draft'], error: `Cannot ${step}: blog post still contains placeholder pipeline content` };
+  }
+
+  if (['schedule', 'publish', 'promote'].includes(step)) {
+    if (!post.meta_title || !post.meta_description) {
+      return { valid: false, blockedBy: ['seo_review'], error: `Cannot ${step}: SEO metadata is missing` };
+    }
+    if (!post.featured_image) {
+      return { valid: false, blockedBy: ['images'], error: `Cannot ${step}: featured image is missing` };
+    }
+  }
+
+  return { valid: true, post };
+}
+
 function validateStepOutput(step, data) {
   switch (step) {
     case 'research':
@@ -400,6 +479,12 @@ function validateStepOutput(step, data) {
       return { valid: true }; // social copy can be submitted or marked manual
     default:
       return { valid: true };
+  }
+}
+
+function assertRowsAffected(result, step, message) {
+  if (!result?.rowCount) {
+    throw new Error(`Cannot complete ${step}: ${message}`);
   }
 }
 
@@ -480,7 +565,7 @@ async function advanceWorkflow(pool, calendar, step, data) {
     case 'draft': {
       const slug = calendar.target_url_slug ||
         (calendar.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      await pool.query(`
+      const result = await pool.query(`
         UPDATE blog_posts SET
           content = COALESCE($1, content),
           excerpt = COALESCE($2, excerpt),
@@ -488,12 +573,13 @@ async function advanceWorkflow(pool, calendar, step, data) {
         WHERE id = (SELECT post_id FROM content_calendar WHERE id = $3)
            OR slug = $4
       `, [data.content, data.excerpt, calendarId, slug]);
+      assertRowsAffected(result, step, 'no linked or slug-matched blog post was updated');
       break;
     }
 
     // ── EDIT: Finalize content ────────────────────────────────────────────────
     case 'edit': {
-      await pool.query(`
+      const result = await pool.query(`
         UPDATE blog_posts SET
           content = COALESCE($1, content),
           excerpt = COALESCE($2, excerpt),
@@ -501,12 +587,13 @@ async function advanceWorkflow(pool, calendar, step, data) {
           updated_at = NOW()
         WHERE id = (SELECT post_id FROM content_calendar WHERE id = $3)
       `, [data.content, data.excerpt, calendarId]);
+      assertRowsAffected(result, step, 'no linked blog post was updated');
       break;
     }
 
     // ── SEO REVIEW: Add meta fields ───────────────────────────────────────────
     case 'seo_review': {
-      await pool.query(`
+      const result = await pool.query(`
         UPDATE blog_posts SET
           meta_title = COALESCE($1, meta_title),
           meta_description = COALESCE($2, meta_description),
@@ -514,30 +601,33 @@ async function advanceWorkflow(pool, calendar, step, data) {
           updated_at = NOW()
         WHERE id = (SELECT post_id FROM content_calendar WHERE id = $4)
       `, [data.metaTitle, data.metaDescription, data.tags, calendarId]);
+      assertRowsAffected(result, step, 'no linked blog post was updated');
       break;
     }
 
     // ── IMAGES: Add featured image ─────────────────────────────────────────────
     case 'images': {
-      await pool.query(`
+      const result = await pool.query(`
         UPDATE blog_posts SET
           featured_image = COALESCE($1, featured_image),
           updated_at = NOW()
         WHERE id = (SELECT post_id FROM content_calendar WHERE id = $2)
       `, [data.featuredImage, calendarId]);
+      assertRowsAffected(result, step, 'no linked blog post was updated');
       break;
     }
 
     // ── SCHEDULE: Set publish date ─────────────────────────────────────────────
     case 'schedule': {
       const publishDate = data.scheduledAt || calendar.publish_date;
-      await pool.query(`
+      const result = await pool.query(`
         UPDATE blog_posts SET
           status = 'scheduled',
           published_at = $1,
           updated_at = NOW()
         WHERE id = (SELECT post_id FROM content_calendar WHERE id = $2)
       `, [publishDate, calendarId]);
+      assertRowsAffected(result, step, 'no linked blog post was updated');
       await pool.query(
         "UPDATE content_calendar SET status = 'scheduled' WHERE id = $1",
         [calendarId]
@@ -547,17 +637,20 @@ async function advanceWorkflow(pool, calendar, step, data) {
 
     // ── PUBLISH: Set status to published ──────────────────────────────────────
     case 'publish': {
-      await pool.query(`
+      const result = await pool.query(`
         UPDATE blog_posts SET
           status = 'published',
           published_at = COALESCE(published_at, NOW()),
           updated_at = NOW()
         WHERE id = (SELECT post_id FROM content_calendar WHERE id = $1)
       `, [calendarId]);
+      assertRowsAffected(result, step, 'no linked blog post was updated');
       await pool.query(
         "UPDATE content_calendar SET status = 'published' WHERE id = $1",
         [calendarId]
       );
+
+      await syncPublishedPostToSanity(pool, calendarId);
       break;
     }
 
@@ -592,5 +685,40 @@ async function advanceWorkflow(pool, calendar, step, data) {
       );
       break;
     }
+  }
+}
+
+
+async function syncPublishedPostToSanity(pool, calendarId) {
+  const { rows } = await pool.query(`
+    SELECT bp.*
+    FROM content_calendar cc
+    JOIN blog_posts bp ON cc.post_id = bp.id
+    WHERE cc.id = $1
+    LIMIT 1
+  `, [calendarId]);
+
+  const post = rows[0];
+  if (!post) throw new Error('Cannot publish: linked blog post not found');
+
+  const payload = {
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.excerpt,
+    content: post.content,
+    featured_image: post.featured_image,
+    status: 'published',
+    category: post.category,
+    meta_title: post.meta_title,
+    meta_description: post.meta_description,
+    tags: post.tags || [],
+  };
+
+  const slugLiteral = JSON.stringify(String(post.slug || ''));
+  const existing = await sanityClient.fetch(`*[_type == "blogPost" && slug.current == ${slugLiteral}][0]{_id}`);
+  if (existing?._id) {
+    await updatePostInSanity(existing._id, payload);
+  } else {
+    await createPostInSanity(payload);
   }
 }
