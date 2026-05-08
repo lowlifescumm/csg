@@ -24,12 +24,21 @@ function LoginPageContent({ router, searchParams }) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [returnUrl, setReturnUrl] = useState("/dashboard");
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     setMounted(true);
     const urlReturn = searchParams.get('returnUrl');
     if (urlReturn) {
       setReturnUrl(decodeURIComponent(urlReturn));
+    }
+    const redirect = searchParams.get('redirect');
+    if (redirect === 'dashboard') {
+      setReturnUrl('/dashboard');
+    }
+    const message = searchParams.get('message');
+    if (message === 'save-readings') {
+      setNotice('Sign in to track your transits, save readings, and build your cosmic profile.');
     }
     const errorParam = searchParams.get('error');
     if (errorParam) {
@@ -110,9 +119,15 @@ function LoginPageContent({ router, searchParams }) {
           </div>
           <h1 className="text-3xl font-semibold gradient-text mb-2">Cosmic Spirit Guide</h1>
           <p className="text-white/60">
-            {returnUrl !== '/dashboard' ? 'Sign in to continue your journey' : 'Welcome back to your spiritual journey'}
+            {notice || (returnUrl !== '/dashboard' ? 'Sign in to continue your journey' : 'Welcome back to your spiritual journey')}
           </p>
         </div>
+
+        {notice && (
+          <div className="mb-6 rounded-2xl border border-purple-300/30 bg-purple-500/15 px-4 py-3 text-sm text-purple-100">
+            {notice}
+          </div>
+        )}
 
         <div className="flex gap-2 mb-8 bg-white/5 rounded-2xl p-1 border border-white/10">
           <button
