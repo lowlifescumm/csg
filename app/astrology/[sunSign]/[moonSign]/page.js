@@ -115,9 +115,9 @@ export default function SunMoonLandingPage({ params }) {
 
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl rounded-[2rem] border border-cosmic-gold/20 bg-gradient-to-br from-cosmic-gold/15 to-cosmic-violet/10 p-8 text-center shadow-2xl shadow-cosmic-gold/10">
-          <h2 className="mb-4 text-3xl font-black sm:text-4xl">This is only two placements.</h2>
+          <h2 className="mb-4 text-3xl font-black sm:text-4xl">Two placements tell a story. Twelve tell your life.</h2>
           <p className="mx-auto mb-8 max-w-2xl text-cosmic-lavender/80">
-            Your full chart includes rising sign, houses, planets, aspects, and current transits. Use the free calculator to turn this snapshot into a personalized reading.
+            Your rising sign, houses, planets, aspects, and current transits reveal where the pattern is actually playing out. Use the free calculator to turn this snapshot into a reading that speaks directly to you.
           </p>
           <Link href="/birth-chart" className="inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-4 font-bold text-cosmic-void transition hover:scale-[1.02]">
             Calculate My Full Chart <ArrowRight className="h-5 w-5" />

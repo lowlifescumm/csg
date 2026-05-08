@@ -72,12 +72,12 @@ export default function DailyTransitLandingPage({ params }) {
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl rounded-[2rem] border border-white/10 bg-white/[0.06] p-8 text-center backdrop-blur">
-          <h2 className="mb-4 text-3xl font-black">Want the transit for your chart?</h2>
+          <h2 className="mb-4 text-3xl font-black">Want to know where this lands in your chart?</h2>
           <p className="mx-auto mb-8 max-w-2xl text-cosmic-lavender/80">
-            Generic transits get traffic. Personalized transits convert. Start with the free chart, then upgrade when you want deeper timing guidance.
+            Today's Mercury retrograde affects everyone. But in your chart, it rules your 7th house of partnerships — so it specifically disrupts your relationships, not your commute.
           </p>
           <Link href="/pricing" className="inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-4 font-bold text-cosmic-void transition hover:scale-[1.02]">
-            See Premium Options <ArrowRight className="h-5 w-5" />
+            See Your Timing Options <ArrowRight className="h-5 w-5" />
           </Link>
         </div>
       </section>

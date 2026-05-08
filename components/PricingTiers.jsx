@@ -206,10 +206,10 @@ export default function PricingTiers() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Choose Your Cosmic Path
+            Choose how deeply you want to see
           </h1>
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">
-            Select the plan that aligns with your spiritual journey
+            Start free, buy only what you need, or unlock every reading when you want deeper guidance.
           </p>
         </div>
 
@@ -229,7 +229,7 @@ export default function PricingTiers() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 mb-4">
                 <Sparkles className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">The Curious</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Free Start</h3>
               <div className="text-4xl xl:text-5xl font-bold text-white mb-1 break-words">$0</div>
               <p className="text-purple-200 text-sm">Always Free</p>
             </div>
@@ -244,7 +244,7 @@ export default function PricingTiers() {
                     {FREE_CREDITS.DAILY_REFRESH} Free Credits / Day
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Resets daily for endless exploration
+                    Resets daily so you can test what speaks to you
                   </p>
                 </div>
               </div>
@@ -258,7 +258,7 @@ export default function PricingTiers() {
                     Daily Horoscope
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Always free, no credits needed
+                    Check the day’s pattern without spending credits
                   </p>
                 </div>
               </div>
@@ -270,7 +270,7 @@ export default function PricingTiers() {
                     Credits expire in {FREE_CREDITS.EXPIRY_HOURS} hours
                   </div>
                   <p className="text-purple-200 text-xs">
-                    Use them for basic tarot readings
+                    Use them before they disappear
                   </p>
                 </div>
               </div>
@@ -290,7 +290,7 @@ export default function PricingTiers() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 mb-4">
                 <Zap className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">The Seeker</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Pay As You Go</h3>
               <div className="text-4xl xl:text-5xl font-bold text-white mb-1 break-words">From ${(CREDIT_PACKS.CURIOUS_SEEKER.priceInCents / 100).toFixed(2)}</div>
               <p className="text-purple-200 text-sm">Pay as you go</p>
             </div>
@@ -307,7 +307,7 @@ export default function PricingTiers() {
                         Permanent Credits
                       </div>
                       <p className="text-purple-200 text-sm">
-                        Never expire, use anytime
+                        Keep them until the moment you need clarity
                       </p>
                     </div>
                   </div>
@@ -321,7 +321,7 @@ export default function PricingTiers() {
                         All Reading Types
                       </div>
                       <p className="text-purple-200 text-sm">
-                        Use for any premium feature
+                        Use them for deeper readings, reports, and chart insights
                       </p>
                     </div>
                   </div>
@@ -396,7 +396,7 @@ export default function PricingTiers() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-4">
                 <Crown className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">The Mystic</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Unlimited Access</h3>
               <div className="text-4xl xl:text-5xl font-bold text-white mb-1 break-words">
                 ${(SUBSCRIPTION.MONTHLY_PRICE_IN_CENTS / 100).toFixed(2)}
                 <span className="text-2xl text-purple-200">/mo</span>
@@ -414,7 +414,7 @@ export default function PricingTiers() {
                     🔮 Unlimited Tarot Readings
                   </div>
                   <p className="text-purple-200 text-sm">
-                    No credit limits
+                    Ask as often as you need, without counting credits
                   </p>
                 </div>
               </div>
@@ -442,7 +442,7 @@ export default function PricingTiers() {
                     🌙 4 Moon Reading Credits / Month
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Personalized lunar guidance
+                    See how the Moon is moving through your real life
                   </p>
                 </div>
               </div>

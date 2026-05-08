@@ -2,17 +2,17 @@
 import { useState } from "react";
 
 const TYPES = [
-  { key: "daily", title: "Daily Tarot", desc: "Start your day with guidance.", spreadType: "daily" },
-  { key: "daily-love", title: "Daily Love Tarot", desc: "Romantic insights for the day.", spreadType: "daily-love" },
-  { key: "career", title: "Daily Career Tarot", desc: "Work and opportunity guidance.", spreadType: "career" },
-  { key: "yes-no", title: "Yes/No Tarot", desc: "Clear yes/no with advice.", spreadType: "yes-no" },
-  { key: "love-potential", title: "Love Potential Tarot", desc: "Is there potential here?", spreadType: "love-potential" },
-  { key: "breakup", title: "Breakup Tarot", desc: "Why it ended and how to move on.", spreadType: "breakup" },
-  { key: "one-card", title: "One Card Tarot", desc: "A single focused pull.", spreadType: "one-card" },
-  { key: "ppf", title: "Past Present Future", desc: "Three-card classic timeline.", spreadType: "ppf" },
-  { key: "flirt", title: "Daily Flirt Tarot", desc: "Fun, light-hearted vibes.", spreadType: "flirt" },
-  { key: "yin-yang", title: "Yin Yang Tarot", desc: "Balance opposing energies.", spreadType: "yin-yang" },
-  { key: "custom_spread", title: "1-10 Card Spread", desc: "Choose your own spread size (1 credit per card).", spreadType: "custom_spread", isCustom: true },
+  { key: "daily", title: "Daily Tarot", desc: "One card. Your question. The pattern you can't see yet.", spreadType: "daily" },
+  { key: "daily-love", title: "Daily Love Tarot", desc: "What the cards reveal about your heart — not what you want to hear.", spreadType: "daily-love" },
+  { key: "career", title: "Daily Career Tarot", desc: "The choice, risk, or opening your work life is asking you to see.", spreadType: "career" },
+  { key: "yes-no", title: "Yes/No Tarot", desc: "A direct answer with the reason behind it.", spreadType: "yes-no" },
+  { key: "love-potential", title: "Love Potential Tarot", desc: "What is possible between you — and what needs honesty first.", spreadType: "love-potential" },
+  { key: "breakup", title: "Breakup Tarot", desc: "The lesson, the wound, and the next step back to yourself.", spreadType: "breakup" },
+  { key: "one-card", title: "One Card Tarot", desc: "One card for the question you can't stop circling.", spreadType: "one-card" },
+  { key: "ppf", title: "Past Present Future", desc: "Past, present, and future — the pattern, the moment, the next move.", spreadType: "ppf" },
+  { key: "flirt", title: "Daily Flirt Tarot", desc: "A playful read on attraction, timing, and the signal beneath the spark.", spreadType: "flirt" },
+  { key: "yin-yang", title: "Yin Yang Tarot", desc: "See the tension, the mirror, and the path back to center.", spreadType: "yin-yang" },
+  { key: "custom_spread", title: "1-10 Card Spread", desc: "Choose how many cards your question needs. One credit per card.", spreadType: "custom_spread", isCustom: true },
 ];
 
 export default function TarotReadingTypePicker({ onPick }) {
