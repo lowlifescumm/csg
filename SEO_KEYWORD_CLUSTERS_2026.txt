@@ -1,0 +1,153 @@
+# CosmicSpiritGuide Keyword Clusters — 2026 SEO Map
+
+Purpose: move the content program from isolated keyword posts to topical authority clusters that can rank, interlink, and convert users into free-tool usage, email capture, and paid readings/reports.
+
+## Revenue logic
+
+Every cluster should route traffic into one of these conversion paths:
+
+1. **Free tool usage** → account creation → paid personalized report / subscription.
+2. **Email capture** → daily horoscope / moon alerts → nurture to paid readings.
+3. **High-intent service page** → spiritual coaching / premium report / affiliate offer.
+
+## Cluster 1 — Spiritual Healing
+
+**Positioning:** practical emotional/spiritual recovery content for people searching for meaning after stress, breakups, grief, anxiety, or life transitions.
+
+**Primary pillar page**
+
+- Target keyword: `spiritual healing`
+- URL: `/blog/spiritual-healing-guide`
+- Title: `Spiritual Healing: A Practical Guide to Clearing, Grounding, and Rebuilding Your Energy`
+- Intent: informational with commercial investigation
+- CTA: `Get a free personalized energy reading` → `/energy` or email capture
+
+**Supporting articles**
+
+| Priority | Keyword | Intent | Content angle | URL slug | CTA |
+|---|---|---|---|---|---|
+| P1 | `spiritual healing after a breakup` | Problem-aware | Emotional recovery ritual + astrology/tarot reflection prompts | `/blog/spiritual-healing-after-breakup` | Free tarot spread for closure |
+| P1 | `energy cleansing ritual` | How-to | 7-minute home cleansing routine, moon timing, protection prayer | `/blog/energy-cleansing-ritual` | Moon phase reading |
+| P1 | `how to protect your energy` | How-to | Boundaries, grounding, signs of energetic depletion | `/blog/how-to-protect-your-energy` | Personalized energy check-in |
+| P2 | `chakra healing for beginners` | Beginner guide | Simple chakra map + daily practice | `/blog/chakra-healing-for-beginners` | Save chakra checklist/email opt-in |
+| P2 | `spiritual meaning of anxiety` | Informational | Careful non-medical framing: symbolism, grounding, when to seek support | `/blog/spiritual-meaning-of-anxiety` | Journal prompt + disclaimer |
+| P2 | `shadow work prompts` | Tool/template | 30 prompts for self-awareness and healing | `/blog/shadow-work-prompts` | Download prompt PDF |
+| P3 | `healing crystals for protection` | Product/commercial | Beginner-safe crystals and how to use them | `/blog/healing-crystals-for-protection` | Affiliate/product list later |
+| P3 | `full moon healing ritual` | Seasonal/how-to | Monthly ritual template tied to moon phases | `/blog/full-moon-healing-ritual` | Moon alerts signup |
+
+**Internal linking rules**
+
+- Every supporting article links up to `/blog/spiritual-healing-guide` in the intro or first third.
+- The pillar links out to all P1/P2 supporting posts in a table of contents.
+- Add contextual links to `/moon-reading`, `/tarot`, `/journal`, and `/energy` where relevant.
+- Avoid medical claims. Use spiritual/self-reflection language and include support disclaimers where anxiety/trauma topics appear.
+
+## Cluster 2 — Manifestation Techniques
+
+**Positioning:** grounded, action-oriented manifestation content that blends intention setting, astrology timing, journaling, and measurable habits.
+
+**Primary pillar page**
+
+- Target keyword: `manifestation techniques`
+- URL: `/blog/manifestation-techniques`
+- Title: `Manifestation Techniques That Actually Help You Focus, Act, and Follow Through`
+- Intent: informational / how-to
+- CTA: `Start a free manifestation journal` → `/journal` or account signup
+
+**Supporting articles**
+
+| Priority | Keyword | Intent | Content angle | URL slug | CTA |
+|---|---|---|---|---|---|
+| P1 | `369 manifestation method` | How-to | Step-by-step method, examples, printable tracker | `/blog/369-manifestation-method` | Journal template download |
+| P1 | `new moon manifestation ritual` | Seasonal/how-to | New moon intention setting by zodiac sign | `/blog/new-moon-manifestation-ritual` | Moon alerts signup |
+| P1 | `manifestation journal prompts` | Tool/template | 55 prompts organized by love, money, purpose, healing | `/blog/manifestation-journal-prompts` | Create journal entry |
+| P2 | `how to manifest love` | High intent | Relationship-ready manifestation with compatibility CTA | `/blog/how-to-manifest-love` | Compatibility calculator |
+| P2 | `how to manifest money` | High intent | Belief audit + practical money actions + ritual framing | `/blog/how-to-manifest-money` | Money astrology/tarot spread |
+| P2 | `scripting manifestation examples` | Examples | Before/after scripts and mistakes to avoid | `/blog/scripting-manifestation-examples` | Save examples to journal |
+| P3 | `vision board ideas` | Visual/social | Pinterest-friendly guide for spiritual vision boards | `/blog/vision-board-ideas` | Pinterest pin set |
+| P3 | `affirmations for manifestation` | Listicle | Affirmations by goal type and zodiac element | `/blog/affirmations-for-manifestation` | Daily affirmation email |
+
+**Internal linking rules**
+
+- Link manifestation articles to `/journal`, `/moon-reading`, `/compatibility`, and `/forecasts` depending on intent.
+- Use reusable downloadable templates as list-building assets.
+- Turn each article into 3 Pinterest pins and 1 short-form script because this cluster is naturally visual/shareable.
+
+## Cluster 3 — Predictive Astrology
+
+**Positioning:** future-oriented astrology content for users who want timing, forecasts, transits, retrogrades, and practical planning.
+
+**Primary pillar page**
+
+- Target keyword: `predictive astrology`
+- URL: `/blog/predictive-astrology-guide`
+- Title: `Predictive Astrology: How Transits, Progressions, and Moon Cycles Shape Your Timing`
+- Intent: educational / commercial investigation
+- CTA: `Get your free daily astrology forecast` → `/forecasts` or signup
+
+**Supporting articles**
+
+| Priority | Keyword | Intent | Content angle | URL slug | CTA |
+|---|---|---|---|---|---|
+| P1 | `planetary transits meaning` | Educational | Plain-English transit guide with examples | `/blog/planetary-transits-meaning` | Transit forecast signup |
+| P1 | `mercury retrograde meaning` | Informational | Upgrade existing brief into cluster article with yearly dates | `/blog/mercury-retrograde-meaning` | Retrograde alerts |
+| P1 | `saturn return meaning` | High intent | Age ranges, lessons, signs, survival guide | `/blog/saturn-return-meaning` | Birth chart calculator |
+| P2 | `venus retrograde meaning` | Seasonal | Love, money, exes, relationship timing | `/blog/venus-retrograde-meaning` | Compatibility report |
+| P2 | `mars retrograde meaning` | Seasonal | Motivation, conflict, action planning | `/blog/mars-retrograde-meaning` | Forecast signup |
+| P2 | `astrology transits calculator` | Tool intent | Explain transit calculators and route to product/tool roadmap | `/blog/astrology-transits-calculator` | `/transits` |
+| P3 | `annual profections astrology` | Advanced | Beginner-friendly predictive technique | `/blog/annual-profections-astrology` | Premium report offer |
+| P3 | `secondary progressions astrology` | Advanced | Education article for authority depth | `/blog/secondary-progressions-astrology` | Premium report waitlist |
+
+**Internal linking rules**
+
+- Link all predictive pieces to `/forecasts`, `/transits`, `/birth-chart`, and `/moon-reading`.
+- Build date-sensitive articles with annual refresh sections to keep them current.
+- Use schema where possible: `Article`, `FAQPage`, and tool pages where applicable.
+
+## Publishing order
+
+1. Publish the three pillar pages first.
+2. Publish P1 support articles for each cluster next, alternating clusters so the site looks broad but intentional.
+3. Add P2/P3 content after internal links and conversion CTAs are in place.
+4. Each new article must include: pillar link, 2 sibling links, 1 conversion CTA, and 1 newsletter/tool CTA.
+
+## 30-day execution queue
+
+| Week | Deliverables | Revenue/lead capture requirement |
+|---|---|---|
+| Week 1 | 3 pillar briefs + 3 pillar drafts | Each pillar includes free tool CTA + email capture |
+| Week 2 | 9 P1 support articles | Every article gets 3 internal links + conversion CTA |
+| Week 3 | 6 P2 articles + Pinterest assets | Add downloadable templates for manifestation/healing |
+| Week 4 | 6 P2/P3 articles + refresh existing Mercury Retrograde post | Route predictive astrology traffic into forecast signup |
+
+## Content brief template for every cluster article
+
+```yaml
+cluster: Spiritual Healing | Manifestation Techniques | Predictive Astrology
+pillar_url: /blog/...
+target_keyword: ...
+secondary_keywords: []
+search_intent: informational | how-to | transactional | commercial
+conversion_target: /energy | /journal | /forecasts | /birth-chart | /compatibility | /transits
+required_internal_links:
+  - pillar page
+  - two sibling support posts
+  - one product/tool page
+cta: ...
+schema: Article + FAQPage where useful
+social_repurpose:
+  pinterest_pins: 3
+  short_video_scripts: 1
+```
+
+## Measurement
+
+Track cluster performance weekly:
+
+- Impressions/clicks by cluster in Search Console.
+- Ranking movement for pillar keywords and P1 support keywords.
+- Tool visits from article CTAs.
+- Email signups per cluster.
+- Paid report / subscription conversions attributed to article landing pages.
+
+Winning clusters should get more support articles, templates, calculators, and social repurposing. Losing clusters should be refreshed or pruned instead of blindly expanding.
