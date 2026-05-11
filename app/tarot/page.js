@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Loader2, Moon, ArrowRight, Lock, X } from "lucide-react";
+import { Sparkles, Loader2, Moon, ArrowRight, Lock, X, Bookmark, BookmarkCheck } from "lucide-react";
 import Link from "next/link";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
@@ -13,6 +13,9 @@ export default function TarotPage() {
   const [selectedType, setSelectedType] = useState(null);
   const [showCardSelector, setShowCardSelector] = useState(false);
   const [reading, setReading] = useState(null);
+  const [savedReadingId, setSavedReadingId] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [loadingCredits, setLoadingCredits] = useState(true);
   const [isPremium, setIsPremium] = useState(null);
   const [creditsAvailable, setCreditsAvailable] = useState(0);
@@ -63,6 +66,37 @@ export default function TarotPage() {
     setReading(null);
     setSelectedType(null);
     setShowCardSelector(false);
+    setSavedReadingId(null);
+  };
+  const handleSaveReading = async () => {
+    if (!reading || isSaving) return;
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/save-reading', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          readingType: 'tarot',
+          spreadType: selectedType?.name || 'Single Card',
+          question: reading.question,
+          cards: reading.cards,
+          interpretation: reading.interpretation,
+          thumbnailCard: reading.cards?.[0]?.name || 'The Fool'
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSavedReadingId(data.savedReading.id);
+      } else if (response.status === 401) {
+        setShowAuthModal(true);
+      } else {
+        console.error('Failed to save reading:', data.error);
+      }
+    } catch (error) {
+      console.error('Error saving reading:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
   const getAvailableCredits = (creditData) => {
     if (typeof creditData?.credits === "number") return creditData.credits;
@@ -232,6 +266,30 @@ export default function TarotPage() {
           </div>
 
           <button
+            onClick={handleSaveReading}
+            disabled={isSaving || savedReadingId}
+            className={`w-full font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 mb-4 ${
+              savedReadingId 
+                ? 'bg-green-500 text-white cursor-default' 
+                : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
+            } disabled:opacity-50`}
+          >
+            {isSaving ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : savedReadingId ? (
+              <>
+                <BookmarkCheck className="w-5 h-5" />
+                Saved to Journal
+              </>
+            ) : (
+              <>
+                <Bookmark className="w-5 h-5" />
+                Save This Reading
+              </>
+            )}
+          </button>
+
+          <button
             onClick={handleNewReading}
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
           >
@@ -249,6 +307,39 @@ export default function TarotPage() {
             onSecondaryClick={handleUpsellClick}
             context={upsellContext}
           />
+        )}
+
+        {showAuthModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Save Your Reading</h2>
+                <button 
+                  onClick={() => setShowAuthModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Create a free account to save unlimited readings and access them anytime from your personal journal.
+              </p>
+              <div className="space-y-3">
+                <Link 
+                  href="/auth/signin?callbackUrl=/tarot"
+                  className="block w-full bg-purple-600 text-white text-center font-bold py-3 rounded-lg hover:bg-purple-700 transition-all"
+                >
+                  Sign In / Create Account
+                </Link>
+                <button
+                  onClick={() => setShowAuthModal(false)}
+                  className="block w-full bg-gray-100 text-gray-700 text-center font-bold py-3 rounded-lg hover:bg-gray-200 transition-all"
+                >
+                  Continue Without Saving
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );
