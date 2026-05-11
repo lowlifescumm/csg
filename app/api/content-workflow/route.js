@@ -532,11 +532,24 @@ async function advanceWorkflow(pool, calendar, step, data) {
       // Create a draft blog post placeholder
       const slug = calendar.target_url_slug ||
         (calendar.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      // Handle missing content_briefs.category column gracefully
+      let category = 'astrology';
+      try {
+        const { rows: briefRows } = await pool.query(
+          'SELECT category FROM content_briefs WHERE calendar_id = $1 LIMIT 1',
+          [calendarId]
+        );
+        if (briefRows.length && briefRows[0].category) {
+          category = briefRows[0].category;
+        }
+      } catch (e) {
+        // Column may not exist, use default
+      }
       await pool.query(`
         INSERT INTO blog_posts (title, slug, excerpt, content, status, category, tags, meta_title, meta_description)
         SELECT $1, $2, $3, $4, 'draft',
-               (SELECT category FROM content_briefs WHERE calendar_id = $5 LIMIT 1),
-               ARRAY[COALESCE($6, (SELECT target_keyword FROM content_briefs WHERE calendar_id = $5 LIMIT 1))],
+               $5,
+               ARRAY[COALESCE($6, (SELECT target_keyword FROM content_briefs WHERE calendar_id = $7 LIMIT 1))],
                $1, $3
         WHERE NOT EXISTS (SELECT 1 FROM blog_posts WHERE slug = $2)
       `, [
@@ -544,8 +557,9 @@ async function advanceWorkflow(pool, calendar, step, data) {
         slug,
         calendar.notes || '',
         '',  // no content yet
-        calendarId,
+        category,
         calendar.target_keyword,
+        calendarId,
       ]);
       // Link post to calendar
       const { rows: postRows } = await pool.query(
