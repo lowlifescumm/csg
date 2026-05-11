@@ -8,8 +8,9 @@ import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
 
 export default function CompatibilityCalculator() {
   const [step, setStep] = useState(1);
-  const [person1, setPerson1] = useState({ name: '', birthDate: '', birthTime: '', location: '' });
-  const [person2, setPerson2] = useState({ name: '', birthDate: '', birthTime: '', location: '' });
+  const [person1, setPerson1] = useState({ name: '', birthDate: '', birthTime: '', location: '', unknownTime: false });
+  const [person2, setPerson2] = useState({ name: '', birthDate: '', birthTime: '', location: '', unknownTime: false });
+  const [relationshipType, setRelationshipType] = useState('romantic');
   const [coords1, setCoords1] = useState(null);
   const [coords2, setCoords2] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -46,16 +47,79 @@ export default function CompatibilityCalculator() {
     }
   };
 
-  const getPreviewScore = () => {
-    const seed = `${person1.name}${person1.birthDate}${person2.name}${person2.birthDate}`;
-    const total = seed.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return 62 + (total % 27);
+  const getSunSign = (dateStr) => {
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "Aries";
+    if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "Taurus";
+    if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "Gemini";
+    if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "Cancer";
+    if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "Leo";
+    if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "Virgo";
+    if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "Libra";
+    if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "Scorpio";
+    if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "Sagittarius";
+    if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "Capricorn";
+    if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "Aquarius";
+    return "Pisces";
   };
 
-  const hasPreviewInputs = Boolean(
-    person1.name && person1.birthDate && person1.birthTime && coords1 &&
-    person2.name && person2.birthDate && person2.birthTime && coords2
-  );
+  const getSunCompatibility = (sign1, sign2) => {
+    const compatMap = {
+      "Aries": { best: ["Leo", "Sagittarius", "Gemini", "Aquarius"], worst: ["Cancer", "Capricorn"] },
+      "Taurus": { best: ["Virgo", "Capricorn", "Cancer", "Pisces"], worst: ["Leo", "Aquarius"] },
+      "Gemini": { best: ["Libra", "Aquarius", "Aries", "Leo"], worst: ["Virgo", "Pisces"] },
+      "Cancer": { best: ["Scorpio", "Pisces", "Taurus", "Virgo"], worst: ["Aries", "Libra"] },
+      "Leo": { best: ["Aries", "Sagittarius", "Gemini", "Libra"], worst: ["Taurus", "Scorpio"] },
+      "Virgo": { best: ["Taurus", "Capricorn", "Cancer", "Scorpio"], worst: ["Gemini", "Sagittarius"] },
+      "Libra": { best: ["Gemini", "Aquarius", "Leo", "Sagittarius"], worst: ["Cancer", "Capricorn"] },
+      "Scorpio": { best: ["Cancer", "Pisces", "Virgo", "Capricorn"], worst: ["Leo", "Aquarius"] },
+      "Sagittarius": { best: ["Aries", "Leo", "Libra", "Aquarius"], worst: ["Virgo", "Pisces"] },
+      "Capricorn": { best: ["Taurus", "Virgo", "Scorpio", "Pisces"], worst: ["Aries", "Libra"] },
+      "Aquarius": { best: ["Gemini", "Libra", "Aries", "Sagittarius"], worst: ["Taurus", "Scorpio"] },
+      "Pisces": { best: ["Cancer", "Scorpio", "Taurus", "Capricorn"], worst: ["Gemini", "Sagittarius"] }
+    };
+    
+    const s1 = compatMap[sign1] || { best: [], worst: [] };
+    if (s1.best.includes(sign2)) return { score: 85, label: "Excellent" };
+    if (s1.worst.includes(sign2)) return { score: 45, label: "Challenging" };
+    return { score: 65, label: "Good" };
+  };
+
+  const generateFreeReport = (sign1, sign2, type) => {
+    const compat = getSunCompatibility(sign1, sign2);
+    const typeLabels = { romantic: "relationship", friendship: "friendship", family: "family bond", professional: "professional partnership" };
+    const label = typeLabels[type] || "relationship";
+    
+    return {
+      score: compat.score,
+      label: compat.label,
+      text: `When ${sign1} meets ${sign2} in a ${label}, there's an immediate ${compat.score >= 80 ? "spark" : compat.score >= 60 ? "connection" : "tension"} that shapes how you interact.\n\n${sign1}'s natural energy ${compat.score >= 80 ? "amplifies" : "interacts with"} ${sign2}'s approach to life. In your ${label}, you may find that ${compat.score >= 80 ? "you naturally complement each other" : "your differences create both friction and growth"}.\n\nThis is just the surface — your full synastry report reveals how your Moon signs shape emotional needs, your Venus placements show romantic compatibility, and your Mars energies reveal passion dynamics.`
+    };
+  };
+
+  const handleFreeCalculate = () => {
+    if (!person1.birthDate || !person2.birthDate) {
+      setError('Please enter birth dates for both people');
+      return;
+    }
+    
+    const sign1 = getSunSign(person1.birthDate);
+    const sign2 = getSunSign(person2.birthDate);
+    const freeResult = generateFreeReport(sign1, sign2, relationshipType);
+    
+    setResult({
+      type: 'free',
+      sign1,
+      sign2,
+      relationshipType,
+      ...freeResult,
+      person1Name: person1.name || 'Person 1',
+      person2Name: person2.name || 'Person 2',
+    });
+    setStep(3);
+  };
 
   const handleLocationSearch = async (personNum) => {
     const person = personNum === 1 ? person1 : person2;
@@ -92,7 +156,8 @@ export default function CompatibilityCalculator() {
     }
 
     if (isPremium === false) {
-      router.push('/subscription');
+      // Show auth gate for full report
+      setError('Create a free account to unlock the full synastry report with Moon, Venus, Mars, and house overlays.');
       return;
     }
 
@@ -362,9 +427,30 @@ export default function CompatibilityCalculator() {
                   <p className="text-sm text-green-300 mt-2">✓ Location found</p>
                 )}
               </div>
-            </div>
-
-            {error && (
+              <div className="mt-4">
+                <label className="block text-purple-200 font-medium mb-2">Relationship Type</label>
+                <select
+                  value={relationshipType}
+                  onChange={(e) => setRelationshipType(e.target.value)}
+                  className="w-full p-4 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                >
+                  <option value="romantic">💕 Romantic</option>
+                  <option value="friendship">🤝 Friendship</option>
+                  <option value="family">🏠 Family</option>
+                  <option value="professional">💼 Professional</option>
+                </select>
+              </div>
+              <div className="mt-4">
+                <label className="flex items-center gap-2 text-purple-200">
+                  <input
+                    type="checkbox"
+                    checked={person1.unknownTime}
+                    onChange={(e) => setPerson1({...person1, unknownTime: e.target.checked, birthTime: e.target.checked ? '' : person1.birthTime})}
+                    className="w-4 h-4 rounded border-purple-300"
+                  />
+                  Birth time unknown
+                </label>
+              </div>
               <div className="mt-6 bg-red-500 bg-opacity-20 border border-red-500 text-red-100 px-4 py-3 rounded-lg">
                 {error}
               </div>
@@ -392,28 +478,43 @@ export default function CompatibilityCalculator() {
               </div>
             )}
 
-            <div className="flex flex-col gap-4 mt-8 sm:flex-row">
+            <div className="mt-8 space-y-4">
               <button
-                onClick={() => setStep(1)}
-                className="flex-1 bg-white bg-opacity-20 text-white font-bold py-4 rounded-lg hover:bg-opacity-30 transition-all flex items-center justify-center gap-2"
+                onClick={handleFreeCalculate}
+                disabled={!person1.birthDate || !person2.birthDate}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <ChevronLeft className="w-5 h-5" />
-                Back
+                <Sparkles className="w-5 h-5" />
+                Get Free Sun Sign Compatibility
               </button>
+              
+              <p className="text-center text-purple-300 text-sm">
+                No account needed • Instant results
+              </p>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/20"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-purple-900/50 text-purple-300">or unlock full report</span>
+                </div>
+              </div>
+              
               <button
                 onClick={handleSubmit}
-                disabled={!person2.name || !person2.birthDate || !person2.birthTime || !coords2 || loading}
-                className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={!person2.name || !person2.birthDate || !coords2 || loading}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Generating Report...
+                    Generating Full Report...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5" />
-                    {isPremium === false ? 'Unlock Full Compatibility Report' : 'Generate Compatibility Report'}
+                    <Crown className="w-5 h-5" />
+                    Unlock Full Synastry Report
                   </>
                 )}
               </button>
