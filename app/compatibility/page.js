@@ -444,13 +444,16 @@ export default function CompatibilityCalculator() {
                 <label className="flex items-center gap-2 text-purple-200">
                   <input
                     type="checkbox"
-                    checked={person1.unknownTime}
-                    onChange={(e) => setPerson1({...person1, unknownTime: e.target.checked, birthTime: e.target.checked ? '' : person1.birthTime})}
+                    checked={person2.unknownTime}
+                    onChange={(e) => setPerson2({...person2, unknownTime: e.target.checked, birthTime: e.target.checked ? '' : person2.birthTime})}
                     className="w-4 h-4 rounded border-purple-300"
                   />
                   Birth time unknown
                 </label>
               </div>
+            </div>
+
+            {error && (
               <div className="mt-6 bg-red-500 bg-opacity-20 border border-red-500 text-red-100 px-4 py-3 rounded-lg">
                 {error}
               </div>

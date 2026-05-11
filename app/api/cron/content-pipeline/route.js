@@ -200,26 +200,7 @@ async function createBlogPost(post, imageUrl, publish, blogApiKey) {
 
     const data = await res.json();
 
-    // ─── DUAL-WRITE: also create in Sanity CMS ─────────────────────────────
-    try {
-      const sanityResult = await createPostInSanity({
-        title,
-        slug: data.slug || slug,
-        excerpt: metaDesc,
-        content,
-        featured_image: imageUrl,
-        status: publish ? 'published' : 'draft',
-        category: theme.category,
-        meta_title: title,
-        meta_description: metaDesc,
-        tags: [keyword, theme.category.toLowerCase()],
-      });
-      log('ok', `Synced to Sanity CMS: ${sanityResult._id}`);
-    } catch (sanityErr) {
-      log('warn', `Sanity sync failed (post still created in DB): ${sanityErr.message}`);
-    }
-
-    log('post', `Blog post ${publish ? 'published' : 'created'}: ${siteUrl}/blog/${data.slug}`);
+    log('post', `Blog post ${publish ? 'published' : 'created'}: ${siteUrl}/blog/${data.post?.slug || data.slug || slug}`);
     return data;
   } catch (err) {
     log('error', `Failed to create blog post: ${err.message}`);
@@ -251,7 +232,7 @@ async function runPipeline(post, publish = false) {
   const blogPost = await createBlogPost(post, cloudinaryUrl, publish, blogApiKey);
 
   // Step 4: Generate social copy
-  const slug = blogPost?.slug || slugify(title.slice(0, 60));
+  const slug = blogPost?.post?.slug || blogPost?.slug || slugify(title.slice(0, 60));
   const socialCopy = generateSocialCopy(post, siteUrl, slug);
   log('social', `Social copy generated: ${socialCopy.postUrl}`);
 

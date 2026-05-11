@@ -43,7 +43,7 @@ export async function GET(request, { params }) {
               try {
                 await pool.query(
                   'INSERT INTO blog_post_views (post_id, ip_address, user_agent) VALUES ($1, $2, $3)',
-                  [post.id || 0, clientIP, userAgent]
+                  [post._id || post.id || 0, clientIP, userAgent]
                 );
               } catch (e) { console.log('View tracking error:', e.message); }
             }
