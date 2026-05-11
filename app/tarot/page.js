@@ -6,6 +6,7 @@ import Link from "next/link";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import PremiumTeaser, { parseInterpretationWithTeasers, getTeaserABVariant } from "@/components/PremiumTeaser";
 import spreads from "@/lib/tarot-spreads.json";
 
 export default function TarotPage() {
@@ -16,9 +17,13 @@ export default function TarotPage() {
   const [isPremium, setIsPremium] = useState(null);
   const [creditsAvailable, setCreditsAvailable] = useState(0);
   const [showUpsell, setShowUpsell] = useState(false);
+  const [upsellContext, setUpsellContext] = useState(null);
+  const [teaserABVariant, setTeaserABVariant] = useState("2");
 
   useEffect(() => {
     checkCreditsStatus();
+    // Assign A/B test variant for teaser count
+    setTeaserABVariant(getTeaserABVariant());
   }, []);
 
   const checkCreditsStatus = async () => {
@@ -95,10 +100,22 @@ export default function TarotPage() {
     return dismissedUntil > Date.now();
   };
 
-  const openUpsell = () => {
+  const openUpsell = (context = null) => {
     if (showUpsell || shouldSuppressUpsell()) return;
+    setUpsellContext(context);
     setShowUpsell(true);
     trackUpsellEvent("upsell_shown");
+  };
+
+  const handleTeaserClick = (teaserPosition) => {
+    const context = teaserPosition === "after_paragraph_2" ? "full_chart" : "transits";
+    openUpsell(context);
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "teaser_clicked", {
+        event_category: "tarot_upsell",
+        event_label: teaserPosition,
+      });
+    }
   };
 
   useEffect(() => {
@@ -184,7 +201,32 @@ export default function TarotPage() {
                 Interpretation
               </h3>
               <div className="text-purple-100 leading-relaxed">
-                <MarkdownRenderer text={reading.interpretation} className="text-purple-100" />
+                {(() => {
+                  const parsed = parseInterpretationWithTeasers(
+                    reading.interpretation,
+                    reading.cards,
+                    teaserABVariant,
+                    handleTeaserClick
+                  );
+                  return parsed.map((item, i) => {
+                    if (item.type === "teaser") {
+                      return (
+                        <PremiumTeaser
+                          key={`teaser-${i}`}
+                          cards={reading.cards}
+                          onClick={() => handleTeaserClick(item.position)}
+                          variant={item.variant}
+                          position={item.position}
+                        />
+                      );
+                    }
+                    return (
+                      <div key={`p-${i}`} className="text-purple-100 leading-relaxed">
+                        <MarkdownRenderer text={item.content} className="text-purple-100" />
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>
@@ -205,6 +247,7 @@ export default function TarotPage() {
             onDismiss={handleDismissUpsell}
             onPrimaryClick={handleUpsellClick}
             onSecondaryClick={handleUpsellClick}
+            context={upsellContext}
           />
         )}
       </div>
@@ -281,9 +324,23 @@ export default function TarotPage() {
   );
 }
 
-function TarotUpsellModal({ reading, creditsAvailable, onDismiss, onPrimaryClick, onSecondaryClick }) {
+function TarotUpsellModal({ reading, creditsAvailable, onDismiss, onPrimaryClick, onSecondaryClick, context }) {
   const hasCredits = creditsAvailable >= 2;
   const lockedInsights = buildLockedInsights(reading?.cards || []);
+
+  // Adjust CTA based on context from teaser
+  const getPrimaryCTA = () => {
+    if (!hasCredits) return "Get 10 Credits — $9.99";
+    if (context === "full_chart") return "Continue to Full Chart — 2 credits";
+    if (context === "transits") return "See Your Transits — 2 credits";
+    return "Unlock My Full Chart — 2 credits";
+  };
+
+  const getPrimaryHref = () => {
+    if (!hasCredits) return "/credits";
+    if (context === "transits") return "/forecasts";
+    return "/birth-chart";
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-6">
@@ -320,11 +377,11 @@ function TarotUpsellModal({ reading, creditsAvailable, onDismiss, onPrimaryClick
 
         <div className="grid gap-3">
           <Link
-            href={hasCredits ? "/birth-chart" : "/credits"}
+            href={getPrimaryHref()}
             onClick={onPrimaryClick}
             className="w-full text-center bg-gradient-to-r from-yellow-300 to-amber-500 text-purple-950 font-bold py-4 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-yellow-900/20"
           >
-            {hasCredits ? "Unlock My Full Chart — 2 credits" : "Get 10 Credits — $9.99"}
+            {getPrimaryCTA()}
           </Link>
 
           <Link
