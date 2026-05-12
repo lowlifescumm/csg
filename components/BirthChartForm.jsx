@@ -1,5 +1,4 @@
 'use client';
-const logger = require('@/lib/logger');
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Heart, TrendingUp, Calendar } from 'lucide-react';
@@ -402,7 +401,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
               type="date"
               value={formData.birthDate}
               onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
               required
               placeholder="Select your birth date"
             />
@@ -418,7 +417,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
               type="time"
               value={formData.birthTime}
               onChange={(e) => setFormData({...formData, birthTime: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
               required
               placeholder="Select your birth time"
             />
@@ -437,7 +436,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                 value={formData.location}
                 onChange={(e) => setFormData({...formData, location: e.target.value})}
                 placeholder="e.g., New York, USA"
-                className="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
                 required={!showManualEntry}
               />
               <button
