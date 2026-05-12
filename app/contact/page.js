@@ -1,5 +1,4 @@
 "use client";
-const logger = require('../lib/logger');
 import { useState } from "react";
 import Link from "next/link";
 import { Mail, Send, ArrowLeft, MessageSquare, CheckCircle } from "lucide-react";
@@ -37,7 +36,7 @@ export default function ContactPage() {
         setStatus("error");
       }
     } catch (error) {
-      logger.error("Contact form error:", error);
+      console.error("Contact form error:", error);
       setStatus("error");
     } finally {
       setLoading(false);
