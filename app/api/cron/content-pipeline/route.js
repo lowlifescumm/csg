@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * Content Pipeline Cron Job — Fully Automated
  *
@@ -24,7 +25,9 @@ async function getState() {
     if (existsSync(STATE_FILE)) {
       return JSON.parse(readFileSync(STATE_FILE, 'utf8'));
     }
-  } catch {}
+  } catch (err) {
+    console.error("[content-pipeline] Failed to read state file:", err);
+  }
   return { lastPost: 0, lastRun: null };
 }
 
@@ -32,13 +35,15 @@ async function saveState(state) {
   try {
     const { writeFileSync } = await import('fs');
     writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
-  } catch {}
+  } catch (err) {
+    console.error("[content-pipeline] Failed to read state file:", err);
+  }
 }
 
 function log(type, msg) {
   const ts = new Date().toISOString().split('T')[1].slice(0, 8);
   const icons = { ok: '✓', info: '→', warn: '⚠', error: '✗', img: '🖼', post: '📄', social: '🐦' };
-  console.log(`${ts} ${icons[type] || '·'} ${msg}`);
+  logger.info(`${ts} ${icons[type] || '·'} ${msg}`);
 }
 
 // ─── X/Twitter Posting (OAuth 1.0a — same as CLI script) ─────────────────────

@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
@@ -19,18 +20,18 @@ const testUserData = {
   sections: [{ type: "core_identity", title: "Core Identity", content: "## Test Section\n\nThis is a test." }, { type: "closing", title: "Closing", content: "## Closing\n\nBlessings." }]
 };
 async function test() {
-  console.log("Testing premium PDF generator...");
+  logger.info("Testing premium PDF generator...");
   try {
     const pdfBuffer = await generatePremiumPdf(testUserData);
     const outputDir = resolve(__dirname, "../test-outputs");
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
     const outputPath = resolve(outputDir, `premium-test-${Date.now()}.pdf`);
     fs.writeFileSync(outputPath, pdfBuffer);
-    console.log(` PDF generated: ${outputPath}`);
-    console.log(`   Size: ${(pdfBuffer.length / 1024).toFixed(2)} KB`);
+    logger.info(` PDF generated: ${outputPath}`);
+    logger.info(`   Size: ${(pdfBuffer.length / 1024).toFixed(2)} KB`);
     return true;
   } catch (error) {
-    console.error(" Error:", error.message);
+    logger.error(" Error:", error.message);
     return false;
   }
 }

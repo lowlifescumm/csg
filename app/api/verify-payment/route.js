@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import Stripe from 'stripe';
@@ -69,7 +70,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, status: 'succeeded' });
   } catch (error) {
-    console.error('Payment verification error:', error);
+    logger.error('Payment verification error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

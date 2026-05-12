@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -23,9 +24,9 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
 const TEMPLATE_ID = process.env.TEMPLATE_ID || process.argv[2];
 
 if (!TEMPLATE_ID) {
-  console.error('❌ Error: Template ID required');
-  console.error('Usage: node scripts/test-template-engine.js <templateId>');
-  console.error('Or set: TEMPLATE_ID=<id> node scripts/test-template-engine.js');
+  logger.error('❌ Error: Template ID required');
+  logger.error('Usage: node scripts/test-template-engine.js <templateId>');
+  logger.error('Or set: TEMPLATE_ID=<id> node scripts/test-template-engine.js');
   process.exit(1);
 }
 
@@ -49,12 +50,12 @@ const samplePayload = {
  * Test 1: Single Report Generation
  */
 async function testSingleReport() {
-  console.log('\n📋 Test 1: Single Report Generation');
-  console.log('─'.repeat(50));
+  logger.info('\n📋 Test 1: Single Report Generation');
+  logger.info('─'.repeat(50));
   
   try {
     const url = `${BASE_URL}/api/admin/test-report?engine=template&templateId=${TEMPLATE_ID}`;
-    console.log(`POST ${url}`);
+    logger.info(`POST ${url}`);
     
     const response = await fetch(url, {
       method: 'POST',
@@ -67,19 +68,19 @@ async function testSingleReport() {
     const data = await response.json();
     
     if (response.ok && data.pdfUrl) {
-      console.log('✅ Success');
-      console.log(`   PDF URL: ${data.pdfUrl}`);
-      console.log(`   Engine: ${data.metadata?.engine || 'template'}`);
-      console.log(`   Template ID: ${data.metadata?.template_id || TEMPLATE_ID}`);
+      logger.info('✅ Success');
+      logger.info(`   PDF URL: ${data.pdfUrl}`);
+      logger.info(`   Engine: ${data.metadata?.engine || 'template'}`);
+      logger.info(`   Template ID: ${data.metadata?.template_id || TEMPLATE_ID}`);
       return { success: true, pdfUrl: data.pdfUrl, data };
     } else {
-      console.error('❌ Failed');
-      console.error(`   Status: ${response.status}`);
-      console.error(`   Error: ${data.error || JSON.stringify(data)}`);
+      logger.error('❌ Failed');
+      logger.error(`   Status: ${response.status}`);
+      logger.error(`   Error: ${data.error || JSON.stringify(data)}`);
       return { success: false, error: data.error || 'Unknown error' };
     }
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -88,12 +89,12 @@ async function testSingleReport() {
  * Test 2: Puppeteer Engine Still Works
  */
 async function testPuppeteerEngine() {
-  console.log('\n📋 Test 2: Puppeteer Engine (Backward Compatibility)');
-  console.log('─'.repeat(50));
+  logger.info('\n📋 Test 2: Puppeteer Engine (Backward Compatibility)');
+  logger.info('─'.repeat(50));
   
   try {
     const url = `${BASE_URL}/api/admin/test-report?engine=puppeteer`;
-    console.log(`POST ${url}`);
+    logger.info(`POST ${url}`);
     
     const response = await fetch(url, {
       method: 'POST',
@@ -106,18 +107,18 @@ async function testPuppeteerEngine() {
     const data = await response.json();
     
     if (response.ok && data.pdfUrl) {
-      console.log('✅ Success');
-      console.log(`   PDF URL: ${data.pdfUrl}`);
-      console.log(`   Engine: ${data.metadata?.engine || 'puppeteer'}`);
+      logger.info('✅ Success');
+      logger.info(`   PDF URL: ${data.pdfUrl}`);
+      logger.info(`   Engine: ${data.metadata?.engine || 'puppeteer'}`);
       return { success: true, pdfUrl: data.pdfUrl };
     } else {
-      console.error('❌ Failed');
-      console.error(`   Status: ${response.status}`);
-      console.error(`   Error: ${data.error || JSON.stringify(data)}`);
+      logger.error('❌ Failed');
+      logger.error(`   Status: ${response.status}`);
+      logger.error(`   Error: ${data.error || JSON.stringify(data)}`);
       return { success: false, error: data.error || 'Unknown error' };
     }
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -126,8 +127,8 @@ async function testPuppeteerEngine() {
  * Test 3: Performance Test (Multiple Reports)
  */
 async function testPerformance(count = 5) {
-  console.log(`\n📋 Test 3: Performance Test (${count} Reports)`);
-  console.log('─'.repeat(50));
+  logger.info(`\n📋 Test 3: Performance Test (${count} Reports)`);
+  logger.info('─'.repeat(50));
   
   const results = [];
   const startTime = Date.now();
@@ -172,18 +173,18 @@ async function testPerformance(count = 5) {
   const duration = ((endTime - startTime) / 1000).toFixed(2);
   const successCount = results.filter(r => r.success).length;
   
-  console.log(`\n   Summary:`);
-  console.log(`   - Total: ${count} reports`);
-  console.log(`   - Successful: ${successCount}`);
-  console.log(`   - Failed: ${count - successCount}`);
-  console.log(`   - Duration: ${duration}s`);
-  console.log(`   - Average: ${(duration / count).toFixed(2)}s per report`);
+  logger.info(`\n   Summary:`);
+  logger.info(`   - Total: ${count} reports`);
+  logger.info(`   - Successful: ${successCount}`);
+  logger.info(`   - Failed: ${count - successCount}`);
+  logger.info(`   - Duration: ${duration}s`);
+  logger.info(`   - Average: ${(duration / count).toFixed(2)}s per report`);
   
   if (successCount === count) {
-    console.log('✅ All reports generated successfully');
+    logger.info('✅ All reports generated successfully');
     return { success: true, results, duration };
   } else {
-    console.log('❌ Some reports failed');
+    logger.info('❌ Some reports failed');
     return { success: false, results, duration };
   }
 }
@@ -192,8 +193,8 @@ async function testPerformance(count = 5) {
  * Test 4: SVG Embedding Test
  */
 async function testSVGEmbedding() {
-  console.log('\n📋 Test 4: SVG Embedding Test');
-  console.log('─'.repeat(50));
+  logger.info('\n📋 Test 4: SVG Embedding Test');
+  logger.info('─'.repeat(50));
   
   try {
     // Test payload with SVG data
@@ -215,30 +216,30 @@ async function testSVGEmbedding() {
     const data = await response.json();
     
     if (response.ok && data.pdfUrl) {
-      console.log('✅ Report generated with SVG data');
-      console.log(`   PDF URL: ${data.pdfUrl}`);
+      logger.info('✅ Report generated with SVG data');
+      logger.info(`   PDF URL: ${data.pdfUrl}`);
       
       // Check if HTML contains SVG (if returned)
       if (data.html) {
         const hasInlineSVG = data.html.includes('<svg') || data.html.includes('data:image/svg+xml');
         if (hasInlineSVG) {
-          console.log('✅ SVG found in generated HTML');
+          logger.info('✅ SVG found in generated HTML');
           return { success: true, hasSVG: true, pdfUrl: data.pdfUrl };
         } else {
-          console.log('⚠️  Warning: SVG not found in HTML (may be converted to image)');
+          logger.info('⚠️  Warning: SVG not found in HTML (may be converted to image)');
           return { success: true, hasSVG: false, pdfUrl: data.pdfUrl };
         }
       } else {
-        console.log('⚠️  Warning: HTML not returned, cannot verify SVG embedding');
+        logger.info('⚠️  Warning: HTML not returned, cannot verify SVG embedding');
         return { success: true, hasSVG: null, pdfUrl: data.pdfUrl };
       }
     } else {
-      console.error('❌ Failed');
-      console.error(`   Error: ${data.error || JSON.stringify(data)}`);
+      logger.error('❌ Failed');
+      logger.error(`   Error: ${data.error || JSON.stringify(data)}`);
       return { success: false, error: data.error };
     }
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -247,11 +248,11 @@ async function testSVGEmbedding() {
  * Main Test Runner
  */
 async function runTests() {
-  console.log('🧪 Template Engine Test Suite');
-  console.log('═'.repeat(50));
-  console.log(`Base URL: ${BASE_URL}`);
-  console.log(`Template ID: ${TEMPLATE_ID}`);
-  console.log('═'.repeat(50));
+  logger.info('🧪 Template Engine Test Suite');
+  logger.info('═'.repeat(50));
+  logger.info(`Base URL: ${BASE_URL}`);
+  logger.info(`Template ID: ${TEMPLATE_ID}`);
+  logger.info('═'.repeat(50));
   
   const results = {
     singleReport: null,
@@ -273,8 +274,8 @@ async function runTests() {
   results.svgEmbedding = await testSVGEmbedding();
   
   // Summary
-  console.log('\n📊 Test Summary');
-  console.log('═'.repeat(50));
+  logger.info('\n📊 Test Summary');
+  logger.info('═'.repeat(50));
   
   const allTests = [
     { name: 'Single Report Generation', result: results.singleReport },
@@ -288,32 +289,32 @@ async function runTests() {
   
   allTests.forEach(test => {
     const status = test.result?.success ? '✅ PASS' : '❌ FAIL';
-    console.log(`${status} - ${test.name}`);
+    logger.info(`${status} - ${test.name}`);
     if (!test.result?.success) {
-      console.log(`   Error: ${test.result?.error || 'Unknown'}`);
+      logger.info(`   Error: ${test.result?.error || 'Unknown'}`);
     }
     if (test.result?.success) passed++;
     else failed++;
   });
   
-  console.log('\n' + '═'.repeat(50));
-  console.log(`Total: ${allTests.length} tests`);
-  console.log(`Passed: ${passed}`);
-  console.log(`Failed: ${failed}`);
-  console.log('═'.repeat(50));
+  logger.info('\n' + '═'.repeat(50));
+  logger.info(`Total: ${allTests.length} tests`);
+  logger.info(`Passed: ${passed}`);
+  logger.info(`Failed: ${failed}`);
+  logger.info('═'.repeat(50));
   
   if (failed === 0) {
-    console.log('🎉 All tests passed!');
+    logger.info('🎉 All tests passed!');
     process.exit(0);
   } else {
-    console.log('⚠️  Some tests failed. Please review the output above.');
+    logger.info('⚠️  Some tests failed. Please review the output above.');
     process.exit(1);
   }
 }
 
 // Run tests
 runTests().catch(error => {
-  console.error('\n❌ Fatal error:', error);
+  logger.error('\n❌ Fatal error:', error);
   process.exit(1);
 });
 

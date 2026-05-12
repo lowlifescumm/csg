@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
@@ -80,20 +81,20 @@ export async function POST(request) {
           `,
         });
       } catch (emailError) {
-        console.error('Failed to send email via Resend:', emailError);
+        logger.error('Failed to send email via Resend:', emailError);
         // Continue to log fallback
       }
     }
 
     // Always log for debugging
-    console.log('Contact form submission:', { name, email, message });
+    logger.info('Contact form submission:', { name, email, message });
 
     return NextResponse.json({ 
       success: true,
       message: 'Message sent successfully!' 
     });
   } catch (error) {
-    console.error('Contact form API error:', error);
+    logger.error('Contact form API error:', error);
     return NextResponse.json(
       { error: 'Failed to send message', details: process.env.NODE_ENV === 'development' ? error.message : undefined },
       { status: 500 }

@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -25,7 +26,7 @@ export async function POST() {
       paymentIntentId: paymentIntent.id,
     });
   } catch (error) {
-    console.error("Payment intent error:", error);
+    logger.error("Payment intent error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

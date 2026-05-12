@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -20,11 +21,11 @@ const pool = new Pool({
 
 async function fixUserAccount(email) {
   try {
-    console.log(`🔧 Fixing user account: ${email}\n`);
+    logger.info(`🔧 Fixing user account: ${email}\n`);
     
     // Normalize email
     const normalizedEmail = email.toLowerCase().trim();
-    console.log(`📧 Normalized email: ${normalizedEmail}\n`);
+    logger.info(`📧 Normalized email: ${normalizedEmail}\n`);
     
     // Check if user exists (case-insensitive)
     const { rows: userRows } = await pool.query(`
@@ -35,8 +36,8 @@ async function fixUserAccount(email) {
     `, [normalizedEmail]);
     
     if (userRows.length === 0) {
-      console.log(`❌ User not found with email: ${email}`);
-      console.log(`   Searched for normalized: ${normalizedEmail}\n`);
+      logger.info(`❌ User not found with email: ${email}`);
+      logger.info(`   Searched for normalized: ${normalizedEmail}\n`);
       
       // Check all users with similar emails
       const { rows: similarUsers } = await pool.query(`
@@ -48,9 +49,9 @@ async function fixUserAccount(email) {
       `, [`%${email.split('@')[0]}%`]);
       
       if (similarUsers.length > 0) {
-        console.log('🔍 Found similar emails:');
+        logger.info('🔍 Found similar emails:');
         similarUsers.forEach(user => {
-          console.log(`   - ${user.email} (ID: ${user.id}, Created: ${user.created_at})`);
+          logger.info(`   - ${user.email} (ID: ${user.id}, Created: ${user.created_at})`);
         });
       }
       
@@ -58,17 +59,17 @@ async function fixUserAccount(email) {
     }
     
     const user = userRows[0];
-    console.log(`✅ Found user:`);
-    console.log(`   ID: ${user.id}`);
-    console.log(`   Email: ${user.email}`);
-    console.log(`   Name: ${user.first_name} ${user.last_name}`);
-    console.log(`   Role: ${user.role}`);
-    console.log(`   Password Status: ${user.password_status}`);
-    console.log(`   Created: ${user.created_at}\n`);
+    logger.info(`✅ Found user:`);
+    logger.info(`   ID: ${user.id}`);
+    logger.info(`   Email: ${user.email}`);
+    logger.info(`   Name: ${user.first_name} ${user.last_name}`);
+    logger.info(`   Role: ${user.role}`);
+    logger.info(`   Password Status: ${user.password_status}`);
+    logger.info(`   Created: ${user.created_at}\n`);
     
     // Check if email needs normalization
     if (user.email !== normalizedEmail) {
-      console.log(`🔧 Normalizing email: "${user.email}" → "${normalizedEmail}"`);
+      logger.info(`🔧 Normalizing email: "${user.email}" → "${normalizedEmail}"`);
       
       const { rows: updateRows } = await pool.query(`
         UPDATE users 
@@ -77,9 +78,9 @@ async function fixUserAccount(email) {
         RETURNING id, email
       `, [normalizedEmail, user.id]);
       
-      console.log(`✅ Email normalized successfully\n`);
+      logger.info(`✅ Email normalized successfully\n`);
     } else {
-      console.log(`✅ Email is already normalized\n`);
+      logger.info(`✅ Email is already normalized\n`);
     }
     
     // Check if user has a password
@@ -90,39 +91,39 @@ async function fixUserAccount(email) {
     `, [user.id]);
     
     if (!passwordCheck[0].has_password) {
-      console.log(`⚠️  User does not have a password (OAuth-only account)`);
-      console.log(`   This account can only be accessed via Google sign-in\n`);
+      logger.info(`⚠️  User does not have a password (OAuth-only account)`);
+      logger.info(`   This account can only be accessed via Google sign-in\n`);
       return;
     }
     
     // Test password verification
-    console.log(`🔐 Testing password verification...`);
+    logger.info(`🔐 Testing password verification...`);
     const testUser = await getUserByEmail(normalizedEmail);
     
     if (!testUser || !testUser.password) {
-      console.log(`❌ Could not retrieve user or password hash`);
+      logger.info(`❌ Could not retrieve user or password hash`);
       return;
     }
     
     // Test with provided password
     const testPassword = process.argv[3] || 'Fit29565$$%^!';
-    console.log(`   Testing password: ${'*'.repeat(testPassword.length)}`);
+    logger.info(`   Testing password: ${'*'.repeat(testPassword.length)}`);
     
     try {
       const isValid = await verifyPassword(testPassword, testUser.password);
       
       if (isValid) {
-        console.log(`✅ Password verification successful!\n`);
+        logger.info(`✅ Password verification successful!\n`);
       } else {
-        console.log(`❌ Password verification failed`);
-        console.log(`   The password you provided does not match the stored hash\n`);
-        console.log(`   Options:`);
-        console.log(`   1. Reset the password via the forgot password flow`);
-        console.log(`   2. Check if you're using the correct password`);
-        console.log(`   3. The account might have been created with a different password\n`);
+        logger.info(`❌ Password verification failed`);
+        logger.info(`   The password you provided does not match the stored hash\n`);
+        logger.info(`   Options:`);
+        logger.info(`   1. Reset the password via the forgot password flow`);
+        logger.info(`   2. Check if you're using the correct password`);
+        logger.info(`   3. The account might have been created with a different password\n`);
       }
     } catch (error) {
-      console.log(`❌ Error verifying password: ${error.message}\n`);
+      logger.info(`❌ Error verifying password: ${error.message}\n`);
     }
     
     // Show final user status
@@ -140,18 +141,18 @@ async function fixUserAccount(email) {
       WHERE id = $1
     `, [user.id]);
     
-    console.log(`📋 Final User Status:`);
+    logger.info(`📋 Final User Status:`);
     const final = finalUser[0];
-    console.log(`   Email: ${final.email}`);
-    console.log(`   Email Status: ${final.email_status}`);
-    console.log(`   Password Status: ${final.password_status}`);
-    console.log(`   Role: ${final.role}\n`);
+    logger.info(`   Email: ${final.email}`);
+    logger.info(`   Email Status: ${final.email_status}`);
+    logger.info(`   Password Status: ${final.password_status}`);
+    logger.info(`   Role: ${final.role}\n`);
     
-    console.log(`✅ Account fix completed!\n`);
+    logger.info(`✅ Account fix completed!\n`);
     
   } catch (error) {
-    console.error('❌ Error fixing user account:', error);
-    console.error('   Details:', error.message);
+    logger.error('❌ Error fixing user account:', error);
+    logger.error('   Details:', error.message);
     process.exit(1);
   } finally {
     await pool.end();
@@ -162,8 +163,8 @@ async function fixUserAccount(email) {
 const email = process.argv[2] || 'mazatlanexpatit@gmail.com';
 
 if (!email) {
-  console.error('❌ Please provide an email address');
-  console.error('   Usage: node scripts/fix-user-account.js <email> [password]');
+  logger.error('❌ Please provide an email address');
+  logger.error('   Usage: node scripts/fix-user-account.js <email> [password]');
   process.exit(1);
 }
 

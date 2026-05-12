@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -77,7 +78,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
           triggerBlobDownload(blob, `${baseFilename}.${format === 'html' ? 'html' : 'txt'}`);
         }
       } catch (err) {
-        console.error('[ReportViewer] download error:', err);
+        logger.error('[ReportViewer] download error:', err);
         if (!silent) {
           alert(err.message || 'Failed to download report. Please try again.');
         }

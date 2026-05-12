@@ -84,22 +84,58 @@ const STEP_DEFAULTS = {
 // ─── GET: Get workflow state for a calendar item ─────────────────────────────
 
 export async function GET(req) {
-  const auth = await authenticate(req);
-  if (auth) return NextResponse.json(auth, { status: auth.status });
+  try {
+    const auth = await authenticate(req);
+    if (auth) return NextResponse.json(auth, { status: auth.status });
 
-  const { searchParams } = new URL(req.url);
-  const calendarId = searchParams.get('calendarId');
-  const step = searchParams.get('step');
-  const brief = searchParams.get('brief') === '1';
+    const { searchParams } = new URL(req.url);
+    const calendarId = searchParams.get('calendarId');
+    const step = searchParams.get('step');
+    const brief = searchParams.get('brief') === '1';
 
-  if (!calendarId) {
-    // Return all active (non-published) calendar items with workflow
+    if (!calendarId) {
+      // Return all active (non-published) calendar items with workflow
+      const { rows } = await pool.query(`
+        SELECT
+          cc.id, cc.title, cc.target_keyword, cc.target_url_slug,
+          cc.status as calendar_status, cc.publish_date, cc.week_number,
+          cc.month_number, cc.priority, cc.notes,
+          bp.id as post_id, bp.status as post_status,
+          COALESCE(
+            (SELECT jsonb_agg(
+              jsonb_build_object(
+                'id', pw.id,
+                'step_name', pw.step_name,
+                'status', pw.status,
+                'assigned_to', pw.assigned_to,
+                'due_date', pw.due_date,
+                'completed_at', pw.completed_at,
+                'notes', pw.notes
+              ) ORDER BY ARRAY_POSITION(ARRAY[
+                'research','outline','draft','edit','seo_review',
+                'images','schedule','publish','promote'
+              ], pw.step_name)
+            ) FROM publishing_workflow pw WHERE pw.calendar_id = cc.id),
+            '[]'::jsonb
+          ) as workflow_steps
+        FROM content_calendar cc
+        LEFT JOIN blog_posts bp ON cc.post_id = bp.id
+        WHERE cc.status != 'published'
+        ORDER BY cc.publish_date ASC
+      `);
+      return NextResponse.json({ success: true, items: rows });
+    }
+
+    // Single calendar item
     const { rows } = await pool.query(`
       SELECT
-        cc.id, cc.title, cc.target_keyword, cc.target_url_slug,
-        cc.status as calendar_status, cc.publish_date, cc.week_number,
-        cc.month_number, cc.priority, cc.notes,
-        bp.id as post_id, bp.status as post_status,
+        cc.*,
+        bp.id as post_id, bp.title as post_title, bp.slug as post_slug,
+        bp.status as post_status, bp.published_at,
+        bp.content as post_content, bp.excerpt as post_excerpt,
+        bp.featured_image, bp.meta_title, bp.meta_description, bp.tags,
+        cb.id as brief_id, cb.outline, cb.key_points, cb.cta_strategy,
+        cb.competitor_analysis, cb.target_word_count,
         COALESCE(
           (SELECT jsonb_agg(
             jsonb_build_object(
@@ -119,80 +155,49 @@ export async function GET(req) {
         ) as workflow_steps
       FROM content_calendar cc
       LEFT JOIN blog_posts bp ON cc.post_id = bp.id
-      WHERE cc.status != 'published'
-      ORDER BY cc.publish_date ASC
-    `);
-    return NextResponse.json({ success: true, items: rows });
-  }
+      LEFT JOIN content_briefs cb ON cb.calendar_id = cc.id
+      WHERE cc.id = $1
+    `, [calendarId]);
 
-  // Single calendar item
-  const { rows } = await pool.query(`
-    SELECT
-      cc.*,
-      bp.id as post_id, bp.title as post_title, bp.slug as post_slug,
-      bp.status as post_status, bp.published_at,
-      bp.content as post_content, bp.excerpt as post_excerpt,
-      bp.featured_image, bp.meta_title, bp.meta_description, bp.tags,
-      cb.id as brief_id, cb.outline, cb.key_points, cb.cta_strategy,
-      cb.competitor_analysis, cb.target_word_count,
-      COALESCE(
-        (SELECT jsonb_agg(
-          jsonb_build_object(
-            'id', pw.id,
-            'step_name', pw.step_name,
-            'status', pw.status,
-            'assigned_to', pw.assigned_to,
-            'due_date', pw.due_date,
-            'completed_at', pw.completed_at,
-            'notes', pw.notes
-          ) ORDER BY ARRAY_POSITION(ARRAY[
-            'research','outline','draft','edit','seo_review',
-            'images','schedule','publish','promote'
-          ], pw.step_name)
-        ) FROM publishing_workflow pw WHERE pw.calendar_id = cc.id),
-        '[]'::jsonb
-      ) as workflow_steps
-    FROM content_calendar cc
-    LEFT JOIN blog_posts bp ON cc.post_id = bp.id
-    LEFT JOIN content_briefs cb ON cb.calendar_id = cc.id
-    WHERE cc.id = $1
-  `, [calendarId]);
+    if (!rows.length) {
+      return NextResponse.json({ error: 'Calendar item not found' }, { status: 404 });
+    }
 
-  if (!rows.length) {
-    return NextResponse.json({ error: 'Calendar item not found' }, { status: 404 });
-  }
-
-  const item = rows[0];
-  const steps = item.workflow_steps || [];
-  const currentStepIndex = steps.findIndex(
-    s => s.status === 'pending' || s.status === 'in_progress'
-  );
-  const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
-  const nextStep = currentStepIndex >= 0 ? steps[currentStepIndex + 1] : null;
-
-  // If brief requested, return content brief data
-  if (brief && item.brief_id) {
-    const { rows: briefRows } = await pool.query(
-      'SELECT * FROM content_briefs WHERE id = $1',
-      [item.brief_id]
+    const item = rows[0];
+    const steps = item.workflow_steps || [];
+    const currentStepIndex = steps.findIndex(
+      s => s.status === 'pending' || s.status === 'in_progress'
     );
+    const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
+    const nextStep = currentStepIndex >= 0 ? steps[currentStepIndex + 1] : null;
+
+    // If brief requested, return content brief data
+    if (brief && item.brief_id) {
+      const { rows: briefRows } = await pool.query(
+        'SELECT * FROM content_briefs WHERE id = $1',
+        [item.brief_id]
+      );
+      return NextResponse.json({
+        success: true,
+        item,
+        brief: briefRows[0] || null,
+        current_step: currentStep,
+        next_step: nextStep,
+        workflow_steps: steps,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       item,
-      brief: briefRows[0] || null,
       current_step: currentStep,
       next_step: nextStep,
       workflow_steps: steps,
     });
+  } catch (error) {
+    console.error('Content workflow GET error:', error);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
   }
-
-  return NextResponse.json({
-    success: true,
-    item,
-    current_step: currentStep,
-    next_step: nextStep,
-    workflow_steps: steps,
-  });
 }
 
 // ─── POST: Claim a step / submit step output ────────────────────────────────

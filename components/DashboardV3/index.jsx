@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain, Briefcase, ChevronRight, CheckCircle, Lock } from "lucide-react";
@@ -107,7 +108,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //         }
   //       })
   //       .catch(err => {
-  //         console.error('Failed to fetch meditations:', err);
+  //         logger.error('Failed to fetch meditations:', err);
   //       });
   //   }
   // }, [showMeditations]);
@@ -132,7 +133,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //       alert(data.error || 'Failed to start meditation');
   //     }
   //   } catch (error) {
-  //     console.error('Error starting meditation:', error);
+  //     logger.error('Error starting meditation:', error);
   //     alert('Failed to start meditation');
   //   }
   // };
@@ -475,7 +476,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             variant="auto"
             onUpgrade={() => {
               // Optional: track upgrade click
-              console.log("Premium upgrade initiated");
+              logger.info("Premium upgrade initiated");
             }}
           />
 

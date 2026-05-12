@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
@@ -12,7 +13,7 @@ const pool = new Pool({
 
 async function runBlogMigration() {
   try {
-    console.log('🚀 Running blog database migration...');
+    logger.info('🚀 Running blog database migration...');
     
     // Read and execute the blog schema SQL
     const schemaPath = path.join(__dirname, '../database/add-blog-schema.sql');
@@ -25,25 +26,25 @@ async function runBlogMigration() {
       if (statement.trim()) {
         try {
           await pool.query(statement.trim() + ';');
-          console.log('✅ Executed SQL statement');
+          logger.info('✅ Executed SQL statement');
         } catch (error) {
           if (error.message.includes('already exists') || error.message.includes('duplicate key')) {
-            console.log('⚠️  Statement already executed (skipping)');
+            logger.info('⚠️  Statement already executed (skipping)');
           } else {
-            console.error('❌ Error executing statement:', error.message);
+            logger.error('❌ Error executing statement:', error.message);
           }
         }
       }
     }
     
-    console.log('✅ Blog database migration completed successfully!');
-    console.log('🎉 Blog system is ready!');
-    console.log('   - Visit /blog to see the blog listing');
-    console.log('   - Visit /admin/blog to manage posts');
-    console.log('   - Create new posts for SEO content');
+    logger.info('✅ Blog database migration completed successfully!');
+    logger.info('🎉 Blog system is ready!');
+    logger.info('   - Visit /blog to see the blog listing');
+    logger.info('   - Visit /admin/blog to manage posts');
+    logger.info('   - Create new posts for SEO content');
     
   } catch (error) {
-    console.error('❌ Error running blog migration:', error);
+    logger.error('❌ Error running blog migration:', error);
     process.exit(1);
   } finally {
     await pool.end();

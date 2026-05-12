@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
@@ -68,10 +69,10 @@ export async function GET(request) {
             slug: rows[0].slug,
             published_at: rows[0].published_at
           });
-          console.log(`[Cron] Published scheduled post: ${rows[0].title} (ID: ${rows[0].id})`);
+          logger.info(`[Cron] Published scheduled post: ${rows[0].title} (ID: ${rows[0].id})`);
         }
       } catch (error) {
-        console.error(`[Cron] Failed to publish post ${post.id}:`, error);
+        logger.error(`[Cron] Failed to publish post ${post.id}:`, error);
         failed.push({
           id: post.id,
           title: post.title,
@@ -92,7 +93,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Publish scheduled posts error:', error);
+    logger.error('Publish scheduled posts error:', error);
     return NextResponse.json(
       { error: 'Failed to publish scheduled posts', details: error.message },
       { status: 500 }

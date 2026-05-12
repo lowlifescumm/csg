@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -58,7 +59,7 @@ export default function DashboardShell({ children }) {
     try {
       return await response.json();
     } catch (error) {
-      console.error(`[DashboardShell] Failed to parse ${label} response:`, error);
+      logger.error(`[DashboardShell] Failed to parse ${label} response:`, error);
       return null;
     }
   };
@@ -74,7 +75,7 @@ export default function DashboardShell({ children }) {
       }
       const userData = await safeJson(userRes, 'user profile');
       if (!userData || !userData.user) {
-        console.warn("[DashboardShell] No authenticated user returned, redirecting to login");
+        logger.warn("[DashboardShell] No authenticated user returned, redirecting to login");
         router.push("/login");
         return;
       }
@@ -107,7 +108,7 @@ export default function DashboardShell({ children }) {
         }
       } catch (streakError) {
         // Streak endpoint is optional, continue if it fails
-        console.log("Streak endpoint not available:", streakError);
+        logger.info("Streak endpoint not available:", streakError);
       }
 
       // Fetch moon phase (optional - gracefully handles if endpoint doesn't exist)
@@ -122,11 +123,11 @@ export default function DashboardShell({ children }) {
         }
       } catch (moonError) {
         // Moon phase endpoint is optional, continue if it fails
-        console.log("Moon phase endpoint not available:", moonError);
+        logger.info("Moon phase endpoint not available:", moonError);
       }
 
     } catch (err) {
-      console.error("Error fetching dashboard data:", err);
+      logger.error("Error fetching dashboard data:", err);
       setError("Failed to load dashboard data. Please try again.");
     } finally {
       setLoading(false);

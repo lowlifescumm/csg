@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -24,7 +25,7 @@ export default function CoachPage() {
         setIsPremium(data.role === 'admin' || (data.stripe_subscription_id && data.stripe_subscription_id !== ''));
       }
     } catch (e) {
-      console.error("Failed to fetch user data");
+      logger.error("Failed to fetch user data");
     }
   };
 

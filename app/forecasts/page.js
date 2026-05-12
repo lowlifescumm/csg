@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 'use client';
 
 export const dynamic = 'force-static';
@@ -63,7 +64,7 @@ export default function ForecastsPage() {
       setSelectedForecast(data.forecast);
       setGenerating(false);
     } catch (err) {
-      console.error('Error generating forecast:', err);
+      logger.error('Error generating forecast:', err);
       alert(err.message);
       setGenerating(false);
     }

@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Seed script for MongoDB (alternative implementation)
  * 
@@ -17,16 +18,16 @@ const __dirname = dirname(__filename);
 const mongodbUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 if (!mongodbUri) {
-  console.error('❌ Error: MONGODB_URI not set');
-  console.error('Usage: MONGODB_URI="mongodb://..." node scripts/seed-template-mongodb.js');
+  logger.error('❌ Error: MONGODB_URI not set');
+  logger.error('Usage: MONGODB_URI="mongodb://..." node scripts/seed-template-mongodb.js');
   process.exit(1);
 }
 
 async function seed() {
   try {
-    console.log('🌱 Connecting to MongoDB...');
+    logger.info('🌱 Connecting to MongoDB...');
     await mongoose.connect(mongodbUri);
-    console.log('✅ Connected to MongoDB');
+    logger.info('✅ Connected to MongoDB');
 
     // Load sample template JSON
     const templatePath = join(__dirname, 'sample-pdfme-template.json');
@@ -70,12 +71,12 @@ async function seed() {
     // Check if template already exists
     const existing = await Template.findOne({ name: 'sample-pdfme' });
     if (existing) {
-      console.log('⚠️  Template "sample-pdfme" already exists. Updating...');
+      logger.info('⚠️  Template "sample-pdfme" already exists. Updating...');
       existing.templateJson = sampleTemplate;
       existing.previewHtml = previewHtml;
       await existing.save();
-      console.log('✅ Updated existing template');
-      console.log(`   ID: ${existing._id}`);
+      logger.info('✅ Updated existing template');
+      logger.info(`   ID: ${existing._id}`);
     } else {
       // Create new template
       const template = new Template({
@@ -87,22 +88,22 @@ async function seed() {
       });
 
       const saved = await template.save();
-      console.log('✅ Successfully seeded sample template!');
-      console.log(`   ID: ${saved._id}`);
-      console.log(`   Name: ${saved.name}`);
-      console.log(`   Created: ${saved.createdAt}`);
+      logger.info('✅ Successfully seeded sample template!');
+      logger.info(`   ID: ${saved._id}`);
+      logger.info(`   Name: ${saved.name}`);
+      logger.info(`   Created: ${saved.createdAt}`);
     }
 
-    console.log('');
-    console.log('📋 You can now use this template with:');
-    console.log(`   curl -X POST "...?engine=template&templateId=<ID>" ...`);
+    logger.info('');
+    logger.info('📋 You can now use this template with:');
+    logger.info(`   curl -X POST "...?engine=template&templateId=<ID>" ...`);
 
     await mongoose.disconnect();
-    console.log('✨ Seed completed successfully');
+    logger.info('✨ Seed completed successfully');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Seed failed:', error.message);
-    console.error(error);
+    logger.error('❌ Seed failed:', error.message);
+    logger.error(error);
     await mongoose.disconnect();
     process.exit(1);
   }

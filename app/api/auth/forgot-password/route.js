@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getUserByEmail, createPasswordResetToken } from '@/lib/auth';
 import { sendPasswordResetEmail } from '@/lib/email';
@@ -37,7 +38,7 @@ export async function POST(request) {
     );
 
     if (!emailResult.success) {
-      console.error('Failed to send password reset email:', emailResult.error);
+      logger.error('Failed to send password reset email:', emailResult.error);
       return NextResponse.json(
         { error: 'Failed to send password reset email. Please try again.' },
         { status: 500 }
@@ -50,7 +51,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Forgot password error:', error);
+    logger.error('Forgot password error:', error);
     return NextResponse.json(
       { error: 'Failed to process password reset request' },
       { status: 500 }

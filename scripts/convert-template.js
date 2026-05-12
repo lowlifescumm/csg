@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Convert HTML template file to JSON format for database seeding
  * 
@@ -29,7 +30,7 @@ for (const path of possiblePaths) {
   try {
     htmlContent = readFileSync(path, 'utf8');
     htmlPath = path;
-    console.log(`✅ Found template file at: ${path}`);
+    logger.info(`✅ Found template file at: ${path}`);
     break;
   } catch (error) {
     // File not found at this path, try next
@@ -38,8 +39,8 @@ for (const path of possiblePaths) {
 }
 
 if (!htmlContent) {
-  console.error('❌ Error: Could not find mrpt12_11.html in any of these locations:');
-  possiblePaths.forEach(p => console.error(`   - ${p}`));
+  logger.error('❌ Error: Could not find mrpt12_11.html in any of these locations:');
+  possiblePaths.forEach(p => logger.error(`   - ${p}`));
   process.exit(1);
 }
 
@@ -54,13 +55,13 @@ const templateJson = {
 const outputPath = join(__dirname, '../master-template.json');
 writeFileSync(outputPath, JSON.stringify(templateJson, null, 2), 'utf8');
 
-console.log(`\n✅ Successfully converted template!`);
-console.log(`   Input: ${htmlPath}`);
-console.log(`   Output: ${outputPath}`);
-console.log(`   HTML size: ${htmlContent.length} characters`);
-console.log(`   JSON size: ${JSON.stringify(templateJson).length} bytes`);
-console.log(`\n📋 Template structure:`);
-console.log(`   - ID: ${templateJson.id}`);
-console.log(`   - Type: ${templateJson.type}`);
-console.log(`   - HTML: ${htmlContent.split('\n').length} lines`);
+logger.info(`\n✅ Successfully converted template!`);
+logger.info(`   Input: ${htmlPath}`);
+logger.info(`   Output: ${outputPath}`);
+logger.info(`   HTML size: ${htmlContent.length} characters`);
+logger.info(`   JSON size: ${JSON.stringify(templateJson).length} bytes`);
+logger.info(`\n📋 Template structure:`);
+logger.info(`   - ID: ${templateJson.id}`);
+logger.info(`   - Type: ${templateJson.type}`);
+logger.info(`   - HTML: ${htmlContent.split('\n').length} lines`);
 

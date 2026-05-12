@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 /**
  * Content Performance Tracker
@@ -17,7 +18,7 @@ const pool = new Pool({
 });
 
 async function trackPerformance(date = new Date().toISOString().split('T')[0]) {
-  console.log(`📊 Tracking content performance for ${date}...\n`);
+  logger.info(`📊 Tracking content performance for ${date}...\n`);
 
   try {
     // Get all published posts from content calendar
@@ -33,10 +34,10 @@ async function trackPerformance(date = new Date().toISOString().split('T')[0]) {
       WHERE cc.status = 'published' AND cc.post_id IS NOT NULL
     `);
 
-    console.log(`Found ${calendarItems.length} published posts to track\n`);
+    logger.info(`Found ${calendarItems.length} published posts to track\n`);
 
     for (const item of calendarItems) {
-      console.log(`Processing: ${item.title}`);
+      logger.info(`Processing: ${item.title}`);
       
       // Note: In production, you would integrate with:
       // - Google Analytics API for traffic data
@@ -65,18 +66,18 @@ async function trackPerformance(date = new Date().toISOString().split('T')[0]) {
         0  // premium_conversions
       ]);
       
-      console.log(`  ✓ Recorded metrics placeholder\n`);
+      logger.info(`  ✓ Recorded metrics placeholder\n`);
     }
 
-    console.log('\n✅ Performance tracking complete!');
-    console.log('\nNext steps:');
-    console.log('1. Connect Google Analytics 4 API for traffic data');
-    console.log('2. Connect Search Console API for ranking data');
-    console.log('3. Automate this script to run weekly via cron');
-    console.log('4. View results in admin dashboard at /admin/content-calendar');
+    logger.info('\n✅ Performance tracking complete!');
+    logger.info('\nNext steps:');
+    logger.info('1. Connect Google Analytics 4 API for traffic data');
+    logger.info('2. Connect Search Console API for ranking data');
+    logger.info('3. Automate this script to run weekly via cron');
+    logger.info('4. View results in admin dashboard at /admin/content-calendar');
 
   } catch (error) {
-    console.error('❌ Error tracking performance:', error);
+    logger.error('❌ Error tracking performance:', error);
     process.exit(1);
   } finally {
     await pool.end();

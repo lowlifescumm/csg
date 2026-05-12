@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
@@ -99,7 +100,7 @@ export async function POST(request) {
       packName: pack.name,
     });
   } catch (err) {
-    console.error("Credit purchase error:", err);
+    logger.error("Credit purchase error:", err);
     return NextResponse.json(
       {
         error: "Failed to create payment",

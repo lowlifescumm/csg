@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getUserByEmail, verifyPassword, generateToken } from '@/lib/auth';
 
@@ -30,7 +31,7 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
       }
     } catch (error) {
-      console.error('Password verification error:', error);
+      logger.error('Password verification error:', error);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
@@ -56,7 +57,7 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', error);
     return NextResponse.json({ error: 'Failed to login' }, { status: 500 });
   }
 }

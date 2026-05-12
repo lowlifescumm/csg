@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -27,20 +28,20 @@ const testResults = {
 function logTest(name, passed, message = '') {
   if (passed) {
     testResults.passed.push(name);
-    console.log(`✅ ${name}${message ? ': ' + message : ''}`);
+    logger.info(`✅ ${name}${message ? ': ' + message : ''}`);
   } else {
     testResults.failed.push(name);
-    console.log(`❌ ${name}${message ? ': ' + message : ''}`);
+    logger.info(`❌ ${name}${message ? ': ' + message : ''}`);
   }
 }
 
 function logWarning(name, message) {
   testResults.warnings.push(`${name}: ${message}`);
-  console.log(`⚠️  ${name}: ${message}`);
+  logger.info(`⚠️  ${name}: ${message}`);
 }
 
 async function testEmailNormalization() {
-  console.log('\n📧 Testing Email Normalization...\n');
+  logger.info('\n📧 Testing Email Normalization...\n');
   
   const testEmails = [
     'Test@Example.com',
@@ -64,7 +65,7 @@ async function testEmailNormalization() {
 }
 
 async function testPasswordHashing() {
-  console.log('\n🔐 Testing Password Hashing...\n');
+  logger.info('\n🔐 Testing Password Hashing...\n');
   
   const password = 'TestPassword123!';
   const hash = await hashPassword(password);
@@ -88,7 +89,7 @@ async function testPasswordHashing() {
 }
 
 async function testTokenGeneration() {
-  console.log('\n🎫 Testing Token Generation...\n');
+  logger.info('\n🎫 Testing Token Generation...\n');
   
   const userId = 1;
   const token = generateToken(userId);
@@ -111,7 +112,7 @@ async function testTokenGeneration() {
 }
 
 async function testDatabaseQueries() {
-  console.log('\n🗄️  Testing Database Queries...\n');
+  logger.info('\n🗄️  Testing Database Queries...\n');
   
   // Test 1: getUserByEmail with case variations
   try {
@@ -136,7 +137,7 @@ async function testDatabaseQueries() {
     if (rows.length > 0) {
       logWarning('Database integrity', `Found ${rows.length} potential duplicate emails (case variations)`);
       rows.forEach(row => {
-        console.log(`   - ${row.email} (${row.count} occurrences)`);
+        logger.info(`   - ${row.email} (${row.count} occurrences)`);
       });
     } else {
       logTest('Database integrity (no duplicates)', true, 'No duplicate emails found');
@@ -158,7 +159,7 @@ async function testDatabaseQueries() {
     if (rows.length > 0) {
       logWarning('Email normalization', `Found ${rows.length} user(s) with non-normalized emails`);
       rows.forEach(row => {
-        console.log(`   - ${row.email} (ID: ${row.id}, Created: ${row.created_at})`);
+        logger.info(`   - ${row.email} (ID: ${row.id}, Created: ${row.created_at})`);
       });
     } else {
       logTest('Email normalization (all normalized)', true, 'All emails are normalized');
@@ -179,7 +180,7 @@ async function testDatabaseQueries() {
     if (rows.length > 0) {
       logTest('OAuth users check', true, `Found ${rows.length} OAuth user(s) (expected)`);
       rows.forEach(row => {
-        console.log(`   - ${row.email} (ID: ${row.id})`);
+        logger.info(`   - ${row.email} (ID: ${row.id})`);
       });
     } else {
       logTest('OAuth users check', true, 'No OAuth users found');
@@ -190,7 +191,7 @@ async function testDatabaseQueries() {
 }
 
 async function testRecentUsers() {
-  console.log('\n👥 Testing Recent Users (Last 10)...\n');
+  logger.info('\n👥 Testing Recent Users (Last 10)...\n');
   
   try {
     const { rows } = await pool.query(`
@@ -219,17 +220,17 @@ async function testRecentUsers() {
       return;
     }
     
-    console.log(`Found ${rows.length} recent user(s):\n`);
+    logger.info(`Found ${rows.length} recent user(s):\n`);
     
     rows.forEach((user, index) => {
-      console.log(`${index + 1}. ${user.email}`);
-      console.log(`   ID: ${user.id}`);
-      console.log(`   Name: ${user.first_name} ${user.last_name}`);
-      console.log(`   Role: ${user.role}`);
-      console.log(`   Password: ${user.password_status}`);
-      console.log(`   Email Status: ${user.email_status}`);
-      console.log(`   Created: ${user.created_at}`);
-      console.log();
+      logger.info(`${index + 1}. ${user.email}`);
+      logger.info(`   ID: ${user.id}`);
+      logger.info(`   Name: ${user.first_name} ${user.last_name}`);
+      logger.info(`   Role: ${user.role}`);
+      logger.info(`   Password: ${user.password_status}`);
+      logger.info(`   Email Status: ${user.email_status}`);
+      logger.info(`   Created: ${user.created_at}`);
+      logger.info();
       
       // Check for potential issues
       if (user.email_status === 'Not Normalized') {
@@ -247,7 +248,7 @@ async function testRecentUsers() {
 }
 
 async function testCookieSettings() {
-  console.log('\n🍪 Testing Cookie Settings...\n');
+  logger.info('\n🍪 Testing Cookie Settings...\n');
   
   // Check if cookie settings are consistent across routes
   logTest('Cookie settings check', true, 'Manual review recommended - check routes use consistent cookie settings');
@@ -255,7 +256,7 @@ async function testCookieSettings() {
 }
 
 async function testPasswordValidation() {
-  console.log('\n🔒 Testing Password Validation...\n');
+  logger.info('\n🔒 Testing Password Validation...\n');
   
   // Check if password validation exists in signup
   logWarning('Password validation', 'Signup route should validate minimum password length (currently only reset-password validates)');
@@ -263,8 +264,8 @@ async function testPasswordValidation() {
 }
 
 async function runAllTests() {
-  console.log('🧪 COMPREHENSIVE AUTHENTICATION SYSTEM TEST');
-  console.log('==========================================\n');
+  logger.info('🧪 COMPREHENSIVE AUTHENTICATION SYSTEM TEST');
+  logger.info('==========================================\n');
   
   try {
     await testEmailNormalization();
@@ -276,33 +277,33 @@ async function runAllTests() {
     await testPasswordValidation();
     
     // Summary
-    console.log('\n📊 TEST SUMMARY');
-    console.log('================\n');
-    console.log(`✅ Passed: ${testResults.passed.length}`);
-    console.log(`❌ Failed: ${testResults.failed.length}`);
-    console.log(`⚠️  Warnings: ${testResults.warnings.length}\n`);
+    logger.info('\n📊 TEST SUMMARY');
+    logger.info('================\n');
+    logger.info(`✅ Passed: ${testResults.passed.length}`);
+    logger.info(`❌ Failed: ${testResults.failed.length}`);
+    logger.info(`⚠️  Warnings: ${testResults.warnings.length}\n`);
     
     if (testResults.failed.length > 0) {
-      console.log('❌ Failed Tests:');
-      testResults.failed.forEach(test => console.log(`   - ${test}`));
-      console.log();
+      logger.info('❌ Failed Tests:');
+      testResults.failed.forEach(test => logger.info(`   - ${test}`));
+      logger.info();
     }
     
     if (testResults.warnings.length > 0) {
-      console.log('⚠️  Warnings:');
-      testResults.warnings.forEach(warning => console.log(`   - ${warning}`));
-      console.log();
+      logger.info('⚠️  Warnings:');
+      testResults.warnings.forEach(warning => logger.info(`   - ${warning}`));
+      logger.info();
     }
     
     if (testResults.failed.length === 0) {
-      console.log('🎉 All critical tests passed!');
+      logger.info('🎉 All critical tests passed!');
     } else {
-      console.log('⚠️  Some tests failed. Please review the issues above.');
+      logger.info('⚠️  Some tests failed. Please review the issues above.');
       process.exit(1);
     }
     
   } catch (error) {
-    console.error('❌ Test suite error:', error);
+    logger.error('❌ Test suite error:', error);
     process.exit(1);
   } finally {
     await pool.end();

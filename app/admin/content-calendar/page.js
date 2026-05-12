@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -354,7 +355,7 @@ export default function ContentCalendarPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      logger.error('Auth error:', error);
     }
   };
 
@@ -362,7 +363,7 @@ export default function ContentCalendarPage() {
     try {
       const apiKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY || '';
       if (!apiKey) {
-        console.warn('NEXT_PUBLIC_ADMIN_API_KEY not set');
+        logger.warn('NEXT_PUBLIC_ADMIN_API_KEY not set');
         return;
       }
       const response = await fetch(`/api/paperclip/status`, {
@@ -397,7 +398,9 @@ export default function ContentCalendarPage() {
       } else {
         setIsConnected(false);
       }
-    } catch {
+    } catch (err) {
+      console.error("[admin/content-calendar] Polling error:", err);
+      setIsConnected(false);
       setIsConnected(false);
     }
   }, []);

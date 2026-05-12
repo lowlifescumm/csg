@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
@@ -114,7 +115,7 @@ export async function GET(request) {
       matches: topMatches
     });
   } catch (error) {
-    console.error('Compatibility top API error:', error);
+    logger.error('Compatibility top API error:', error);
     return NextResponse.json(
       { 
         success: false,

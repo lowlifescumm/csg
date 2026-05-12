@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getAuthenticatedUser } from "@/lib/auth";
@@ -84,7 +85,7 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('[Patterns API] Error:', {
+    logger.error('[Patterns API] Error:', {
       message: error.message,
       stack: error.stack,
       name: error.name,

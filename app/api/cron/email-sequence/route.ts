@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 // API route to process email nurture sequence
 // Call this daily via cron job to send scheduled emails
 
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Email sequence cron error:', error);
+    logger.error('Email sequence cron error:', error);
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

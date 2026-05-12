@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
@@ -121,7 +122,7 @@ export async function POST(request) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Schedule blog post error:', error);
+    logger.error('Schedule blog post error:', error);
     return NextResponse.json(
       { error: 'Failed to schedule blog post', details: error.message },
       { status: 500 }

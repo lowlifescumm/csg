@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 
 import { useState, useEffect } from "react";
@@ -26,7 +27,7 @@ export default function TarotPage() {
       const data = await response.json();
       setIsPremium(data.isPremium || false);
     } catch (error) {
-      console.error("Error checking credits:", error);
+      logger.error("Error checking credits:", error);
       setIsPremium(false);
     } finally {
       setLoadingCredits(false);

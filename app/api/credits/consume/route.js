@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * POST /api/credits/consume
  * Atomically consume credits for a reading/feature
@@ -75,7 +76,7 @@ export async function POST(request) {
       ledger_id: result.ledger_id
     });
   } catch (error) {
-    console.error('[Credits Consume] Error:', error);
+    logger.error('[Credits Consume] Error:', error);
     return NextResponse.json(
       {
         error: 'Internal server error',

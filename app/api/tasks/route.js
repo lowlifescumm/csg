@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -43,7 +44,7 @@ export async function GET(request) {
       `);
     } catch (createError) {
       // Table might already exist, continue
-      console.log("Tasks table creation:", createError.message);
+      logger.info("Tasks table creation:", createError.message);
     }
 
     // Check if user_xp table exists, if not create it
@@ -62,7 +63,7 @@ export async function GET(request) {
         CREATE INDEX IF NOT EXISTS idx_user_xp_user_id ON user_xp(user_id);
       `);
     } catch (createError) {
-      console.log("XP table creation:", createError.message);
+      logger.info("XP table creation:", createError.message);
     }
 
     // Get today's completed tasks
@@ -104,7 +105,7 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error("Get tasks error:", error);
+    logger.error("Get tasks error:", error);
     return NextResponse.json(
       { error: "Failed to fetch tasks", details: error.message },
       { status: 500 }

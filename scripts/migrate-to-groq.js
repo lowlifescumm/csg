@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 /**
  * migrate-to-groq.js
@@ -32,7 +33,7 @@ files.forEach(file => {
   const fullPath = path.join('/home/ethan/.openclaw/workspace/cosmicspiritguide', file);
   
   if (!fs.existsSync(fullPath)) {
-    console.log(`⚠️  SKIP: ${file} (not found)`);
+    logger.info(`⚠️  SKIP: ${file} (not found)`);
     return;
   }
   
@@ -85,34 +86,34 @@ files.forEach(file => {
     if (content !== original) {
       changed++;
       if (DRY_RUN) {
-        console.log(`🔍 WOULD UPDATE: ${file}`);
+        logger.info(`🔍 WOULD UPDATE: ${file}`);
       } else {
         fs.writeFileSync(fullPath, content);
-        console.log(`✅ UPDATED: ${file}`);
+        logger.info(`✅ UPDATED: ${file}`);
       }
     } else {
-      console.log(`⏭️  NO CHANGE: ${file}`);
+      logger.info(`⏭️  NO CHANGE: ${file}`);
     }
   } catch (err) {
     errors.push({ file, error: err.message });
-    console.log(`❌ ERROR: ${file} - ${err.message}`);
+    logger.info(`❌ ERROR: ${file} - ${err.message}`);
   }
 });
 
-console.log(`\n${'='.repeat(50)}`);
-console.log(`Migration Summary:`);
-console.log(`  Files changed: ${changed}`);
-console.log(`  Errors: ${errors.length}`);
-console.log(`  Mode: ${DRY_RUN ? 'DRY RUN (no writes)' : 'LIVE'}`);
-console.log(`${'='.repeat(50)}`);
+logger.info(`\n${'='.repeat(50)}`);
+logger.info(`Migration Summary:`);
+logger.info(`  Files changed: ${changed}`);
+logger.info(`  Errors: ${errors.length}`);
+logger.info(`  Mode: ${DRY_RUN ? 'DRY RUN (no writes)' : 'LIVE'}`);
+logger.info(`${'='.repeat(50)}`);
 
 if (errors.length > 0) {
-  console.log('\n⚠️  Some files had errors. Check logs above.');
+  logger.info('\n⚠️  Some files had errors. Check logs above.');
   process.exit(1);
 }
 
-console.log('\n✅ Migration complete!');
-console.log('\nNext steps:');
-console.log('  1. Add GROQ_API_KEY to .env or Render dashboard');
-console.log('  2. Test the tarot readings still work');
-console.log('  3. Monitor costs (should be ~90% cheaper)');
+logger.info('\n✅ Migration complete!');
+logger.info('\nNext steps:');
+logger.info('  1. Add GROQ_API_KEY to .env or Render dashboard');
+logger.info('  2. Test the tarot readings still work');
+logger.info('  3. Monitor costs (should be ~90% cheaper)');

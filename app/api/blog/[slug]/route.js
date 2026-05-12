@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
@@ -104,7 +105,7 @@ export async function GET(request, { params }) {
         );
       } catch (viewError) {
         // Don't fail the request if view tracking fails
-        console.log('View tracking error:', viewError.message);
+        logger.info('View tracking error:', viewError.message);
       }
     }
 
@@ -114,7 +115,7 @@ export async function GET(request, { params }) {
     });
 
   } catch (error) {
-    console.error('Blog post API error:', error);
+    logger.error('Blog post API error:', error);
     return NextResponse.json({ error: 'Failed to fetch blog post' }, { status: 500 });
   }
 }
@@ -164,7 +165,7 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ success: true });
 
   } catch (error) {
-    console.error('Delete blog post error:', error);
+    logger.error('Delete blog post error:', error);
     return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });
   }
 }

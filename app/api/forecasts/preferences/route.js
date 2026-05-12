@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { pool } from '@/lib/db.js';
@@ -17,7 +18,7 @@ export async function GET() {
     const prefs = await getForecastPreferences(authResult.userId);
     return NextResponse.json({ preferences: prefs });
   } catch (error) {
-    console.error('Error fetching forecast preferences:', error);
+    logger.error('Error fetching forecast preferences:', error);
     return NextResponse.json(
       { error: 'Failed to fetch preferences', details: error.message },
       { status: 500 },
@@ -93,7 +94,7 @@ export async function PUT(req) {
       preferences: result.rows[0],
     });
   } catch (error) {
-    console.error('Error updating forecast preferences:', error);
+    logger.error('Error updating forecast preferences:', error);
     return NextResponse.json(
       { error: 'Failed to update preferences', details: error.message },
       { status: 500 },

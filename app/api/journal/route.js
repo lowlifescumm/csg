@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -55,7 +56,7 @@ export async function POST(request) {
       `);
     } catch (createError) {
       // Table might already exist, continue
-      console.log("Journal table creation:", createError.message);
+      logger.info("Journal table creation:", createError.message);
     }
 
     // Insert journal entry
@@ -81,7 +82,7 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    console.error("Journal save error:", error);
+    logger.error("Journal save error:", error);
     return NextResponse.json(
       { error: "Failed to save to journal", details: error.message },
       { status: 500 }
@@ -129,7 +130,7 @@ export async function GET(request) {
       });
     }
   } catch (error) {
-    console.error("Journal get error:", error);
+    logger.error("Journal get error:", error);
     return NextResponse.json(
       { error: "Failed to fetch journal entries", details: error.message },
       { status: 500 }

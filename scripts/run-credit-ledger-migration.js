@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Run Credit Ledger Migration
  * Sets up the credit_ledger and user_credit_snapshot tables
@@ -11,7 +12,7 @@ require('dotenv').config({ path: path.join(__dirname, '../env.local') });
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL not found in environment variables');
+  logger.error('❌ DATABASE_URL not found in environment variables');
   process.exit(1);
 }
 
@@ -26,8 +27,8 @@ async function runMigration() {
   const client = await pool.connect();
   
   try {
-    console.log('🔗 Connected to database');
-    console.log('📋 Running credit ledger migration...\n');
+    logger.info('🔗 Connected to database');
+    logger.info('📋 Running credit ledger migration...\n');
     
     // Read migration SQL file
     const migrationPath = path.join(__dirname, '../database/credit-ledger-schema.sql');
@@ -36,9 +37,9 @@ async function runMigration() {
     // Execute migration
     await client.query(migrationSQL);
     
-    console.log('✅ Credit ledger tables created successfully');
-    console.log('✅ User credit snapshots initialized');
-    console.log('✅ Triggers and functions created');
+    logger.info('✅ Credit ledger tables created successfully');
+    logger.info('✅ User credit snapshots initialized');
+    logger.info('✅ Triggers and functions created');
     
     // Verify tables exist
     const tablesResult = await client.query(`
@@ -49,9 +50,9 @@ async function runMigration() {
       ORDER BY table_name
     `);
     
-    console.log('\n📊 Created tables:');
+    logger.info('\n📊 Created tables:');
     tablesResult.rows.forEach(row => {
-      console.log(`   - ${row.table_name}`);
+      logger.info(`   - ${row.table_name}`);
     });
     
     // Check if subscription_tier column exists
@@ -64,16 +65,16 @@ async function runMigration() {
     `);
     
     if (columnResult.rows.length > 0) {
-      console.log('\n✅ subscription_tier column exists in users table');
+      logger.info('\n✅ subscription_tier column exists in users table');
     } else {
-      console.log('\n⚠️  subscription_tier column not found (will be created by migration)');
+      logger.info('\n⚠️  subscription_tier column not found (will be created by migration)');
     }
     
-    console.log('\n🎉 Migration completed successfully!');
+    logger.info('\n🎉 Migration completed successfully!');
     
   } catch (error) {
-    console.error('\n❌ Migration failed:', error.message);
-    console.error(error);
+    logger.error('\n❌ Migration failed:', error.message);
+    logger.error(error);
     process.exit(1);
   } finally {
     client.release();

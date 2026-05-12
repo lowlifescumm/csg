@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken, getUserById } from '@/lib/auth';
@@ -101,7 +102,7 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    console.error('Admin stats error:', error);
+    logger.error('Admin stats error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch statistics' },
       { status: 500 }

@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -185,8 +186,8 @@ const products = [
 ];
 
 async function createProducts() {
-  console.log('🚀 Setting up Stripe products for Cosmic Spiritual Guide v2...\n');
-  console.log('⚠️  Creating new products (ignoring existing ones)...\n');
+  logger.info('🚀 Setting up Stripe products for Cosmic Spiritual Guide v2...\n');
+  logger.info('⚠️  Creating new products (ignoring existing ones)...\n');
 
   const createdProducts = {
     creditPacks: [],
@@ -196,7 +197,7 @@ async function createProducts() {
 
   try {
     for (const productData of products) {
-      console.log(`📦 Creating product: ${productData.name}`);
+      logger.info(`📦 Creating product: ${productData.name}`);
 
       // Create the product
       const product = await stripe.products.create({
@@ -210,7 +211,7 @@ async function createProducts() {
         }
       });
 
-      console.log(`   ✅ Product created: ${product.id}`);
+      logger.info(`   ✅ Product created: ${product.id}`);
 
       // Create prices for the product
       const createdPrices = [];
@@ -235,7 +236,7 @@ async function createProducts() {
         createdPrices.push(price);
 
         const priceType = priceData.recurring ? 'recurring' : 'one-time';
-        console.log(`   💰 Price created: ${price.id} (${priceData.currency.toUpperCase()} ${(priceData.unit_amount / 100).toFixed(2)} - ${priceType})`);
+        logger.info(`   💰 Price created: ${price.id} (${priceData.currency.toUpperCase()} ${(priceData.unit_amount / 100).toFixed(2)} - ${priceType})`);
       }
 
       // Categorize for summary
@@ -247,42 +248,42 @@ async function createProducts() {
         createdProducts.reports.push({ product, prices: createdPrices });
       }
 
-      console.log('');
+      logger.info('');
     }
 
-    console.log('🎉 All products and prices created successfully!');
-    console.log('\n📋 Summary:');
-    console.log(`   • ${createdProducts.creditPacks.length} Credit Pack products with one-time prices`);
-    console.log(`   • ${createdProducts.subscriptions.length} Subscription tier products with recurring prices`);
-    console.log(`   • ${createdProducts.reports.length} Direct-pay Report products with one-time prices`);
-    console.log('   • All products are now available in your Stripe dashboard');
+    logger.info('🎉 All products and prices created successfully!');
+    logger.info('\n📋 Summary:');
+    logger.info(`   • ${createdProducts.creditPacks.length} Credit Pack products with one-time prices`);
+    logger.info(`   • ${createdProducts.subscriptions.length} Subscription tier products with recurring prices`);
+    logger.info(`   • ${createdProducts.reports.length} Direct-pay Report products with one-time prices`);
+    logger.info('   • All products are now available in your Stripe dashboard');
     
-    console.log('\n📝 Product IDs (save these for reference):');
-    console.log('\n   Credit Packs:');
+    logger.info('\n📝 Product IDs (save these for reference):');
+    logger.info('\n   Credit Packs:');
     createdProducts.creditPacks.forEach(({ product, prices }) => {
-      console.log(`     ${product.name}: Product ${product.id}, Price ${prices[0].id}`);
+      logger.info(`     ${product.name}: Product ${product.id}, Price ${prices[0].id}`);
     });
     
-    console.log('\n   Subscriptions:');
+    logger.info('\n   Subscriptions:');
     createdProducts.subscriptions.forEach(({ product, prices }) => {
-      console.log(`     ${product.name}: Product ${product.id}, Price ${prices[0].id}`);
+      logger.info(`     ${product.name}: Product ${product.id}, Price ${prices[0].id}`);
     });
     
-    console.log('\n   Reports:');
+    logger.info('\n   Reports:');
     createdProducts.reports.forEach(({ product, prices }) => {
-      console.log(`     ${product.name}: Product ${product.id}, Price ${prices[0].id}`);
+      logger.info(`     ${product.name}: Product ${product.id}, Price ${prices[0].id}`);
     });
     
-    console.log('\n🔗 Next steps:');
-    console.log('   1. Check your Stripe dashboard to verify products');
-    console.log('   2. Update your application to use these product/price IDs if needed');
-    console.log('   3. Test the checkout flow with these products');
-    console.log('   4. Update subscription activation to use Stripe Checkout Sessions with these prices');
+    logger.info('\n🔗 Next steps:');
+    logger.info('   1. Check your Stripe dashboard to verify products');
+    logger.info('   2. Update your application to use these product/price IDs if needed');
+    logger.info('   3. Test the checkout flow with these products');
+    logger.info('   4. Update subscription activation to use Stripe Checkout Sessions with these prices');
 
   } catch (error) {
-    console.error('❌ Error creating products:', error.message);
+    logger.error('❌ Error creating products:', error.message);
     if (error.type === 'StripeInvalidRequestError') {
-      console.error('   Details:', error.raw?.message);
+      logger.error('   Details:', error.raw?.message);
     }
     process.exit(1);
   }

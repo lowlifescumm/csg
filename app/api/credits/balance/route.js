@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * GET /api/credits/balance
  * Get user's credit balance with detailed breakdown
@@ -41,7 +42,7 @@ export async function GET(request) {
       ledger_summary: balance.ledger_summary
     });
   } catch (error) {
-    console.error('[Credits Balance] Error:', error);
+    logger.error('[Credits Balance] Error:', error);
     return NextResponse.json(
       {
         error: 'Internal server error',

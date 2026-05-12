@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
@@ -153,7 +154,7 @@ export async function POST(request) {
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Import blog posts error:', error);
+    logger.error('Import blog posts error:', error);
     return NextResponse.json(
       { error: 'Failed to import blog posts', details: error.message },
       { status: 500 }

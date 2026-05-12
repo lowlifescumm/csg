@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -50,7 +51,7 @@ export default function JournalPage() {
         setEntries(data.entries || []);
       }
     } catch (error) {
-      console.error("Failed to fetch journal entries:", error);
+      logger.error("Failed to fetch journal entries:", error);
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function JournalPage() {
       // For now, just remove from local state
       setEntries(entries.filter(e => e.id !== entryId));
     } catch (error) {
-      console.error("Failed to delete entry:", error);
+      logger.error("Failed to delete entry:", error);
       alert("Failed to delete entry");
     }
   };

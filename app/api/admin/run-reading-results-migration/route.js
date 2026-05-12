@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db.js';
 import fs from 'fs';
@@ -21,7 +22,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('[Reading Results Migration] Starting migration...');
+    logger.info('[Reading Results Migration] Starting migration...');
 
     const migrationPath = path.join(process.cwd(), 'database', 'add-reading-results.sql');
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
@@ -81,7 +82,7 @@ export async function POST(request) {
             executed.push(statement.split('\n')[0].trim());
           } catch (error) {
             if (SKIPPABLE_CODES.has(error.code)) {
-              console.log('[Reading Results Migration] Skipped existing object:', error.code);
+              logger.info('[Reading Results Migration] Skipped existing object:', error.code);
               continue;
             }
             throw error;
@@ -92,7 +93,7 @@ export async function POST(request) {
       client.release();
     }
 
-    console.log('[Reading Results Migration] Migration completed successfully');
+    logger.info('[Reading Results Migration] Migration completed successfully');
 
     return NextResponse.json({
       success: true,
@@ -101,7 +102,7 @@ export async function POST(request) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[Reading Results Migration] Error:', error);
+    logger.error('[Reading Results Migration] Error:', error);
     return NextResponse.json(
       { error: 'Migration failed', details: error.message, code: error.code },
       { status: 500 },

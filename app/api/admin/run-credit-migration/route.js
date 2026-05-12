@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * POST /api/admin/run-credit-migration
  * One-time endpoint to run credit ledger migration on production
@@ -38,7 +39,7 @@ export async function POST(request) {
       );
     }
     
-    console.log('[Migration] Starting credit ledger migration...');
+    logger.info('[Migration] Starting credit ledger migration...');
     
     // Read migration SQL file
     const migrationPath = path.join(process.cwd(), 'database', 'credit-ledger-schema.sql');
@@ -134,15 +135,15 @@ export async function POST(request) {
       for (const statement of statements) {
         try {
           await client.query(statement);
-          console.log(`[Migration] Executed statement successfully`);
+          logger.info(`[Migration] Executed statement successfully`);
         } catch (error) {
           // Ignore "already exists" errors for tables/indexes
           if (error.code === '42P07' || error.code === '42710' || error.code === '42723') {
-            console.log(`[Migration] Skipped (already exists): ${error.code}`);
+            logger.info(`[Migration] Skipped (already exists): ${error.code}`);
             continue;
           }
           // For other errors, log but continue (some statements might fail if dependencies don't exist yet)
-          console.warn(`[Migration] Warning: ${error.message} (code: ${error.code})`);
+          logger.warn(`[Migration] Warning: ${error.message} (code: ${error.code})`);
         }
       }
       
@@ -157,7 +158,7 @@ export async function POST(request) {
       
       const tables = tablesResult.rows.map(r => r.table_name);
       
-      console.log('[Migration] Migration completed successfully');
+      logger.info('[Migration] Migration completed successfully');
       
       return NextResponse.json({
         success: true,
@@ -174,7 +175,7 @@ export async function POST(request) {
     }
     
   } catch (error) {
-    console.error('[Migration] Error:', error);
+    logger.error('[Migration] Error:', error);
     return NextResponse.json(
       {
         error: 'Migration failed',

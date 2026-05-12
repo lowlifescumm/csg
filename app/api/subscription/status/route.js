@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
@@ -42,7 +43,7 @@ export async function GET(request) {
     const status = await getSubscriptionStatus(numericTargetUserId);
     return NextResponse.json({ success: true, status });
   } catch (error) {
-    console.error('[Subscription Status] Error:', error);
+    logger.error('[Subscription Status] Error:', error);
     return NextResponse.json(
       { error: 'status_fetch_failed', details: error.message },
       { status: 500 },

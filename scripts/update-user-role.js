@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 import { Pool } from "pg";
@@ -11,7 +12,7 @@ const pool = new Pool({
 
 async function updateUserRole(email, newRole = 'admin') {
   try {
-    console.log(`🔍 Looking up user: ${email}`);
+    logger.info(`🔍 Looking up user: ${email}`);
     
     // Check if user exists
     const { rows: userRows } = await pool.query(
@@ -20,22 +21,22 @@ async function updateUserRole(email, newRole = 'admin') {
     );
     
     if (userRows.length === 0) {
-      console.log(`❌ User ${email} not found in database.`);
-      console.log(`   Please create the user account first through the regular signup process.`);
+      logger.info(`❌ User ${email} not found in database.`);
+      logger.info(`   Please create the user account first through the regular signup process.`);
       return;
     }
     
     const user = userRows[0];
-    console.log(`👤 Found user:`);
-    console.log(`   ID: ${user.id}`);
-    console.log(`   Email: ${user.email}`);
-    console.log(`   Name: ${user.first_name} ${user.last_name}`);
-    console.log(`   Current Role: ${user.role}`);
+    logger.info(`👤 Found user:`);
+    logger.info(`   ID: ${user.id}`);
+    logger.info(`   Email: ${user.email}`);
+    logger.info(`   Name: ${user.first_name} ${user.last_name}`);
+    logger.info(`   Current Role: ${user.role}`);
     
     if (user.role === newRole) {
-      console.log(`✅ User is already a ${newRole}!`);
+      logger.info(`✅ User is already a ${newRole}!`);
     } else {
-      console.log(`🔄 Updating user role from '${user.role}' to '${newRole}'...`);
+      logger.info(`🔄 Updating user role from '${user.role}' to '${newRole}'...`);
       
       const { rows: updatedRows } = await pool.query(`
         UPDATE users 
@@ -45,9 +46,9 @@ async function updateUserRole(email, newRole = 'admin') {
       `, [newRole, user.id]);
       
       const updatedUser = updatedRows[0];
-      console.log(`✅ Updated user role:`);
-      console.log(`   Email: ${updatedUser.email}`);
-      console.log(`   New Role: ${updatedUser.role}`);
+      logger.info(`✅ Updated user role:`);
+      logger.info(`   Email: ${updatedUser.email}`);
+      logger.info(`   New Role: ${updatedUser.role}`);
       
       // Ensure user has credits if they're becoming admin
       if (newRole === 'admin') {
@@ -57,15 +58,15 @@ async function updateUserRole(email, newRole = 'admin') {
           ON CONFLICT (user_id) DO UPDATE SET credits = GREATEST(credits, 1000)
         `, [user.id]);
         
-        console.log(`✅ Ensured user has at least 1000 credits`);
+        logger.info(`✅ Ensured user has at least 1000 credits`);
       }
     }
     
-    console.log(`\n🎉 User ${email} is now ready to access admin features!`);
-    console.log(`   You can now log in with your regular password.`);
+    logger.info(`\n🎉 User ${email} is now ready to access admin features!`);
+    logger.info(`   You can now log in with your regular password.`);
     
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   } finally {
     await pool.end();
@@ -75,5 +76,5 @@ async function updateUserRole(email, newRole = 'admin') {
 // Get email from command line argument or use default
 const email = process.argv[2] || 'ethan.fitzhenry@gmail.com';
 
-console.log('🚀 Updating user role...');
+logger.info('🚀 Updating user role...');
 updateUserRole(email);

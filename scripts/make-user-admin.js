@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 import { Pool } from "pg";
@@ -12,7 +13,7 @@ const pool = new Pool({
 
 async function makeUserAdmin(email) {
   try {
-    console.log(`🔍 Looking up user: ${email}`);
+    logger.info(`🔍 Looking up user: ${email}`);
     
     // Normalize email to lowercase
     const normalizedEmail = email.toLowerCase().trim();
@@ -24,7 +25,7 @@ async function makeUserAdmin(email) {
     );
     
     if (userRows.length === 0) {
-      console.log(`❌ User ${email} not found. Creating new admin user...`);
+      logger.info(`❌ User ${email} not found. Creating new admin user...`);
       
       // Create new admin user
       const password = 'admin123'; // You can change this
@@ -37,12 +38,12 @@ async function makeUserAdmin(email) {
       `, [normalizedEmail, hashedPassword, 'Ethan', 'Fitzhenry', 'admin']);
       
       const newUser = newUserRows[0];
-      console.log(`✅ Created new admin user:`);
-      console.log(`   ID: ${newUser.id}`);
-      console.log(`   Email: ${newUser.email}`);
-      console.log(`   Name: ${newUser.first_name} ${newUser.last_name}`);
-      console.log(`   Role: ${newUser.role}`);
-      console.log(`   Password: admin123`);
+      logger.info(`✅ Created new admin user:`);
+      logger.info(`   ID: ${newUser.id}`);
+      logger.info(`   Email: ${newUser.email}`);
+      logger.info(`   Name: ${newUser.first_name} ${newUser.last_name}`);
+      logger.info(`   Role: ${newUser.role}`);
+      logger.info(`   Password: admin123`);
       
       // Add credits
       await pool.query(`
@@ -51,20 +52,20 @@ async function makeUserAdmin(email) {
         ON CONFLICT (user_id) DO UPDATE SET credits = 1000
       `, [newUser.id]);
       
-      console.log(`✅ Added 1000 credits to admin user`);
+      logger.info(`✅ Added 1000 credits to admin user`);
       
     } else {
       const user = userRows[0];
-      console.log(`👤 Found user:`);
-      console.log(`   ID: ${user.id}`);
-      console.log(`   Email: ${user.email}`);
-      console.log(`   Name: ${user.first_name} ${user.last_name}`);
-      console.log(`   Current Role: ${user.role}`);
+      logger.info(`👤 Found user:`);
+      logger.info(`   ID: ${user.id}`);
+      logger.info(`   Email: ${user.email}`);
+      logger.info(`   Name: ${user.first_name} ${user.last_name}`);
+      logger.info(`   Current Role: ${user.role}`);
       
       if (user.role === 'admin') {
-        console.log(`✅ User is already an admin!`);
+        logger.info(`✅ User is already an admin!`);
       } else {
-        console.log(`🔄 Updating user role to admin...`);
+        logger.info(`🔄 Updating user role to admin...`);
         
         const { rows: updatedRows } = await pool.query(`
           UPDATE users 
@@ -74,9 +75,9 @@ async function makeUserAdmin(email) {
         `, [user.id]);
         
         const updatedUser = updatedRows[0];
-        console.log(`✅ Updated user role:`);
-        console.log(`   Email: ${updatedUser.email}`);
-        console.log(`   New Role: ${updatedUser.role}`);
+        logger.info(`✅ Updated user role:`);
+        logger.info(`   Email: ${updatedUser.email}`);
+        logger.info(`   New Role: ${updatedUser.role}`);
         
         // Ensure user has credits
         await pool.query(`
@@ -85,12 +86,12 @@ async function makeUserAdmin(email) {
           ON CONFLICT (user_id) DO UPDATE SET credits = GREATEST(credits, 1000)
         `, [user.id]);
         
-        console.log(`✅ Ensured user has at least 1000 credits`);
+        logger.info(`✅ Ensured user has at least 1000 credits`);
       }
     }
     
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   } finally {
     await pool.end();
@@ -100,5 +101,5 @@ async function makeUserAdmin(email) {
 // Get email from command line argument or use default
 const email = process.argv[2] || 'ethan.fitzhenry@gmail.com';
 
-console.log('🚀 Making user admin...');
+logger.info('🚀 Making user admin...');
 makeUserAdmin(email);

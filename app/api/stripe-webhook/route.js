@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Pool } from 'pg';
@@ -28,7 +29,7 @@ export async function POST(request) {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    logger.error('Webhook signature verification failed:', err.message);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -63,7 +64,7 @@ export async function POST(request) {
             // Also issue subscription credits via new credit engine
             // Note: Monthly credits are typically issued on invoice.payment_succeeded
             // This is just for initial subscription setup
-            console.log(`[Credit Engine] Subscription ${subscription.id} activated for user ${userId} with tier ${tierId}`);
+            logger.info(`[Credit Engine] Subscription ${subscription.id} activated for user ${userId} with tier ${tierId}`);
           }
         }
         break;
@@ -92,7 +93,7 @@ export async function POST(request) {
             [userId]
           );
           
-          console.log(`Removed subscription and credits for user ${userId}`);
+          logger.info(`Removed subscription and credits for user ${userId}`);
         }
         break;
 
@@ -132,11 +133,11 @@ export async function POST(request) {
               );
               
               if (creditResult.success) {
-                console.log(`[Credit Engine] Issued ${creditResult.added_credits} monthly subscription credits to user ${userId}`);
+                logger.info(`[Credit Engine] Issued ${creditResult.added_credits} monthly subscription credits to user ${userId}`);
               }
             }
             
-            console.log(`[Credit Engine] Subscription renewal processed for user ${userId}`);
+            logger.info(`[Credit Engine] Subscription renewal processed for user ${userId}`);
           }
         }
         break;
@@ -158,9 +159,9 @@ export async function POST(request) {
             });
             
             if (result.success) {
-              console.log(`[Credit Engine] Added ${result.added_credits} credits to user ${userId} via purchase (ledger_id: ${result.ledger_id})`);
+              logger.info(`[Credit Engine] Added ${result.added_credits} credits to user ${userId} via purchase (ledger_id: ${result.ledger_id})`);
             } else {
-              console.error(`[Credit Engine] Failed to add credits to user ${userId}:`, result.error);
+              logger.error(`[Credit Engine] Failed to add credits to user ${userId}:`, result.error);
             }
           }
         }
@@ -178,7 +179,7 @@ export async function POST(request) {
             // Check if credits were already added (shouldn't happen, but safety check)
             // In practice, credits should only be added on payment_intent.succeeded
             // This is a rollback safety mechanism
-            console.log(`[Credit Engine] Payment failed for user ${userId}, pack ${packSize} - no rollback needed (credits only added on success)`);
+            logger.info(`[Credit Engine] Payment failed for user ${userId}, pack ${packSize} - no rollback needed (credits only added on success)`);
           }
         }
         break;
@@ -211,9 +212,9 @@ export async function POST(request) {
               );
               
               if (refundResult.success) {
-                console.log(`[Credit Engine] Refunded ${refundResult.refunded_credits} credits to user ${userId} (ledger_id: ${refundResult.ledger_id})`);
+                logger.info(`[Credit Engine] Refunded ${refundResult.refunded_credits} credits to user ${userId} (ledger_id: ${refundResult.ledger_id})`);
               } else {
-                console.error(`[Credit Engine] Failed to refund credits to user ${userId}:`, refundResult.error);
+                logger.error(`[Credit Engine] Failed to refund credits to user ${userId}:`, refundResult.error);
               }
             }
           }
@@ -221,12 +222,12 @@ export async function POST(request) {
         break;
 
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        logger.info(`Unhandled event type ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook error:', error);
+    logger.error('Webhook error:', error);
     return NextResponse.json(
       { error: 'Webhook handler error' },
       { status: 500 }

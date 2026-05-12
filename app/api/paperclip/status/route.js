@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * GET /api/paperclip/status
  * 
@@ -77,7 +78,8 @@ async function getActiveRuns() {
     const recent = runs.filter(r => r.endedAt && (now - r.endedAt) < 60 * 60 * 1000);
     
     return { active, recent };
-  } catch {
+  } catch (err) {
+    console.error("[paperclip/status] Failed to fetch runs:", err);
     return { active: [], recent: [] };
   }
 }
@@ -306,7 +308,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Paperclip status error:', error);
+    logger.error('Paperclip status error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

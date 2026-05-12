@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Direct migration runner - connects to production database and runs the migration
  * This uses the DATABASE_URL from environment
@@ -19,7 +20,7 @@ async function runMigration() {
   const client = await pool.connect();
   
   try {
-    console.log('🔗 Connecting to database...');
+    logger.info('🔗 Connecting to database...');
     
     // Read the migration SQL file
     const sqlPath = path.join(__dirname, '../database/add-share-reward-tracking.sql');
@@ -34,11 +35,11 @@ async function runMigration() {
       if (statement.trim()) {
         try {
           await client.query(statement);
-          console.log('✓ Executed:', statement.split('\n')[0].trim());
+          logger.info('✓ Executed:', statement.split('\n')[0].trim());
         } catch (error) {
           // Ignore "already exists" errors
           if (['42P07', '42710', '42723', '42P16'].includes(error.code)) {
-            console.log('⊘ Skipped (already exists):', error.code);
+            logger.info('⊘ Skipped (already exists):', error.code);
           } else {
             throw error;
           }
@@ -48,14 +49,14 @@ async function runMigration() {
     
     await client.query('COMMIT');
     
-    console.log('✅ Share reward tracking migration completed successfully!');
-    console.log('   - Added has_rewarded_share column to users table');
-    console.log('   - Created index for efficient querying');
+    logger.info('✅ Share reward tracking migration completed successfully!');
+    logger.info('   - Added has_rewarded_share column to users table');
+    logger.info('   - Created index for efficient querying');
     
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('❌ Migration failed:', error.message);
-    console.error('Error code:', error.code);
+    logger.error('❌ Migration failed:', error.message);
+    logger.error('Error code:', error.code);
     throw error;
   } finally {
     client.release();
@@ -65,11 +66,11 @@ async function runMigration() {
 
 runMigration()
   .then(() => {
-    console.log('✅ Migration script completed');
+    logger.info('✅ Migration script completed');
     process.exit(0);
   })
   .catch((error) => {
-    console.error('❌ Unexpected error:', error);
+    logger.error('❌ Unexpected error:', error);
     process.exit(1);
   });
 

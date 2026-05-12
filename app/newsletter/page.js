@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 
 import { useState } from "react";
@@ -39,7 +40,7 @@ export default function NewsletterPage() {
         setError(data.error || "Something went wrong. Please try again.");
       }
     } catch (err) {
-      console.error("[Newsletter] subscribe error:", err);
+      logger.error("[Newsletter] subscribe error:", err);
       setError("Failed to connect. Please check your connection and try again.");
     } finally {
       setLoading(false);

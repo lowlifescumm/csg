@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 const PROD_URL = 'https://cosmicspiritguide.com';
@@ -18,34 +19,34 @@ async function validateEndpoint({ path, method, expectedStatus }) {
     const isOk = status === expectedStatus;
     const contentLength = response.headers.get('content-length') || 'unknown';
     
-    console.log(
+    logger.info(
       `${isOk ? '✅' : '❌'} ${method} ${path} → ${status} (expected ${expectedStatus}) [${contentLength} bytes]`
     );
     
     return { path, status, expectedStatus, isOk };
   } catch (error) {
-    console.error(`❌ ${method} ${path} → ERROR: ${error.message}`);
+    logger.error(`❌ ${method} ${path} → ERROR: ${error.message}`);
     return { path, status: 'ERROR', expectedStatus, isOk: false, error: error.message };
   }
 }
 
 async function main() {
-  console.log(`\n🔍 Validating production endpoints at ${PROD_URL}\n`);
-  console.log('='.repeat(60));
+  logger.info(`\n🔍 Validating production endpoints at ${PROD_URL}\n`);
+  logger.info('='.repeat(60));
   
   const results = await Promise.all(endpoints.map(validateEndpoint));
   
-  console.log('='.repeat(60));
+  logger.info('='.repeat(60));
   const passed = results.filter(r => r.isOk).length;
   const total = results.length;
   
-  console.log(`\n📊 Results: ${passed}/${total} endpoints passed\n`);
+  logger.info(`\n📊 Results: ${passed}/${total} endpoints passed\n`);
   
   const failed = results.filter(r => !r.isOk);
   if (failed.length > 0) {
-    console.log('⚠️  Failed endpoints:');
+    logger.info('⚠️  Failed endpoints:');
     failed.forEach(r => {
-      console.log(`   - ${r.path}: ${r.status} (expected ${r.expectedStatus})`);
+      logger.info(`   - ${r.path}: ${r.status} (expected ${r.expectedStatus})`);
     });
   }
   
@@ -53,7 +54,7 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error('Fatal error:', error);
+  logger.error('Fatal error:', error);
   process.exit(1);
 });
 

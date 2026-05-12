@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { createUser, getUserByEmail, generateToken } from '@/lib/auth';
 import { initializeUserCreditsOnSignup } from '@/lib/credits';
@@ -48,9 +49,9 @@ export async function POST(request) {
     // Initialize signup credits (3 free credits)
     try {
       await initializeUserCreditsOnSignup(user.id);
-      console.log(`[Signup] Initialized 3 signup credits for user ${user.id}`);
+      logger.info(`[Signup] Initialized 3 signup credits for user ${user.id}`);
     } catch (creditsError) {
-      console.error('[Signup] Failed to initialize credits:', creditsError);
+      logger.error('[Signup] Failed to initialize credits:', creditsError);
       // Don't fail signup if credits initialization fails
     }
     
@@ -67,13 +68,13 @@ export async function POST(request) {
       if (emailResult.success) {
         await markEmailSent(user.id, 1);
         await logEmailEvent(user.id, 'welcome_nurture', 1, 'sent');
-        console.log(`[Signup] Welcome email sent to ${user.email}`);
+        logger.info(`[Signup] Welcome email sent to ${user.email}`);
       } else {
         await logEmailEvent(user.id, 'welcome_nurture', 1, 'failed', JSON.stringify(emailResult.error));
-        console.error('[Signup] Welcome email failed:', emailResult.error);
+        logger.error('[Signup] Welcome email failed:', emailResult.error);
       }
     } catch (emailError) {
-      console.error('[Signup] Email sequence error:', emailError);
+      logger.error('[Signup] Email sequence error:', emailError);
       // Don't fail signup if email fails
     }
     
@@ -98,7 +99,7 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    console.error('Signup error:', error);
+    logger.error('Signup error:', error);
     if (error.message?.includes('unique') || error.message?.includes('duplicate')) {
       return NextResponse.json(
         { error: 'Email already registered' },

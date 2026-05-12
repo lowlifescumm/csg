@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 const PROD_URL = 'https://cosmicspiritguide.com';
@@ -20,23 +21,23 @@ async function checkDashboardVariant(url, description) {
     
     const variant = hasV3 ? 'DashboardV3' : hasLegacy ? 'Legacy' : 'Unknown';
     
-    console.log(`${status === 200 ? '✅' : '❌'} ${description}`);
-    console.log(`   URL: ${url}`);
-    console.log(`   Status: ${status}`);
-    console.log(`   Variant: ${variant}`);
-    console.log('');
+    logger.info(`${status === 200 ? '✅' : '❌'} ${description}`);
+    logger.info(`   URL: ${url}`);
+    logger.info(`   Status: ${status}`);
+    logger.info(`   Variant: ${variant}`);
+    logger.info('');
     
     return { status, variant, url, description };
   } catch (error) {
-    console.error(`❌ ${description} - ERROR: ${error.message}`);
+    logger.error(`❌ ${description} - ERROR: ${error.message}`);
     return { status: 'ERROR', variant: 'Unknown', url, description, error: error.message };
   }
 }
 
 async function main() {
-  console.log('\n🔍 Verifying Dashboard Overlay Toggle\n');
-  console.log('='.repeat(60));
-  console.log('');
+  logger.info('\n🔍 Verifying Dashboard Overlay Toggle\n');
+  logger.info('='.repeat(60));
+  logger.info('');
   
   const results = [];
   
@@ -54,27 +55,27 @@ async function main() {
     `Dashboard with invite token (${testInvite})`
   ));
   
-  console.log('='.repeat(60));
-  console.log('\n📊 Summary\n');
+  logger.info('='.repeat(60));
+  logger.info('\n📊 Summary\n');
   
   const legacyCount = results.filter(r => r.variant === 'Legacy').length;
   const v3Count = results.filter(r => r.variant === 'DashboardV3').length;
   
-  console.log(`Legacy Dashboard: ${legacyCount} test(s)`);
-  console.log(`DashboardV3: ${v3Count} test(s)`);
-  console.log(`Unknown: ${results.filter(r => r.variant === 'Unknown').length} test(s)`);
+  logger.info(`Legacy Dashboard: ${legacyCount} test(s)`);
+  logger.info(`DashboardV3: ${v3Count} test(s)`);
+  logger.info(`Unknown: ${results.filter(r => r.variant === 'Unknown').length} test(s)`);
   
-  console.log('\n📝 Notes:');
-  console.log('- If DASHBOARD_V3=true is set in Render, both tests may show DashboardV3');
-  console.log('- If DASHBOARD_V3_INVITE is set, invite token test will show DashboardV3');
-  console.log('- Default behavior (no flags) should show Legacy dashboard');
-  console.log('- See docs/OVERLAY_VERIFICATION.md for full testing guide\n');
+  logger.info('\n📝 Notes:');
+  logger.info('- If DASHBOARD_V3=true is set in Render, both tests may show DashboardV3');
+  logger.info('- If DASHBOARD_V3_INVITE is set, invite token test will show DashboardV3');
+  logger.info('- Default behavior (no flags) should show Legacy dashboard');
+  logger.info('- See docs/OVERLAY_VERIFICATION.md for full testing guide\n');
   
   process.exit(0);
 }
 
 main().catch(error => {
-  console.error('Fatal error:', error);
+  logger.error('Fatal error:', error);
   process.exit(1);
 });
 

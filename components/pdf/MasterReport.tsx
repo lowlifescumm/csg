@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Premium Master Report Component
  * Renders a flowing, semantic document structure for PDF generation
@@ -365,7 +366,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         }
         // #endregion
         if (!relationshipMatrixSection) {
-          console.log('[MasterReport] Relationship matrix section not found - returning null');
+          logger.info('[MasterReport] Relationship matrix section not found - returning null');
           return null;
         }
         return wrapWithStationery(
@@ -384,7 +385,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         }
         // #endregion
         if (!compatibilitySection && !finalCompatibilityChartSvg && !compatibilityScores) {
-          console.log('[MasterReport] Compatibility section not found - returning null', {
+          logger.info('[MasterReport] Compatibility section not found - returning null', {
             hasCompatibilitySection: !!compatibilitySection,
             hasChartSvg: !!finalCompatibilityChartSvg,
             hasScores: !!compatibilityScores,
@@ -544,7 +545,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         }
         // #endregion
         if (!closingSection) {
-          console.log('[MasterReport] Closing section not found - returning null');
+          logger.info('[MasterReport] Closing section not found - returning null');
           return null;
         }
         // TASK 2: Sanitize closing content and ensure signature is present

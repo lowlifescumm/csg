@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -66,7 +67,7 @@ function LoginPageContent({ router, searchParams }) {
     // Use public origin to ensure we hit the correct domain
     const callbackUrl = `${window.location.origin}${returnUrl}`;
     
-    console.log('[Login] Initiating Google sign-in with callbackUrl:', callbackUrl);
+    logger.info('[Login] Initiating Google sign-in with callbackUrl:', callbackUrl);
     
     // Let NextAuth handle the redirect
     signIn("google", {
@@ -102,7 +103,7 @@ function LoginPageContent({ router, searchParams }) {
         setError(data.error || "Something went wrong");
       }
     } catch (err) {
-      console.error("Login/signup error:", err);
+      logger.error("Login/signup error:", err);
       setError("Failed to connect to server. Please check your connection and try again.");
     } finally {
       setLoading(false);

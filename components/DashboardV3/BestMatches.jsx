@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { Heart, Loader2, X, Sparkles, Info } from "lucide-react";
@@ -105,7 +106,7 @@ export default function BestMatches({ userId }) {
         }
       }
     } catch (err) {
-      console.error("Failed to fetch top matches:", err);
+      logger.error("Failed to fetch top matches:", err);
     } finally {
       setLoading(false);
     }

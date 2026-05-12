@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
@@ -57,7 +58,7 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('Blog tags API error:', error);
+    logger.error('Blog tags API error:', error);
     return NextResponse.json({ error: 'Failed to fetch tags' }, { status: 500 });
   }
 }

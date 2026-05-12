@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 // /app/api/tarot/route.js
 import { NextResponse } from "next/server";
 import { getServerSession } from 'next-auth/next';
@@ -109,7 +110,7 @@ export async function POST(request) {
       },
     });
   } catch (err) {
-    console.error("Tarot reading error:", err);
+    logger.error("Tarot reading error:", err);
     return NextResponse.json({ error: "Failed to generate reading" }, { status: 500 });
   }
 }

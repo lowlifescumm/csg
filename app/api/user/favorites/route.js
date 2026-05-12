@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -43,7 +44,7 @@ export async function GET(request) {
         CREATE INDEX IF NOT EXISTS idx_user_favorites_type ON user_favorites(type);
       `);
     } catch (createError) {
-      console.log("Favorites table creation:", createError.message);
+      logger.info("Favorites table creation:", createError.message);
     }
 
     // If specific item requested, check if it's favorited
@@ -74,7 +75,7 @@ export async function GET(request) {
       favorites: result.rows,
     });
   } catch (error) {
-    console.error("Get favorites error:", error);
+    logger.error("Get favorites error:", error);
     return NextResponse.json(
       { error: "Failed to fetch favorites", details: error.message },
       { status: 500 }
@@ -127,7 +128,7 @@ export async function POST(request) {
         )
       `);
     } catch (createError) {
-      console.log("Favorites table creation:", createError.message);
+      logger.info("Favorites table creation:", createError.message);
     }
 
     // Insert favorite
@@ -151,7 +152,7 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    console.error("Post favorites error:", error);
+    logger.error("Post favorites error:", error);
     return NextResponse.json(
       { error: "Failed to add favorite", details: error.message },
       { status: 500 }
@@ -195,7 +196,7 @@ export async function DELETE(request) {
       message: "Favorite removed",
     });
   } catch (error) {
-    console.error("Delete favorites error:", error);
+    logger.error("Delete favorites error:", error);
     return NextResponse.json(
       { error: "Failed to remove favorite", details: error.message },
       { status: 500 }

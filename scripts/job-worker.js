@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -14,7 +15,7 @@ const { Pool } = require('pg');
 const connectionString = process.env.DATABASE_URL || '';
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL required');
+  logger.error('❌ DATABASE_URL required');
   process.exit(1);
 }
 
@@ -64,7 +65,7 @@ async function processNextJob(queue = 'default') {
     
     await client.query('COMMIT');
     
-    console.log(`[JobWorker] Processing job ${job.id} (${job.reading_type})`);
+    logger.info(`[JobWorker] Processing job ${job.id} (${job.reading_type})`);
     
     // Process job (this would call the actual job processor)
     // For now, just log
@@ -72,7 +73,7 @@ async function processNextJob(queue = 'default') {
     
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('[JobWorker] Error:', error);
+    logger.error('[JobWorker] Error:', error);
     throw error;
   } finally {
     client.release();
@@ -81,16 +82,16 @@ async function processNextJob(queue = 'default') {
 
 // Simple polling worker
 async function startWorker(queue = 'default', interval = 5000) {
-  console.log(`[JobWorker] Starting worker for queue: ${queue}`);
+  logger.info(`[JobWorker] Starting worker for queue: ${queue}`);
   
   setInterval(async () => {
     try {
       const job = await processNextJob(queue);
       if (job) {
-        console.log(`[JobWorker] Processed job ${job.id}`);
+        logger.info(`[JobWorker] Processed job ${job.id}`);
       }
     } catch (error) {
-      console.error('[JobWorker] Error processing job:', error);
+      logger.error('[JobWorker] Error processing job:', error);
     }
   }, interval);
 }
@@ -104,7 +105,7 @@ if (require.main === module) {
   
   // Handle graceful shutdown
   process.on('SIGTERM', () => {
-    console.log('[JobWorker] Shutting down...');
+    logger.info('[JobWorker] Shutting down...');
     pool.end();
     process.exit(0);
   });

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * POST /api/credits/issue-free-daily
  * Daily cron job to issue free credits to users
@@ -24,7 +25,7 @@ export async function POST(request) {
     const cronSecret = process.env.CRON_SECRET;
     
     if (!cronSecret) {
-      console.error('[Free Credits Cron] CRON_SECRET not configured');
+      logger.error('[Free Credits Cron] CRON_SECRET not configured');
       return NextResponse.json(
         { error: 'Service not configured' },
         { status: 500 }
@@ -37,7 +38,7 @@ export async function POST(request) {
     const expectedAuth = `Bearer ${trimmedSecret}`;
     
     if (!authHeader || trimmedHeader !== expectedAuth) {
-      console.warn('[Free Credits Cron] Unauthorized attempt');
+      logger.warn('[Free Credits Cron] Unauthorized attempt');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -83,7 +84,7 @@ export async function POST(request) {
     }
     
     // Otherwise, process all users in batches
-    console.log('[Free Credits Cron] Starting batch processing...');
+    logger.info('[Free Credits Cron] Starting batch processing...');
     
     let processed = 0;
     let skipped = 0;
@@ -114,7 +115,7 @@ export async function POST(request) {
           skipped++;
         } else {
           errors++;
-          console.error(`[Free Credits Cron] Error for user ${user.id}:`, result.error);
+          logger.error(`[Free Credits Cron] Error for user ${user.id}:`, result.error);
         }
       }
       
@@ -126,7 +127,7 @@ export async function POST(request) {
       }
     }
     
-    console.log(`[Free Credits Cron] Completed: ${processed} issued, ${skipped} skipped, ${errors} errors`);
+    logger.info(`[Free Credits Cron] Completed: ${processed} issued, ${skipped} skipped, ${errors} errors`);
     
     return NextResponse.json({
       success: true,
@@ -136,7 +137,7 @@ export async function POST(request) {
       message: `Issued free credits to ${processed} users, skipped ${skipped} (already issued), ${errors} errors`
     });
   } catch (error) {
-    console.error('[Free Credits Cron] Error:', error);
+    logger.error('[Free Credits Cron] Error:', error);
     return NextResponse.json(
       {
         error: 'Internal server error',

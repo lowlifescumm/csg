@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -45,7 +46,7 @@ export default function EnergyLogPage() {
         setError(data.error || "Failed to log energy");
       }
     } catch (err) {
-      console.error("Error logging energy:", err);
+      logger.error("Error logging energy:", err);
       setError("Failed to log energy. Please try again.");
     } finally {
       setLoading(false);

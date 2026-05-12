@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Run Subscription Enhancements Migration (direct DB connection)
  */
@@ -9,9 +10,9 @@ const path = require('path');
 const connectionString = process.argv[2] || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL required');
-  console.error('Usage: node scripts/run-subscription-enhancements-migration.js [DATABASE_URL]');
-  console.error('Or set DATABASE_URL environment variable');
+  logger.error('❌ DATABASE_URL required');
+  logger.error('Usage: node scripts/run-subscription-enhancements-migration.js [DATABASE_URL]');
+  logger.error('Or set DATABASE_URL environment variable');
   process.exit(1);
 }
 
@@ -26,18 +27,18 @@ async function runMigration() {
   const client = await pool.connect();
 
   try {
-    console.log('🔗 Connected to database');
-    console.log('📋 Running subscription enhancements migration...\n');
+    logger.info('🔗 Connected to database');
+    logger.info('📋 Running subscription enhancements migration...\n');
 
     const migrationPath = path.join(__dirname, '../database/add-subscription-enhancements.sql');
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
     await client.query(migrationSQL);
 
-    console.log('✅ Subscription enhancements migration completed successfully');
+    logger.info('✅ Subscription enhancements migration completed successfully');
   } catch (error) {
-    console.error('\n❌ Subscription enhancements migration failed:', error.message);
-    console.error(error);
+    logger.error('\n❌ Subscription enhancements migration failed:', error.message);
+    logger.error(error);
     process.exit(1);
   } finally {
     client.release();

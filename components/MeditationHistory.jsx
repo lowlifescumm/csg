@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { Brain, Clock, Trophy, Calendar, Loader2 } from "lucide-react";
@@ -31,7 +32,7 @@ export default function MeditationHistory({ userId }) {
         }
       }
     } catch (err) {
-      console.error("Failed to fetch meditation sessions:", err);
+      logger.error("Failed to fetch meditation sessions:", err);
     } finally {
       setLoading(false);
     }

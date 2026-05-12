@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
@@ -74,7 +75,7 @@ export async function GET(req) {
       range,
     });
   } catch (error) {
-    console.error('Error fetching forecasts:', error);
+    logger.error('Error fetching forecasts:', error);
     return NextResponse.json(
       { error: 'Failed to fetch forecasts', details: error.message },
       { status: 500 },

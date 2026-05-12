@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 // /app/api/tarot/sample/route.js
 // Free sample tarot reading - no auth required, instant preview
 import { NextResponse } from "next/server";
@@ -82,7 +83,7 @@ export async function POST(request) {
       },
     });
   } catch (err) {
-    console.error("Sample tarot error:", err);
+    logger.error("Sample tarot error:", err);
     return NextResponse.json({ error: "Failed to generate reading" }, { status: 500 });
   }
 }

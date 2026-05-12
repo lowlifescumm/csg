@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -87,12 +88,12 @@ const products = [
 ];
 
 async function createProducts() {
-  console.log('🚀 Setting up Stripe products for Cosmic Spiritual Guide...\n');
-  console.log('⚠️  Creating new products (ignoring existing ones)...\n');
+  logger.info('🚀 Setting up Stripe products for Cosmic Spiritual Guide...\n');
+  logger.info('⚠️  Creating new products (ignoring existing ones)...\n');
 
   try {
     for (const productData of products) {
-      console.log(`📦 Creating product: ${productData.name}`);
+      logger.info(`📦 Creating product: ${productData.name}`);
 
       // Create the product
       const product = await stripe.products.create({
@@ -105,7 +106,7 @@ async function createProducts() {
         }
       });
 
-      console.log(`   ✅ Product created: ${product.id}`);
+      logger.info(`   ✅ Product created: ${product.id}`);
 
       // Create prices for the product
       for (const priceData of productData.prices) {
@@ -126,25 +127,25 @@ async function createProducts() {
 
         const price = await stripe.prices.create(priceConfig);
 
-        console.log(`   💰 Price created: ${price.id} (${priceData.currency.toUpperCase()} ${(priceData.unit_amount / 100).toFixed(2)})`);
+        logger.info(`   💰 Price created: ${price.id} (${priceData.currency.toUpperCase()} ${(priceData.unit_amount / 100).toFixed(2)})`);
       }
 
-      console.log('');
+      logger.info('');
     }
 
-    console.log('🎉 All products and prices created successfully!');
-    console.log('\n📋 Summary:');
-    console.log('   • 4 Credit Pack products with one-time prices');
-    console.log('   • 1 Premium Subscription product with recurring price');
-    console.log('   • All products are now available in your Stripe dashboard');
+    logger.info('🎉 All products and prices created successfully!');
+    logger.info('\n📋 Summary:');
+    logger.info('   • 4 Credit Pack products with one-time prices');
+    logger.info('   • 1 Premium Subscription product with recurring price');
+    logger.info('   • All products are now available in your Stripe dashboard');
     
-    console.log('\n🔗 Next steps:');
-    console.log('   1. Check your Stripe dashboard to verify products');
-    console.log('   2. Update your application to use these product IDs if needed');
-    console.log('   3. Test the checkout flow with these products');
+    logger.info('\n🔗 Next steps:');
+    logger.info('   1. Check your Stripe dashboard to verify products');
+    logger.info('   2. Update your application to use these product IDs if needed');
+    logger.info('   3. Test the checkout flow with these products');
 
   } catch (error) {
-    console.error('❌ Error creating products:', error.message);
+    logger.error('❌ Error creating products:', error.message);
     process.exit(1);
   }
 }

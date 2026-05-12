@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * Individual Natal Chart API
  * GET /api/charts/[id] - Get a specific natal chart
@@ -111,7 +112,7 @@ export async function GET(req, { params }) {
     });
 
   } catch (error) {
-    console.error('Error fetching natal chart:', error);
+    logger.error('Error fetching natal chart:', error);
     
     if (error.name === 'JsonWebTokenError') {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
@@ -206,7 +207,7 @@ export async function PUT(req, { params }) {
     });
 
   } catch (error) {
-    console.error('Error updating natal chart:', error);
+    logger.error('Error updating natal chart:', error);
     
     if (error.name === 'JsonWebTokenError') {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
@@ -259,7 +260,7 @@ export async function DELETE(req, { params }) {
     });
 
   } catch (error) {
-    console.error('Error deleting natal chart:', error);
+    logger.error('Error deleting natal chart:', error);
     
     if (error.name === 'JsonWebTokenError') {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });

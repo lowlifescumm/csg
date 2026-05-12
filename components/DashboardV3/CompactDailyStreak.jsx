@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { Trophy, Zap, Flame } from "lucide-react";
@@ -33,7 +34,7 @@ export default function CompactDailyStreak({ userId, streak }) {
           }
         }
       } catch (err) {
-        console.error("Failed to fetch stats:", err);
+        logger.error("Failed to fetch stats:", err);
       }
     }
 

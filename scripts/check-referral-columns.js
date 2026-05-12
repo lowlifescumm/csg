@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -26,7 +27,7 @@ async function checkReferralColumns() {
   const client = await pool.connect();
   
   try {
-    console.log('🔍 Checking for missing referral columns...\n');
+    logger.info('🔍 Checking for missing referral columns...\n');
     
     // Check users table columns
     const usersColumns = await client.query(`
@@ -37,25 +38,25 @@ async function checkReferralColumns() {
     `);
     
     const existingColumns = usersColumns.rows.map(row => row.column_name);
-    console.log('📊 Existing referral columns:', existingColumns);
+    logger.info('📊 Existing referral columns:', existingColumns);
     
     // Add missing columns
     if (!existingColumns.includes('referral_code')) {
-      console.log('🚀 Adding referral_code column...');
+      logger.info('🚀 Adding referral_code column...');
       await client.query(`
         ALTER TABLE users 
         ADD COLUMN referral_code VARCHAR(50) UNIQUE
       `);
-      console.log('✅ Added referral_code column');
+      logger.info('✅ Added referral_code column');
     }
     
     if (!existingColumns.includes('referred_by')) {
-      console.log('🚀 Adding referred_by column...');
+      logger.info('🚀 Adding referred_by column...');
       await client.query(`
         ALTER TABLE users 
         ADD COLUMN referred_by INTEGER REFERENCES users(id)
       `);
-      console.log('✅ Added referred_by column');
+      logger.info('✅ Added referred_by column');
     }
     
     // Check if referral_redemptions table exists
@@ -67,7 +68,7 @@ async function checkReferralColumns() {
     `);
     
     if (!tableExists.rows[0].exists) {
-      console.log('🚀 Creating referral_redemptions table...');
+      logger.info('🚀 Creating referral_redemptions table...');
       await client.query(`
         CREATE TABLE referral_redemptions (
             id SERIAL PRIMARY KEY,
@@ -79,22 +80,22 @@ async function checkReferralColumns() {
             UNIQUE(referrer_id, referred_id)
         )
       `);
-      console.log('✅ Created referral_redemptions table');
+      logger.info('✅ Created referral_redemptions table');
     }
     
     // Generate referral codes for existing users
-    console.log('🚀 Generating referral codes for existing users...');
+    logger.info('🚀 Generating referral codes for existing users...');
     await client.query(`
       UPDATE users
       SET referral_code = UPPER(SUBSTRING(MD5(email || id::text), 1, 8))
       WHERE referral_code IS NULL
     `);
-    console.log('✅ Generated referral codes');
+    logger.info('✅ Generated referral codes');
     
-    console.log('\n🎉 All referral columns and tables are ready!');
+    logger.info('\n🎉 All referral columns and tables are ready!');
     
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
   } finally {
     client.release();
     await pool.end();

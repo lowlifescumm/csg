@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { Check, Sparkles, Zap, Crown, Loader2, Clock } from "lucide-react";
@@ -194,7 +195,7 @@ export default function PricingTiers() {
         setProcessingSubscription(false);
       }
     } catch (error) {
-      console.error('Subscription error:', error);
+      logger.error('Subscription error:', error);
       setError('Failed to start subscription process');
       setProcessingSubscription(false);
     }

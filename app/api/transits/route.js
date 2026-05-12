@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
@@ -228,7 +229,7 @@ export async function GET(req) {
       mode: 'live',
     });
   } catch (error) {
-    console.error('Transit API error:', error);
+    logger.error('Transit API error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch transits', details: error.message },
       { status: 500 },

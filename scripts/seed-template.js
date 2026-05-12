@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Seed script to add a sample pdfme template to the database
  * 
@@ -18,8 +19,8 @@ const __dirname = dirname(__filename);
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  console.error('❌ Error: DATABASE_URL not set');
-  console.error('Usage: DATABASE_URL="postgresql://..." node scripts/seed-template.js');
+  logger.error('❌ Error: DATABASE_URL not set');
+  logger.error('Usage: DATABASE_URL="postgresql://..." node scripts/seed-template.js');
   process.exit(1);
 }
 
@@ -69,7 +70,7 @@ async function insertTemplate({ name, owner_id, template_json, preview_html }) {
  */
 async function seed() {
   try {
-    console.log('🌱 Starting template seed...');
+    logger.info('🌱 Starting template seed...');
 
     // Load sample template JSON
         // Try templates/ directory first, fallback to scripts/
@@ -127,18 +128,18 @@ async function seed() {
       preview_html: previewHtml,
     });
 
-    console.log('✅ Successfully seeded sample template!');
-    console.log(`   ID: ${inserted.id}`);
-    console.log(`   Name: ${inserted.name}`);
-    console.log(`   Created: ${inserted.created_at}`);
-    console.log('');
-    console.log('📋 You can now use this template with:');
-    console.log(`   curl -X POST "...?engine=template&templateId=${inserted.id}" ...`);
+    logger.info('✅ Successfully seeded sample template!');
+    logger.info(`   ID: ${inserted.id}`);
+    logger.info(`   Name: ${inserted.name}`);
+    logger.info(`   Created: ${inserted.created_at}`);
+    logger.info('');
+    logger.info('📋 You can now use this template with:');
+    logger.info(`   curl -X POST "...?engine=template&templateId=${inserted.id}" ...`);
     
     return inserted;
   } catch (error) {
-    console.error('❌ Seed failed:', error.message);
-    console.error(error);
+    logger.error('❌ Seed failed:', error.message);
+    logger.error(error);
     throw error;
   } finally {
     await pool.end();
@@ -148,11 +149,11 @@ async function seed() {
 // Run seed
 seed()
   .then(() => {
-    console.log('✨ Seed completed successfully');
+    logger.info('✨ Seed completed successfully');
     process.exit(0);
   })
   .catch((e) => {
-    console.error('💥 Seed failed:', e);
+    logger.error('💥 Seed failed:', e);
     process.exit(1);
   });
 

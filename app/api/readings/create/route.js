@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
@@ -141,17 +142,17 @@ export async function POST(request) {
           const index = pine.index(process.env.PINECONE_INDEX || 'csg-tarot');
           await index.upsert([{ id: String(saved.id), values: embedding, metadata: { user_id: userId, reading_type: resolvedId, created_at: saved.created_at } }]);
         } else {
-          console.warn('[Readings/Create] Skipping Pinecone upsert: embedding unavailable');
+          logger.warn('[Readings/Create] Skipping Pinecone upsert: embedding unavailable');
         }
       } catch (embeddingError) {
         // Personalization indexing should never block returning a successful reading.
-        console.warn('[Readings/Create] Non-blocking embedding/indexing failure:', embeddingError?.message || embeddingError);
+        logger.warn('[Readings/Create] Non-blocking embedding/indexing failure:', embeddingError?.message || embeddingError);
       }
     }
 
     return NextResponse.json({ success: true, reading: { id: saved.id, cards, interpretation: fullText, summary, createdAt: saved.created_at } });
   } catch (err) {
-    console.error('Create reading error:', err);
+    logger.error('Create reading error:', err);
     return NextResponse.json({ error: "Failed to create reading" }, { status: 500 });
   }
 }

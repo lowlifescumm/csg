@@ -48,7 +48,9 @@ export default function ProfilePage() {
         const res = await fetch('/api/user/ai-preferences');
         const data = await res.json();
         if (res.ok && data.success) setOptIn(!!data.ai_personalization_opt_in);
-      } catch {}
+      } catch (err) {
+        console.error("[profile] Failed to fetch AI preferences:", err);
+      }
     })();
   }, []);
 

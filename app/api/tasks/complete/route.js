@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -113,7 +114,7 @@ export async function POST(request) {
       }
     } catch (err) {
       // If streak calculation fails, continue without bonus
-      console.log("Could not calculate streak:", err);
+      logger.info("Could not calculate streak:", err);
     }
 
     // Calculate rewards
@@ -144,7 +145,7 @@ export async function POST(request) {
         CREATE INDEX IF NOT EXISTS idx_user_xp_user_id ON user_xp(user_id)
       `);
     } catch (createError) {
-      console.log("XP table creation (if needed):", createError.message);
+      logger.info("XP table creation (if needed):", createError.message);
     }
 
     // Update user XP - use COALESCE to handle NULL values properly
@@ -161,14 +162,14 @@ export async function POST(request) {
     );
 
     if (!xpResult.rows || xpResult.rows.length === 0) {
-      console.error("XP update failed: No rows returned");
+      logger.error("XP update failed: No rows returned");
       throw new Error("Failed to update XP - no rows returned");
     }
 
     const newTotalXP = xpResult.rows[0].total_xp;
     const newLevel = xpResult.rows[0].current_level;
     
-    console.log(`[Task Complete] User ${userId} earned ${xpEarned} XP. New total: ${newTotalXP}, New level: ${newLevel}`);
+    logger.info(`[Task Complete] User ${userId} earned ${xpEarned} XP. New total: ${newTotalXP}, New level: ${newLevel}`);
 
     // Award credits if applicable (occasionally for meditation)
     let actualCreditEarned = 0;
@@ -187,7 +188,7 @@ export async function POST(request) {
           );
           actualCreditEarned = creditEarned;
         } catch (creditError) {
-          console.error("Error awarding credit:", creditError);
+          logger.error("Error awarding credit:", creditError);
           // Don't fail the task completion if credit award fails
         }
       }
@@ -202,7 +203,7 @@ export async function POST(request) {
       level: newLevel,
     });
   } catch (error) {
-    console.error("Complete task error:", error);
+    logger.error("Complete task error:", error);
     return NextResponse.json(
       { error: "Failed to complete task", details: error.message },
       { status: 500 }

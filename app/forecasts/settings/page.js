@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,7 +24,7 @@ export default function ForecastSettingsPage() {
       }
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching preferences:', error);
+      logger.error('Error fetching preferences:', error);
       setLoading(false);
     }
   };
@@ -45,7 +46,7 @@ export default function ForecastSettingsPage() {
       }
       setSaving(false);
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      logger.error('Error saving preferences:', error);
       setSaving(false);
     }
   };

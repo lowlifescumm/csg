@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -50,7 +51,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
         }
       }
     } catch (error) {
-      console.error('Error loading existing chart:', error);
+      logger.error('Error loading existing chart:', error);
     }
   };
 
@@ -78,14 +79,14 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
             return; // Success! Exit early
           } else if (data.status === 'ZERO_RESULTS') {
             // Continue to fallback
-            console.log('Google Maps: No results, trying fallback...');
+            logger.info('Google Maps: No results, trying fallback...');
           } else if (data.status === 'REQUEST_DENIED') {
-            console.error('Google Maps API key issue:', data.error_message);
+            logger.error('Google Maps API key issue:', data.error_message);
           }
         }
       }
     } catch (error) {
-      console.error('Google Maps API error:', error);
+      logger.error('Google Maps API error:', error);
     }
     
     // Fallback to OpenStreetMap (free)
@@ -111,7 +112,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
         }
       }
     } catch (error) {
-      console.error('OpenStreetMap error:', error);
+      logger.error('OpenStreetMap error:', error);
     }
     
     // All services failed - show manual entry
@@ -185,7 +186,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
         alert(data.error || 'Failed to generate chart');
       }
     } catch (error) {
-      console.error('Error generating chart:', error);
+      logger.error('Error generating chart:', error);
       alert('Failed to generate chart. Please try again.');
     } finally {
       setLoading(false);

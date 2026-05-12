@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -16,19 +17,19 @@ async function runMigration() {
         const dbModule = await import('../lib/db.js');
         pool = dbModule.pool;
 
-        console.log('Starting migration...');
+        logger.info('Starting migration...');
 
         const sqlPath = path.join(__dirname, '../database/add-subscription-enhancements.sql');
         const sql = fs.readFileSync(sqlPath, 'utf8');
 
-        console.log('Executing SQL:');
-        console.log(sql);
+        logger.info('Executing SQL:');
+        logger.info(sql);
 
         await pool.query(sql);
 
-        console.log('Migration completed successfully.');
+        logger.info('Migration completed successfully.');
     } catch (error) {
-        console.error('Migration failed:', error);
+        logger.error('Migration failed:', error);
     } finally {
         if (pool) {
             await pool.end();

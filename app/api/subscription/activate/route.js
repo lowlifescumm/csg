@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
@@ -189,7 +190,7 @@ export async function POST(request) {
       });
     }
   } catch (error) {
-    console.error('[Subscription Activate] Error:', error);
+    logger.error('[Subscription Activate] Error:', error);
     return NextResponse.json(
       { error: 'activation_failed', details: error.message },
       { status: 500 },

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/lib/auth-config';
@@ -76,7 +77,7 @@ export async function POST(request) {
     const templateId = searchParams.get('templateId');
     const usePremiumGenerator = searchParams.get('premium') === 'true' || engine === 'premium';
     
-    console.log('[Test Report] Engine selection:', {
+    logger.info('[Test Report] Engine selection:', {
       override: engineOverride,
       envDefault: defaultEngine,
       selected: engine,
@@ -111,7 +112,7 @@ export async function POST(request) {
                                    normalizedReportType === 'relationship';
     
     if (isCompatibilityReport) {
-      console.log('[Test Report] ✓ Compatibility report detected - forcing Premium Puppeteer engine (ignoring engine parameter)');
+      logger.info('[Test Report] ✓ Compatibility report detected - forcing Premium Puppeteer engine (ignoring engine parameter)');
       
       // Import premium PDF generator
       let generatePremiumPdf;
@@ -119,7 +120,7 @@ export async function POST(request) {
         const pdfGeneratorModule = await import('@/lib/premium-pdf-generator.js');
         generatePremiumPdf = pdfGeneratorModule.generatePremiumPdf;
       } catch (importError) {
-        console.error('[Test Report] Failed to import premium PDF generator:', importError);
+        logger.error('[Test Report] Failed to import premium PDF generator:', importError);
         return NextResponse.json(
           { error: 'Failed to import premium PDF generator', details: importError.message },
           { status: 500 }
@@ -195,7 +196,7 @@ export async function POST(request) {
       
       // If sections are missing but we have partner data, generate compatibility report
       if (!hasPreGeneratedSections && hasPartnerData && hasUserData) {
-        console.log('[Test Report] Generating compatibility report content...');
+        logger.info('[Test Report] Generating compatibility report content...');
         
           // #region agent log (production-safe)
           if (typeof fetch !== 'undefined') {
@@ -205,7 +206,7 @@ export async function POST(request) {
         
         try {
           const startTime = Date.now();
-          console.log('[Test Report] Starting compatibility generation at', new Date().toISOString());
+          logger.info('[Test Report] Starting compatibility generation at', new Date().toISOString());
           
           // Use the same approach as /api/compatibility route - simpler and proven to work
           const { hydrateReportData } = await import('@/src/services/chartHydrator');
@@ -216,7 +217,7 @@ export async function POST(request) {
           const partnerNameForReport = partnerName || 'Person 2';
           
           // Hydrate both charts
-          console.log('[Test Report] Hydrating charts...');
+          logger.info('[Test Report] Hydrating charts...');
           const chart1Hydrated = await hydrateReportData({
             name: userNameForReport,
             birthDate: userBirthDate,
@@ -237,7 +238,7 @@ export async function POST(request) {
           const chart2 = chart2Hydrated.rawChart;
           
           // Generate compatibility report (same as /api/compatibility route)
-          console.log('[Test Report] Generating compatibility report...');
+          logger.info('[Test Report] Generating compatibility report...');
           const result = await generateCompatibilityReport(
             chart1,
             chart2,
@@ -245,9 +246,9 @@ export async function POST(request) {
             partnerNameForReport
           );
           
-          console.log('[Test Report] Compatibility report generated, elapsed:', Date.now() - startTime, 'ms');
-          console.log('[Test Report] Scores:', result.scores);
-          console.log('[Test Report] Report length:', result.report?.length || 0);
+          logger.info('[Test Report] Compatibility report generated, elapsed:', Date.now() - startTime, 'ms');
+          logger.info('[Test Report] Scores:', result.scores);
+          logger.info('[Test Report] Report length:', result.report?.length || 0);
           
           // Build sections array for PDF
           sections = [
@@ -303,7 +304,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
           }
           // #endregion
           
-          console.log('[Test Report] ✓ Compatibility report generated:', {
+          logger.info('[Test Report] ✓ Compatibility report generated:', {
             sectionsCount: sections.length,
             hasScores: !!compatibilityScores,
             overallScore: compatibilityScores?.overall,
@@ -321,7 +322,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
             fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:267',message:'ERROR: Compatibility generation failed',data:{error:genError.message,stack:genError.stack?.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1,H2'})}).catch(()=>{});
           }
           // #endregion
-          console.error('[Test Report] Failed to generate compatibility content:', genError);
+          logger.error('[Test Report] Failed to generate compatibility content:', genError);
           // Continue with empty sections - will still generate cover page
         }
       } else {
@@ -330,7 +331,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
           fetch('http://127.0.0.1:7242/ingest/36ab7c16-0814-43e1-a364-65e843241344',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test-report/route.js:345',message:'H6: Section generation condition FAILED - skipping generation',data:{hasPreGeneratedSections,hasPartnerData,hasUserData,reason:hasPreGeneratedSections?'hasPreGeneratedSections':!hasPartnerData?'missingPartnerData':!hasUserData?'missingUserData':'unknown',partnerBirthDate:!!partnerBirthDate,partnerBirthTime:!!partnerBirthTime,partnerLatitude:!!partnerLatitude,partnerLongitude:!!partnerLongitude,userBirthDate:!!userBirthDate,userBirthTime:!!userBirthTime,userLatitude:!!userLatitude,userLongitude:!!userLongitude},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
         }
         // #endregion
-        console.warn('[Test Report] Skipping compatibility content generation:', {
+        logger.warn('[Test Report] Skipping compatibility content generation:', {
           hasPreGeneratedSections,
           hasPartnerData,
           hasUserData,
@@ -372,7 +373,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       }
       // #endregion
       
-      console.log('[Test Report] Generating compatibility PDF with userData:', {
+      logger.info('[Test Report] Generating compatibility PDF with userData:', {
         name: userData.name,
         reportType: userData.reportType,
         hasSections: !!userData.sections?.length,
@@ -387,7 +388,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       try {
         const pdfBuffer = await generatePremiumPdf(userData);
         
-        console.log('[Test Report] ✓ Compatibility PDF generated successfully, size:', pdfBuffer.length, 'bytes');
+        logger.info('[Test Report] ✓ Compatibility PDF generated successfully, size:', pdfBuffer.length, 'bytes');
         
         // Return PDF directly
         return new NextResponse(pdfBuffer, {
@@ -397,7 +398,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
           },
         });
       } catch (pdfError) {
-        console.error('[Test Report] Premium PDF generation failed:', pdfError);
+        logger.error('[Test Report] Premium PDF generation failed:', pdfError);
         return NextResponse.json(
           { error: 'Failed to generate compatibility PDF', details: pdfError.message },
           { status: 500 }
@@ -450,10 +451,10 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       'The Partner';                                   // Safe Default (NEVER use root.name or user name)
 
     // CRITICAL: Log partner date and name detection for debugging
-    console.log('🔍 DETECTED PARTNER DATE:', partnerBirthDate);
-    console.log('🔍 DETECTED PARTNER NAME:', partnerName);
-    console.log('🔍 Partner Source Found:', !!partnerSource);
-    console.log('🔍 Partner Data Paths Checked:', {
+    logger.info('🔍 DETECTED PARTNER DATE:', partnerBirthDate);
+    logger.info('🔍 DETECTED PARTNER NAME:', partnerName);
+    logger.info('🔍 Partner Source Found:', !!partnerSource);
+    logger.info('🔍 Partner Data Paths Checked:', {
       'compatibility_data.partner.birth_date': root.compatibility_data?.partner?.birth_date,
       'compatibility_data.partner.name': root.compatibility_data?.partner?.name,
       'partner_birth_date': root.partner_birth_date,
@@ -485,7 +486,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       }),
     };
 
-    console.log('ROUTE INPUT:', JSON.stringify(hydrationInput, null, 2));
+    logger.info('ROUTE INPUT:', JSON.stringify(hydrationInput, null, 2));
 
     // Validate required user fields
     if (!hydrationInput.name || !hydrationInput.birthDate || !hydrationInput.birthTime) {
@@ -508,13 +509,13 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
     let calculatedData;
     try {
       calculatedData = await hydrateReportData(hydrationInput);
-      console.log('HYDRATOR OUTPUT:', JSON.stringify({
+      logger.info('HYDRATOR OUTPUT:', JSON.stringify({
         hasPartner: !!calculatedData.partner,
         partnerSun: calculatedData.partner?.sun?.sign,
         matrixScores: calculatedData.matrix_scores,
       }, null, 2));
     } catch (hydrationError) {
-      console.error('[Test Report] Chart hydration failed:', hydrationError);
+      logger.error('[Test Report] Chart hydration failed:', hydrationError);
       return NextResponse.json(
         { error: 'Failed to hydrate chart data', details: hydrationError.message },
         { status: 400 }
@@ -532,8 +533,8 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       throw new Error("CRITICAL FAILURE: Partner data exists, but Sun Sign was not calculated.");
     }
 
-    console.log("✅ DATA VALIDATION PASSED. Partner Sun Sign:", calculatedData.partner?.sun?.sign);
-    console.log("✅ Matrix Scores:", calculatedData.matrix_scores ? JSON.stringify(calculatedData.matrix_scores) : 'null');
+    logger.info("✅ DATA VALIDATION PASSED. Partner Sun Sign:", calculatedData.partner?.sun?.sign);
+    logger.info("✅ Matrix Scores:", calculatedData.matrix_scores ? JSON.stringify(calculatedData.matrix_scores) : 'null');
 
     // ============================================
     // STEP 4.5: CRITICAL VALIDATION GATE (Safety Net)
@@ -677,7 +678,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
     }
 
     const progressCallback = (percent, message) => {
-      console.log(`[Test Report] ${percent}%: ${message}`);
+      logger.info(`[Test Report] ${percent}%: ${message}`);
     };
 
     let result;
@@ -687,7 +688,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
     // ============================================
     if (engine === 'template') {
       // Use HTML template rendering with renderFromTemplate
-      console.log('[Test Report] Using template engine (renderFromTemplate)');
+      logger.info('[Test Report] Using template engine (renderFromTemplate)');
       
       // If templateId not provided, try to get default template for this report type
       let finalTemplateId = templateId;
@@ -710,7 +711,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
           const defaultTemplate = await getDefaultTemplate(normalizedReportType);
           if (defaultTemplate) {
             finalTemplateId = defaultTemplate.id;
-            console.log('[Test Report] Using default template:', finalTemplateId);
+            logger.info('[Test Report] Using default template:', finalTemplateId);
           } else {
             // Try to find any template for this report type (not just default)
             const { pool } = await import('@/lib/db.js');
@@ -750,7 +751,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
             );
           }
         } catch (error) {
-          console.error('[Test Report] Error fetching default template:', error);
+          logger.error('[Test Report] Error fetching default template:', error);
           return NextResponse.json(
             {
               error: 'templateId required when using engine=template',
@@ -769,7 +770,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       let contentResult;
       
       // Generate new content (caching disabled for test reports)
-      console.log(`[Test Report] Generating new content for ${report_type} (cache disabled)...`);
+      logger.info(`[Test Report] Generating new content for ${report_type} (cache disabled)...`);
       if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
         const tier = report_type.replace('premium-', '').toUpperCase();
         contentResult = await generatePremiumReport(tier, sampleData, progressCallback);
@@ -796,7 +797,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
                   chartSvgFromSection = chartSvgFromSection.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
                 }
               } catch (e) {
-                console.warn('[Test Report] Could not decode chart SVG from data URL');
+                logger.warn('[Test Report] Could not decode chart SVG from data URL');
               }
             }
           }
@@ -846,16 +847,16 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       const cacheKey = regenerate ? null : generateCacheKey(finalTemplateId, flattenedData);
       
       // Render HTML from template (with caching and image inlining)
-      console.log('[Test Report] Rendering template with data keys:', Object.keys(flattenedData).slice(0, 20));
+      logger.info('[Test Report] Rendering template with data keys:', Object.keys(flattenedData).slice(0, 20));
       const html = await renderFromTemplate(templateJson, flattenedData, {
         cacheKey,
         inlineImages: true, // Inline external images to base64
       });
       
-      console.log('[Test Report] Generated HTML length:', html.length, 'characters');
+      logger.info('[Test Report] Generated HTML length:', html.length, 'characters');
       if (html.length < 1000) {
-        console.warn('[Test Report] WARNING: HTML is very short, template might not be rendering correctly');
-        console.log('[Test Report] HTML preview (first 1000 chars):', html.substring(0, 1000));
+        logger.warn('[Test Report] WARNING: HTML is very short, template might not be rendering correctly');
+        logger.info('[Test Report] HTML preview (first 1000 chars):', html.substring(0, 1000));
       }
       
       // Generate PDF from HTML using Puppeteer
@@ -878,16 +879,16 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       });
     } else if (engine === 'premium') {
       // Use new premium e-book quality PDF generator (React component)
-      console.log('[Test Report] Using Premium E-book PDF generator');
+      logger.info('[Test Report] Using Premium E-book PDF generator');
       
       // Generate new content for premium generator (caching disabled for test reports)
       let contentResult;
-      console.log(`[Test Report] Generating new content for premium generator (cache disabled)...`);
+      logger.info(`[Test Report] Generating new content for premium generator (cache disabled)...`);
       if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
         const tier = report_type.replace('premium-', '').toUpperCase();
         // Pass skipPdf: true to prevent duplicate PDF generation
         contentResult = await generatePremiumReport(tier, { ...sampleData, skipPdf: true }, progressCallback);
-        console.log('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
+        logger.info('[Test Report] Skipped PDF generation in generatePremiumReport, will use premium-pdf-generator instead');
       } else {
         contentResult = await generateReportContent(report_type, sampleData, progressCallback);
       }
@@ -911,10 +912,10 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
                 // Fix: Update viewBox if it's the old one (0 0 1000 800) to new one (0 0 1400 1000)
                 if (birthChartSvg.includes('viewBox="0 0 1000 800"')) {
                   birthChartSvg = birthChartSvg.replace(/viewBox="0 0 1000 800"/g, 'viewBox="0 0 1400 1000"');
-                  console.log('[Test Report] Updated cached SVG viewBox from "0 0 1000 800" to "0 0 1400 1000"');
+                  logger.info('[Test Report] Updated cached SVG viewBox from "0 0 1000 800" to "0 0 1400 1000"');
                 }
               } catch (e) {
-                console.warn('[Test Report] Could not decode birth chart SVG');
+                logger.warn('[Test Report] Could not decode birth chart SVG');
               }
             }
           }
@@ -980,7 +981,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       });
     } else {
       // Use default Puppeteer pipeline (existing behavior)
-      console.log('[Test Report] Using Puppeteer engine (default)');
+      logger.info('[Test Report] Using Puppeteer engine (default)');
       
       // Handle premium reports
       if (report_type.startsWith('premium-') || ['ESSENTIAL', 'ADVANCED', 'MASTER'].includes(report_type.toUpperCase())) {
@@ -1035,7 +1036,7 @@ ${result.houseOverlays.slice(0, 8).map(overlay => `- ${overlay.description}`).jo
       },
     });
   } catch (error) {
-    console.error('[Test Report] Error:', error);
+    logger.error('[Test Report] Error:', error);
     return NextResponse.json(
       { error: 'Report generation failed', details: error.message },
       { status: 500 }

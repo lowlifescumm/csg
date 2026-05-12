@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * Forecast Generation Cron Job
  * 
@@ -45,7 +46,7 @@ async function getActiveUsers() {
 
 async function generateForecastForUser(user, date) {
   try {
-    console.log(`[${user.id}] Generating forecast for ${user.email}...`);
+    logger.info(`[${user.id}] Generating forecast for ${user.email}...`);
     
     // Check if already exists
     const existing = await pool.query(
@@ -54,7 +55,7 @@ async function generateForecastForUser(user, date) {
     );
     
     if (existing.rows.length > 0) {
-      console.log(`[${user.id}] Forecast already exists, skipping`);
+      logger.info(`[${user.id}] Forecast already exists, skipping`);
       return { status: 'skipped', reason: 'already_exists' };
     }
     
@@ -79,11 +80,11 @@ async function generateForecastForUser(user, date) {
     // Save to database
     const forecastId = await saveForecast(forecast);
     
-    console.log(`[${user.id}] ✓ Forecast generated successfully (ID: ${forecastId})`);
+    logger.info(`[${user.id}] ✓ Forecast generated successfully (ID: ${forecastId})`);
     
     return { status: 'success', forecastId };
   } catch (error) {
-    console.error(`[${user.id}] ✗ Error generating forecast:`, error.message);
+    logger.error(`[${user.id}] ✗ Error generating forecast:`, error.message);
     return { status: 'error', error: error.message };
   }
 }
@@ -103,11 +104,11 @@ export async function GET(req) {
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    console.log('[Cron Debug] Auth header received:', authHeader);
-    console.log('[Cron Debug] CRON_SECRET exists:', !!cronSecret);
+    logger.info('[Cron Debug] Auth header received:', authHeader);
+    logger.info('[Cron Debug] CRON_SECRET exists:', !!cronSecret);
 
     if (!cronSecret) {
-      console.error('[Cron] CRON_SECRET not configured');
+      logger.error('[Cron] CRON_SECRET not configured');
       return NextResponse.json({ 
         error: 'Service not configured' 
       }, { status: 500 });
@@ -119,17 +120,17 @@ export async function GET(req) {
     const trimmedHeader = (authHeader || '').trim();
     const expectedAuth = `Bearer ${trimmedSecret}`;
     
-    console.log('[Cron Debug] Secret length:', trimmedSecret.length);
-    console.log('[Cron Debug] Header length:', trimmedHeader?.length);
-    console.log('[Cron Debug] Expected full (masked):', `Bearer ${trimmedSecret.substring(0, 10)}...${trimmedSecret.substring(trimmedSecret.length - 4)}`);
-    console.log('[Cron Debug] Received full:', trimmedHeader);
-    console.log('[Cron Debug] Exact match:', trimmedHeader === expectedAuth);
-    console.log('[Cron Debug] Secret has whitespace:', cronSecret !== trimmedSecret);
+    logger.info('[Cron Debug] Secret length:', trimmedSecret.length);
+    logger.info('[Cron Debug] Header length:', trimmedHeader?.length);
+    logger.info('[Cron Debug] Expected full (masked):', `Bearer ${trimmedSecret.substring(0, 10)}...${trimmedSecret.substring(trimmedSecret.length - 4)}`);
+    logger.info('[Cron Debug] Received full:', trimmedHeader);
+    logger.info('[Cron Debug] Exact match:', trimmedHeader === expectedAuth);
+    logger.info('[Cron Debug] Secret has whitespace:', cronSecret !== trimmedSecret);
     
     if (!authHeader || trimmedHeader !== expectedAuth) {
-      console.warn('[Cron] Unauthorized cron job attempt');
-      console.warn('[Cron Debug] Expected length:', expectedAuth.length);
-      console.warn('[Cron Debug] Received length:', trimmedHeader?.length);
+      logger.warn('[Cron] Unauthorized cron job attempt');
+      logger.warn('[Cron Debug] Expected length:', expectedAuth.length);
+      logger.warn('[Cron Debug] Received length:', trimmedHeader?.length);
       return NextResponse.json({ 
         error: 'Unauthorized',
         debug: {
@@ -144,12 +145,12 @@ export async function GET(req) {
     // Get today's date
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
-    console.log('[Cron] Starting daily forecast generation...');
-    console.log(`[Cron] Generating forecasts for: ${dateStr}`);
+    logger.info('[Cron] Starting daily forecast generation...');
+    logger.info(`[Cron] Generating forecasts for: ${dateStr}`);
     
     // Get active users
     const users = await getActiveUsers();
-    console.log(`[Cron] Found ${users.length} active users`);
+    logger.info(`[Cron] Found ${users.length} active users`);
     
     if (users.length === 0) {
       return NextResponse.json({
@@ -170,7 +171,7 @@ export async function GET(req) {
     
     for (let i = 0; i < users.length; i += BATCH_SIZE) {
       const batch = users.slice(i, i + BATCH_SIZE);
-      console.log(`[Cron] Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(users.length / BATCH_SIZE)}`);
+      logger.info(`[Cron] Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(users.length / BATCH_SIZE)}`);
       
       // Process batch in parallel
       const promises = batch.map(user => generateForecastForUser(user, dateStr));
@@ -189,12 +190,12 @@ export async function GET(req) {
     
     // Summary
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log('[Cron] === Forecast Generation Summary ===');
-    console.log(`[Cron] Total users: ${results.total}`);
-    console.log(`[Cron] ✓ Success: ${results.success}`);
-    console.log(`[Cron] ⊘ Skipped: ${results.skipped}`);
-    console.log(`[Cron] ✗ Errors: ${results.error}`);
-    console.log(`[Cron] Duration: ${duration}s`);
+    logger.info('[Cron] === Forecast Generation Summary ===');
+    logger.info(`[Cron] Total users: ${results.total}`);
+    logger.info(`[Cron] ✓ Success: ${results.success}`);
+    logger.info(`[Cron] ⊘ Skipped: ${results.skipped}`);
+    logger.info(`[Cron] ✗ Errors: ${results.error}`);
+    logger.info(`[Cron] Duration: ${duration}s`);
 
     return NextResponse.json({
       success: true,
@@ -204,7 +205,7 @@ export async function GET(req) {
     });
 
   } catch (error) {
-    console.error('[Cron] Forecast generation job failed:', error);
+    logger.error('[Cron] Forecast generation job failed:', error);
     return NextResponse.json({
       error: 'Job failed',
       details: error.message,

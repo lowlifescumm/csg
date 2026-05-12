@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -77,7 +78,7 @@ export async function GET(request) {
       offset,
     });
   } catch (error) {
-    console.error("Get user meditations error:", error);
+    logger.error("Get user meditations error:", error);
     return NextResponse.json(
       { error: "Failed to fetch meditation sessions", details: error.message },
       { status: 500 }

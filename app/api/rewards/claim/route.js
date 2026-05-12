@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -65,7 +66,7 @@ export async function POST(request) {
         CREATE INDEX IF NOT EXISTS idx_level_rewards_user_id ON level_rewards(user_id);
       `);
     } catch (createError) {
-      console.log("Rewards table creation:", createError.message);
+      logger.info("Rewards table creation:", createError.message);
     }
 
     // Check if reward already claimed
@@ -95,7 +96,7 @@ export async function POST(request) {
           [userId, rewards.credits]
         );
       } catch (creditError) {
-        console.error("Error awarding credits:", creditError);
+        logger.error("Error awarding credits:", creditError);
         // Continue even if credit award fails
       }
     }
@@ -140,7 +141,7 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    console.error("Claim reward error:", error);
+    logger.error("Claim reward error:", error);
     return NextResponse.json(
       { error: "Failed to claim reward", details: error.message },
       { status: 500 }
@@ -190,7 +191,7 @@ export async function GET(request) {
       });
     }
   } catch (error) {
-    console.error("Get reward status error:", error);
+    logger.error("Get reward status error:", error);
     return NextResponse.json(
       { error: "Failed to check reward status", details: error.message },
       { status: 500 }

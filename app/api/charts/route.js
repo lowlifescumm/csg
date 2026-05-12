@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 /**
  * Natal Charts API
  * POST /api/charts - Create a new natal chart
@@ -164,7 +165,7 @@ export async function POST(req) {
           90
         );
       } catch (error) {
-        console.error('Background transit calculation failed:', error);
+        logger.error('Background transit calculation failed:', error);
       }
     });
 
@@ -195,7 +196,7 @@ export async function POST(req) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Error creating natal chart:', error);
+    logger.error('Error creating natal chart:', error);
     
     if (error.name === 'JsonWebTokenError') {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
@@ -293,7 +294,7 @@ export async function GET(req) {
     });
 
   } catch (error) {
-    console.error('Error fetching natal charts:', error);
+    logger.error('Error fetching natal charts:', error);
     
     if (error.name === 'JsonWebTokenError') {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });

@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Run Share Reward Tracking Migration
  * Adds has_rewarded_share column to users table
@@ -12,8 +13,8 @@ const path = require('path');
 const connectionString = process.argv[2] || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL required');
-  console.error('Usage: node scripts/run-share-reward-migration.js [DATABASE_URL]');
+  logger.error('❌ DATABASE_URL required');
+  logger.error('Usage: node scripts/run-share-reward-migration.js [DATABASE_URL]');
   process.exit(1);
 }
 
@@ -28,7 +29,7 @@ async function main() {
   const client = await pool.connect();
 
   try {
-    console.log('🔗 Connected to database');
+    logger.info('🔗 Connected to database');
     const migrationPath = path.join(__dirname, '../database/add-share-reward-tracking.sql');
     const sql = fs.readFileSync(migrationPath, 'utf8');
     
@@ -39,11 +40,11 @@ async function main() {
       if (statement.trim()) {
         try {
           await client.query(statement);
-          console.log('✓ Executed:', statement.split('\n')[0].trim());
+          logger.info('✓ Executed:', statement.split('\n')[0].trim());
         } catch (error) {
           // Ignore "already exists" errors
           if (['42P07', '42710', '42723', '42P16'].includes(error.code)) {
-            console.log('⊘ Skipped (exists):', error.code);
+            logger.info('⊘ Skipped (exists):', error.code);
           } else {
             throw error;
           }
@@ -51,9 +52,9 @@ async function main() {
       }
     }
     
-    console.log('✅ Share reward tracking migration applied');
+    logger.info('✅ Share reward tracking migration applied');
   } catch (error) {
-    console.error('❌ Migration failed:', error.message);
+    logger.error('❌ Migration failed:', error.message);
     process.exit(1);
   } finally {
     client.release();

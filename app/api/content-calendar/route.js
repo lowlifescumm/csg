@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
@@ -76,7 +77,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Content calendar API error:', error);
+    logger.error('Content calendar API error:', error);
     return NextResponse.json({ error: 'Failed to fetch content calendar' }, { status: 500 });
   }
 }
@@ -179,7 +180,7 @@ export async function POST(request) {
     }
 
   } catch (error) {
-    console.error('Content calendar POST error:', error);
+    logger.error('Content calendar POST error:', error);
     return NextResponse.json({ error: 'Failed to save calendar entry' }, { status: 500 });
   }
 }
@@ -247,7 +248,7 @@ export async function PATCH(request) {
     return NextResponse.json({ success: true });
 
   } catch (error) {
-    console.error('Content calendar PATCH error:', error);
+    logger.error('Content calendar PATCH error:', error);
     return NextResponse.json({ error: 'Failed to update calendar' }, { status: 500 });
   }
 }
