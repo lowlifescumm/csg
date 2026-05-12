@@ -13,8 +13,12 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
-const FRO_API_KEY = 'rnd_kkevW0A3fn5d0JaY3n4VxOgX5I0n';
+const FRO_API_KEY = process.env.FRO_API_KEY;
 const FRO_COMPANY_ID = '84898c57-acb2-43a9-a0e7-b22d600d3434';
+
+if (!FRO_API_KEY) {
+  throw new Error('FRO_API_KEY environment variable is required for /api/paperclip/status');
+}
 const SUBAGENT_RUNS_FILE = '/home/ethan/.openclaw/subagents/runs.json';
 const PAPERCLIP_API = `https://paperclip.in/api/company/${FRO_COMPANY_ID}`;
 

@@ -360,7 +360,11 @@ export default function ContentCalendarPage() {
 
   const fetchPaperclipStatus = useCallback(async () => {
     try {
-      const apiKey = 'csg-content-pipeline-2026-secure-key';
+      const apiKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY || '';
+      if (!apiKey) {
+        console.warn('NEXT_PUBLIC_ADMIN_API_KEY not set');
+        return;
+      }
       const response = await fetch(`/api/paperclip/status`, {
         headers: { 'x-api-key': apiKey },
         cache: 'no-store',
