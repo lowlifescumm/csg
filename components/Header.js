@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard, Coins } from "lucide-react";
+import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard, Coins, Star, Moon, Heart, Orbit } from "lucide-react";
 import { Logo } from "./Logo";
 
 export default function Header() {
@@ -60,6 +60,10 @@ export default function Header() {
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
+    { name: "Tarot", href: "/tarot", icon: Star },
+    { name: "Horoscope", href: "/horoscope", icon: Moon },
+    { name: "Birth Chart", href: "/birth-chart", icon: Orbit },
+    { name: "Compatibility", href: "/compatibility", icon: Heart },
     { name: "Services", href: "/services", icon: Sparkles },
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, auth: true },
     { name: "Blog", href: "/blog", icon: BookOpen },
