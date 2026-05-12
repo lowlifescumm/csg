@@ -1,4 +1,4 @@
-const logger = require('./lib/logger');
+const logger = require('../lib/logger');
 const testDatabaseUrl = process.env.TEST_DATABASE_URL
 
 if (testDatabaseUrl) {

@@ -1,4 +1,4 @@
-const logger = require('../../lib/logger');
+const logger = require('../../../lib/logger');
 /**
  * Premium PDF Generation API Route
  * Uses Puppeteer to render React component and generate e-book quality PDF

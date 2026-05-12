@@ -1,4 +1,4 @@
-const logger = require('./lib/logger');
+const logger = require('./logger');
 // lib/email.ts
 import { Resend } from 'resend';
 

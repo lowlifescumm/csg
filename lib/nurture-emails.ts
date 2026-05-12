@@ -1,4 +1,4 @@
-const logger = require('./lib/logger');
+const logger = require('./logger');
 // Email nurture sequence for CosmicSpiritGuide
 // Sends 5-7 emails over 12+ days to convert signups to paying users
 

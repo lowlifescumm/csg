@@ -91,7 +91,8 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             xpTarget: level * 100,
           });
         }
-      } catch {}
+      } catch (err) {
+        console.error("[DashboardV3] Failed to load XP data:", err);
     }
     initXP();
     return () => { cancelled = true; };

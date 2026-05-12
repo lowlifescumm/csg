@@ -1,4 +1,4 @@
-const logger = require('../../lib/logger');
+const logger = require('../../../lib/logger');
 /**
  * Natal Charts API
  * POST /api/charts - Create a new natal chart
