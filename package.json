@@ -26,7 +26,9 @@
     "test:e2e:headed": "playwright test --headed",
     "test:api": "jest --testPathPattern=__tests__/api",
     "test:unit": "jest --testPathPattern=__tests__/unit",
-    "test:report": "node scripts/test-report-generation.js"
+    "test:report": "node scripts/test-report-generation.js",
+    "test:a11y": "playwright test __tests__/e2e/accessibility/",
+    "test:visual": "playwright test __tests__/e2e/visual/"
   },
   "dependencies": {
     "@pdfme/common": "^4.4.1",
