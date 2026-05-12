@@ -1,5 +1,5 @@
-const logger = require('../lib/logger');
 "use client";
+const logger = require('../../lib/logger');
 import { useState, useEffect } from 'react';
 import { Heart, Loader2, Sparkles, ChevronRight, ChevronLeft, Crown, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';

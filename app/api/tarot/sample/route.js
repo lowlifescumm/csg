@@ -1,4 +1,4 @@
-const logger = require('../../../lib/logger');
+const logger = require('../../../../lib/logger');
 // /app/api/tarot/sample/route.js
 // Free sample tarot reading - no auth required, instant preview
 import { NextResponse } from "next/server";

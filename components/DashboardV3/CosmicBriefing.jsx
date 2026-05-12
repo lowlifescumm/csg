@@ -1,5 +1,5 @@
-const logger = require('./lib/logger');
 "use client";
+const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, BookOpen, Loader2, Flame, Droplets, Wind, Mountain } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";

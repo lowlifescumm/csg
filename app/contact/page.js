@@ -1,5 +1,5 @@
-const logger = require('../lib/logger');
 "use client";
+const logger = require('../../lib/logger');
 import { useState } from "react";
 import Link from "next/link";
 import { Mail, Send, ArrowLeft, MessageSquare, CheckCircle } from "lucide-react";

@@ -1,4 +1,4 @@
-const logger = require('../../../lib/logger');
+const logger = require('../../../../lib/logger');
 /**
  * POST /api/credits/issue-free-daily
  * Daily cron job to issue free credits to users

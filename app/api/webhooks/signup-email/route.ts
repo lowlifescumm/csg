@@ -1,4 +1,4 @@
-const logger = require('../../../lib/logger');
+const logger = require('../../../../lib/logger');
 // Webhook to trigger welcome email on new signup
 // Called immediately after successful user registration
 

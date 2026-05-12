@@ -1,4 +1,4 @@
-const logger = require('./lib/logger');
+const logger = require('../../lib/logger');
 /**
  * Premium Master Report Component
  * Renders a flowing, semantic document structure for PDF generation

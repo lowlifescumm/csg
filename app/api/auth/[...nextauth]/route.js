@@ -1,4 +1,4 @@
-const logger = require('../../../lib/logger');
+const logger = require('../../../../lib/logger');
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth-config";
 

@@ -1,4 +1,4 @@
-const logger = require('../../../lib/logger');
+const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/lib/auth-config';

@@ -1,5 +1,5 @@
-const logger = require('../../lib/logger');
 'use client';
+const logger = require('../../../lib/logger');
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
