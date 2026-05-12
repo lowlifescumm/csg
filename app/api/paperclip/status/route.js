@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 /**
  * GET /api/paperclip/status
  * 
@@ -11,14 +10,18 @@ const logger = require('../../../lib/logger');
  */
 
 import { NextResponse } from 'next/server';
+import logger from '@/lib/logger';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
 const FRO_API_KEY = process.env.FRO_API_KEY;
 const FRO_COMPANY_ID = '84898c57-acb2-43a9-a0e7-b22d600d3434';
 
-if (!FRO_API_KEY) {
-  throw new Error('FRO_API_KEY environment variable is required for /api/paperclip/status');
+// Lazy check inside request handler so build doesn't crash
+function requireFroKey() {
+  if (!FRO_API_KEY) {
+    throw new Error('FRO_API_KEY environment variable is required for /api/paperclip/status');
+  }
 }
 const SUBAGENT_RUNS_FILE = '/home/ethan/.openclaw/subagents/runs.json';
 const PAPERCLIP_API = `https://paperclip.in/api/company/${FRO_COMPANY_ID}`;
@@ -26,6 +29,7 @@ const PAPERCLIP_API = `https://paperclip.in/api/company/${FRO_COMPANY_ID}`;
 // ─── FRO API ────────────────────────────────────────────────────────────────
 
 async function fetchFRO(endpoint) {
+  requireFroKey();
   try {
     const res = await fetch(`${PAPERCLIP_API}${endpoint}`, {
       headers: {
