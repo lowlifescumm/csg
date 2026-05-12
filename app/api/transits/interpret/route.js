@@ -1,10 +1,10 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import Groq from 'groq-sdk';
 import { pool } from '@/lib/db.js';
 import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter';
 
 const openai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -25,6 +25,16 @@ export async function POST(req) {
 
     if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized', requiresAuth: true }, { status: 401 });
+    }
+
+    // Apply rate limiting: 5 req/min for free users, 20 req/min for premium
+    const isPremium = authResult.role === 'premium' || authResult.role === 'admin';
+    const rateLimitResult = checkRateLimit(getClientIdentifier(req, authResult.userId), isPremium ? 20 : 5, 60000);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000) },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)) } }
+      );
     }
 
     const userResult = await pool.query(

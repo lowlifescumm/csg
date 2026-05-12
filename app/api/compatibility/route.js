@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth/next';
@@ -9,6 +8,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { hydrateReportData } from '@/src/services/chartHydrator';
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter';
 
 
 export async function POST(request) {
@@ -43,6 +43,16 @@ export async function POST(request) {
     }
     
     const { userId } = authResult;
+
+    // Apply rate limiting: 5 req/min for free users, 20 req/min for premium
+    const isPremium = authResult.role === 'premium' || authResult.role === 'admin';
+    const rateLimitResult = checkRateLimit(getClientIdentifier(request, userId), isPremium ? 20 : 5, 60000);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000) },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)) } }
+      );
+    }
 
     // Check access permissions for Compatibility Report
     const accessCheck = await canAccessReading(userId, 'COMPATIBILITY_REPORT');

@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth-config';
 import { pool } from '@/lib/db.js';
@@ -6,6 +5,7 @@ import { interpretBirthChart } from '@/lib/astrology.js';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { getAuthenticatedUser } from '@/lib/auth.js';
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter';
 
 /**
  * POST /api/birth-chart/interpretation
@@ -21,6 +21,16 @@ export async function POST(req) {
     }
     
     const { userId } = authResult;
+
+    // Apply rate limiting: 5 req/min for free users, 20 req/min for premium
+    const isPremium = authResult.role === 'premium' || authResult.role === 'admin';
+    const rateLimitResult = checkRateLimit(getClientIdentifier(req, userId), isPremium ? 20 : 5, 60000);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000) },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)) } }
+      );
+    }
 
     // Check access permissions for Natal Chart interpretation
     const accessCheck = await canAccessReading(userId, 'NATAL_CHART');
