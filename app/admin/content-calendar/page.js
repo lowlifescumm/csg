@@ -401,7 +401,6 @@ export default function ContentCalendarPage() {
     } catch (err) {
       console.error("[admin/content-calendar] Polling error:", err);
       setIsConnected(false);
-      setIsConnected(false);
     }
   }, []);
 

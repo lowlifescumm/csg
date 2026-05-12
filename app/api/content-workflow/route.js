@@ -203,167 +203,172 @@ export async function GET(req) {
 // ─── POST: Claim a step / submit step output ────────────────────────────────
 
 export async function POST(req) {
-  const auth = await authenticate(req);
-  if (auth) return NextResponse.json(auth, { status: auth.status });
+  try {
+    const auth = await authenticate(req);
+    if (auth) return NextResponse.json(auth, { status: auth.status });
 
-  const body = await req.json().catch(() => ({}));
-  const {
-    calendarId,
-    step,
-    action,           // 'begin' | 'complete' | 'release'
-    agentId,
-    agentType,
-    // Step-specific content
-    content,          // draft/edit full HTML
-    excerpt,
-    metaTitle,
-    metaDescription,
-    tags,
-    featuredImage,
-    scheduledAt,
-    socialCopy,      // { x, pinterest, instagram }
-    notes,
-    // Research + outline fields
-    targetKeyword,
-    secondaryKeywords,
-    searchIntent,
-    targetWordCount,
-    outline,         // JSON array of { h2, points: [] }
-    keyPoints,
-    ctaStrategy,
-  } = body;
+    const body = await req.json().catch(() => ({}));
+    const {
+      calendarId,
+      step,
+      action,           // 'begin' | 'complete' | 'release'
+      agentId,
+      agentType,
+      // Step-specific content
+      content,          // draft/edit full HTML
+      excerpt,
+      metaTitle,
+      metaDescription,
+      tags,
+      featuredImage,
+      scheduledAt,
+      socialCopy,      // { x, pinterest, instagram }
+      notes,
+      // Research + outline fields
+      targetKeyword,
+      secondaryKeywords,
+      searchIntent,
+      targetWordCount,
+      outline,         // JSON array of { h2, points: [] }
+      keyPoints,
+      ctaStrategy,
+    } = body;
 
-  if (!calendarId || !step) {
-    return NextResponse.json(
-      { error: 'calendarId and step are required' },
-      { status: 400 }
-    );
-  }
-
-  if (!WORKFLOW_STEPS.includes(step)) {
-    return NextResponse.json(
-      { error: `Invalid step. Must be one of: ${WORKFLOW_STEPS.join(', ')}` },
-      { status: 400 }
-    );
-  }
-
-  // Get current workflow step record
-  const { rows: stepRows } = await pool.query(
-    'SELECT * FROM publishing_workflow WHERE calendar_id = $1 AND step_name = $2',
-    [calendarId, step]
-  );
-  if (!stepRows.length) {
-    return NextResponse.json({ error: 'Workflow step not found' }, { status: 404 });
-  }
-  const stepRecord = stepRows[0];
-
-  // Get calendar + post info
-  const { rows: calRows } = await pool.query(
-    'SELECT * FROM content_calendar WHERE id = $1',
-    [calendarId]
-  );
-  if (!calRows.length) {
-    return NextResponse.json({ error: 'Calendar item not found' }, { status: 404 });
-  }
-  const calendar = calRows[0];
-
-  const now = new Date();
-  const result = { success: true, step: stepRecord, calendar };
-
-  // ── BEGIN a step ───────────────────────────────────────────────────────────
-  if (action === 'begin') {
-    // Only allow beginning if step is pending
-    if (stepRecord.status !== 'pending') {
-      return NextResponse.json({
-        error: `Step '${step}' is ${stepRecord.status}, cannot begin`,
-        current_status: stepRecord.status,
-      }, { status: 409 });
-    }
-
-    await pool.query(`
-      UPDATE publishing_workflow
-      SET status = 'in_progress', assigned_to = $1, updated_at = NOW()
-      WHERE id = $2
-    `, [agentId || agentType || 'agent', stepRecord.id]);
-
-    // Update calendar status to 'in_progress' if it was 'planned'
-    if (calendar.status === 'planned') {
-      await pool.query(
-        "UPDATE content_calendar SET status = 'writing', updated_at = NOW() WHERE id = $1",
-        [calendarId]
+    if (!calendarId || !step) {
+      return NextResponse.json(
+        { error: 'calendarId and step are required' },
+        { status: 400 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: `Step '${step}' started`,
-      calendar_id: calendarId,
-      step_name: step,
-      calendar,
-      brief: await getBrief(pool, calendarId),
-    });
-  }
-
-  // ── RELEASE a step ────────────────────────────────────────────────────────
-  if (action === 'release') {
-    await pool.query(`
-      UPDATE publishing_workflow
-      SET status = 'pending', assigned_to = NULL, updated_at = NOW()
-      WHERE id = $1
-    `, [stepRecord.id]);
-    return NextResponse.json({ success: true, message: `Step '${step}' released` });
-  }
-
-  // ── COMPLETE a step ───────────────────────────────────────────────────────
-  if (action === 'complete') {
-    // Validate required content for each step
-    const validation = validateStepOutput(step, { content, excerpt, metaTitle, outline, targetKeyword });
-    if (!validation.valid) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
+    if (!WORKFLOW_STEPS.includes(step)) {
+      return NextResponse.json(
+        { error: `Invalid step. Must be one of: ${WORKFLOW_STEPS.join(', ')}` },
+        { status: 400 }
+      );
     }
 
-    // Complete the workflow step
-    await pool.query(`
-      UPDATE publishing_workflow
-      SET status = 'completed', completed_at = NOW(), assigned_to = COALESCE($1, assigned_to),
-          notes = COALESCE($2, notes), updated_at = NOW()
-      WHERE id = $3
-    `, [agentId || agentType, notes, stepRecord.id]);
+    // Get current workflow step record
+    const { rows: stepRows } = await pool.query(
+      'SELECT * FROM publishing_workflow WHERE calendar_id = $1 AND step_name = $2',
+      [calendarId, step]
+    );
+    if (!stepRows.length) {
+      return NextResponse.json({ error: 'Workflow step not found' }, { status: 404 });
+    }
+    const stepRecord = stepRows[0];
 
-    // Advance the calendar + produce content based on step
-    await advanceWorkflow(pool, calendar, step, {
-      content, excerpt, metaTitle, metaDescription, tags, featuredImage,
-      scheduledAt, socialCopy, targetKeyword, secondaryKeywords, searchIntent,
-      targetWordCount, outline, keyPoints, ctaStrategy,
-    });
+    // Get calendar + post info
+    const { rows: calRows } = await pool.query(
+      'SELECT * FROM content_calendar WHERE id = $1',
+      [calendarId]
+    );
+    if (!calRows.length) {
+      return NextResponse.json({ error: 'Calendar item not found' }, { status: 404 });
+    }
+    const calendar = calRows[0];
 
-    // Determine next step
-    const stepIndex = WORKFLOW_STEPS.indexOf(step);
-    const nextStepName = WORKFLOW_STEPS[stepIndex + 1];
+    const now = new Date();
+    const result = { success: true, step: stepRecord, calendar };
 
-    if (nextStepName) {
-      const { rows: nextRows } = await pool.query(
-        'SELECT * FROM publishing_workflow WHERE calendar_id = $1 AND step_name = $2',
-        [calendarId, nextStepName]
-      );
-      if (nextRows.length && nextRows[0].status === 'pending') {
+    // ── BEGIN a step ───────────────────────────────────────────────────────────
+    if (action === 'begin') {
+      // Only allow beginning if step is pending
+      if (stepRecord.status !== 'pending') {
+        return NextResponse.json({
+          error: `Step '${step}' is ${stepRecord.status}, cannot begin`,
+          current_status: stepRecord.status,
+        }, { status: 409 });
+      }
+
+      await pool.query(`
+        UPDATE publishing_workflow
+        SET status = 'in_progress', assigned_to = $1, updated_at = NOW()
+        WHERE id = $2
+      `, [agentId || agentType || 'agent', stepRecord.id]);
+
+      // Update calendar status to 'in_progress' if it was 'planned'
+      if (calendar.status === 'planned') {
         await pool.query(
-          "UPDATE publishing_workflow SET status = 'pending' WHERE id = $1",
-          [nextRows[0].id]
+          "UPDATE content_calendar SET status = 'writing', updated_at = NOW() WHERE id = $1",
+          [calendarId]
         );
       }
+
+      return NextResponse.json({
+        success: true,
+        message: `Step '${step}' started`,
+        calendar_id: calendarId,
+        step_name: step,
+        calendar,
+        brief: await getBrief(pool, calendarId),
+      });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: `Step '${step}' completed`,
-      calendar_id: calendarId,
-      step_name: step,
-      next_step: nextStepName || 'pipeline_complete',
-    });
-  }
+    // ── RELEASE a step ────────────────────────────────────────────────────────
+    if (action === 'release') {
+      await pool.query(`
+        UPDATE publishing_workflow
+        SET status = 'pending', assigned_to = NULL, updated_at = NOW()
+        WHERE id = $1
+      `, [stepRecord.id]);
+      return NextResponse.json({ success: true, message: `Step '${step}' released` });
+    }
 
-  return NextResponse.json({ error: 'Invalid action. Use begin, complete, or release.' }, { status: 400 });
+    // ── COMPLETE a step ───────────────────────────────────────────────────────
+    if (action === 'complete') {
+      // Validate required content for each step
+      const validation = validateStepOutput(step, { content, excerpt, metaTitle, outline, targetKeyword });
+      if (!validation.valid) {
+        return NextResponse.json({ error: validation.error }, { status: 400 });
+      }
+
+      // Complete the workflow step
+      await pool.query(`
+        UPDATE publishing_workflow
+        SET status = 'completed', completed_at = NOW(), assigned_to = COALESCE($1, assigned_to),
+            notes = COALESCE($2, notes), updated_at = NOW()
+        WHERE id = $3
+      `, [agentId || agentType, notes, stepRecord.id]);
+
+      // Advance the calendar + produce content based on step
+      await advanceWorkflow(pool, calendar, step, {
+        content, excerpt, metaTitle, metaDescription, tags, featuredImage,
+        scheduledAt, socialCopy, targetKeyword, secondaryKeywords, searchIntent,
+        targetWordCount, outline, keyPoints, ctaStrategy,
+      });
+
+      // Determine next step
+      const stepIndex = WORKFLOW_STEPS.indexOf(step);
+      const nextStepName = WORKFLOW_STEPS[stepIndex + 1];
+
+      if (nextStepName) {
+        const { rows: nextRows } = await pool.query(
+          'SELECT * FROM publishing_workflow WHERE calendar_id = $1 AND step_name = $2',
+          [calendarId, nextStepName]
+        );
+        if (nextRows.length && nextRows[0].status === 'pending') {
+          await pool.query(
+            "UPDATE publishing_workflow SET status = 'pending' WHERE id = $1",
+            [nextRows[0].id]
+          );
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Step '${step}' completed`,
+        calendar_id: calendarId,
+        step_name: step,
+        next_step: nextStepName || 'pipeline_complete',
+      });
+    }
+
+    return NextResponse.json({ error: 'Invalid action. Use begin, complete, or release.' }, { status: 400 });
+  } catch (error) {
+    console.error('Content workflow POST error:', error);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -36,7 +36,8 @@ async function fetchFRO(endpoint) {
     });
     if (!res.ok) return null;
     return await res.json();
-  } catch {
+  } catch (err) {
+    console.error('[paperclip/status] fetchData error:', err);
     return null;
   }
 }
