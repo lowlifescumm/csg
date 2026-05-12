@@ -22,7 +22,9 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: process.env.CI ? [['html'], ['list']] : 'html',
+  /* Snapshot directory for visual regression baselines */
+  snapshotDir: './__tests__/e2e/__snapshots__',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -44,6 +46,11 @@ export default defineConfig({
     },
     {
       name: 'dashboard-smoke',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'visual-regression',
+      testMatch: /visual-regression\.spec\.js/,
       use: { ...devices['Desktop Chrome'] },
     },
   ],
