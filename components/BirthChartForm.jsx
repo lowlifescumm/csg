@@ -14,6 +14,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
     manualLat: '',
     manualLon: ''
   });
+  const [errors, setErrors] = useState({});
   const [coordinates, setCoordinates] = useState(null);
   const [chart, setChart] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -54,8 +55,37 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
     }
   };
 
+  // Validation function for birth date
+  const validateDate = (dateStr) => {
+    if (!dateStr) return 'Birth date is required';
+    const date = new Date(dateStr + 'T00:00:00');
+    if (isNaN(date.getTime())) return 'Invalid date format';
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const testDate = new Date(year, month - 1, day);
+    if (testDate.getMonth() !== month - 1 || testDate.getDate() !== day) {
+      return `Invalid date: ${month}/${day}/${year} does not exist`;
+    }
+    const now = new Date();
+    if (date > now) return 'Birth date cannot be in the future';
+    const minDate = new Date('1900-01-01');
+    if (date < minDate) return 'Birth date must be after 1900';
+    return null;
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    const dateError = validateDate(formData.birthDate);
+    if (dateError) newErrors.birthDate = dateError;
+    if (!formData.birthTime) newErrors.birthTime = 'Birth time is required';
+    if (!formData.location.trim()) newErrors.location = 'Birth location is required';
+    if (!coordinates) newErrors.coordinates = 'Please search for and select a valid location';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleLocationSearch = async () => {
     setLocationError('');
+    setErrors(prev => ({ ...prev, location: undefined, coordinates: undefined }));
     
     // Try Google Maps Geocoding API first (most reliable)
     try {
@@ -136,10 +166,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!coordinates) {
-      alert('Please search for your birth location first');
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     
@@ -400,11 +427,19 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
               name="birthDate"
               type="date"
               value={formData.birthDate}
-              onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+              onChange={(e) => {
+                setFormData({...formData, birthDate: e.target.value});
+                setErrors(prev => ({ ...prev, birthDate: undefined }));
+              }}
+              className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 ${errors.birthDate ? 'border-red-500' : 'border-gray-300'}`}
               required
               placeholder="Select your birth date"
             />
+            {errors.birthDate && (
+              <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <span>⚠️</span> {errors.birthDate}
+              </p>
+            )}
           </div>
 
           <div>
@@ -416,11 +451,19 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
               name="birthTime"
               type="time"
               value={formData.birthTime}
-              onChange={(e) => setFormData({...formData, birthTime: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+              onChange={(e) => {
+                setFormData({...formData, birthTime: e.target.value});
+                setErrors(prev => ({ ...prev, birthTime: undefined }));
+              }}
+              className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 ${errors.birthTime ? 'border-red-500' : 'border-gray-300'}`}
               required
               placeholder="Select your birth time"
             />
+            {errors.birthTime && (
+              <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <span>⚠️</span> {errors.birthTime}
+              </p>
+            )}
             <p className="text-sm text-gray-500 mt-1">
               Your Rising Sign depends on exact birth time
             </p>
@@ -434,9 +477,12 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                 name="birthLocation"
                 type="text"
                 value={formData.location}
-                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, location: e.target.value});
+                  setErrors(prev => ({ ...prev, location: undefined, coordinates: undefined }));
+                }}
                 placeholder="e.g., New York, USA"
-                className="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+                className={`flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 ${errors.location ? 'border-red-500' : 'border-gray-300'}`}
                 required={!showManualEntry}
               />
               <button
@@ -448,6 +494,18 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                 Search
               </button>
             </div>
+            
+            {errors.location && (
+              <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <span>⚠️</span> {errors.location}
+              </p>
+            )}
+            
+            {errors.coordinates && (
+              <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <span>⚠️</span> {errors.coordinates}
+              </p>
+            )}
             
             {locationError && (
               <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
