@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -22,7 +23,7 @@ const CreditManagementWidget = () => {
         });
       }
     } catch (err) {
-      console.error('Failed to fetch user stats');
+      logger.error('Failed to fetch user stats');
     } finally {
       setLoading(false);
     }

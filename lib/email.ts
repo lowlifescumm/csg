@@ -1,3 +1,4 @@
+const logger = require('./logger');
 // lib/email.ts
 import { Resend } from 'resend';
 
@@ -10,7 +11,7 @@ const domain = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000';
 async function sendEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
   try {
     if (!resend) {
-      console.error("[Email] RESEND_API_KEY is not set. Email cannot be sent.", {
+      logger.error("[Email] RESEND_API_KEY is not set. Email cannot be sent.", {
         to,
         subject,
       });
@@ -25,15 +26,15 @@ async function sendEmail({ to, subject, html }: { to: string, subject: string, h
     });
 
     if (error) {
-      console.error("Resend Error:", error);
+      logger.error("Resend Error:", error);
       return { success: false, error };
     }
     
-    console.log("Email sent successfully:", data);
+    logger.info("Email sent successfully:", data);
     return { success: true, data };
 
   } catch (error) {
-    console.error("Failed to send email:", error);
+    logger.error("Failed to send email:", error);
     return { success: false, error };
   }
 }

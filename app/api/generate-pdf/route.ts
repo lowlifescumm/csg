@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * Premium PDF Generation API Route
  * Uses Puppeteer to render React component and generate e-book quality PDF
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
         for (const testPath of possiblePaths) {
           if (fs.existsSync(testPath)) {
             bgPath = testPath;
-            console.log('[PDF Generator] Found background image at:', bgPath);
+            logger.info('[PDF Generator] Found background image at:', bgPath);
             break;
           }
         }
@@ -101,15 +102,15 @@ export async function POST(request: NextRequest) {
         if (bgPath) {
           const base64 = fs.readFileSync(bgPath).toString('base64');
           userData.base64BackgroundImage = `data:image/jpeg;base64,${base64}`;
-          console.log('[PDF Generator] Loaded default background image, size:', base64.length, 'chars');
+          logger.info('[PDF Generator] Loaded default background image, size:', base64.length, 'chars');
         } else {
-          console.warn('[PDF Generator] Background image not found in any of these paths:', possiblePaths);
+          logger.warn('[PDF Generator] Background image not found in any of these paths:', possiblePaths);
         }
       } else {
-        console.log('[PDF Generator] Using provided background image');
+        logger.info('[PDF Generator] Using provided background image');
       }
     } catch (err) {
-      console.error('[PDF Generator] Error loading default background image:', err);
+      logger.error('[PDF Generator] Error loading default background image:', err);
     }
     
 
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
           launchOptions.headless = chromiumAny.headless !== false;
         }
       } catch (error) {
-        console.warn('[PDF Generator] Chromium executablePath failed, using system Chrome:', error);
+        logger.warn('[PDF Generator] Chromium executablePath failed, using system Chrome:', error);
       }
     }
 
@@ -231,7 +232,7 @@ export async function POST(request: NextRequest) {
       throw error;
     }
   } catch (error: any) {
-    console.error('[PDF Generator] Error:', error);
+    logger.error('[PDF Generator] Error:', error);
     return NextResponse.json(
       {
         error: 'Failed to generate PDF',

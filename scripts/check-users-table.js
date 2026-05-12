@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -26,7 +27,7 @@ async function checkUsersTable() {
   const client = await pool.connect();
   
   try {
-    console.log('🔍 Checking users table columns...\n');
+    logger.info('🔍 Checking users table columns...\n');
     
     // Check users table columns
     const usersColumns = await client.query(`
@@ -36,26 +37,26 @@ async function checkUsersTable() {
       ORDER BY ordinal_position
     `);
     
-    console.log('📊 Users table columns:');
+    logger.info('📊 Users table columns:');
     usersColumns.rows.forEach(row => {
-      console.log(`   ${row.column_name} (${row.data_type}) - default: ${row.column_default || 'none'}`);
+      logger.info(`   ${row.column_name} (${row.data_type}) - default: ${row.column_default || 'none'}`);
     });
     
     // Check if last_free_credit_refresh exists
     const hasRefreshColumn = usersColumns.rows.some(row => row.column_name === 'last_free_credit_refresh');
-    console.log(`\n🔍 last_free_credit_refresh column exists: ${hasRefreshColumn ? '✅ YES' : '❌ NO'}`);
+    logger.info(`\n🔍 last_free_credit_refresh column exists: ${hasRefreshColumn ? '✅ YES' : '❌ NO'}`);
     
     if (!hasRefreshColumn) {
-      console.log('\n🚀 Adding missing column...');
+      logger.info('\n🚀 Adding missing column...');
       await client.query(`
         ALTER TABLE users 
         ADD COLUMN last_free_credit_refresh TIMESTAMP DEFAULT NOW()
       `);
-      console.log('✅ Added last_free_credit_refresh column');
+      logger.info('✅ Added last_free_credit_refresh column');
     }
     
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
   } finally {
     client.release();
     await pool.end();

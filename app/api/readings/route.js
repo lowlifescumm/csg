@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserReadings, getUserBirthCharts, getUserStats } from "@/lib/db";
@@ -26,7 +27,7 @@ export async function GET(request) {
       }
     });
   } catch (error) {
-    console.error("Error fetching user readings:", error);
+    logger.error("Error fetching user readings:", error);
     return NextResponse.json(
       { error: "Failed to fetch readings" },
       { status: 500 }

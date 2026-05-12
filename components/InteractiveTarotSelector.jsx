@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { X, Sparkles } from "lucide-react";
@@ -148,7 +149,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       }
     } catch (error) {
       alert("Failed to generate reading");
-      console.error(error);
+      logger.error(error);
     } finally {
       setLoading(false);
     }
@@ -219,7 +220,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
             cards={reading.cards}
             onShareComplete={(credits) => {
               // Optionally show a toast notification
-              console.log(`${credits} credits awarded for sharing!`);
+              logger.info(`${credits} credits awarded for sharing!`);
             }}
           />
 

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth/next';
@@ -121,7 +122,7 @@ export async function POST(request) {
     const chart1 = chart1Hydrated.rawChart;
     const chart2 = chart2Hydrated.rawChart;
 
-    console.log('Generating compatibility report...');
+    logger.info('Generating compatibility report...');
     const result = await generateCompatibilityReport(
       chart1,
       chart2,
@@ -185,7 +186,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Compatibility report error:', error);
+    logger.error('Compatibility report error:', error);
     return NextResponse.json(
       { error: 'Failed to generate report: ' + error.message },
       { status: 500 }
@@ -224,7 +225,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Get reports error:', error);
+    logger.error('Get reports error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch reports' },
       { status: 500 }

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
@@ -58,7 +59,7 @@ export async function POST(request) {
       ...result,
     });
   } catch (error) {
-    console.error('[Readings Validate] Error:', error);
+    logger.error('[Readings Validate] Error:', error);
     return NextResponse.json(
       { error: 'failed_to_validate_prerequisites', details: error.message },
       { status: 500 },

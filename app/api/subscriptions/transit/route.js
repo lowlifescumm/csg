@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { pool } from '@/lib/db.js';
@@ -86,7 +87,8 @@ export async function POST(req) {
     if (webhookUrl) {
       try {
         new URL(webhookUrl);
-      } catch {
+      } catch (err) {
+        console.error("[subscriptions/transit] Invalid webhook URL:", err);
         return NextResponse.json({ error: 'Invalid webhook URL format' }, { status: 400 });
       }
     }
@@ -142,7 +144,7 @@ export async function POST(req) {
       message: 'Transit monitoring subscription created successfully',
     }, { status: 201 });
   } catch (error) {
-    console.error('Error creating transit subscription:', error);
+    logger.error('Error creating transit subscription:', error);
     return NextResponse.json(
       { error: 'Failed to create transit subscription', details: error.message },
       { status: 500 },
@@ -197,7 +199,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, subscriptions, count: subscriptions.length });
   } catch (error) {
-    console.error('Error fetching transit subscriptions:', error);
+    logger.error('Error fetching transit subscriptions:', error);
     return NextResponse.json(
       { error: 'Failed to fetch transit subscriptions', details: error.message },
       { status: 500 },
@@ -234,7 +236,7 @@ export async function DELETE(req) {
     await pool.query('DELETE FROM transit_subscriptions WHERE id = $1', [subscriptionId]);
     return NextResponse.json({ success: true, message: 'Transit subscription deleted successfully' });
   } catch (error) {
-    console.error('Error deleting transit subscription:', error);
+    logger.error('Error deleting transit subscription:', error);
     return NextResponse.json(
       { error: 'Failed to delete transit subscription', details: error.message },
       { status: 500 },

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * PATCH /api/paperclip/workflow-step
  * Update a workflow step in the content_calendar JSONB column.
@@ -110,7 +111,7 @@ export async function PATCH(request) {
     });
 
   } catch (error) {
-    console.error('workflow-step PATCH error:', error);
+    logger.error('workflow-step PATCH error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -140,7 +141,7 @@ export async function GET(request) {
 
     return NextResponse.json({ success: true, calendar: result.rows[0] });
   } catch (error) {
-    console.error('workflow-step GET error:', error);
+    logger.error('workflow-step GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

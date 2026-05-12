@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from "@/lib/auth-config";
@@ -131,7 +132,7 @@ export async function POST(request, { params }) {
     //     );
     //   }
     // } catch (taskError) {
-    //   console.error("Error marking meditation task complete:", taskError);
+    //   logger.error("Error marking meditation task complete:", taskError);
     //   // Don't fail the meditation completion if task marking fails
     // }
 
@@ -142,7 +143,7 @@ export async function POST(request, { params }) {
       level: newLevel,
     });
   } catch (error) {
-    console.error("Complete meditation session error:", error);
+    logger.error("Complete meditation session error:", error);
     return NextResponse.json(
       { error: "Failed to complete meditation session", details: error.message },
       { status: 500 }

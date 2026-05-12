@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 
 import React from "react";
@@ -14,7 +15,7 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, info) {
     // Log to console; could be extended to send to logging service
-    console.error("[Client ErrorBoundary] Caught error:", error, info);
+    logger.error("[Client ErrorBoundary] Caught error:", error, info);
   }
 
   render() {

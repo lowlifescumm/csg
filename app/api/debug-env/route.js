@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -19,8 +20,8 @@ export async function GET() {
     };
 
     // Log to server console
-    console.log('[DEBUG-ENV] Environment Variables Check:');
-    console.log(JSON.stringify(envVars, null, 2));
+    logger.info('[DEBUG-ENV] Environment Variables Check:');
+    logger.info(JSON.stringify(envVars, null, 2));
 
     return NextResponse.json({
       message: 'Environment variables logged to server console',
@@ -28,7 +29,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[DEBUG-ENV] Error:', error);
+    logger.error('[DEBUG-ENV] Error:', error);
     return NextResponse.json(
       { error: 'Failed to retrieve environment variables', details: error.message },
       { status: 500 }

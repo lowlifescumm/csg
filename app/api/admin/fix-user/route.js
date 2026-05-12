@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { getUserByEmail, verifyPassword, generateToken } from '@/lib/auth';
@@ -127,7 +128,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Fix user error:', error);
+    logger.error('Fix user error:', error);
     return NextResponse.json(
       { error: 'Failed to fix user account', details: error.message },
       { status: 500 }

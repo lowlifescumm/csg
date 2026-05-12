@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import Stripe from 'stripe';
@@ -58,7 +59,7 @@ async function getStripePriceId(tierId) {
     // Return the first recurring price
     return prices.data[0].id;
   } catch (error) {
-    console.error(`[Stripe] Error finding price for tier ${tierId}:`, error);
+    logger.error(`[Stripe] Error finding price for tier ${tierId}:`, error);
     throw error;
   }
 }
@@ -142,7 +143,7 @@ export async function POST(request) {
       price: tier.priceInCents / 100,
     });
   } catch (error) {
-    console.error('Subscription error:', error);
+    logger.error('Subscription error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

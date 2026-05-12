@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 /**
  * Content Pipeline — cosmicspiritguide.com
@@ -68,7 +69,7 @@ const UPLOAD_API = `${SITE_URL}/api/upload/image`;
 function log(type, msg) {
   const ts = new Date().toISOString().split('T')[1].slice(0, 8);
   const icons = { ok: '✓', info: '→', warn: '⚠', error: '✗', img: '🖼', post: '📄', social: '🐦' };
-  console.log(`${ts} ${icons[type] || '·'} ${msg}`);
+  logger.info(`${ts} ${icons[type] || '·'} ${msg}`);
 }
 
 // slugify imported from lib
@@ -473,7 +474,7 @@ if (args.includes('--status')) {
     const publish = args.includes('--publish');
     await runPost(num, publish);
   } else {
-    console.log(`
+    logger.info(`
 Content Pipeline — cosmicspiritguide.com
 
 Usage:

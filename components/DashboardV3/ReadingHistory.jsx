@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { BookOpen, Calendar, Filter, Sparkles, Star, Eye, RotateCcw, Loader2, X, Heart } from "lucide-react";
@@ -149,7 +150,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         }
       }
     } catch (err) {
-      console.error("Failed to fetch readings:", err);
+      logger.error("Failed to fetch readings:", err);
     } finally {
       setLoading(false);
     }
@@ -166,7 +167,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         }
       }
     } catch (err) {
-      console.log("Could not fetch favorites:", err);
+      logger.info("Could not fetch favorites:", err);
     }
   };
 
@@ -203,7 +204,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         alert("Saved to journal!");
       }
     } catch (err) {
-      console.error("Error saving to journal:", err);
+      logger.error("Error saving to journal:", err);
       alert("Failed to save to journal");
     } finally {
       setSavingToJournal(null);
@@ -257,7 +258,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         });
       }
     } catch (err) {
-      console.error("Error toggling favorite:", err);
+      logger.error("Error toggling favorite:", err);
     }
   };
 

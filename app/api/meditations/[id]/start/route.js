@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from "@/lib/auth-config";
@@ -79,7 +80,7 @@ export async function POST(request, { params }) {
       startedAt: startedAt.toISOString(),
     });
   } catch (error) {
-    console.error("Start meditation session error:", error);
+    logger.error("Start meditation session error:", error);
     return NextResponse.json(
       { error: "Failed to start meditation session", details: error.message },
       { status: 500 }

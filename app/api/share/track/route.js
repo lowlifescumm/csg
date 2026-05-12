@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -85,7 +86,7 @@ export async function POST(request) {
       );
     } catch (error) {
       // Table doesn't exist - that's okay, we can skip logging
-      console.log("credit_usage_history table not found, skipping log entry");
+      logger.info("credit_usage_history table not found, skipping log entry");
     }
 
     return NextResponse.json({ 
@@ -95,7 +96,7 @@ export async function POST(request) {
       message: "3 credits added to your account!" 
     });
   } catch (error) {
-    console.error("Error tracking share:", error);
+    logger.error("Error tracking share:", error);
     
     // If table doesn't exist, create it and retry
     if (error.message?.includes("relation \"reading_shares\" does not exist")) {
@@ -115,7 +116,7 @@ export async function POST(request) {
         // Retry the credit award
         return await POST(request);
       } catch (createError) {
-        console.error("Error creating reading_shares table:", createError);
+        logger.error("Error creating reading_shares table:", createError);
       }
     }
 

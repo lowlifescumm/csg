@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { sendNewsletterLeadMagnetEmail } from '@/lib/email';
@@ -31,7 +32,7 @@ export async function POST(request) {
         )
       `);
     } catch (createError) {
-      console.error('[Newsletter] Failed to ensure newsletter_signups table exists:', createError);
+      logger.error('[Newsletter] Failed to ensure newsletter_signups table exists:', createError);
     }
 
     // Insert or ignore if already exists
@@ -44,7 +45,7 @@ export async function POST(request) {
         [normalizedEmail, firstName || null]
       );
     } catch (dbError) {
-      console.error('[Newsletter] Failed to save signup:', dbError);
+      logger.error('[Newsletter] Failed to save signup:', dbError);
       // Don't block user from getting the lead magnet if DB insert fails
     }
 
@@ -55,7 +56,7 @@ export async function POST(request) {
     );
 
     if (!emailResult.success) {
-      console.error('[Newsletter] Failed to send lead magnet email:', emailResult.error);
+      logger.error('[Newsletter] Failed to send lead magnet email:', emailResult.error);
       // Still return success so user sees inline link
       return NextResponse.json({
         success: true,
@@ -71,7 +72,7 @@ export async function POST(request) {
       downloadUrl: 'https://drive.google.com/file/d/15jFmzSH2aj6h4Kl7lPNazFZ9j3gLY5j-/view?usp=sharing',
     });
   } catch (error) {
-    console.error('[Newsletter] Unexpected error:', error);
+    logger.error('[Newsletter] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Failed to subscribe to newsletter. Please try again later.' },
       { status: 500 }

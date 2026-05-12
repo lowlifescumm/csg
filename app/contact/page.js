@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 import { useState } from "react";
 import Link from "next/link";
@@ -36,7 +37,7 @@ export default function ContactPage() {
         setStatus("error");
       }
     } catch (error) {
-      console.error("Contact form error:", error);
+      logger.error("Contact form error:", error);
       setStatus("error");
     } finally {
       setLoading(false);

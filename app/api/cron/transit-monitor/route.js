@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * Transit Monitor Cron Job
  * 
@@ -25,11 +26,11 @@ export async function GET(req) {
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    console.log('[Cron Debug] Auth header received:', authHeader);
-    console.log('[Cron Debug] CRON_SECRET exists:', !!cronSecret);
+    logger.info('[Cron Debug] Auth header received:', authHeader);
+    logger.info('[Cron Debug] CRON_SECRET exists:', !!cronSecret);
 
     if (!cronSecret) {
-      console.error('[Cron] CRON_SECRET not configured');
+      logger.error('[Cron] CRON_SECRET not configured');
       return NextResponse.json({ 
         error: 'Service not configured' 
       }, { status: 500 });
@@ -41,17 +42,17 @@ export async function GET(req) {
     const trimmedHeader = (authHeader || '').trim();
     const expectedAuth = `Bearer ${trimmedSecret}`;
     
-    console.log('[Cron Debug] Secret length:', trimmedSecret.length);
-    console.log('[Cron Debug] Header length:', trimmedHeader?.length);
-    console.log('[Cron Debug] Expected full (masked):', `Bearer ${trimmedSecret.substring(0, 10)}...${trimmedSecret.substring(trimmedSecret.length - 4)}`);
-    console.log('[Cron Debug] Received full:', trimmedHeader);
-    console.log('[Cron Debug] Exact match:', trimmedHeader === expectedAuth);
-    console.log('[Cron Debug] Secret has whitespace:', cronSecret !== trimmedSecret);
+    logger.info('[Cron Debug] Secret length:', trimmedSecret.length);
+    logger.info('[Cron Debug] Header length:', trimmedHeader?.length);
+    logger.info('[Cron Debug] Expected full (masked):', `Bearer ${trimmedSecret.substring(0, 10)}...${trimmedSecret.substring(trimmedSecret.length - 4)}`);
+    logger.info('[Cron Debug] Received full:', trimmedHeader);
+    logger.info('[Cron Debug] Exact match:', trimmedHeader === expectedAuth);
+    logger.info('[Cron Debug] Secret has whitespace:', cronSecret !== trimmedSecret);
     
     if (!authHeader || trimmedHeader !== expectedAuth) {
-      console.warn('[Cron] Unauthorized cron job attempt');
-      console.warn('[Cron Debug] Expected length:', expectedAuth.length);
-      console.warn('[Cron Debug] Received length:', trimmedHeader?.length);
+      logger.warn('[Cron] Unauthorized cron job attempt');
+      logger.warn('[Cron Debug] Expected length:', expectedAuth.length);
+      logger.warn('[Cron Debug] Received length:', trimmedHeader?.length);
       return NextResponse.json({ 
         error: 'Unauthorized',
         debug: {
@@ -64,13 +65,13 @@ export async function GET(req) {
     }
 
     // Run monitoring
-    console.log('[Cron] Starting transit monitoring job...');
+    logger.info('[Cron] Starting transit monitoring job...');
     const result = await monitorAllTransitSubscriptions();
 
     // Cleanup old notifications (run once daily at midnight)
     const hour = new Date().getHours();
     if (hour === 0) {
-      console.log('[Cron] Running cleanup job...');
+      logger.info('[Cron] Running cleanup job...');
       await cleanupOldNotifications();
     }
 
@@ -81,7 +82,7 @@ export async function GET(req) {
     });
 
   } catch (error) {
-    console.error('[Cron] Transit monitor job failed:', error);
+    logger.error('[Cron] Transit monitor job failed:', error);
     return NextResponse.json({
       error: 'Job failed',
       details: error.message,
@@ -95,7 +96,16 @@ export async function GET(req) {
  * Alternative method for cron services that use POST
  */
 export async function POST(req) {
-  return GET(req);
+  try {
+    return await GET(req);
+  } catch (error) {
+    logger.error('[Cron] Transit monitor POST handler failed:', error);
+    return NextResponse.json({
+      error: 'Job failed',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
+  }
 }
 
 

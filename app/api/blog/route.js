@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
@@ -86,7 +87,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Blog API error:', error);
+    logger.error('Blog API error:', error);
     return NextResponse.json({ error: 'Failed to fetch blog posts' }, { status: 500 });
   }
 }
@@ -256,7 +257,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Create blog post error:', error);
+    logger.error('Create blog post error:', error);
     return NextResponse.json({ error: 'Failed to create blog post' }, { status: 500 });
   }
 }
@@ -329,7 +330,7 @@ export async function PUT(request) {
     });
 
   } catch (error) {
-    console.error('Update blog post error:', error);
+    logger.error('Update blog post error:', error);
     return NextResponse.json({ 
       error: 'Failed to update blog post', 
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -362,7 +363,7 @@ export async function DELETE(request) {
     return NextResponse.json({ success: true });
 
   } catch (error) {
-    console.error('Delete blog post error:', error);
+    logger.error('Delete blog post error:', error);
     return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });
   }
 }

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * GET /api/paperclip/status
  * 
@@ -13,8 +14,12 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
-const FRO_API_KEY = 'rnd_kkevW0A3fn5d0JaY3n4VxOgX5I0n';
+const FRO_API_KEY = process.env.FRO_API_KEY;
 const FRO_COMPANY_ID = '84898c57-acb2-43a9-a0e7-b22d600d3434';
+
+if (!FRO_API_KEY) {
+  throw new Error('FRO_API_KEY environment variable is required for /api/paperclip/status');
+}
 const SUBAGENT_RUNS_FILE = '/home/ethan/.openclaw/subagents/runs.json';
 const PAPERCLIP_API = `https://paperclip.in/api/company/${FRO_COMPANY_ID}`;
 
@@ -31,7 +36,8 @@ async function fetchFRO(endpoint) {
     });
     if (!res.ok) return null;
     return await res.json();
-  } catch {
+  } catch (err) {
+    console.error('[paperclip/status] fetchData error:', err);
     return null;
   }
 }
@@ -73,7 +79,8 @@ async function getActiveRuns() {
     const recent = runs.filter(r => r.endedAt && (now - r.endedAt) < 60 * 60 * 1000);
     
     return { active, recent };
-  } catch {
+  } catch (err) {
+    console.error("[paperclip/status] Failed to fetch runs:", err);
     return { active: [], recent: [] };
   }
 }
@@ -302,7 +309,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Paperclip status error:', error);
+    logger.error('Paperclip status error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

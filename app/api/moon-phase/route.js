@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import * as Astronomy from 'astronomy-engine';
 
@@ -246,7 +247,7 @@ export async function GET() {
       data: moonPhaseData
     });
   } catch (error) {
-    console.error('Moon phase calculation error:', error);
+    logger.error('Moon phase calculation error:', error);
     return NextResponse.json(
       { 
         success: false,

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
@@ -83,7 +84,7 @@ export async function POST(request) {
     // Get final credit balance from new engine
     const balance = await getCreditBalance(userId);
 
-    console.log(`[Admin Credits] Admin ${decoded.userId} adjusted credits for user ${userId} (${targetUser.email}): ${creditsToAdd > 0 ? '+' : ''}${creditsToAdd}. Reason: ${reason || 'Manual adjustment'}`);
+    logger.info(`[Admin Credits] Admin ${decoded.userId} adjusted credits for user ${userId} (${targetUser.email}): ${creditsToAdd > 0 ? '+' : ''}${creditsToAdd}. Reason: ${reason || 'Manual adjustment'}`);
 
     return NextResponse.json({ 
       success: true,
@@ -93,8 +94,8 @@ export async function POST(request) {
       ledger_id: result.ledger_id
     });
   } catch (error) {
-    console.error('Update credits error:', error);
-    console.error('Error details:', {
+    logger.error('Update credits error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name

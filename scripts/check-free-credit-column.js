@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Check if next_free_credit_issue_at column exists in users table
  * Uses DATABASE_URL from environment or command line argument
@@ -8,8 +9,8 @@ const { Pool } = require('pg');
 const connectionString = process.argv[2] || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL required');
-  console.error('Usage: node scripts/check-free-credit-column.js [DATABASE_URL]');
+  logger.error('❌ DATABASE_URL required');
+  logger.error('Usage: node scripts/check-free-credit-column.js [DATABASE_URL]');
   process.exit(1);
 }
 
@@ -24,15 +25,15 @@ async function checkColumn() {
   const client = await pool.connect();
 
   try {
-    console.log('🔗 Connecting to database...');
+    logger.info('🔗 Connecting to database...');
     
     // Test connection
     const { rows: testRows } = await client.query('SELECT NOW() as now');
-    console.log('✅ Database connection successful:', testRows[0].now);
-    console.log();
+    logger.info('✅ Database connection successful:', testRows[0].now);
+    logger.info();
 
     // Check if column exists
-    console.log('🔍 Checking for next_free_credit_issue_at column...');
+    logger.info('🔍 Checking for next_free_credit_issue_at column...');
     const { rows: columns } = await client.query(`
       SELECT 
         column_name, 
@@ -46,19 +47,19 @@ async function checkColumn() {
     `);
 
     if (columns.length === 0) {
-      console.log('❌ Column next_free_credit_issue_at DOES NOT EXIST in users table');
-      console.log();
-      console.log('💡 Run migration: node scripts/run-free-credit-tracking-migration.js "$DATABASE_URL"');
+      logger.info('❌ Column next_free_credit_issue_at DOES NOT EXIST in users table');
+      logger.info();
+      logger.info('💡 Run migration: node scripts/run-free-credit-tracking-migration.js "$DATABASE_URL"');
     } else {
       const col = columns[0];
-      console.log('✅ Column next_free_credit_issue_at EXISTS');
-      console.log('   Type:', col.data_type);
-      console.log('   Nullable:', col.is_nullable);
-      console.log('   Default:', col.column_default || 'none');
-      console.log();
+      logger.info('✅ Column next_free_credit_issue_at EXISTS');
+      logger.info('   Type:', col.data_type);
+      logger.info('   Nullable:', col.is_nullable);
+      logger.info('   Default:', col.column_default || 'none');
+      logger.info();
 
       // Check index
-      console.log('🔍 Checking for index...');
+      logger.info('🔍 Checking for index...');
       const { rows: indexes } = await client.query(`
         SELECT indexname, indexdef
         FROM pg_indexes
@@ -67,15 +68,15 @@ async function checkColumn() {
       `);
 
       if (indexes.length === 0) {
-        console.log('⚠️  Index idx_users_next_free_credit_issue_at does not exist');
+        logger.info('⚠️  Index idx_users_next_free_credit_issue_at does not exist');
       } else {
-        console.log('✅ Index exists:', indexes[0].indexname);
-        console.log('   Definition:', indexes[0].indexdef);
+        logger.info('✅ Index exists:', indexes[0].indexname);
+        logger.info('   Definition:', indexes[0].indexdef);
       }
-      console.log();
+      logger.info();
 
       // Check user data
-      console.log('📊 Checking user data...');
+      logger.info('📊 Checking user data...');
       const { rows: userStats } = await client.query(`
         SELECT 
           COUNT(*) as total_users,
@@ -85,14 +86,14 @@ async function checkColumn() {
         FROM users
       `);
 
-      console.log('   Total users:', userStats[0].total_users);
-      console.log('   Users with timestamp:', userStats[0].users_with_timestamp);
-      console.log('   Users with NULL timestamp:', userStats[0].users_null_timestamp);
-      console.log('   Users eligible for credits now:', userStats[0].users_eligible_now);
-      console.log();
+      logger.info('   Total users:', userStats[0].total_users);
+      logger.info('   Users with timestamp:', userStats[0].users_with_timestamp);
+      logger.info('   Users with NULL timestamp:', userStats[0].users_null_timestamp);
+      logger.info('   Users eligible for credits now:', userStats[0].users_eligible_now);
+      logger.info();
 
       // Sample a few users
-      console.log('📋 Sample users:');
+      logger.info('📋 Sample users:');
       const { rows: sampleUsers } = await client.query(`
         SELECT 
           id, 
@@ -105,16 +106,16 @@ async function checkColumn() {
       `);
 
       sampleUsers.forEach(user => {
-        console.log(`   User ${user.id} (${user.email}):`);
-        console.log(`     Created: ${user.created_at}`);
-        console.log(`     Next free credit: ${user.next_free_credit_issue_at || 'NULL'}`);
-        console.log();
+        logger.info(`   User ${user.id} (${user.email}):`);
+        logger.info(`     Created: ${user.created_at}`);
+        logger.info(`     Next free credit: ${user.next_free_credit_issue_at || 'NULL'}`);
+        logger.info();
       });
     }
 
   } catch (error) {
-    console.error('❌ Error:', error.message);
-    console.error(error);
+    logger.error('❌ Error:', error.message);
+    logger.error(error);
     process.exit(1);
   } finally {
     client.release();

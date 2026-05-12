@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 const testDatabaseUrl = process.env.TEST_DATABASE_URL
 
 if (testDatabaseUrl) {
@@ -10,6 +11,6 @@ if (testDatabaseUrl) {
     'Set TEST_DATABASE_URL (e.g. in CI secrets or local .env.test) to enable DB-backed tests.'
   ].join(' ')
 
-  console.warn(`\n[Jest] ${message}\n`)
+  logger.warn(`\n[Jest] ${message}\n`)
 }
 

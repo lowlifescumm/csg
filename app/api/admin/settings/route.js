@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
@@ -38,14 +39,15 @@ export async function GET() {
     rows.forEach(row => {
       try {
         settings[row.key] = JSON.parse(row.value);
-      } catch {
+      } catch (err) {
+        console.error("[admin/settings] JSON parse error for key", row.key, err);
         settings[row.key] = row.value;
       }
     });
 
     return NextResponse.json({ settings });
   } catch (error) {
-    console.error('Get settings error:', error);
+    logger.error('Get settings error:', error);
     // Return default settings if table doesn't exist
     return NextResponse.json({
       settings: {
@@ -114,7 +116,7 @@ export async function PUT(request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Update settings error:', error);
+    logger.error('Update settings error:', error);
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
   }
 }

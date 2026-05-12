@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import fs from 'fs';
@@ -27,7 +28,7 @@ export async function POST(request) {
       );
     }
 
-    console.log('🚀 Running Google OAuth database migration...');
+    logger.info('🚀 Running Google OAuth database migration...');
     
     // Read and execute the Google OAuth schema SQL
     const schemaPath = path.join(process.cwd(), 'database', 'add-google-oauth.sql');
@@ -80,7 +81,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('❌ Error running Google OAuth migration:', error);
+    logger.error('❌ Error running Google OAuth migration:', error);
     return NextResponse.json(
       { 
         error: 'Migration failed',

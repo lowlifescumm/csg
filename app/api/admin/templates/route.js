@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/lib/auth-config';
@@ -66,7 +67,7 @@ export async function GET(request) {
       client.release();
     }
   } catch (error) {
-    console.error('[Admin Templates] GET error:', error);
+    logger.error('[Admin Templates] GET error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch templates', details: error.message },
       { status: 500 }
@@ -247,7 +248,7 @@ export async function POST(request) {
 
         const template = result.rows[0];
 
-        console.log('[Admin Templates] Template saved:', {
+        logger.info('[Admin Templates] Template saved:', {
           id: template.id,
           name: template.name,
         });
@@ -264,7 +265,7 @@ export async function POST(request) {
       client.release();
     }
   } catch (error) {
-    console.error('[Admin Templates] POST error:', error);
+    logger.error('[Admin Templates] POST error:', error);
     
     // Handle JSON parse errors
     if (error.message && error.message.includes('JSON')) {

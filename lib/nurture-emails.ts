@@ -1,3 +1,4 @@
+const logger = require('./logger');
 // Email nurture sequence for CosmicSpiritGuide
 // Sends 5-7 emails over 12+ days to convert signups to paying users
 
@@ -28,7 +29,7 @@ async function sendNurtureEmail({
   html: string;
 }) {
   if (!resend) {
-    console.error('[NurtureEmail] RESEND_API_KEY not set');
+    logger.error('[NurtureEmail] RESEND_API_KEY not set');
     return { success: false, error: 'Email service not configured' };
   }
 
@@ -46,14 +47,14 @@ async function sendNurtureEmail({
     });
 
     if (error) {
-      console.error(`[NurtureEmail] Email ${emailNumber} failed:`, error);
+      logger.error(`[NurtureEmail] Email ${emailNumber} failed:`, error);
       return { success: false, error };
     }
 
-    console.log(`[NurtureEmail] Email ${emailNumber} sent to ${user.email}:`, data?.id);
+    logger.info(`[NurtureEmail] Email ${emailNumber} sent to ${user.email}:`, data?.id);
     return { success: true, data };
   } catch (err) {
-    console.error(`[NurtureEmail] Email ${emailNumber} exception:`, err);
+    logger.error(`[NurtureEmail] Email ${emailNumber} exception:`, err);
     return { success: false, error: err };
   }
 }

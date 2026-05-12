@@ -1,13 +1,14 @@
+const logger = require('../../../lib/logger');
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth-config";
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL?.trim() || "";
 
 const handler = NextAuth(authOptions);
-console.log('[NextAuth] Handler created successfully');
+logger.info('[NextAuth] Handler created successfully');
 
 export async function GET(request, context) {
-  console.log('[NextAuth][GET] Incoming request', {
+  logger.info('[NextAuth][GET] Incoming request', {
     url: request.url,
     host: request.headers.get('host'),
     forwardedHost: request.headers.get('x-forwarded-host'),
@@ -21,18 +22,18 @@ export async function GET(request, context) {
     const incomingHost = request.headers.get('host');
     if (expectedHost && incomingHost && incomingHost !== expectedHost) {
       const redirectUrl = `${NEXTAUTH_URL}${reqUrl.pathname}${reqUrl.search}`;
-      console.log('[NextAuth][GET] Host mismatch, redirecting to public host', { incomingHost, expectedHost, redirectUrl });
+      logger.info('[NextAuth][GET] Host mismatch, redirecting to public host', { incomingHost, expectedHost, redirectUrl });
       return Response.redirect(redirectUrl, 307);
     }
   } catch (e) {
-    console.error('[NextAuth][GET] Host enforcement error:', e);
+    logger.error('[NextAuth][GET] Host enforcement error:', e);
   }
   
   return handler(request, context);
 }
 
 export async function POST(request, context) {
-  console.log('[NextAuth][POST] Incoming request', {
+  logger.info('[NextAuth][POST] Incoming request', {
     url: request.url,
     host: request.headers.get('host'),
     forwardedHost: request.headers.get('x-forwarded-host'),
@@ -46,11 +47,11 @@ export async function POST(request, context) {
     const incomingHost = request.headers.get('host');
     if (expectedHost && incomingHost && incomingHost !== expectedHost) {
       const redirectUrl = `${NEXTAUTH_URL}${reqUrl.pathname}${reqUrl.search}`;
-      console.log('[NextAuth][POST] Host mismatch, redirecting to public host', { incomingHost, expectedHost, redirectUrl });
+      logger.info('[NextAuth][POST] Host mismatch, redirecting to public host', { incomingHost, expectedHost, redirectUrl });
       return Response.redirect(redirectUrl, 307);
     }
   } catch (e) {
-    console.error('[NextAuth][POST] Host enforcement error:', e);
+    logger.error('[NextAuth][POST] Host enforcement error:', e);
   }
   
   return handler(request, context);

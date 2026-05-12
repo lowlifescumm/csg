@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 /**
  * GET /api/reports/[resultId]/download
  * Download report as PDF/HTML
@@ -14,7 +15,7 @@ const parseContentJson = (content) => {
   try {
     return JSON.parse(content);
   } catch (error) {
-    console.error('[ReportDownload] Failed to parse content_json:', error);
+    logger.error('[ReportDownload] Failed to parse content_json:', error);
     return null;
   }
 };
@@ -112,7 +113,7 @@ export async function GET(request, { params }) {
           return NextResponse.redirect(pdfResult.pdfUrl);
         }
       } catch (error) {
-        console.error('[ReportDownload] PDF generation error:', error);
+        logger.error('[ReportDownload] PDF generation error:', error);
       }
       
       // Fallback: return HTML
@@ -133,7 +134,7 @@ export async function GET(request, { params }) {
     }
     
   } catch (error) {
-    console.error('[ReportDownload] Error:', error);
+    logger.error('[ReportDownload] Error:', error);
     return NextResponse.json({
       error: 'Internal server error',
       details: error.message,

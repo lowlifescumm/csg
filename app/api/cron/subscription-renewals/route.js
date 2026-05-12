@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { renewDueSubscriptions } from '@/lib/subscription-service.js';
 
@@ -20,7 +21,7 @@ export async function POST(request) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[Subscription Renewals Cron] Error:', error);
+    logger.error('[Subscription Renewals Cron] Error:', error);
     return NextResponse.json(
       { error: 'cron_failed', details: error.message },
       { status: 500 },

@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -36,7 +37,7 @@ export default function UserManagementPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      logger.error('Auth error:', error);
       window.location.href = '/login';
     }
   };
@@ -50,10 +51,10 @@ export default function UserManagementPage() {
       if (response.ok) {
         setCredits(data.credits);
       } else {
-        console.error('Failed to fetch credits:', data.error);
+        logger.error('Failed to fetch credits:', data.error);
       }
     } catch (error) {
-      console.error('Failed to fetch credits:', error);
+      logger.error('Failed to fetch credits:', error);
     }
   };
 
@@ -103,7 +104,7 @@ export default function UserManagementPage() {
         setCreditError(data.error || 'Failed to update credits');
       }
     } catch (error) {
-      console.error('Failed to update credits:', error);
+      logger.error('Failed to update credits:', error);
       setCreditError('Failed to connect to server');
     } finally {
       setIsUpdatingCredits(false);
@@ -118,10 +119,10 @@ export default function UserManagementPage() {
       if (response.ok) {
         setUsers(data.users || []);
       } else {
-        console.error('Failed to fetch users:', data.error);
+        logger.error('Failed to fetch users:', data.error);
       }
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      logger.error('Failed to fetch users:', error);
     } finally {
       setLoading(false);
     }

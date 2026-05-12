@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
@@ -52,7 +53,7 @@ export async function POST(request) {
     const coach = await generateCoachReply({ pastSummaries, newCard, question });
     return NextResponse.json({ success: true, coach });
   } catch (err) {
-    console.error('Coach daily error:', err);
+    logger.error('Coach daily error:', err);
     return NextResponse.json({ error: "Failed to run coach" }, { status: 500 });
   }
 }

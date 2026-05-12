@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getUserByEmail, verifyPassword, generateToken } from '@/lib/auth';
 
@@ -61,7 +62,7 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    console.error('Admin login error:', error);
+    logger.error('Admin login error:', error);
     return NextResponse.json(
       { error: 'Failed to login' },
       { status: 500 }

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * POST /api/jobs/submit
  * Submit a reading generation job
@@ -111,7 +112,7 @@ export async function POST(request) {
       // Process job immediately (async - don't wait)
       // In production, you'd have a separate worker process
       processJob(jobRecord, processor).catch(error => {
-        console.error(`[JobSubmit] Failed to process job ${jobRecord.id}:`, error);
+        logger.error(`[JobSubmit] Failed to process job ${jobRecord.id}:`, error);
       });
       
       return NextResponse.json({
@@ -122,7 +123,7 @@ export async function POST(request) {
       });
       
     } catch (error) {
-      console.error('[JobSubmit] Error processing job:', error);
+      logger.error('[JobSubmit] Error processing job:', error);
       // Job will be marked as failed by the error handler
       return NextResponse.json({
         error: 'Failed to process job',
@@ -131,7 +132,7 @@ export async function POST(request) {
     }
     
   } catch (error) {
-    console.error('[JobSubmit] Error:', error);
+    logger.error('[JobSubmit] Error:', error);
     return NextResponse.json({
       error: 'Internal server error',
       details: error.message,

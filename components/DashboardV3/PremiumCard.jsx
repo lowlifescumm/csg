@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { Crown, Sparkles, Star, Heart, MessageCircle, Zap, Loader2, Check } from "lucide-react";
@@ -56,7 +57,7 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
         setProcessing(false);
       }
     } catch (error) {
-      console.error("Subscription error:", error);
+      logger.error("Subscription error:", error);
       alert("Failed to start subscription process");
       setProcessing(false);
     }

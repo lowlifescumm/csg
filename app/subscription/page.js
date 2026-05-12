@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 'use client';
 
 export const dynamic = 'force-static';
@@ -52,7 +53,7 @@ export default function SubscriptionPage() {
         setProcessing(false);
       }
     } catch (error) {
-      console.error('Subscription error:', error);
+      logger.error('Subscription error:', error);
       alert('Failed to start subscription process');
       setProcessing(false);
     }

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
@@ -93,7 +94,7 @@ export async function GET() {
       lastLogin: activityDates[0] || null
     });
   } catch (error) {
-    console.error("Error calculating streak:", error);
+    logger.error("Error calculating streak:", error);
     return NextResponse.json(
       { error: "Failed to calculate streak" },
       { status: 500 }

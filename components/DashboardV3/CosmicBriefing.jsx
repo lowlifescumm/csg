@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { Sparkles, BookOpen, Loader2, Flame, Droplets, Wind, Mountain } from "lucide-react";
@@ -62,7 +63,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
           }
         }
       } catch (err) {
-        console.log("Could not fetch user sign, defaulting to Aries");
+        logger.info("Could not fetch user sign, defaulting to Aries");
         setSelectedSign("Aries");
       }
     };
@@ -89,7 +90,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
         setError(data.error || "Failed to load briefing");
       }
     } catch (err) {
-      console.error("Failed to fetch briefing:", err);
+      logger.error("Failed to fetch briefing:", err);
       setError("Failed to load briefing. Please try again.");
     } finally {
       setLoading(false);
@@ -142,7 +143,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
 
       setLoadingReading(false);
     } catch (err) {
-      console.error("Error generating reading:", err);
+      logger.error("Error generating reading:", err);
       setError({
         type: "error",
         message: "Failed to connect to server. Please try again.",
@@ -183,7 +184,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
         });
       }
     } catch (err) {
-      console.error("Error saving to journal:", err);
+      logger.error("Error saving to journal:", err);
       setError({
         type: "error",
         message: "Failed to save to journal. Please try again.",

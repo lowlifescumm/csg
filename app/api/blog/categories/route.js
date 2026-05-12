@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
@@ -24,7 +25,7 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('Blog categories API error:', error);
+    logger.error('Blog categories API error:', error);
     return NextResponse.json({ 
       error: 'Failed to fetch categories',
       detail: process.env.NODE_ENV === 'development' ? error.message : undefined

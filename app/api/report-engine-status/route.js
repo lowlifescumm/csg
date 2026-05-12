@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db.js';
 
@@ -50,7 +51,7 @@ export async function GET(request) {
       }
     } catch (dbError) {
       // Database might not be accessible or tables might not exist
-      console.warn('[Report Engine Status] Could not count templates:', dbError.message);
+      logger.warn('[Report Engine Status] Could not count templates:', dbError.message);
       // Continue with templateCount = 0
     }
     
@@ -65,7 +66,7 @@ export async function GET(request) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[Report Engine Status] Error:', error);
+    logger.error('[Report Engine Status] Error:', error);
     return NextResponse.json(
       { 
         error: 'Failed to get engine status',

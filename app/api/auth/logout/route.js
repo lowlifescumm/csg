@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 
 export async function POST() {
@@ -8,7 +9,7 @@ export async function POST() {
     
     return response;
   } catch (error) {
-    console.error('[Logout] Error:', error);
+    logger.error('[Logout] Error:', error);
     return NextResponse.json(
       { error: 'Logout failed' },
       { status: 500 }

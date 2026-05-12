@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 'use client';
 
 export const dynamic = 'force-static';
@@ -500,7 +501,7 @@ function TransitDetailView({ transit, onBack }) {
 
       setInterpretation(data.interpretation);
     } catch (error) {
-      console.error('Error fetching interpretation:', error);
+      logger.error('Error fetching interpretation:', error);
       setInterpretation({
         summary: 'Unable to generate interpretation. Please try again later.',
         fullGuidance: '',

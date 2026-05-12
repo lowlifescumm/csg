@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -44,13 +45,13 @@ function BirthChartPageInner() {
               }
             } catch (chartError) {
               // Chart check failed, continue to show form
-              console.log('Chart check failed:', chartError);
+              logger.info('Chart check failed:', chartError);
             }
           }
         }
         // No user or no chart - show the form (no redirect to login)
       } catch (error) {
-        console.log('Auth check failed, showing form anyway:', error);
+        logger.info('Auth check failed, showing form anyway:', error);
       } finally {
         setLoading(false);
         setCheckingChart(false);

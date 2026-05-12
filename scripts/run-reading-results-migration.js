@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -12,8 +13,8 @@ const path = require('path');
 const connectionString = process.argv[2] || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL required');
-  console.error('Usage: node scripts/run-reading-results-migration.js [DATABASE_URL]');
+  logger.error('❌ DATABASE_URL required');
+  logger.error('Usage: node scripts/run-reading-results-migration.js [DATABASE_URL]');
   process.exit(1);
 }
 
@@ -34,7 +35,7 @@ async function main() {
   const client = await pool.connect();
 
   try {
-    console.log('🔗 Connected to database');
+    logger.info('🔗 Connected to database');
     const migrationPath = path.join(__dirname, '../database/add-reading-results.sql');
     const sql = fs.readFileSync(migrationPath, 'utf8');
     
@@ -44,10 +45,10 @@ async function main() {
       if (statement.trim()) {
         try {
           await client.query(statement);
-          console.log('✓ Executed:', statement.split('\n')[0].trim());
+          logger.info('✓ Executed:', statement.split('\n')[0].trim());
         } catch (error) {
           if (['42P07', '42710', '42723', '42P16', '42704'].includes(error.code)) {
-            console.log('⊘ Skipped (exists):', error.code, error.message.split('\n')[0]);
+            logger.info('⊘ Skipped (exists):', error.code, error.message.split('\n')[0]);
           } else {
             throw error;
           }
@@ -55,10 +56,10 @@ async function main() {
       }
     }
     
-    console.log('✅ Reading results migration applied');
+    logger.info('✅ Reading results migration applied');
   } catch (error) {
-    console.error('❌ Migration failed:', error.message);
-    console.error(error);
+    logger.error('❌ Migration failed:', error.message);
+    logger.error(error);
     process.exit(1);
   } finally {
     client.release();

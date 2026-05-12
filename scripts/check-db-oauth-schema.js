@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Check Database OAuth Schema
  * Run this on Render server to check if OAuth migration has been run
@@ -15,7 +16,7 @@ const pool = new Pool({
 });
 
 async function checkSchema() {
-  console.log('🔍 Checking Database OAuth Schema...\n');
+  logger.info('🔍 Checking Database OAuth Schema...\n');
   
   try {
     // Check password_hash nullable
@@ -27,20 +28,20 @@ async function checkSchema() {
     `);
 
     if (passwordHashCheck.rows.length === 0) {
-      console.log('❌ users table or password_hash column not found');
+      logger.info('❌ users table or password_hash column not found');
       process.exit(1);
     }
 
     const isNullable = passwordHashCheck.rows[0].is_nullable === 'YES';
-    console.log('📋 password_hash column:');
-    console.log(`   Nullable: ${isNullable ? '✅ YES (OAuth users allowed)' : '❌ NO (OAuth will fail!)'}`);
+    logger.info('📋 password_hash column:');
+    logger.info(`   Nullable: ${isNullable ? '✅ YES (OAuth users allowed)' : '❌ NO (OAuth will fail!)'}`);
     
     if (!isNullable) {
-      console.log('\n⚠️  CRITICAL: password_hash does NOT allow NULL!');
-      console.log('   Google OAuth will fail because OAuth users have no password.');
-      console.log('\n💡 Fix: Run the migration:');
-      console.log('   curl -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" \\');
-      console.log('     https://cosmicspiritguide.com/api/admin/run-google-oauth-migration');
+      logger.info('\n⚠️  CRITICAL: password_hash does NOT allow NULL!');
+      logger.info('   Google OAuth will fail because OAuth users have no password.');
+      logger.info('\n💡 Fix: Run the migration:');
+      logger.info('   curl -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" \\');
+      logger.info('     https://cosmicspiritguide.com/api/admin/run-google-oauth-migration');
       process.exit(1);
     }
 
@@ -53,10 +54,10 @@ async function checkSchema() {
     `);
 
     if (googleIdCheck.rows.length > 0) {
-      console.log('✅ google_id column exists');
+      logger.info('✅ google_id column exists');
     } else {
-      console.log('❌ google_id column does not exist');
-      console.log('   Run the OAuth migration to add it.');
+      logger.info('❌ google_id column does not exist');
+      logger.info('   Run the OAuth migration to add it.');
     }
 
     // Check avatar_url column
@@ -68,16 +69,16 @@ async function checkSchema() {
     `);
 
     if (avatarUrlCheck.rows.length > 0) {
-      console.log('✅ avatar_url column exists');
+      logger.info('✅ avatar_url column exists');
     } else {
-      console.log('❌ avatar_url column does not exist');
-      console.log('   Run the OAuth migration to add it.');
+      logger.info('❌ avatar_url column does not exist');
+      logger.info('   Run the OAuth migration to add it.');
     }
 
-    console.log('\n✅ Database schema check complete!');
+    logger.info('\n✅ Database schema check complete!');
     
   } catch (error) {
-    console.error('❌ Error checking database:', error.message);
+    logger.error('❌ Error checking database:', error.message);
     process.exit(1);
   } finally {
     await pool.end();

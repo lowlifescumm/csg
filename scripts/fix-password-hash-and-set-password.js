@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 /**
  * URGENT FIX: Add password_hash column and set password for admin account
@@ -11,7 +12,7 @@ import { hashPassword } from "../lib/auth.js";
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL environment variable is required');
+  logger.error('❌ DATABASE_URL environment variable is required');
   process.exit(1);
 }
 
@@ -24,18 +25,18 @@ const pool = new Pool({
 
 async function fixPasswordHash() {
   try {
-    console.log('🚀 Starting password_hash fix...\n');
+    logger.info('🚀 Starting password_hash fix...\n');
 
     // Step 1: Add password_hash column if it doesn't exist
-    console.log('Step 1: Adding password_hash column...');
+    logger.info('Step 1: Adding password_hash column...');
     try {
       await pool.query(`
         ALTER TABLE users 
         ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)
       `);
-      console.log('✅ password_hash column added (or already exists)\n');
+      logger.info('✅ password_hash column added (or already exists)\n');
     } catch (error) {
-      console.error('❌ Failed to add column:', error.message);
+      logger.error('❌ Failed to add column:', error.message);
       throw error;
     }
 
@@ -43,27 +44,27 @@ async function fixPasswordHash() {
     const email = process.argv[2] || 'ethan.fitzhenry@gmail.com';
     const password = process.argv[3] || 'TempPass123!';
     
-    console.log(`Step 2: Looking up user: ${email}...`);
+    logger.info(`Step 2: Looking up user: ${email}...`);
     const { rows: userRows } = await pool.query(
       "SELECT id, email, first_name, last_name, role, password_hash FROM users WHERE email = $1",
       [email]
     );
 
     if (userRows.length === 0) {
-      console.log(`❌ User ${email} not found in database.`);
-      console.log('Please provide your actual email as the first argument.');
-      console.log('Usage: node scripts/fix-password-hash-and-set-password.js your@email.com [password]');
+      logger.info(`❌ User ${email} not found in database.`);
+      logger.info('Please provide your actual email as the first argument.');
+      logger.info('Usage: node scripts/fix-password-hash-and-set-password.js your@email.com [password]');
       return;
     }
 
     const user = userRows[0];
-    console.log(`✅ Found user: ${user.email}`);
-    console.log(`   ID: ${user.id}`);
-    console.log(`   Name: ${user.first_name} ${user.last_name}`);
-    console.log(`   Role: ${user.role}\n`);
+    logger.info(`✅ Found user: ${user.email}`);
+    logger.info(`   ID: ${user.id}`);
+    logger.info(`   Name: ${user.first_name} ${user.last_name}`);
+    logger.info(`   Role: ${user.role}\n`);
 
     // Step 3: Set password
-    console.log('Step 3: Setting password...');
+    logger.info('Step 3: Setting password...');
     const hashedPassword = await hashPassword(password);
     
     await pool.query(`
@@ -72,31 +73,31 @@ async function fixPasswordHash() {
       WHERE id = $2
     `, [hashedPassword, user.id]);
     
-    console.log(`✅ Password set for ${email}\n`);
+    logger.info(`✅ Password set for ${email}\n`);
 
     // Step 4: Verify
-    console.log('Step 4: Verifying fix...');
+    logger.info('Step 4: Verifying fix...');
     const { rows: verifyRows } = await pool.query(
       "SELECT password_hash IS NOT NULL as has_password FROM users WHERE email = $1",
       [email]
     );
     
     if (verifyRows[0].has_password) {
-      console.log('✅ Verification passed - user has password_hash\n');
+      logger.info('✅ Verification passed - user has password_hash\n');
     } else {
-      console.log('⚠️  Warning: password_hash is still NULL\n');
+      logger.info('⚠️  Warning: password_hash is still NULL\n');
     }
 
-    console.log('='.repeat(60));
-    console.log('✅ SUCCESS! You can now login with:');
-    console.log(`   Email: ${email}`);
-    console.log(`   Password: ${password}`);
-    console.log('='.repeat(60));
-    console.log('\n⚠️  IMPORTANT: Change this password immediately after logging in!');
+    logger.info('='.repeat(60));
+    logger.info('✅ SUCCESS! You can now login with:');
+    logger.info(`   Email: ${email}`);
+    logger.info(`   Password: ${password}`);
+    logger.info('='.repeat(60));
+    logger.info('\n⚠️  IMPORTANT: Change this password immediately after logging in!');
 
   } catch (error) {
-    console.error('\n❌ Error:', error.message);
-    console.error(error);
+    logger.error('\n❌ Error:', error.message);
+    logger.error(error);
     process.exit(1);
   } finally {
     await pool.end();

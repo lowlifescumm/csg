@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -8,7 +9,7 @@ import { pool } from '../lib/db.js';
 
 async function listBlogPosts() {
   try {
-    console.log('Fetching all blog posts...\n');
+    logger.info('Fetching all blog posts...\n');
     
     const result = await pool.query(`
       SELECT 
@@ -23,14 +24,14 @@ async function listBlogPosts() {
     `);
 
     if (result.rows.length === 0) {
-      console.log('No blog posts found.');
+      logger.info('No blog posts found.');
       return;
     }
 
-    console.log(`Found ${result.rows.length} blog posts:\n`);
-    console.log('┌─────────────────────────────────────────────────────────────────────────────┐');
-    console.log('│ ID │ Title                                          │ Status      │ Date  │');
-    console.log('├─────────────────────────────────────────────────────────────────────────────┤');
+    logger.info(`Found ${result.rows.length} blog posts:\n`);
+    logger.info('┌─────────────────────────────────────────────────────────────────────────────┐');
+    logger.info('│ ID │ Title                                          │ Status      │ Date  │');
+    logger.info('├─────────────────────────────────────────────────────────────────────────────┤');
 
     result.rows.forEach(post => {
       const id = String(post.id).padEnd(3);
@@ -42,13 +43,13 @@ async function listBlogPosts() {
         year: 'numeric'
       }).padEnd(10);
       
-      console.log(`│ ${id} │ ${title} │ ${status} │ ${date} │`);
+      logger.info(`│ ${id} │ ${title} │ ${status} │ ${date} │`);
     });
 
-    console.log('└─────────────────────────────────────────────────────────────────────────────┘');
+    logger.info('└─────────────────────────────────────────────────────────────────────────────┘');
     
   } catch (error) {
-    console.error('Error listing blog posts:', error);
+    logger.error('Error listing blog posts:', error);
     process.exit(1);
   } finally {
     await pool.end();

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
@@ -52,7 +53,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('Make admin error:', error);
+    logger.error('Make admin error:', error);
     return NextResponse.json({ error: 'Failed to update user role' }, { status: 500 });
   }
 }

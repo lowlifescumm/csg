@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -30,14 +31,14 @@ async function verifyProductSync() {
       recurring: true
     }
   };
-  console.log('🔍 Verifying Product Sync: Live Site vs Stripe Portal\n');
+  logger.info('🔍 Verifying Product Sync: Live Site vs Stripe Portal\n');
 
   try {
     // Get all products from Stripe
     const products = await stripe.products.list({ limit: 100, active: true });
     
-    console.log('📊 Stripe Products Analysis:');
-    console.log(`   Total products found: ${products.data.length}`);
+    logger.info('📊 Stripe Products Analysis:');
+    logger.info(`   Total products found: ${products.data.length}`);
     
     // Find our specific products
     const ourProducts = products.data.filter(p => 
@@ -45,10 +46,10 @@ async function verifyProductSync() {
       p.name.includes('Cosmic Spiritual Guide - Premium Subscription')
     );
     
-    console.log(`   Our products found: ${ourProducts.length}\n`);
+    logger.info(`   Our products found: ${ourProducts.length}\n`);
 
     // Verify Credit Packs
-    console.log('💳 Credit Packs Verification:');
+    logger.info('💳 Credit Packs Verification:');
     let creditPacksMatch = true;
     
     for (const appPack of appProducts.creditPacks) {
@@ -62,21 +63,21 @@ async function verifyProductSync() {
         const priceMatch = price && price.unit_amount === appPack.price;
         const status = priceMatch ? '✅' : '❌';
         
-        console.log(`   ${status} ${appPack.name}: $${(appPack.price / 100).toFixed(2)}`);
-        console.log(`      Stripe Product: ${stripeProduct.id}`);
-        console.log(`      Stripe Price: ${price ? price.id : 'Not found'}`);
-        console.log(`      Price Match: ${priceMatch ? 'Yes' : 'No'}`);
+        logger.info(`   ${status} ${appPack.name}: $${(appPack.price / 100).toFixed(2)}`);
+        logger.info(`      Stripe Product: ${stripeProduct.id}`);
+        logger.info(`      Stripe Price: ${price ? price.id : 'Not found'}`);
+        logger.info(`      Price Match: ${priceMatch ? 'Yes' : 'No'}`);
         
         if (!priceMatch) creditPacksMatch = false;
       } else {
-        console.log(`   ❌ ${appPack.name}: Not found in Stripe`);
+        logger.info(`   ❌ ${appPack.name}: Not found in Stripe`);
         creditPacksMatch = false;
       }
-      console.log('');
+      logger.info('');
     }
 
     // Verify Subscription
-    console.log('🔄 Subscription Verification:');
+    logger.info('🔄 Subscription Verification:');
     const subscriptionProduct = ourProducts.find(p => 
       p.name === 'Cosmic Spiritual Guide - Premium Subscription'
     );
@@ -89,38 +90,38 @@ async function verifyProductSync() {
       const recurringMatch = price && price.recurring && price.recurring.interval === 'month';
       const status = (priceMatch && recurringMatch) ? '✅' : '❌';
       
-      console.log(`   ${status} ${appProducts.subscription.name}: $${(appProducts.subscription.price / 100).toFixed(2)}/month`);
-      console.log(`      Stripe Product: ${subscriptionProduct.id}`);
-      console.log(`      Stripe Price: ${price ? price.id : 'Not found'}`);
-      console.log(`      Price Match: ${priceMatch ? 'Yes' : 'No'}`);
-      console.log(`      Recurring Match: ${recurringMatch ? 'Yes' : 'No'}`);
+      logger.info(`   ${status} ${appProducts.subscription.name}: $${(appProducts.subscription.price / 100).toFixed(2)}/month`);
+      logger.info(`      Stripe Product: ${subscriptionProduct.id}`);
+      logger.info(`      Stripe Price: ${price ? price.id : 'Not found'}`);
+      logger.info(`      Price Match: ${priceMatch ? 'Yes' : 'No'}`);
+      logger.info(`      Recurring Match: ${recurringMatch ? 'Yes' : 'No'}`);
     } else {
-      console.log(`   ❌ Subscription: Not found in Stripe`);
+      logger.info(`   ❌ Subscription: Not found in Stripe`);
     }
 
     // Summary
-    console.log('\n📋 Summary:');
-    console.log(`   Credit Packs Match: ${creditPacksMatch ? '✅ Yes' : '❌ No'}`);
-    console.log(`   Subscription Match: ${subscriptionProduct ? '✅ Yes' : '❌ No'}`);
+    logger.info('\n📋 Summary:');
+    logger.info(`   Credit Packs Match: ${creditPacksMatch ? '✅ Yes' : '❌ No'}`);
+    logger.info(`   Subscription Match: ${subscriptionProduct ? '✅ Yes' : '❌ No'}`);
     
     if (creditPacksMatch && subscriptionProduct) {
-      console.log('\n🎉 All products are perfectly synced!');
-      console.log('   Your live site products match your Stripe portal exactly.');
-      console.log('   No changes needed - everything is working correctly.');
+      logger.info('\n🎉 All products are perfectly synced!');
+      logger.info('   Your live site products match your Stripe portal exactly.');
+      logger.info('   No changes needed - everything is working correctly.');
     } else {
-      console.log('\n⚠️  Some products may need attention.');
-      console.log('   Check the details above for any mismatches.');
+      logger.info('\n⚠️  Some products may need attention.');
+      logger.info('   Check the details above for any mismatches.');
     }
 
     // Additional verification
-    console.log('\n🔍 Additional Verification:');
-    console.log('   ✅ Application uses dynamic product creation');
-    console.log('   ✅ Products are created during checkout');
-    console.log('   ✅ This is the correct and optimal approach');
-    console.log('   ✅ No changes needed to your application');
+    logger.info('\n🔍 Additional Verification:');
+    logger.info('   ✅ Application uses dynamic product creation');
+    logger.info('   ✅ Products are created during checkout');
+    logger.info('   ✅ This is the correct and optimal approach');
+    logger.info('   ✅ No changes needed to your application');
 
   } catch (error) {
-    console.error('❌ Error verifying product sync:', error.message);
+    logger.error('❌ Error verifying product sync:', error.message);
   }
 }
 

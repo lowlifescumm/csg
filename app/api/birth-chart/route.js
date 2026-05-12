@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
@@ -44,7 +45,7 @@ export async function POST(req) {
       const hydrated = await hydrateReportData(hydrationInput);
       chartData = hydrated.rawChart;
     } catch (error) {
-      console.error('Error calculating chart:', error);
+      logger.error('Error calculating chart:', error);
       // Fallback to direct calculation
       chartData = calculateBirthChart(date, time, latNumber, lonNumber);
     }
@@ -98,7 +99,7 @@ export async function POST(req) {
         try {
           interpretation = await interpretBirthChart(chartData);
         } catch (error) {
-          console.error('Failed to generate interpretation:', error);
+          logger.error('Failed to generate interpretation:', error);
           interpretation = 'Interpretation generation failed. Your chart data is still saved.';
         }
       }
@@ -118,7 +119,7 @@ export async function POST(req) {
       if (accessCheck.reason === 'subscription_included') {
         const freeChartResult = await claimFreeNatalChart(authenticatedUserId);
         if (freeChartResult.success) {
-          console.log(`[Birth Chart] Free natal chart claimed for user ${authenticatedUserId}`);
+          logger.info(`[Birth Chart] Free natal chart claimed for user ${authenticatedUserId}`);
         }
       }
     }
@@ -199,7 +200,7 @@ export async function POST(req) {
         ]
       );
     } catch (error) {
-      console.log('Note: natal_charts table may not exist yet, only saved to birth_charts');
+      logger.info('Note: natal_charts table may not exist yet, only saved to birth_charts');
     }
 
     return NextResponse.json({
@@ -213,7 +214,7 @@ export async function POST(req) {
     });
 
   } catch (error) {
-    console.error('Error creating birth chart:', error);
+    logger.error('Error creating birth chart:', error);
     return NextResponse.json({ 
       error: 'Failed to create birth chart',
       details: error.message
@@ -332,7 +333,7 @@ export async function GET(req) {
       interpretation: savedChart.interpretation
     });
   } catch (error) {
-    console.error('Error fetching birth chart:', error);
+    logger.error('Error fetching birth chart:', error);
     return NextResponse.json({ 
       error: 'Failed to fetch birth chart',
       details: error.message

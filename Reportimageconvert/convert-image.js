@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 const fs = require('fs');
 const path = require('path');
 
@@ -34,11 +35,11 @@ try {
     // 5. Write to a text file for easy copying
     fs.writeFileSync('output.txt', cssString);
 
-    console.log('✅ Success!');
-    console.log(`📂 Converted "${FILENAME}" to Base64.`);
-    console.log('📋 The string has been saved to "output.txt".');
-    console.log('👉 Open output.txt, copy everything, and paste it into your CSS.');
+    logger.info('✅ Success!');
+    logger.info(`📂 Converted "${FILENAME}" to Base64.`);
+    logger.info('📋 The string has been saved to "output.txt".');
+    logger.info('👉 Open output.txt, copy everything, and paste it into your CSS.');
 
 } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
 }

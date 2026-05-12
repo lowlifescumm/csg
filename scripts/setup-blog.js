@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
@@ -11,17 +12,17 @@ const pool = new Pool({
 
 async function setupBlog() {
   try {
-    console.log('🚀 Setting up blog database schema...');
+    logger.info('🚀 Setting up blog database schema...');
     
     // Read and execute the blog schema SQL
     const schemaPath = path.join(__dirname, '../database/add-blog-schema.sql');
     const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
     
     await pool.query(schemaSQL);
-    console.log('✅ Blog database schema created successfully!');
+    logger.info('✅ Blog database schema created successfully!');
     
     // Create a sample blog post for testing
-    console.log('📝 Creating sample blog post...');
+    logger.info('📝 Creating sample blog post...');
     
     const samplePost = {
       title: 'Welcome to Our Spiritual Blog',
@@ -78,14 +79,14 @@ async function setupBlog() {
       samplePost.reading_time
     ]);
     
-    console.log('✅ Sample blog post created successfully!');
-    console.log('🎉 Blog setup complete! You can now:');
-    console.log('   - Visit /blog to see the blog listing');
-    console.log('   - Visit /admin/blog to manage posts');
-    console.log('   - Create new posts for SEO content');
+    logger.info('✅ Sample blog post created successfully!');
+    logger.info('🎉 Blog setup complete! You can now:');
+    logger.info('   - Visit /blog to see the blog listing');
+    logger.info('   - Visit /admin/blog to manage posts');
+    logger.info('   - Create new posts for SEO content');
     
   } catch (error) {
-    console.error('❌ Error setting up blog:', error);
+    logger.error('❌ Error setting up blog:', error);
     process.exit(1);
   } finally {
     await pool.end();

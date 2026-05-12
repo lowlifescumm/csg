@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { Heart, Briefcase, Sparkles, Brain, Star, Users, Loader2, X } from "lucide-react";
@@ -99,7 +100,7 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
         }
       } catch (err) {
         // Use default tiles if API fails
-        console.log("Using default tiles configuration");
+        logger.info("Using default tiles configuration");
       }
     };
 
@@ -171,7 +172,7 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
         onReadingComplete(data.reading || data);
       }
     } catch (err) {
-      console.error("Error generating reading:", err);
+      logger.error("Error generating reading:", err);
       setError({
         type: "error",
         message: "Failed to connect to server. Please try again.",

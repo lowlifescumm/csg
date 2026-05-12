@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -62,7 +63,7 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error("Briefing error:", error);
+    logger.error("Briefing error:", error);
     return NextResponse.json(
       { error: "Failed to generate briefing", details: error.message },
       { status: 500 }

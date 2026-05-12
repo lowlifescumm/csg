@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {
@@ -76,7 +77,7 @@ export async function GET(request) {
       ].filter(Boolean),
     });
   } catch (error) {
-    console.error('[NextAuth Config] Error:', error);
+    logger.error('[NextAuth Config] Error:', error);
     return NextResponse.json(
       { error: 'Failed to retrieve NextAuth configuration', details: error.message },
       { status: 500 }

@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -22,7 +23,7 @@ export default function Header() {
         setUser(data.user);
       }
     } catch (error) {
-      console.error("Auth check failed:", error);
+      logger.error("Auth check failed:", error);
     } finally {
       setLoading(false);
     }
@@ -49,7 +50,7 @@ export default function Header() {
       router.push("/");
       router.refresh();
     } catch (error) {
-      console.error("Logout failed:", error);
+      logger.error("Logout failed:", error);
     }
   };
 

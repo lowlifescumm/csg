@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 // Normalize all user emails to lowercase
@@ -17,7 +18,7 @@ const pool = new Pool({
 
 async function normalizeEmails() {
   try {
-    console.log('🔧 Normalizing user emails to lowercase...\n');
+    logger.info('🔧 Normalizing user emails to lowercase...\n');
 
     // First, check how many users have non-normalized emails
     const { rows: checkRows } = await pool.query(`
@@ -27,10 +28,10 @@ async function normalizeEmails() {
     `);
 
     const countToFix = parseInt(checkRows[0].count);
-    console.log(`📊 Found ${countToFix} user(s) with non-normalized emails\n`);
+    logger.info(`📊 Found ${countToFix} user(s) with non-normalized emails\n`);
 
     if (countToFix === 0) {
-      console.log('✅ All emails are already normalized!\n');
+      logger.info('✅ All emails are already normalized!\n');
       return;
     }
 
@@ -43,13 +44,13 @@ async function normalizeEmails() {
       ORDER BY created_at DESC
     `);
 
-    console.log('👥 Users that will be normalized:');
+    logger.info('👥 Users that will be normalized:');
     affectedUsers.forEach((user, index) => {
-      console.log(`   ${index + 1}. ${user.email} → ${user.email.toLowerCase().trim()}`);
-      console.log(`      Name: ${user.first_name} ${user.last_name}`);
-      console.log(`      Status: ${user.password_status}`);
-      console.log(`      Created: ${user.created_at}`);
-      console.log();
+      logger.info(`   ${index + 1}. ${user.email} → ${user.email.toLowerCase().trim()}`);
+      logger.info(`      Name: ${user.first_name} ${user.last_name}`);
+      logger.info(`      Status: ${user.password_status}`);
+      logger.info(`      Created: ${user.created_at}`);
+      logger.info();
     });
 
     // Normalize the emails
@@ -60,7 +61,7 @@ async function normalizeEmails() {
       RETURNING id, email, first_name, last_name
     `);
 
-    console.log(`✅ Successfully normalized ${updateRows.length} user email(s)\n`);
+    logger.info(`✅ Successfully normalized ${updateRows.length} user email(s)\n`);
 
     // Verify the update
     const { rows: verifyRows } = await pool.query(`
@@ -70,9 +71,9 @@ async function normalizeEmails() {
     `);
 
     if (parseInt(verifyRows[0].count) === 0) {
-      console.log('✅ Verification passed: All emails are now normalized!\n');
+      logger.info('✅ Verification passed: All emails are now normalized!\n');
     } else {
-      console.log(`⚠️  Warning: ${verifyRows[0].count} email(s) still need normalization\n`);
+      logger.info(`⚠️  Warning: ${verifyRows[0].count} email(s) still need normalization\n`);
     }
 
     // Show the last 10 users for verification
@@ -89,14 +90,14 @@ async function normalizeEmails() {
       LIMIT 10
     `);
 
-    console.log('📋 Recent users (last 10):');
+    logger.info('📋 Recent users (last 10):');
     recentUsers.forEach((user, index) => {
-      console.log(`   ${index + 1}. ${user.email} (${user.password_status})`);
+      logger.info(`   ${index + 1}. ${user.email} (${user.password_status})`);
     });
-    console.log();
+    logger.info();
 
   } catch (error) {
-    console.error('❌ Error normalizing emails:', error);
+    logger.error('❌ Error normalizing emails:', error);
     process.exit(1);
   } finally {
     await pool.end();

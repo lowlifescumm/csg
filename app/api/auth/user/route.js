@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken, getUserById } from '@/lib/auth';
@@ -59,7 +60,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Get user error:', error);
+    logger.error('Get user error:', error);
     const response = NextResponse.json({ user: null }, { status: 200 });
     response.cookies.delete('auth_token');
     return response;
@@ -115,7 +116,7 @@ export async function PUT(request) {
       },
     });
   } catch (error) {
-    console.error('Update user error:', error);
+    logger.error('Update user error:', error);
     if (error.message?.includes('unique')) {
       return NextResponse.json(
         { error: 'Email already in use' },

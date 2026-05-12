@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -226,7 +227,7 @@ export async function POST(request) {
         );
     }
   } catch (error) {
-    console.error("Generate reading error:", error);
+    logger.error("Generate reading error:", error);
     return NextResponse.json(
       { error: "Failed to generate reading", details: error.message },
       { status: 500 }

@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 // Complete Google OAuth Setup Verification
 require('dotenv').config({ path: require('path').join(__dirname, '../.env.local') });
@@ -9,14 +10,14 @@ const pool = new Pool({
 });
 
 async function verifySetup() {
-  console.log('\n🔍 GOOGLE OAUTH SETUP VERIFICATION\n');
-  console.log('='.repeat(60));
+  logger.info('\n🔍 GOOGLE OAUTH SETUP VERIFICATION\n');
+  logger.info('='.repeat(60));
   
   let allPassed = true;
   
   // 1. Check Environment Variables
-  console.log('\n📋 1. Environment Variables');
-  console.log('-'.repeat(60));
+  logger.info('\n📋 1. Environment Variables');
+  logger.info('-'.repeat(60));
   
   const envChecks = [
     { name: 'GOOGLE_CLIENT_ID', required: true },
@@ -28,16 +29,16 @@ async function verifySetup() {
   
   envChecks.forEach(check => {
     if (process.env[check.name]) {
-      console.log(`✅ ${check.name} is set`);
+      logger.info(`✅ ${check.name} is set`);
     } else {
-      console.log(`❌ ${check.name} is MISSING`);
+      logger.info(`❌ ${check.name} is MISSING`);
       allPassed = false;
     }
   });
   
   // 2. Check Database Schema
-  console.log('\n📊 2. Database Schema');
-  console.log('-'.repeat(60));
+  logger.info('\n📊 2. Database Schema');
+  logger.info('-'.repeat(60));
   
   try {
     const { rows } = await pool.query(`
@@ -54,9 +55,9 @@ async function verifySetup() {
     requiredColumns.forEach(col => {
       if (existingColumns.includes(col)) {
         const row = rows.find(r => r.column_name === col);
-        console.log(`✅ ${col} (${row.data_type}) exists`);
+        logger.info(`✅ ${col} (${row.data_type}) exists`);
       } else {
-        console.log(`❌ ${col} is MISSING`);
+        logger.info(`❌ ${col} is MISSING`);
         allPassed = false;
       }
     });
@@ -65,19 +66,19 @@ async function verifySetup() {
     const passwordRow = rows.find(r => r.column_name === 'password_hash');
     if (passwordRow) {
       if (passwordRow.is_nullable === 'YES') {
-        console.log(`✅ password_hash is nullable (OAuth users can have NULL)`);
+        logger.info(`✅ password_hash is nullable (OAuth users can have NULL)`);
       } else {
-        console.log(`⚠️  password_hash is NOT nullable (may cause issues for OAuth users)`);
+        logger.info(`⚠️  password_hash is NOT nullable (may cause issues for OAuth users)`);
       }
     }
   } catch (error) {
-    console.log(`❌ Database check failed: ${error.message}`);
+    logger.info(`❌ Database check failed: ${error.message}`);
     allPassed = false;
   }
   
   // 3. Check NextAuth File Location
-  console.log('\n📁 3. NextAuth Configuration File');
-  console.log('-'.repeat(60));
+  logger.info('\n📁 3. NextAuth Configuration File');
+  logger.info('-'.repeat(60));
   
   const fs = require('fs');
   const path = require('path');
@@ -86,42 +87,42 @@ async function verifySetup() {
   const pagesRouterPath = path.join(__dirname, '../pages/api/auth/[...nextauth].js');
   
   if (fs.existsSync(appRouterPath)) {
-    console.log('✅ NextAuth route.js exists in App Router location');
+    logger.info('✅ NextAuth route.js exists in App Router location');
   } else {
-    console.log('❌ NextAuth route.js NOT FOUND in App Router location');
+    logger.info('❌ NextAuth route.js NOT FOUND in App Router location');
     allPassed = false;
   }
   
   if (fs.existsSync(pagesRouterPath)) {
-    console.log('⚠️  Old Pages Router NextAuth file still exists (should be deleted)');
+    logger.info('⚠️  Old Pages Router NextAuth file still exists (should be deleted)');
   } else {
-    console.log('✅ Old Pages Router NextAuth file correctly removed');
+    logger.info('✅ Old Pages Router NextAuth file correctly removed');
   }
   
   // 4. Display Configuration Details
-  console.log('\n🔧 4. Configuration Details');
-  console.log('-'.repeat(60));
+  logger.info('\n🔧 4. Configuration Details');
+  logger.info('-'.repeat(60));
   
   if (process.env.NEXTAUTH_URL) {
-    console.log(`NEXTAUTH_URL: ${process.env.NEXTAUTH_URL}`);
-    console.log(`Expected redirect URI: ${process.env.NEXTAUTH_URL}/api/auth/callback/google`);
+    logger.info(`NEXTAUTH_URL: ${process.env.NEXTAUTH_URL}`);
+    logger.info(`Expected redirect URI: ${process.env.NEXTAUTH_URL}/api/auth/callback/google`);
   }
   
   if (process.env.GOOGLE_CLIENT_ID) {
-    console.log(`Google Client ID: ${process.env.GOOGLE_CLIENT_ID.substring(0, 30)}...`);
+    logger.info(`Google Client ID: ${process.env.GOOGLE_CLIENT_ID.substring(0, 30)}...`);
   }
   
   // 5. Final Summary
-  console.log('\n' + '='.repeat(60));
+  logger.info('\n' + '='.repeat(60));
   if (allPassed) {
-    console.log('\n✅ ALL CHECKS PASSED! Google OAuth is ready to use.\n');
-    console.log('📝 Next Steps:');
-    console.log('   1. Make sure Render environment variables are updated');
-    console.log('   2. Wait for Render to deploy');
-    console.log('   3. Test at: https://cosmicspiritguide.com/login');
-    console.log('\n🎉 You\'re all set!\n');
+    logger.info('\n✅ ALL CHECKS PASSED! Google OAuth is ready to use.\n');
+    logger.info('📝 Next Steps:');
+    logger.info('   1. Make sure Render environment variables are updated');
+    logger.info('   2. Wait for Render to deploy');
+    logger.info('   3. Test at: https://cosmicspiritguide.com/login');
+    logger.info('\n🎉 You\'re all set!\n');
   } else {
-    console.log('\n⚠️  SOME CHECKS FAILED - Please review the issues above\n');
+    logger.info('\n⚠️  SOME CHECKS FAILED - Please review the issues above\n');
   }
   
   await pool.end();
@@ -129,8 +130,8 @@ async function verifySetup() {
 }
 
 verifySetup().catch(error => {
-  console.error('\n❌ Verification failed:', error.message);
-  console.error(error);
+  logger.error('\n❌ Verification failed:', error.message);
+  logger.error(error);
   process.exit(1);
 });
 

@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 /**
  * Daily Forecast Generation Job
@@ -51,7 +52,7 @@ async function getActiveUsers() {
 
 async function generateForecastForUser(user, date) {
   try {
-    console.log(`[${user.id}] Generating forecast for ${user.email}...`);
+    logger.info(`[${user.id}] Generating forecast for ${user.email}...`);
     
     // Check if already exists
     const existing = await pool.query(
@@ -60,7 +61,7 @@ async function generateForecastForUser(user, date) {
     );
     
     if (existing.rows.length > 0) {
-      console.log(`[${user.id}] Forecast already exists, skipping`);
+      logger.info(`[${user.id}] Forecast already exists, skipping`);
       return { status: 'skipped', reason: 'already_exists' };
     }
     
@@ -85,7 +86,7 @@ async function generateForecastForUser(user, date) {
     // Save to database
     const forecastId = await saveForecast(forecast);
     
-    console.log(`[${user.id}] ✓ Forecast generated successfully (ID: ${forecastId})`);
+    logger.info(`[${user.id}] ✓ Forecast generated successfully (ID: ${forecastId})`);
     
     // NOTE: Email notifications are planned but not yet implemented.
     // This feature will send daily forecast emails to users who have opted in.
@@ -94,33 +95,33 @@ async function generateForecastForUser(user, date) {
     // 2. Email template design
     // 3. User preference management for email frequency
     if (prefs.email_enabled) {
-      console.log(`[${user.id}] NOTE: Email notifications not yet implemented`);
+      logger.info(`[${user.id}] NOTE: Email notifications not yet implemented`);
     }
     
     return { status: 'success', forecastId };
   } catch (error) {
-    console.error(`[${user.id}] ✗ Error generating forecast:`, error.message);
+    logger.error(`[${user.id}] ✗ Error generating forecast:`, error.message);
     return { status: 'error', error: error.message };
   }
 }
 
 async function main() {
   const startTime = Date.now();
-  console.log('=== Daily Forecast Generation ===');
-  console.log(`Started at: ${new Date().toISOString()}`);
+  logger.info('=== Daily Forecast Generation ===');
+  logger.info(`Started at: ${new Date().toISOString()}`);
   
   try {
     // Get today's date
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
-    console.log(`Generating forecasts for: ${dateStr}`);
+    logger.info(`Generating forecasts for: ${dateStr}`);
     
     // Get active users
     const users = await getActiveUsers();
-    console.log(`Found ${users.length} active users`);
+    logger.info(`Found ${users.length} active users`);
     
     if (users.length === 0) {
-      console.log('No users to process');
+      logger.info('No users to process');
       return;
     }
     
@@ -134,7 +135,7 @@ async function main() {
     
     for (let i = 0; i < users.length; i += BATCH_SIZE) {
       const batch = users.slice(i, i + BATCH_SIZE);
-      console.log(`\nProcessing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(users.length / BATCH_SIZE)}`);
+      logger.info(`\nProcessing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(users.length / BATCH_SIZE)}`);
       
       // Process batch in parallel
       const promises = batch.map(user => generateForecastForUser(user, dateStr));
@@ -147,27 +148,27 @@ async function main() {
       
       // Delay between batches (rate limiting)
       if (i + BATCH_SIZE < users.length) {
-        console.log(`Waiting ${DELAY_MS}ms before next batch...`);
+        logger.info(`Waiting ${DELAY_MS}ms before next batch...`);
         await sleep(DELAY_MS);
       }
     }
     
     // Summary
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log('\n=== Summary ===');
-    console.log(`Total users: ${results.total}`);
-    console.log(`✓ Success: ${results.success}`);
-    console.log(`⊘ Skipped: ${results.skipped}`);
-    console.log(`✗ Errors: ${results.error}`);
-    console.log(`Duration: ${duration}s`);
-    console.log(`Completed at: ${new Date().toISOString()}`);
+    logger.info('\n=== Summary ===');
+    logger.info(`Total users: ${results.total}`);
+    logger.info(`✓ Success: ${results.success}`);
+    logger.info(`⊘ Skipped: ${results.skipped}`);
+    logger.info(`✗ Errors: ${results.error}`);
+    logger.info(`Duration: ${duration}s`);
+    logger.info(`Completed at: ${new Date().toISOString()}`);
     
     // Exit with error code if there were failures
     if (results.error > 0) {
       process.exit(1);
     }
   } catch (error) {
-    console.error('Fatal error:', error);
+    logger.error('Fatal error:', error);
     process.exit(1);
   } finally {
     // Close database connection

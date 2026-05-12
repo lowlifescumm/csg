@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Migrate Old Credits to New Credit Ledger System
  * 
@@ -14,7 +15,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '../env.local')
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL not found in environment variables');
+  logger.error('❌ DATABASE_URL not found in environment variables');
   process.exit(1);
 }
 
@@ -31,7 +32,7 @@ async function migrateCredits() {
   try {
     await client.query('BEGIN');
     
-    console.log('🔍 Auditing old credits...\n');
+    logger.info('🔍 Auditing old credits...\n');
     
     // Get all users with credits from old table
     const oldCreditsResult = await client.query(
@@ -41,10 +42,10 @@ async function migrateCredits() {
        ORDER BY user_id`
     );
     
-    console.log(`Found ${oldCreditsResult.rows.length} users with credits in old system\n`);
+    logger.info(`Found ${oldCreditsResult.rows.length} users with credits in old system\n`);
     
     if (oldCreditsResult.rows.length === 0) {
-      console.log('✅ No credits to migrate');
+      logger.info('✅ No credits to migrate');
       await client.query('COMMIT');
       return;
     }
@@ -95,10 +96,10 @@ async function migrateCredits() {
             ]
           );
           
-          console.log(`✅ User ${userId}: Migrated ${creditsToMigrate} credits (had ${oldCredits} in old system)`);
+          logger.info(`✅ User ${userId}: Migrated ${creditsToMigrate} credits (had ${oldCredits} in old system)`);
           migrated++;
         } else {
-          console.log(`⏭️  User ${userId}: Already has ${existingPurchased} credits in new system, skipping`);
+          logger.info(`⏭️  User ${userId}: Already has ${existingPurchased} credits in new system, skipping`);
           skipped++;
         }
         
@@ -116,21 +117,21 @@ async function migrateCredits() {
         );
         
       } catch (error) {
-        console.error(`❌ Error migrating credits for user ${userId}:`, error.message);
+        logger.error(`❌ Error migrating credits for user ${userId}:`, error.message);
         errors++;
       }
     }
     
     await client.query('COMMIT');
     
-    console.log('\n📊 Migration Summary:');
-    console.log(`   ✅ Migrated: ${migrated} users`);
-    console.log(`   ⏭️  Skipped: ${skipped} users`);
-    console.log(`   ❌ Errors: ${errors} users`);
-    console.log('\n🎉 Migration completed!');
+    logger.info('\n📊 Migration Summary:');
+    logger.info(`   ✅ Migrated: ${migrated} users`);
+    logger.info(`   ⏭️  Skipped: ${skipped} users`);
+    logger.info(`   ❌ Errors: ${errors} users`);
+    logger.info('\n🎉 Migration completed!');
     
     // Verify migration
-    console.log('\n🔍 Verifying migration...');
+    logger.info('\n🔍 Verifying migration...');
     const verificationResult = await client.query(
       `SELECT 
          COUNT(DISTINCT user_id) as users_with_ledger_entries,
@@ -140,13 +141,13 @@ async function migrateCredits() {
     );
     
     const verification = verificationResult.rows[0];
-    console.log(`   Users with migrated credits: ${verification.users_with_ledger_entries}`);
-    console.log(`   Total credits migrated: ${verification.total_migrated_credits}`);
+    logger.info(`   Users with migrated credits: ${verification.users_with_ledger_entries}`);
+    logger.info(`   Total credits migrated: ${verification.total_migrated_credits}`);
     
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('\n❌ Migration failed:', error.message);
-    console.error(error);
+    logger.error('\n❌ Migration failed:', error.message);
+    logger.error(error);
     process.exit(1);
   } finally {
     client.release();

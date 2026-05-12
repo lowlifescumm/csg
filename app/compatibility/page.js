@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 import { useState, useEffect } from 'react';
 import { Heart, Loader2, Sparkles, ChevronRight, ChevronLeft, Crown, Calendar } from 'lucide-react';
@@ -39,7 +40,7 @@ export default function CompatibilityCalculator() {
         setCreditsRemaining(0);
       }
     } catch (error) {
-      console.error('Error checking credits:', error);
+      logger.error('Error checking credits:', error);
       setIsPremium(false);
       setCreditsRemaining(0);
     } finally {
@@ -177,7 +178,7 @@ export default function CompatibilityCalculator() {
         return;
       }
     } catch (err) {
-      console.error('Error checking birth chart:', err);
+      logger.error('Error checking birth chart:', err);
       // Continue anyway, but log the error
     }
 

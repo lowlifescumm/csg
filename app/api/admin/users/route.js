@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
@@ -46,7 +47,7 @@ export async function GET() {
 
     return NextResponse.json({ users: rows });
   } catch (error) {
-    console.error('Get users error:', error);
+    logger.error('Get users error:', error);
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
 }

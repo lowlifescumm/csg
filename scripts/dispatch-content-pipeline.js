@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 /**
  * dispatch-content-pipeline.js
@@ -196,7 +197,7 @@ async function findOrCreateIssue(calendarItem, step, stepIndex) {
   );
 
   if (existing) {
-    console.log(`  [FRO-${existing.issueNumber}] Already exists for ${step}`);
+    logger.info(`  [FRO-${existing.issueNumber}] Already exists for ${step}`);
     return existing;
   }
 
@@ -232,7 +233,7 @@ ${getStepGuidance(step, calendarItem)}
     }
   );
 
-  console.log(`  [NEW] Created FRO-${issue.issueNumber} for ${step}`);
+  logger.info(`  [NEW] Created FRO-${issue.issueNumber} for ${step}`);
   return issue;
 }
 
@@ -373,11 +374,11 @@ async function dispatchAgent(issue, agentType) {
   const agentId = AGENT_IDS[agentType];
   if (!agentId) {
     // Hermes handles content_writer — log and skip Paperclip assignment
-    console.log(`  [SKIP] ${agentType} is handled by Hermes blog pipeline — not assigning in Paperclip`);
+    logger.info(`  [SKIP] ${agentType} is handled by Hermes blog pipeline — not assigning in Paperclip`);
     return;
   }
 
-  console.log(`  [DISPATCH] Assigning ${agentType} (${agentId}) to FRO-${issue.issueNumber}`);
+  logger.info(`  [DISPATCH] Assigning ${agentType} (${agentId}) to FRO-${issue.issueNumber}`);
 
   try {
     // Assign the issue to the agent
@@ -391,10 +392,10 @@ async function dispatchAgent(issue, agentType) {
     await paperclipPatch(`/api/issues/${issue.id}`, {
       assigneeAgentId: agentId,
     });
-    console.log(`  [OK] Assigned FRO-${issue.issueNumber} to ${agentType}`);
+    logger.info(`  [OK] Assigned FRO-${issue.issueNumber} to ${agentType}`);
   } catch (e2) {
-    console.log(`  [WARN] Could not assign: ${e2.message.slice(0, 100)}`);
-    console.log(`  [INFO] Agent ${agentType} should pick up FRO-${issue.issueNumber} from their queue`);
+    logger.info(`  [WARN] Could not assign: ${e2.message.slice(0, 100)}`);
+    logger.info(`  [INFO] Agent ${agentType} should pick up FRO-${issue.issueNumber} from their queue`);
   }
 }
 
@@ -402,26 +403,26 @@ async function dispatchAgent(issue, agentType) {
 
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
-  console.log(`\n🚀 Content Pipeline Dispatch${dryRun ? ' [DRY RUN]' : ''} — ${new Date().toISOString()}\n`);
+  logger.info(`\n🚀 Content Pipeline Dispatch${dryRun ? ' [DRY RUN]' : ''} — ${new Date().toISOString()}\n`);
 
   const authHeader = { 'Authorization': `Bearer ${CSG_API_KEY}` };
 
   // 1. Get overdue steps
   const overdueSteps = await getOverdueSteps();
-  console.log(`📋 Found ${overdueSteps.length} overdue/in-progress steps\n`);
+  logger.info(`📋 Found ${overdueSteps.length} overdue/in-progress steps\n`);
 
   if (!overdueSteps.length) {
-    console.log('✅ Nothing to dispatch. All caught up.');
+    logger.info('✅ Nothing to dispatch. All caught up.');
     return;
   }
 
   // 2. For each overdue step, dispatch the right agent
   const dispatched = [];
   for (const step of overdueSteps) {
-    console.log(`\nProcessing: ${step.title} | ${step.step_name} (due: ${step.due_date})`);
+    logger.info(`\nProcessing: ${step.title} | ${step.step_name} (due: ${step.due_date})`);
     
     if (dryRun) {
-      console.log('  [DRY RUN] Would dispatch...');
+      logger.info('  [DRY RUN] Would dispatch...');
       continue;
     }
 
@@ -434,19 +435,19 @@ async function main() {
       // We create the Paperclip issue here for the agent to pick up
       dispatched.push({ step, issue, agentType });
     } catch (err) {
-      console.error(`  [ERROR] ${err.message}`);
+      logger.error(`  [ERROR] ${err.message}`);
     }
   }
 
-  console.log(`\n${'='.repeat(60)}`);
-  console.log(`Dispatched: ${dispatched.length} step(s)`);
+  logger.info(`\n${'='.repeat(60)}`);
+  logger.info(`Dispatched: ${dispatched.length} step(s)`);
   if (!dryRun) {
-    console.log('Agents should now be picking up tasks from Paperclip dashboard.');
-    console.log('Check: http://127.0.0.1:18789 (OpenClaw Control UI)');
+    logger.info('Agents should now be picking up tasks from Paperclip dashboard.');
+    logger.info('Check: http://127.0.0.1:18789 (OpenClaw Control UI)');
   }
 }
 
 main().catch(err => {
-  console.error('Fatal:', err);
+  logger.error('Fatal:', err);
   process.exit(1);
 });

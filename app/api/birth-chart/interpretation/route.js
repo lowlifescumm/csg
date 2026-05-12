@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth-config';
 import { pool } from '@/lib/db.js';
@@ -87,7 +88,7 @@ export async function POST(req) {
       try {
         interpretation = await interpretBirthChart(chartData);
       } catch (error) {
-        console.error('Failed to generate interpretation:', error);
+        logger.error('Failed to generate interpretation:', error);
         return NextResponse.json({
           error: 'Failed to generate interpretation',
           details: error.message
@@ -129,7 +130,7 @@ export async function POST(req) {
     });
 
   } catch (error) {
-    console.error('Error generating interpretation:', error);
+    logger.error('Error generating interpretation:', error);
     return NextResponse.json({ 
       error: 'Failed to generate interpretation',
       details: error.message

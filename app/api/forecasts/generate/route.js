@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { pool } from '@/lib/db.js';
@@ -83,7 +84,7 @@ export async function POST(req) {
       forecast: forecastData,
     });
   } catch (error) {
-    console.error('Forecast generation error:', error);
+    logger.error('Forecast generation error:', error);
 
     if (error.message === 'No natal chart found for user') {
       return NextResponse.json(

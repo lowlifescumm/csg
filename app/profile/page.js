@@ -48,7 +48,9 @@ export default function ProfilePage() {
         const res = await fetch('/api/user/ai-preferences');
         const data = await res.json();
         if (res.ok && data.success) setOptIn(!!data.ai_personalization_opt_in);
-      } catch {}
+      } catch (err) {
+        console.error("[profile] Failed to fetch AI preferences:", err);
+      }
     })();
   }, []);
 
@@ -124,7 +126,9 @@ export default function ProfilePage() {
                   setOptIn(val);
                   try {
                     await fetch('/api/user/ai-preferences', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ai_personalization_opt_in: val }) });
-                  } catch {}
+                  } catch (err) {
+                      console.error('[profile] Failed to save AI preference:', err);
+                    }
                 }} />
                 <span className={`w-11 h-6 bg-${optIn? 'purple-500':'gray-300'} rounded-full relative`}></span>
               </label>

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -90,7 +91,7 @@ export async function GET(request) {
       tiles: defaultTiles,
     });
   } catch (error) {
-    console.error("Get tiles error:", error);
+    logger.error("Get tiles error:", error);
     return NextResponse.json(
       { error: "Failed to fetch tiles configuration" },
       { status: 500 }

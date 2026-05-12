@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * POST /api/admin/migrate-credits
  * One-time endpoint to migrate old credits to new credit ledger system
@@ -36,7 +37,7 @@ export async function POST(request) {
       );
     }
     
-    console.log('[Credit Migration] Starting migration from old credits table...');
+    logger.info('[Credit Migration] Starting migration from old credits table...');
     
     const client = await pool.connect();
     
@@ -51,7 +52,7 @@ export async function POST(request) {
          ORDER BY user_id`
       );
       
-      console.log(`[Credit Migration] Found ${oldCreditsResult.rows.length} users with credits`);
+      logger.info(`[Credit Migration] Found ${oldCreditsResult.rows.length} users with credits`);
       
       if (oldCreditsResult.rows.length === 0) {
         await client.query('COMMIT');
@@ -130,14 +131,14 @@ export async function POST(request) {
           );
           
         } catch (error) {
-          console.error(`[Credit Migration] Error for user ${userId}:`, error.message);
+          logger.error(`[Credit Migration] Error for user ${userId}:`, error.message);
           errors++;
         }
       }
       
       await client.query('COMMIT');
       
-      console.log(`[Credit Migration] Completed: ${migrated} migrated, ${skipped} skipped, ${errors} errors`);
+      logger.info(`[Credit Migration] Completed: ${migrated} migrated, ${skipped} skipped, ${errors} errors`);
       
       return NextResponse.json({
         success: true,
@@ -157,7 +158,7 @@ export async function POST(request) {
     }
     
   } catch (error) {
-    console.error('[Credit Migration] Error:', error);
+    logger.error('[Credit Migration] Error:', error);
     return NextResponse.json(
       {
         error: 'Migration failed',

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
@@ -65,7 +66,7 @@ export async function POST(request) {
     return NextResponse.json({ success: true, url });
 
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.error('Upload error:', error);
     return NextResponse.json(
       { error: 'Failed to upload image', details: process.env.NODE_ENV === 'development' ? error.message : undefined },
       { status: 500 }

@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState } from "react";
 import { Share2, Instagram, Twitter, Copy, Check, Sparkles, Star, Loader2 } from "lucide-react";
@@ -69,7 +70,7 @@ export default function ShareCard({ interpretation, readingId, cards = [], onSha
         imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       });
     } catch (error) {
-      console.error("[ShareCard] Share error:", error);
+      logger.error("[ShareCard] Share error:", error);
       // Error handling is done in the hook
     }
   };
@@ -84,7 +85,7 @@ export default function ShareCard({ interpretation, readingId, cards = [], onSha
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy:", error);
+      logger.error("Failed to copy:", error);
     }
   };
 

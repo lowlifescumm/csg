@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
@@ -91,7 +92,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Content performance API error:', error);
+    logger.error('Content performance API error:', error);
     return NextResponse.json({ error: 'Failed to fetch performance data' }, { status: 500 });
   }
 }
@@ -187,7 +188,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Content performance POST error:', error);
+    logger.error('Content performance POST error:', error);
     return NextResponse.json({ error: 'Failed to record performance data' }, { status: 500 });
   }
 }

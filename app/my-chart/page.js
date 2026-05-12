@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 'use client';
 
 export const dynamic = 'force-static';
@@ -46,7 +47,7 @@ export default function MyChartPage() {
       setInterpretation(data.interpretation);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching chart:', err);
+      logger.error('Error fetching chart:', err);
       setError(err.message);
       setLoading(false);
     }

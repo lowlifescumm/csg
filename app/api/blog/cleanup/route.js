@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
@@ -40,7 +41,7 @@ export async function DELETE(request) {
     });
 
   } catch (error) {
-    console.error('Cleanup blog posts error:', error);
+    logger.error('Cleanup blog posts error:', error);
     return NextResponse.json({ error: 'Failed to cleanup blog posts' }, { status: 500 });
   }
 }

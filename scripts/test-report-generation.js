@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 
 /**
@@ -216,7 +217,7 @@ const SAMPLE_DATA = {
 };
 
 async function testReport(reportType) {
-  console.log(`\n🔮 Testing ${reportType} report generation...\n`);
+  logger.info(`\n🔮 Testing ${reportType} report generation...\n`);
 
   try {
     const progressCallback = (percent, message) => {
@@ -227,13 +228,13 @@ async function testReport(reportType) {
 
     if (reportType.startsWith('premium-')) {
       const tier = reportType.replace('premium-', '').toUpperCase();
-      console.log(`   Generating ${tier} premium report...`);
+      logger.info(`   Generating ${tier} premium report...`);
       result = await generatePremiumReport(tier, SAMPLE_DATA[reportType], progressCallback);
-      console.log(`\n\n✅ Premium report generated successfully!`);
-      console.log(`   Sections: ${result.sections.length}`);
-      console.log(`   HTML length: ${result.html.length} characters`);
+      logger.info(`\n\n✅ Premium report generated successfully!`);
+      logger.info(`   Sections: ${result.sections.length}`);
+      logger.info(`   HTML length: ${result.html.length} characters`);
       if (result.pdfUrl) {
-        console.log(`   PDF URL: ${result.pdfUrl}`);
+        logger.info(`   PDF URL: ${result.pdfUrl}`);
       }
     } else {
       const typeMap = {
@@ -252,15 +253,15 @@ async function testReport(reportType) {
         throw new Error(`No sample data found for ${reportType}`);
       }
 
-      console.log(`   Generating ${mappedType} report...`);
+      logger.info(`   Generating ${mappedType} report...`);
       result = await generateReportContent(mappedType, data, progressCallback);
-      console.log(`\n\n✅ Report generated successfully!`);
-      console.log(`   Content length: ${result.content.length} characters`);
-      console.log(`   Sections: ${result.sections.length}`);
+      logger.info(`\n\n✅ Report generated successfully!`);
+      logger.info(`   Content length: ${result.content.length} characters`);
+      logger.info(`   Sections: ${result.sections.length}`);
 
       // Generate HTML preview
       const html = await generatePDF(mappedType, data, result);
-      console.log(`   HTML length: ${html.html.length} characters`);
+      logger.info(`   HTML length: ${html.html.length} characters`);
     }
 
     // Save to file for review
@@ -277,13 +278,13 @@ async function testReport(reportType) {
     const content = result.content || result.sections.map(s => `${s.title}\n\n${s.content}`).join('\n\n---\n\n');
     fs.writeFileSync(filepath, content, 'utf8');
 
-    console.log(`\n📄 Report saved to: ${filepath}`);
-    console.log(`\n💡 Review the content to verify quality and accuracy.\n`);
+    logger.info(`\n📄 Report saved to: ${filepath}`);
+    logger.info(`\n💡 Review the content to verify quality and accuracy.\n`);
 
     return result;
   } catch (error) {
-    console.error(`\n❌ Error generating ${reportType} report:`, error.message);
-    console.error(error.stack);
+    logger.error(`\n❌ Error generating ${reportType} report:`, error.message);
+    logger.error(error.stack);
     process.exit(1);
   }
 }
@@ -292,7 +293,7 @@ async function testReport(reportType) {
 const reportType = process.argv[2];
 
 if (!reportType) {
-  console.log(`
+  logger.info(`
 Usage: node scripts/test-report-generation.js <report-type>
 
 Available report types:

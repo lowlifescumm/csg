@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from 'react';
 import { zodiacSigns } from '@/lib/zodiac-data';
@@ -20,7 +21,7 @@ export default function DailyHoroscope({ userSign = null }) {
         setHoroscope(data.horoscope);
       }
     } catch (error) {
-      console.error('Failed to load horoscope:', error);
+      logger.error('Failed to load horoscope:', error);
     } finally {
       setLoading(false);
     }

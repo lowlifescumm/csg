@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Run Credit Migration Directly
  * Executes the migration SQL on production database
@@ -11,9 +12,9 @@ const path = require('path');
 const connectionString = process.argv[2] || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ DATABASE_URL required');
-  console.error('Usage: node run-credit-migration-direct.js [DATABASE_URL]');
-  console.error('Or set DATABASE_URL environment variable');
+  logger.error('❌ DATABASE_URL required');
+  logger.error('Usage: node run-credit-migration-direct.js [DATABASE_URL]');
+  logger.error('Or set DATABASE_URL environment variable');
   process.exit(1);
 }
 
@@ -28,8 +29,8 @@ async function runMigration() {
   const client = await pool.connect();
   
   try {
-    console.log('🔗 Connected to database');
-    console.log('📋 Running credit migration...\n');
+    logger.info('🔗 Connected to database');
+    logger.info('📋 Running credit migration...\n');
     
     // Read migration SQL
     const migrationPath = path.join(__dirname, '../database/migrate-old-credits-simple.sql');
@@ -38,10 +39,10 @@ async function runMigration() {
     // Execute migration
     await client.query(migrationSQL);
     
-    console.log('✅ Migration completed successfully');
+    logger.info('✅ Migration completed successfully');
     
     // Verify migration
-    console.log('\n🔍 Verifying migration...');
+    logger.info('\n🔍 Verifying migration...');
     
     const verificationResult = await client.query(`
       SELECT 
@@ -52,8 +53,8 @@ async function runMigration() {
     `);
     
     const verification = verificationResult.rows[0];
-    console.log(`   Users migrated: ${verification.users_migrated}`);
-    console.log(`   Total credits migrated: ${verification.total_credits_migrated}`);
+    logger.info(`   Users migrated: ${verification.users_migrated}`);
+    logger.info(`   Total credits migrated: ${verification.total_credits_migrated}`);
     
     // Show sample of migrated users
     const sampleResult = await client.query(`
@@ -76,16 +77,16 @@ async function runMigration() {
       LIMIT 10
     `);
     
-    console.log('\n📊 Sample migrated users:');
+    logger.info('\n📊 Sample migrated users:');
     sampleResult.rows.forEach(row => {
-      console.log(`   User ${row.user_id} (${row.email}): ${row.old_credits} → ${row.new_balance} credits`);
+      logger.info(`   User ${row.user_id} (${row.email}): ${row.old_credits} → ${row.new_balance} credits`);
     });
     
-    console.log('\n🎉 Migration completed successfully!');
+    logger.info('\n🎉 Migration completed successfully!');
     
   } catch (error) {
-    console.error('\n❌ Migration failed:', error.message);
-    console.error(error);
+    logger.error('\n❌ Migration failed:', error.message);
+    logger.error(error);
     process.exit(1);
   } finally {
     client.release();

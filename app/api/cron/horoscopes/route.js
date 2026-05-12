@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { generateDailyHoroscope, saveHoroscope } from '@/lib/horoscope';
 import { zodiacSigns } from '@/lib/zodiac-data';
@@ -21,7 +22,7 @@ export async function POST(request) {
         
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
-        console.error(`Failed to generate ${sign.name}:`, error);
+        logger.error(`Failed to generate ${sign.name}:`, error);
         results.push({ sign: sign.name, success: false, error: error.message });
       }
     }
@@ -32,7 +33,7 @@ export async function POST(request) {
       results 
     });
   } catch (error) {
-    console.error('Cron error:', error);
+    logger.error('Cron error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

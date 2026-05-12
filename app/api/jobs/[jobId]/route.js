@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 /**
  * GET /api/jobs/[jobId]
  * Get job status and results
@@ -78,7 +79,7 @@ export async function GET(request, { params }) {
     });
     
   } catch (error) {
-    console.error('[JobStatus] Error:', error);
+    logger.error('[JobStatus] Error:', error);
     return NextResponse.json({
       error: 'Internal server error',
       details: error.message,

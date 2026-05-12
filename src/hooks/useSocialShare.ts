@@ -1,3 +1,4 @@
+const logger = require('../lib/logger');
 "use client";
 
 import { useState, useCallback } from 'react';
@@ -38,13 +39,13 @@ export function useSocialShare(): UseSocialShareReturn {
           mode: 'cors',
           credentials: 'omit',
         }).catch((error) => {
-          console.warn(`[useSocialShare] CORS error for ${imageUrl}:`, error);
+          logger.warn(`[useSocialShare] CORS error for ${imageUrl}:`, error);
           // Return null to skip this image
           return null;
         });
 
         if (!response || !response.ok) {
-          console.warn(`[useSocialShare] Failed to fetch image: ${imageUrl}`);
+          logger.warn(`[useSocialShare] Failed to fetch image: ${imageUrl}`);
           continue;
         }
 
@@ -59,7 +60,7 @@ export function useSocialShare(): UseSocialShareReturn {
         const file = new File([blob], filename, { type: blob.type || 'image/png' });
         files.push(file);
       } catch (error) {
-        console.warn(`[useSocialShare] Error processing image ${imageUrl}:`, error);
+        logger.warn(`[useSocialShare] Error processing image ${imageUrl}:`, error);
         // Continue with other images even if one fails
       }
     }
@@ -82,15 +83,15 @@ export function useSocialShare(): UseSocialShareReturn {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        console.log('[useSocialShare] Reward claimed:', data);
+        logger.info('[useSocialShare] Reward claimed:', data);
         return true;
       } else {
-        console.warn('[useSocialShare] Reward claim failed:', data.message || data.error);
+        logger.warn('[useSocialShare] Reward claim failed:', data.message || data.error);
         // Don't throw - reward failure shouldn't break sharing
         return false;
       }
     } catch (error) {
-      console.error('[useSocialShare] Reward API error:', error);
+      logger.error('[useSocialShare] Reward API error:', error);
       // Don't throw - reward failure shouldn't break sharing
       return false;
     }
@@ -119,7 +120,7 @@ export function useSocialShare(): UseSocialShareReturn {
         return success;
       }
     } catch (error) {
-      console.error('[useSocialShare] Clipboard error:', error);
+      logger.error('[useSocialShare] Clipboard error:', error);
       return false;
     }
   }, []);
@@ -167,12 +168,12 @@ export function useSocialShare(): UseSocialShareReturn {
           } catch (shareError: any) {
             // User cancelled or share failed
             if (shareError.name === 'AbortError') {
-              console.log('[useSocialShare] User cancelled share');
+              logger.info('[useSocialShare] User cancelled share');
               // Don't reward if user cancels
               return;
             }
             // Fall through to clipboard fallback
-            console.warn('[useSocialShare] Native share failed:', shareError);
+            logger.warn('[useSocialShare] Native share failed:', shareError);
           }
         } else {
           // Share without files (text + URL)
@@ -191,12 +192,12 @@ export function useSocialShare(): UseSocialShareReturn {
           } catch (shareError: any) {
             // User cancelled or share failed
             if (shareError.name === 'AbortError') {
-              console.log('[useSocialShare] User cancelled share');
+              logger.info('[useSocialShare] User cancelled share');
               // Don't reward if user cancels
               return;
             }
             // Fall through to clipboard fallback
-            console.warn('[useSocialShare] Native share failed:', shareError);
+            logger.warn('[useSocialShare] Native share failed:', shareError);
           }
         }
       }
@@ -224,7 +225,7 @@ export function useSocialShare(): UseSocialShareReturn {
       }
 
     } catch (error) {
-      console.error('[useSocialShare] Share error:', error);
+      logger.error('[useSocialShare] Share error:', error);
       
       // Show error notification
       if (typeof window !== 'undefined' && (window as any).toast) {

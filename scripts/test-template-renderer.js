@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Test script for renderFromTemplate function
  * Usage: node scripts/test-template-renderer.js
@@ -22,10 +23,10 @@ const sampleData = {
   forecastText: 'The stars align for new opportunities this month. Your natural leadership abilities will be called upon.',
 };
 
-console.log('🧪 Testing renderFromTemplate function\n');
+logger.info('🧪 Testing renderFromTemplate function\n');
 
 // Test 1: HTML template format
-console.log('📝 Test 1: HTML template format');
+logger.info('📝 Test 1: HTML template format');
 const htmlTemplate = {
   html: `
     <h1>Welcome, {{userName}}!</h1>
@@ -40,20 +41,20 @@ const htmlTemplate = {
 
 try {
   const htmlResult = renderFromTemplate(htmlTemplate, sampleData);
-  console.log('✅ HTML template rendered successfully');
-  console.log(`   Length: ${htmlResult.length} characters`);
-  console.log(`   Contains userName: ${htmlResult.includes('John Doe')}`);
-  console.log(`   Contains full HTML structure: ${htmlResult.includes('<!doctype html>')}`);
-  console.log(`   Contains styles: ${htmlResult.includes('<style>')}`);
-  console.log('');
+  logger.info('✅ HTML template rendered successfully');
+  logger.info(`   Length: ${htmlResult.length} characters`);
+  logger.info(`   Contains userName: ${htmlResult.includes('John Doe')}`);
+  logger.info(`   Contains full HTML structure: ${htmlResult.includes('<!doctype html>')}`);
+  logger.info(`   Contains styles: ${htmlResult.includes('<style>')}`);
+  logger.info('');
 } catch (error) {
-  console.error('❌ HTML template test failed:', error.message);
-  console.error(error);
-  console.log('');
+  logger.error('❌ HTML template test failed:', error.message);
+  logger.error(error);
+  logger.info('');
 }
 
 // Test 2: Layout blocks format
-console.log('📝 Test 2: Layout blocks format');
+logger.info('📝 Test 2: Layout blocks format');
 const layoutTemplate = {
   layout: {
     blocks: [
@@ -85,21 +86,21 @@ const layoutTemplate = {
 
 try {
   const layoutResult = renderFromTemplate(layoutTemplate, sampleData);
-  console.log('✅ Layout blocks template rendered successfully');
-  console.log(`   Length: ${layoutResult.length} characters`);
-  console.log(`   Contains userName: ${layoutResult.includes('John Doe')}`);
-  console.log(`   Contains SVG: ${layoutResult.includes('<svg xmlns')}`);
-  console.log(`   Contains image: ${layoutResult.includes('Leo.png')}`);
-  console.log(`   Contains custom styles: ${layoutResult.includes('.forecast')}`);
-  console.log('');
+  logger.info('✅ Layout blocks template rendered successfully');
+  logger.info(`   Length: ${layoutResult.length} characters`);
+  logger.info(`   Contains userName: ${layoutResult.includes('John Doe')}`);
+  logger.info(`   Contains SVG: ${layoutResult.includes('<svg xmlns')}`);
+  logger.info(`   Contains image: ${layoutResult.includes('Leo.png')}`);
+  logger.info(`   Contains custom styles: ${layoutResult.includes('.forecast')}`);
+  logger.info('');
 } catch (error) {
-  console.error('❌ Layout blocks test failed:', error.message);
-  console.error(error);
-  console.log('');
+  logger.error('❌ Layout blocks test failed:', error.message);
+  logger.error(error);
+  logger.info('');
 }
 
 // Test 3: Sample template from file
-console.log('📝 Test 3: Sample template from file');
+logger.info('📝 Test 3: Sample template from file');
 try {
   const templatePath = join(__dirname, 'sample-pdfme-template.json');
   const sampleTemplate = JSON.parse(readFileSync(templatePath, 'utf8'));
@@ -121,27 +122,27 @@ try {
   };
   
   const fileResult = renderFromTemplate(convertedTemplate, sampleData);
-  console.log('✅ File template rendered successfully');
-  console.log(`   Length: ${fileResult.length} characters`);
-  console.log(`   Contains flattened fields: ${fileResult.includes('userName') || fileResult.includes('userSunSign')}`);
-  console.log('');
+  logger.info('✅ File template rendered successfully');
+  logger.info(`   Length: ${fileResult.length} characters`);
+  logger.info(`   Contains flattened fields: ${fileResult.includes('userName') || fileResult.includes('userSunSign')}`);
+  logger.info('');
 } catch (error) {
-  console.error('❌ File template test failed:', error.message);
-  console.error(error);
-  console.log('');
+  logger.error('❌ File template test failed:', error.message);
+  logger.error(error);
+  logger.info('');
 }
 
 // Test 4: Error handling
-console.log('📝 Test 4: Error handling');
+logger.info('📝 Test 4: Error handling');
 try {
   const invalidTemplate = { unknown: 'format' };
   renderFromTemplate(invalidTemplate, sampleData);
-  console.error('❌ Should have thrown error for invalid template');
+  logger.error('❌ Should have thrown error for invalid template');
 } catch (error) {
-  console.log('✅ Correctly threw error for invalid template format');
-  console.log(`   Error message: ${error.message}`);
-  console.log('');
+  logger.info('✅ Correctly threw error for invalid template format');
+  logger.info(`   Error message: ${error.message}`);
+  logger.info('');
 }
 
-console.log('✨ All tests completed!');
+logger.info('✨ All tests completed!');
 

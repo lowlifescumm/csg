@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Migration script to add pdf_templates table
  * Run with: node scripts/run-pdf-templates-migration.js "$DATABASE_URL"
@@ -14,8 +15,8 @@ const __dirname = dirname(__filename);
 const databaseUrl = process.argv[2] || process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  console.error('❌ Error: DATABASE_URL not provided');
-  console.error('Usage: node scripts/run-pdf-templates-migration.js "$DATABASE_URL"');
+  logger.error('❌ Error: DATABASE_URL not provided');
+  logger.error('Usage: node scripts/run-pdf-templates-migration.js "$DATABASE_URL"');
   process.exit(1);
 }
 
@@ -28,17 +29,17 @@ async function runMigration() {
   const client = await pool.connect();
   
   try {
-    console.log('🔗 Connecting to database...');
+    logger.info('🔗 Connecting to database...');
     
     // Read the SQL file
     const sqlPath = join(__dirname, '../database/add-pdf-templates-schema.sql');
     const sql = readFileSync(sqlPath, 'utf8');
     
-    console.log('📋 Running migration: add-pdf-templates-schema.sql');
+    logger.info('📋 Running migration: add-pdf-templates-schema.sql');
     await client.query(sql);
     
-    console.log('✅ Migration completed successfully!');
-    console.log('📊 Table "pdf_templates" created with indexes and constraints.');
+    logger.info('✅ Migration completed successfully!');
+    logger.info('📊 Table "pdf_templates" created with indexes and constraints.');
     
     // Verify the table exists
     const verifyResult = await client.query(`
@@ -49,15 +50,15 @@ async function runMigration() {
     `);
     
     if (verifyResult.rows.length > 0) {
-      console.log('✅ Verification: pdf_templates table exists');
+      logger.info('✅ Verification: pdf_templates table exists');
     } else {
-      console.error('❌ Verification failed: pdf_templates table not found');
+      logger.error('❌ Verification failed: pdf_templates table not found');
       process.exit(1);
     }
     
   } catch (error) {
-    console.error('❌ Migration failed:', error.message);
-    console.error(error);
+    logger.error('❌ Migration failed:', error.message);
+    logger.error(error);
     process.exit(1);
   } finally {
     client.release();

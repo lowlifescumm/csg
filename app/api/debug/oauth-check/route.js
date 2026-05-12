@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 
 /**
@@ -86,7 +87,7 @@ export async function GET() {
 
     return NextResponse.json(checks);
   } catch (error) {
-    console.error('[OAuth Check] Error:', error);
+    logger.error('[OAuth Check] Error:', error);
     return NextResponse.json(
       { error: 'Failed to check OAuth configuration', details: error.message },
       { status: 500 }

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -118,7 +119,7 @@ export async function GET(request) {
         }
       } catch (err) {
         // Birth chart fetch is optional
-        console.log("Could not fetch user birth chart:", err);
+        logger.info("Could not fetch user birth chart:", err);
       }
     }
 
@@ -131,7 +132,7 @@ export async function GET(request) {
       computed: true,
     });
   } catch (error) {
-    console.error("Element today error:", error);
+    logger.error("Element today error:", error);
     // Default to Fire if calculation fails
     return NextResponse.json({
       success: true,

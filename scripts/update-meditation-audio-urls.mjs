@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 /**
  * Script to update meditation audio URLs in database with Cloudinary URLs
  * 
@@ -65,16 +66,16 @@ async function getCloudinaryUrls() {
   }
   
   // Otherwise, prompt user
-  console.log('\n📝 Cloudinary URL Update Script\n');
-  console.log('Please provide Cloudinary URLs for each meditation.\n');
-  console.log('You can find these URLs in your Cloudinary dashboard:');
-  console.log('1. Go to https://cloudinary.com/console');
-  console.log('2. Navigate to Media Library');
-  console.log('3. Click on each audio file');
-  console.log('4. Copy the "URL" or "Secure URL"\n');
-  console.log('Cloudinary URLs typically look like:');
-  console.log('https://res.cloudinary.com/{cloud_name}/video/upload/{public_id}.mp3\n');
-  console.log('Enter URLs for each meditation (or press Enter to skip):\n');
+  logger.info('\n📝 Cloudinary URL Update Script\n');
+  logger.info('Please provide Cloudinary URLs for each meditation.\n');
+  logger.info('You can find these URLs in your Cloudinary dashboard:');
+  logger.info('1. Go to https://cloudinary.com/console');
+  logger.info('2. Navigate to Media Library');
+  logger.info('3. Click on each audio file');
+  logger.info('4. Copy the "URL" or "Secure URL"\n');
+  logger.info('Cloudinary URLs typically look like:');
+  logger.info('https://res.cloudinary.com/{cloud_name}/video/upload/{public_id}.mp3\n');
+  logger.info('Enter URLs for each meditation (or press Enter to skip):\n');
   
   const readline = await import('readline');
   const rl = readline.createInterface({
@@ -101,7 +102,7 @@ async function getCloudinaryUrls() {
  * Update meditation URLs in database
  */
 async function updateMeditationUrls(urlMap) {
-  console.log('\n🔄 Updating meditation URLs in database...\n');
+  logger.info('\n🔄 Updating meditation URLs in database...\n');
   
   let updated = 0;
   let skipped = 0;
@@ -110,7 +111,7 @@ async function updateMeditationUrls(urlMap) {
     const id = MEDITATION_MAP[title];
     
     if (!id) {
-      console.log(`⚠️  Unknown meditation: ${title}`);
+      logger.info(`⚠️  Unknown meditation: ${title}`);
       skipped++;
       continue;
     }
@@ -118,7 +119,7 @@ async function updateMeditationUrls(urlMap) {
     try {
       // Validate URL format
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        console.log(`❌ Invalid URL for ${title}: ${url}`);
+        logger.info(`❌ Invalid URL for ${title}: ${url}`);
         skipped++;
         continue;
       }
@@ -132,23 +133,23 @@ async function updateMeditationUrls(urlMap) {
       );
       
       if (result.rowCount > 0) {
-        console.log(`✅ Updated ${title} (ID: ${id})`);
-        console.log(`   URL: ${url}\n`);
+        logger.info(`✅ Updated ${title} (ID: ${id})`);
+        logger.info(`   URL: ${url}\n`);
         updated++;
       } else {
-        console.log(`⚠️  Meditation not found: ${title} (ID: ${id})`);
+        logger.info(`⚠️  Meditation not found: ${title} (ID: ${id})`);
         skipped++;
       }
     } catch (error) {
-      console.error(`❌ Error updating ${title}:`, error.message);
+      logger.error(`❌ Error updating ${title}:`, error.message);
       skipped++;
     }
   }
   
-  console.log(`\n📊 Summary:`);
-  console.log(`   ✅ Updated: ${updated}`);
-  console.log(`   ⚠️  Skipped: ${skipped}`);
-  console.log(`   📝 Total: ${Object.keys(urlMap).length}\n`);
+  logger.info(`\n📊 Summary:`);
+  logger.info(`   ✅ Updated: ${updated}`);
+  logger.info(`   ⚠️  Skipped: ${skipped}`);
+  logger.info(`   📝 Total: ${Object.keys(urlMap).length}\n`);
 }
 
 /**
@@ -158,23 +159,23 @@ async function main() {
   try {
     // Check database connection
     await pool.query('SELECT 1');
-    console.log('✅ Database connection successful\n');
+    logger.info('✅ Database connection successful\n');
     
     // Get URLs
     const urlMap = await getCloudinaryUrls();
     
     if (Object.keys(urlMap).length === 0) {
-      console.log('⚠️  No URLs provided. Exiting.');
+      logger.info('⚠️  No URLs provided. Exiting.');
       process.exit(0);
     }
     
     // Update database
     await updateMeditationUrls(urlMap);
     
-    console.log('✨ Done! Your meditation audio URLs have been updated.\n');
+    logger.info('✨ Done! Your meditation audio URLs have been updated.\n');
     
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   } finally {
     if (pool) {
@@ -185,7 +186,7 @@ async function main() {
 
 // Run the script
 main().catch(error => {
-  console.error('❌ Fatal error:', error);
+  logger.error('❌ Fatal error:', error);
   process.exit(1);
 });
 

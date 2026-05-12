@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,7 +19,7 @@ export default function MoonPhaseWidget() {
           setMoonData(result.data);
         }
       } catch (error) {
-        console.error('Failed to fetch moon data:', error);
+        logger.error('Failed to fetch moon data:', error);
       } finally {
         setLoading(false);
       }

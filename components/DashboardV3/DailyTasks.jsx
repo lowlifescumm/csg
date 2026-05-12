@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 "use client";
 import { useState, useEffect } from "react";
 import { CheckCircle2, Circle, Sparkles, Moon, Heart, Brain, Trophy, Zap, X } from "lucide-react";
@@ -106,7 +107,7 @@ export default function DailyTasks({ userId, streak }) {
         }
       }
     } catch (err) {
-      console.error("Failed to fetch tasks:", err);
+      logger.error("Failed to fetch tasks:", err);
     } finally {
       setLoading(false);
     }
@@ -177,7 +178,7 @@ export default function DailyTasks({ userId, streak }) {
         });
       }
     } catch (err) {
-      console.error("Error completing task:", err);
+      logger.error("Error completing task:", err);
       showToast({
         type: "error",
         message: "Failed to complete task. Please try again.",

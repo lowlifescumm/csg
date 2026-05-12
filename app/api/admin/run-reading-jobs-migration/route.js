@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db.js';
 
@@ -67,7 +68,7 @@ export async function POST(request) {
           executed.push(statement.split('\n')[0].trim());
         } catch (error) {
           if (SKIPPABLE_CODES.has(error.code)) {
-            console.log('[Reading Jobs Migration] Skipped existing object:', error.code);
+            logger.info('[Reading Jobs Migration] Skipped existing object:', error.code);
             continue;
           }
           throw error;
@@ -84,7 +85,7 @@ export async function POST(request) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[Reading Jobs Migration] Error:', error);
+    logger.error('[Reading Jobs Migration] Error:', error);
     return NextResponse.json(
       { error: 'Migration failed', details: error.message, code: error.code },
       { status: 500 },

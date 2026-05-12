@@ -11,6 +11,7 @@ const eslintConfig = {
     "react-hooks/exhaustive-deps": "off",
     "@next/next/no-img-element": "off",
     "jsx-a11y/alt-text": "off",
+    "no-console": ["error", { "allow": ["trace"] }],
   },
 };
 

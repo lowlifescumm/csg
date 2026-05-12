@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import Groq from 'groq-sdk';
@@ -12,7 +13,7 @@ const parseJsonSafely = (payload, label) => {
   try {
     return JSON.parse(payload);
   } catch (error) {
-    console.error(`[Transit Interpretation] Failed to parse ${label}:`, error);
+    logger.error(`[Transit Interpretation] Failed to parse ${label}:`, error);
     return null;
   }
 };
@@ -54,7 +55,7 @@ export async function POST(req) {
     const interpretation = await generateTransitInterpretation(transit);
     return NextResponse.json({ interpretation });
   } catch (error) {
-    console.error('Transit interpretation error:', error);
+    logger.error('Transit interpretation error:', error);
     return NextResponse.json(
       { error: 'Failed to generate interpretation', details: error.message },
       { status: 500 },

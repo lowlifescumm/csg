@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getAuthenticatedUser } from '@/lib/auth';
@@ -44,7 +45,7 @@ export async function POST(request) {
       } catch (colError) {
         // Column might already exist or other error - continue
         if (!colError.message.includes('already exists') && !colError.code === '42710') {
-          console.warn('[Share Reward] Column check warning:', colError.message);
+          logger.warn('[Share Reward] Column check warning:', colError.message);
         }
       }
 
@@ -116,14 +117,14 @@ export async function POST(request) {
 
     } catch (error) {
       await client.query('ROLLBACK');
-      console.error('[Share Reward] Transaction error:', error);
+      logger.error('[Share Reward] Transaction error:', error);
       throw error;
     } finally {
       client.release();
     }
 
   } catch (error) {
-    console.error('[Share Reward] Error:', error);
+    logger.error('[Share Reward] Error:', error);
     return NextResponse.json(
       { 
         success: false, 

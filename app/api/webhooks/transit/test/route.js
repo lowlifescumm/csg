@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
@@ -20,7 +21,8 @@ export async function POST(req) {
 
     try {
       new URL(webhookUrl);
-    } catch {
+    } catch (err) {
+      console.error("[webhooks/transit/test] Invalid webhook URL:", err);
       return NextResponse.json({ error: 'Invalid webhook URL format' }, { status: 400 });
     }
 
@@ -68,7 +70,7 @@ export async function POST(req) {
       testPayload,
     });
   } catch (error) {
-    console.error('Webhook test error:', error);
+    logger.error('Webhook test error:', error);
 
     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
       return NextResponse.json(

@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
@@ -62,7 +63,7 @@ export async function GET(request) {
       });
     }
   } catch (error) {
-    console.error("Get energy error:", error);
+    logger.error("Get energy error:", error);
     return NextResponse.json(
       { error: "Failed to fetch energy data", details: error.message },
       { status: 500 }
@@ -130,7 +131,7 @@ export async function POST(request) {
         CREATE INDEX IF NOT EXISTS idx_energy_logs_date ON energy_logs(date);
       `);
     } catch (createError) {
-      console.log("Energy logs table creation:", createError.message);
+      logger.info("Energy logs table creation:", createError.message);
     }
 
     // Insert or update energy log
@@ -152,7 +153,7 @@ export async function POST(request) {
       log: result.rows[0],
     });
   } catch (error) {
-    console.error("Post energy error:", error);
+    logger.error("Post energy error:", error);
     return NextResponse.json(
       { error: "Failed to log energy", details: error.message },
       { status: 500 }

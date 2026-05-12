@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import { getAuthenticatedUser } from '@/lib/auth';
@@ -49,7 +50,7 @@ export async function initializeUserCredits(userId) {
     }
     return true;
   } catch (error) {
-    console.error('Error initializing user credits:', error);
+    logger.error('Error initializing user credits:', error);
     return false;
   }
 }
@@ -81,7 +82,7 @@ export async function checkUserCredits(userId, creditType) {
       resetDate: reset_date 
     };
   } catch (error) {
-    console.error('Error checking user credits:', error);
+    logger.error('Error checking user credits:', error);
     return { hasCredits: false, creditsRemaining: 0 };
   }
 }
@@ -123,7 +124,7 @@ export async function deductUserCredit(userId, creditType, relatedId = null, des
       creditsRemaining: result.rows[0].credits_remaining 
     };
   } catch (error) {
-    console.error('Error deducting user credit:', error);
+    logger.error('Error deducting user credit:', error);
     return { success: false, error: error.message };
   }
 }
@@ -157,7 +158,7 @@ async function resetUserCredits(userId, creditType) {
 
     return true;
   } catch (error) {
-    console.error('Error resetting user credits:', error);
+    logger.error('Error resetting user credits:', error);
     return false;
   }
 }
@@ -337,7 +338,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Error fetching user credits:', error);
+    logger.error('Error fetching user credits:', error);
     return NextResponse.json(
       { error: 'Failed to fetch credits' },
       { status: 500 }

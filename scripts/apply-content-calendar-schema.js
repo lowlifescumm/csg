@@ -1,3 +1,4 @@
+const logger = require('./lib/logger');
 #!/usr/bin/env node
 /**
  * Apply Content Calendar Schema
@@ -10,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 
 async function applySchema() {
-  console.log('🔧 Applying content calendar schema...\n');
+  logger.info('🔧 Applying content calendar schema...\n');
 
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -27,19 +28,19 @@ async function applySchema() {
     // Execute the SQL
     await pool.query(sqlFile);
     
-    console.log('✅ Schema applied successfully!');
-    console.log('\nTables created:');
-    console.log('  • content_calendar - 24 posts scheduled');
-    console.log('  • content_performance - Tracking metrics');
-    console.log('  • publishing_workflow - 9-step workflow');
-    console.log('  • content_briefs - SEO briefs for high-priority posts');
+    logger.info('✅ Schema applied successfully!');
+    logger.info('\nTables created:');
+    logger.info('  • content_calendar - 24 posts scheduled');
+    logger.info('  • content_performance - Tracking metrics');
+    logger.info('  • publishing_workflow - 9-step workflow');
+    logger.info('  • content_briefs - SEO briefs for high-priority posts');
     
     // Verify the data
     const { rows: calendarCount } = await pool.query('SELECT COUNT(*) FROM content_calendar');
-    console.log(`\n📅 Content calendar entries: ${calendarCount[0].count}`);
+    logger.info(`\n📅 Content calendar entries: ${calendarCount[0].count}`);
 
   } catch (error) {
-    console.error('❌ Error applying schema:', error.message);
+    logger.error('❌ Error applying schema:', error.message);
     process.exit(1);
   } finally {
     await pool.end();

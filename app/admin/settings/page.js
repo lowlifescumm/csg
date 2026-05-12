@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -41,7 +42,7 @@ export default function SiteSettingsPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      logger.error('Auth error:', error);
       window.location.href = '/login';
     }
   };
@@ -54,7 +55,7 @@ export default function SiteSettingsPage() {
         setSettings({ ...settings, ...data.settings });
       }
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
+      logger.error('Failed to fetch settings:', error);
     }
   };
 
@@ -73,10 +74,10 @@ export default function SiteSettingsPage() {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       } else {
-        console.error('Failed to save settings');
+        logger.error('Failed to save settings');
       }
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      logger.error('Failed to save settings:', error);
     } finally {
       setLoading(false);
     }
