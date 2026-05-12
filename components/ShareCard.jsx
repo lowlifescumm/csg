@@ -1,5 +1,5 @@
-const logger = require('./lib/logger');
 "use client";
+const logger = require('@/lib/logger');
 import { useState } from "react";
 import { Share2, Instagram, Twitter, Copy, Check, Sparkles, Star, Loader2 } from "lucide-react";
 import { useSocialShare } from "@/src/hooks/useSocialShare";
