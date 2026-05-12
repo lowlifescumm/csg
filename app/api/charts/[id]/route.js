@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 /**
  * Individual Natal Chart API
  * GET /api/charts/[id] - Get a specific natal chart

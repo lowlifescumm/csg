@@ -492,6 +492,7 @@ export default function HomePage() {
                 <li><Link href="/tarot" className="hover:text-cosmic-gold transition-colors">Tarot Readings</Link></li>
                 <li><Link href="/birth-chart" className="hover:text-cosmic-gold transition-colors">Birth Charts</Link></li>
                 <li><Link href="/compatibility" className="hover:text-cosmic-gold transition-colors">Compatibility</Link></li>
+                <li><Link href="/horoscope" className="hover:text-cosmic-gold transition-colors">Horoscopes</Link></li>
                 <li><Link href="/forecasts" className="hover:text-cosmic-gold transition-colors">Forecasts</Link></li>
               </ul>
             </div>

@@ -1,5 +1,5 @@
 "use client";
-const logger = require('../lib/logger');
+
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BirthChartForm from "@/components/BirthChartForm";

@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 // Webhook to trigger welcome email on new signup
 // Called immediately after successful user registration
 
@@ -90,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    logger.error('Signup webhook error:', error);
+    console.error('Signup webhook error:', error);
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

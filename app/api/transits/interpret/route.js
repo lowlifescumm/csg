@@ -48,9 +48,9 @@ export async function POST(req) {
 
     const user = userResult.rows[0];
     const isAdmin = user.role === 'admin';
-    const isPremium = Boolean(user.stripe_subscription_id);
+    const hasPremium = Boolean(user.stripe_subscription_id);
 
-    if (!isAdmin && !isPremium) {
+    if (!isAdmin && !hasPremium) {
       return NextResponse.json(
         { error: 'Premium subscription required', requiresPremium: true },
         { status: 402 },

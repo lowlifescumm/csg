@@ -1,4 +1,3 @@
-const logger = require('../../../../lib/logger');
 /**
  * GET /api/reports/[resultId]/download
  * Download report as PDF/HTML

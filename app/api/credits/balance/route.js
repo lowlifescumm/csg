@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 /**
  * GET /api/credits/balance
  * Get user's credit balance with detailed breakdown

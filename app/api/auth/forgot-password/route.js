@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getUserByEmail, createPasswordResetToken } from '@/lib/auth';
 import { sendPasswordResetEmail } from '@/lib/email';

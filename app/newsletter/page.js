@@ -1,5 +1,7 @@
 "use client";
-const logger = require('../lib/logger');
+
+"use client";
+
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";

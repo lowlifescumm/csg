@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getCachedHoroscope, generateDailyHoroscope, saveHoroscope } from '@/lib/horoscope';
 import { getServerSession } from 'next-auth/next';

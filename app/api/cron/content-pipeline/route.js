@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 /**
  * Content Pipeline Cron Job — Fully Automated
  *

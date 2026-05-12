@@ -1,5 +1,4 @@
 "use client";
-const logger = require('@/lib/logger');
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Moon, Sparkles, Calendar, Info } from 'lucide-react';

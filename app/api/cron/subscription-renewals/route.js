@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { renewDueSubscriptions } from '@/lib/subscription-service.js';
 

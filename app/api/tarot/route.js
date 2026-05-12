@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 // /app/api/tarot/route.js
 import { NextResponse } from "next/server";
 import { getServerSession } from 'next-auth/next';
@@ -11,6 +10,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
 
+import { checkRateLimit, getClientIdentifier } from "@/lib/rate-limiter";
 export const runtime = "nodejs"; // ensure Node runtime on Vercel/Replit Edge-like envs
 
 export async function POST(request) {
@@ -24,11 +24,21 @@ export async function POST(request) {
     
     const { userId } = authResult;
 
+
     const { question, spreadType = "three-card", specificCards, readingType = "general", cardCount, spreadId } = await request.json();
 
     // Determine if this is a basic or premium tarot reading
     const isPremiumTarot = spreadType === "love-potential" || spreadType === "breakup" || spreadType === "yin-yang";
     const readingTypeKey = isPremiumTarot ? 'TAROT_PREMIUM' : 'TAROT_BASIC';
+
+    // Apply rate limiting: 5 req/min for free users, 20 req/min for premium
+    const rateLimitResult = checkRateLimit(getClientIdentifier(request, userId), isPremiumTarot ? 20 : 5, 60000);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded", retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000) },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)) } }
+      );
+    }
 
     // Check access permissions
     const accessCheck = await canAccessReading(userId, readingTypeKey);

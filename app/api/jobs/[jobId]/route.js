@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 /**
  * GET /api/jobs/[jobId]
  * Get job status and results

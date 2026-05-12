@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 /**
  * POST /api/credits/consume
  * Atomically consume credits for a reading/feature

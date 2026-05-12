@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Pool } from 'pg';

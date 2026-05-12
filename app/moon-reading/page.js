@@ -1,5 +1,7 @@
 "use client";
-const logger = require('../lib/logger');
+
+"use client";
+
 import { useState, useEffect } from 'react';
 import { Moon, Sparkles, Calendar, Heart, Briefcase, Droplet, Star, ChevronRight } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';

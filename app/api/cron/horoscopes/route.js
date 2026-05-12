@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { generateDailyHoroscope, saveHoroscope } from '@/lib/horoscope';
 import { zodiacSigns } from '@/lib/zodiac-data';

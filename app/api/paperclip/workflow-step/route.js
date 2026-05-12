@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 /**
  * PATCH /api/paperclip/workflow-step
  * Update a workflow step in the content_calendar JSONB column.

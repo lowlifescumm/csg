@@ -1,4 +1,3 @@
-const logger = require('../lib/logger');
 'use client';
 
 export const dynamic = 'force-static';

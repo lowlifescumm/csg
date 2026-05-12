@@ -1,5 +1,4 @@
 "use client";
-const logger = require('@/lib/logger');
 import { useState, useEffect } from "react";
 import { X, Sparkles } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";

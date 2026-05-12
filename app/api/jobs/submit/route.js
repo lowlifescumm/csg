@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 /**
  * POST /api/jobs/submit
  * Submit a reading generation job
