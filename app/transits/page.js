@@ -411,9 +411,16 @@ function TransitCard({ transit, onClick }) {
           <div className="flex items-center gap-3 mb-2">
             <span className="text-3xl">{getEmoji(transit.aspectNature)}</span>
             <div>
-              <h4 className="text-xl font-bold text-white">
-                {transit.transitPlanetName} {transit.aspect} {transit.natalPlanetName}
-              </h4>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xl font-bold text-white">
+                  {transit.transitPlanetName} {transit.aspect} {transit.natalPlanetName}
+                </h4>
+                {transit.isRetrograde && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Retrograde
+                  </span>
+                )}
+              </div>
               <p className="text-white/60 text-sm">
                 {transit.transitPlanetName} in {transit.transitSign} → {transit.natalPlanetName} in {transit.natalSign}
               </p>
@@ -547,9 +554,16 @@ function TransitDetailView({ transit, onBack }) {
         <div className={`bg-gradient-to-r ${getColorGradient(transit.color)} rounded-3xl p-8 mb-8 shadow-2xl`}>
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
-                {transit.transitPlanetName} {transit.aspect} {transit.natalPlanetName}
-              </h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-4xl font-bold text-white">
+                  {transit.transitPlanetName} {transit.aspect} {transit.natalPlanetName}
+                </h1>
+                {transit.isRetrograde && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Retrograde
+                  </span>
+                )}
+              </div>
               <p className="text-white/80 text-lg">
                 {transit.transitPlanetName} in {transit.transitSign} → {transit.natalPlanetName} in {transit.natalSign}
               </p>
