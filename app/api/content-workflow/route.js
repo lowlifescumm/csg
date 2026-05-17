@@ -20,6 +20,7 @@
  *   promote      → social_copy record created (manual post or auto-post flag)
  */
 
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
@@ -195,7 +196,7 @@ export async function GET(req) {
       workflow_steps: steps,
     });
   } catch (error) {
-    console.error('Content workflow GET error:', error);
+    logger.error('Content workflow GET error:', error);
     return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
   }
 }
@@ -366,7 +367,7 @@ export async function POST(req) {
 
     return NextResponse.json({ error: 'Invalid action. Use begin, complete, or release.' }, { status: 400 });
   } catch (error) {
-    console.error('Content workflow POST error:', error);
+    logger.error('Content workflow POST error:', error);
     return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
   }
 }

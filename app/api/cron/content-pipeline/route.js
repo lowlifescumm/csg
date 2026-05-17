@@ -25,7 +25,7 @@ async function getState() {
       return JSON.parse(readFileSync(STATE_FILE, 'utf8'));
     }
   } catch (err) {
-    console.error("[content-pipeline] Failed to read state file:", err);
+    logger.error("[content-pipeline] Failed to read state file:", err);
   }
   return { lastPost: 0, lastRun: null };
 }
@@ -35,7 +35,7 @@ async function saveState(state) {
     const { writeFileSync } = await import('fs');
     writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
   } catch (err) {
-    console.error("[content-pipeline] Failed to read state file:", err);
+    logger.error("[content-pipeline] Failed to write state file:", err);
   }
 }
 

@@ -87,7 +87,7 @@ export async function POST(req) {
       try {
         new URL(webhookUrl);
       } catch (err) {
-        console.error("[subscriptions/transit] Invalid webhook URL:", err);
+        logger.error("[subscriptions/transit] Invalid webhook URL:", err);
         return NextResponse.json({ error: 'Invalid webhook URL format' }, { status: 400 });
       }
     }

@@ -3,6 +3,7 @@
  * Replace all console.* calls with logger.* across the source tree.
  * Run: node scripts/replace-console.mjs
  */
+/* eslint-disable no-console */
 import { readFile, writeFile, readdir, stat } from 'fs/promises';
 import { join } from 'path';
 
