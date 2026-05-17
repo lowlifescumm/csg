@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
 import { pool } from "@/lib/db";
 import { getLocalDateString } from '@/lib/date-utils';
+import logger from '@/lib/logger';
 
 export const runtime = "nodejs";
 
@@ -77,7 +78,7 @@ export async function POST(request) {
     try {
       // Get distinct dates with task completions, ordered by date descending
       const recentTasks = await pool.query(
-        `SELECT DISTINCT completed_date
+        `SELECT DISTINCT to_char(completed_date, 'YYYY-MM-DD') as completed_date
          FROM user_tasks
          WHERE user_id = $1
          AND completed_date <= $2
@@ -88,16 +89,16 @@ export async function POST(request) {
       
       if (recentTasks.rows.length > 0) {
         const todayDate = new Date(today + 'T00:00:00Z');
-        
+
         let consecutiveDays = 0;
         let expectedDay = 0; // 0 = today, 1 = yesterday, etc.
-        
+
         for (const row of recentTasks.rows) {
-          const taskDate = new Date(row.completed_date);
-          taskDate.setHours(0, 0, 0, 0);
-          
+          const taskDateStr = row.completed_date;
+          const taskDate = new Date(taskDateStr + 'T00:00:00Z');
+
           const daysAgo = Math.floor((todayDate - taskDate) / (1000 * 60 * 60 * 24));
-          
+
           // Check if this date matches the expected consecutive day
           if (daysAgo === expectedDay) {
             consecutiveDays++;
@@ -108,7 +109,7 @@ export async function POST(request) {
           }
           // If daysAgo < expectedDay, skip (shouldn't happen with DESC order)
         }
-        
+
         currentStreak = consecutiveDays;
       }
     } catch (err) {

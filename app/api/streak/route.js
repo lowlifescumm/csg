@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getLocalDateString, getLocalDateOffset } from '@/lib/date-utils';
+import logger from '@/lib/logger';
 
 export async function GET(request) {
   try {
@@ -26,10 +27,10 @@ export async function GET(request) {
     // Calculate streak from reading activity
     // Get all unique dates when user created readings
     const { rows } = await pool.query(
-      `SELECT DISTINCT (created_at::timestamptz AT TIME ZONE $2)::date as activity_date 
-       FROM readings 
-       WHERE user_id=$1 
-       ORDER BY activity_date DESC 
+      `SELECT DISTINCT to_char((created_at::timestamptz AT TIME ZONE $2)::date, 'YYYY-MM-DD') as activity_date
+       FROM readings
+       WHERE user_id=$1
+       ORDER BY activity_date DESC
        LIMIT 30`,
       [userId, timezone]
     );
@@ -48,7 +49,7 @@ export async function GET(request) {
     const yesterday = getLocalDateOffset(timezone, -1);
     
     // Check if user was active today or yesterday
-    const activityDates = rows.map(r => r.activity_date.toISOString().split('T')[0]);
+    const activityDates = rows.map(r => r.activity_date);
     
     if (activityDates.includes(today)) {
       currentStreak = 1;

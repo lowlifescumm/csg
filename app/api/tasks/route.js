@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
 import { pool } from "@/lib/db";
 import { getLocalDateString } from '@/lib/date-utils';
+import logger from '@/lib/logger';
 
 export const runtime = "nodejs";
 
