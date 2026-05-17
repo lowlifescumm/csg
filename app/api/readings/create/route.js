@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth-config';
 import spreads from "@/lib/tarot-spreads.json";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { drawCards } from "@/lib/tarot-data";
+import logger from "@/lib/logger";
 import { saveReading, getReadingById, pool } from "@/lib/db";
 import { generateTarotReading, generateTarotSummary, createEmbedding } from "@/lib/groq";
 import { getPinecone } from "@/lib/pinecone";

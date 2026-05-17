@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { pool } from '@/lib/db';
+import { getLocalDateString, getLocalDateOffset } from '@/lib/date-utils';
 
-export async function GET() {
+export async function GET(request) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
@@ -19,15 +20,18 @@ export async function GET() {
 
     const userId = decoded.userId;
 
+    const { searchParams } = new URL(request.url);
+    const timezone = searchParams.get('timezone') || 'UTC';
+
     // Calculate streak from reading activity
     // Get all unique dates when user created readings
     const { rows } = await pool.query(
-      `SELECT DISTINCT DATE(created_at) as activity_date 
+      `SELECT DISTINCT (created_at::timestamptz AT TIME ZONE $2)::date as activity_date 
        FROM readings 
        WHERE user_id=$1 
        ORDER BY activity_date DESC 
        LIMIT 30`,
-      [userId]
+      [userId, timezone]
     );
 
     if (rows.length === 0) {
@@ -40,19 +44,16 @@ export async function GET() {
 
     // Calculate current streak
     let currentStreak = 0;
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const today = getLocalDateString(timezone);
+    const yesterday = getLocalDateOffset(timezone, -1);
     
     // Check if user was active today or yesterday
     const activityDates = rows.map(r => r.activity_date.toISOString().split('T')[0]);
-    let checkDate = today;
     
     if (activityDates.includes(today)) {
       currentStreak = 1;
-      checkDate = yesterday;
     } else if (activityDates.includes(yesterday)) {
       currentStreak = 1;
-      checkDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     } else {
       return NextResponse.json({
         currentStreak: 0,
@@ -63,7 +64,7 @@ export async function GET() {
 
     // Continue counting backwards
     for (let i = 1; i < 365; i++) {
-      const prevDate = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const prevDate = getLocalDateOffset(timezone, -i);
       if (activityDates.includes(prevDate)) {
         currentStreak++;
       } else {

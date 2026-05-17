@@ -1,17 +1,42 @@
 "use client";
 
+import { useState } from 'react';
 import { CREDIT_PACKS, READING_COSTS, SUBSCRIPTION_TIERS, PREMIUM_REPORTS, FREE_CREDITS } from "@/lib/pricing";
 import { Sparkles, Moon, Calendar, Heart, TrendingUp, FileText, Gift, Crown, Zap, ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
 import { ServiceRelatedLinks } from "@/components/RelatedServices";
 
 export default function ServicesPage() {
+  const [isLoading, setIsLoading] = useState(null);
+  
   // Format price in cents to dollars
   const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
   
   // Get reading cost by type
   const getReadingCost = (type) => {
     return READING_COSTS[type] || READING_COSTS[type.toUpperCase()] || 0;
+  };
+
+  // Handle premium report purchase via Stripe checkout
+  const handlePurchaseReport = async (reportId) => {
+    setIsLoading(reportId);
+    try {
+      const res = await fetch('/api/create-report-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportId }),
+      });
+      const data = await res.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        alert(data.error || 'Unable to start checkout. Please try again.');
+      }
+    } catch (err) {
+      alert('Payment error: ' + err.message);
+    } finally {
+      setIsLoading(null);
+    }
   };
 
   return (
@@ -328,13 +353,11 @@ export default function ServicesPage() {
                   <p className="text-sm text-green-400">Turnaround: {report.turnaround}</p>
                 </div>
                 <button 
-                  onClick={() => {
-                    // TODO: Implement premium report purchase flow
-                    alert(`${report.name}\nPrice: ${formatPrice(report.priceInCents)}\n${report.description}\n\nTurnaround: ${report.turnaround}\n\nThis feature will be available soon!`);
-                  }}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition"
+                  onClick={() => handlePurchaseReport(report.id)}
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Purchase - {formatPrice(report.priceInCents)}
+                  {isLoading ? 'Processing...' : `Purchase - ${formatPrice(report.priceInCents)}`}
                 </button>
               </div>
             ))}

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Share2, Instagram, Twitter, Copy, Check, Sparkles, Star, Loader2 } from "lucide-react";
 import { useSocialShare } from "@/src/hooks/useSocialShare";
+import logger from "@/lib/logger";
 
 /**
  * ShareCard - Component for sharing tarot reading on social media

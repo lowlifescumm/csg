@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
 import { pool } from "@/lib/db";
+import { getLocalDateString } from '@/lib/date-utils';
 
 export const runtime = "nodejs";
 
@@ -45,7 +46,7 @@ export async function POST(request) {
 
     const { userId } = authResult;
     const body = await request.json();
-    const { taskId } = body;
+    const { taskId, timezone } = body;
 
     if (!taskId) {
       return NextResponse.json({ error: "Task ID is required" }, { status: 400 });
@@ -56,7 +57,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid task ID" }, { status: 400 });
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateString(timezone);
 
     // Check if task already completed today
     const existingResult = await pool.query(
@@ -79,15 +80,14 @@ export async function POST(request) {
         `SELECT DISTINCT completed_date
          FROM user_tasks
          WHERE user_id = $1
-         AND completed_date <= CURRENT_DATE
+         AND completed_date <= $2
          ORDER BY completed_date DESC
          LIMIT 60`,
-        [userId]
+        [userId, today]
       );
       
       if (recentTasks.rows.length > 0) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayDate = new Date(today + 'T00:00:00Z');
         
         let consecutiveDays = 0;
         let expectedDay = 0; // 0 = today, 1 = yesterday, etc.
@@ -96,7 +96,7 @@ export async function POST(request) {
           const taskDate = new Date(row.completed_date);
           taskDate.setHours(0, 0, 0, 0);
           
-          const daysAgo = Math.floor((today - taskDate) / (1000 * 60 * 60 * 24));
+          const daysAgo = Math.floor((todayDate - taskDate) / (1000 * 60 * 60 * 24));
           
           // Check if this date matches the expected consecutive day
           if (daysAgo === expectedDay) {

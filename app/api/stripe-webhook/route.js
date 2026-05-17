@@ -164,6 +164,30 @@ export async function POST(request) {
             }
           }
         }
+        
+        // Handle premium report purchases
+        if (paymentIntent.metadata?.type === 'premium_report') {
+          const reportId = paymentIntent.metadata.report_id;
+          const reportName = paymentIntent.metadata.report_name;
+          const userId = paymentIntent.metadata.user_id;
+          
+          logger.info(`[Report Purchase] Payment succeeded for report ${reportId} (${reportName}) by user ${userId || 'guest'}`);
+          
+          // Store the purchase in the database for fulfillment
+          if (userId) {
+            try {
+              await pool.query(
+                `INSERT INTO report_purchases (user_id, report_type, stripe_payment_intent_id, amount, status, created_at)
+                 VALUES ($1, $2, $3, $4, $5, NOW())
+                 ON CONFLICT (user_id, stripe_payment_intent_id) DO NOTHING`,
+                [parseInt(userId), reportId, paymentIntent.id, paymentIntent.amount, 'paid']
+              );
+              logger.info(`[Report Purchase] Recorded purchase for user ${userId}, report ${reportId}`);
+            } catch (dbError) {
+              logger.error(`[Report Purchase] Failed to record purchase:`, dbError);
+            }
+          }
+        }
         break;
 
       case 'payment_intent.payment_failed':

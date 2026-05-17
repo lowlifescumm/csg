@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Sparkles, Loader2, Heart, Moon, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import logger from "@/lib/logger";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
@@ -119,13 +120,31 @@ export default function TarotPage() {
             </div>
           </div>
 
-          <button
-            onClick={handleNewReading}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
-          >
-            <Sparkles className="w-5 h-5" />
-            New Reading
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={handleNewReading}
+              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-5 h-5" />
+              New Reading
+            </button>
+            <button
+              onClick={() => {
+                const shareUrl = `${window.location.origin}/readings/${reading.id}`;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                  alert("Link copied to clipboard!");
+                }).catch(() => {
+                  alert("Failed to copy link");
+                });
+              }}
+              className="flex-1 bg-white bg-opacity-20 text-white font-bold py-4 rounded-xl hover:bg-opacity-30 transition-all flex items-center justify-center gap-2 border border-white border-opacity-30"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              Share Link
+            </button>
+          </div>
         </div>
       </div>
     );
