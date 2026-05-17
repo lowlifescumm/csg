@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { pool } from '@/lib/db.js';
 import { interpretBirthChart, calculateBirthChart } from '@/lib/astrology.js';
@@ -7,6 +6,7 @@ import { canAccessReading, consumeCreditsForReading, claimFreeNatalChart } from 
 import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { getAuthenticatedUser } from '@/lib/auth.js';
 import { hydrateReportData } from '@/src/services/chartHydrator';
+import logger from '@/lib/logger';
 
 /**
  * POST /api/birth-chart
