@@ -6,6 +6,7 @@ import spreads from "@/lib/tarot-spreads.json";
 import FocusModal from "@/components/FocusModal";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import ShareCard from "@/components/ShareCard";
+import logger from "@/lib/logger";
 
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general", cardCount = null, question: initialQuestion = "", spreadId = null }) {
   const [selectedCards, setSelectedCards] = useState([]);
