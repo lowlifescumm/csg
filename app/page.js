@@ -1,5 +1,4 @@
 "use client";
-
 export const dynamic = 'force-static';
 
 import { useEffect, useState, useRef } from "react";
@@ -164,7 +163,7 @@ export default function HomePage() {
       const res = await fetch("/api/auth/user");
       const data = await res.json();
       if (data.user) setUser(data.user);
-    } catch (e) { logger.error("Auth check failed"); }
+    } catch (e) { console.error("Auth check failed"); }
     finally { setLoading(false); }
   };
 

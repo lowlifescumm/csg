@@ -194,7 +194,7 @@ export default function PricingTiers() {
         setProcessingSubscription(false);
       }
     } catch (error) {
-      logger.error('Subscription error:', error);
+      console.error('Subscription error:', error);
       setError('Failed to start subscription process');
       setProcessingSubscription(false);
     }

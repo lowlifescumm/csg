@@ -33,7 +33,7 @@ export default function ReportTemplatesAdminPage() {
       ];
       
       if (!allowedOrigins.some(origin => event.origin.includes(origin.replace(/^https?:\/\//, '')))) {
-        logger.warn('[Template Admin] Rejected message from origin:', event.origin);
+        console.warn('[Template Admin] Rejected message from origin:', event.origin);
         return;
       }
       
@@ -59,9 +59,9 @@ export default function ReportTemplatesAdminPage() {
           
           setJson(JSON.stringify(templateJson, null, 2));
           setError('');
-          logger.info('[Template Admin] Received template from designer');
+          console.info('[Template Admin] Received template from designer');
         } catch (err) {
-          logger.error('[Template Admin] Failed to parse template:', err);
+          console.error('[Template Admin] Failed to parse template:', err);
           setError('Failed to parse template from designer: ' + err.message);
         }
       }
@@ -84,7 +84,7 @@ export default function ReportTemplatesAdminPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      logger.error('Auth error:', error);
+      console.error('Auth error:', error);
       window.location.href = '/login';
     }
   };
@@ -97,7 +97,7 @@ export default function ReportTemplatesAdminPage() {
         setTemplates(data.templates);
       }
     } catch (error) {
-      logger.error('Failed to fetch templates:', error);
+      console.error('Failed to fetch templates:', error);
     }
   };
 

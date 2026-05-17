@@ -62,7 +62,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
           }
         }
       } catch (err) {
-        logger.info("Could not fetch user sign, defaulting to Aries");
+        console.info("Could not fetch user sign, defaulting to Aries");
         setSelectedSign("Aries");
       }
     };
@@ -89,7 +89,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
         setError(data.error || "Failed to load briefing");
       }
     } catch (err) {
-      logger.error("Failed to fetch briefing:", err);
+      console.error("Failed to fetch briefing:", err);
       setError("Failed to load briefing. Please try again.");
     } finally {
       setLoading(false);
@@ -142,7 +142,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
 
       setLoadingReading(false);
     } catch (err) {
-      logger.error("Error generating reading:", err);
+      console.error("Error generating reading:", err);
       setError({
         type: "error",
         message: "Failed to connect to server. Please try again.",
@@ -183,7 +183,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
         });
       }
     } catch (err) {
-      logger.error("Error saving to journal:", err);
+      console.error("Error saving to journal:", err);
       setError({
         type: "error",
         message: "Failed to save to journal. Please try again.",

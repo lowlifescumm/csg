@@ -107,7 +107,7 @@ export default function DailyTasks({ userId, streak }) {
         }
       }
     } catch (err) {
-      logger.error("Failed to fetch tasks:", err);
+      console.error("Failed to fetch tasks:", err);
     } finally {
       setLoading(false);
     }
@@ -179,7 +179,7 @@ export default function DailyTasks({ userId, streak }) {
         });
       }
     } catch (err) {
-      logger.error("Error completing task:", err);
+      console.error("Error completing task:", err);
       showToast({
         type: "error",
         message: "Failed to complete task. Please try again.",

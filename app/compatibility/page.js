@@ -39,7 +39,7 @@ export default function CompatibilityCalculator() {
         setCreditsRemaining(0);
       }
     } catch (error) {
-      logger.error('Error checking credits:', error);
+      console.error('Error checking credits:', error);
       setIsPremium(false);
       setCreditsRemaining(0);
     } finally {
@@ -97,7 +97,7 @@ export default function CompatibilityCalculator() {
         return;
       }
     } catch (err) {
-      logger.error('Error checking birth chart:', err);
+      console.error('Error checking birth chart:', err);
       // Continue anyway, but log the error
     }
 

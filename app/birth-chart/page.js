@@ -46,13 +46,13 @@ function BirthChartPageInner() {
               }
             } catch (chartError) {
               // Chart check failed, continue to show form
-              logger.info('Chart check failed:', chartError);
+              console.info('Chart check failed:', chartError);
             }
           }
         }
         // No user or no chart - show the form (no redirect to login)
       } catch (error) {
-        logger.info('Auth check failed, showing form anyway:', error);
+        console.info('Auth check failed, showing form anyway:', error);
       } finally {
         setLoading(false);
         setCheckingChart(false);

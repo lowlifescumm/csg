@@ -46,7 +46,7 @@ export default function MyChartPage() {
       setInterpretation(data.interpretation);
       setLoading(false);
     } catch (err) {
-      logger.error('Error fetching chart:', err);
+      console.error('Error fetching chart:', err);
       setError(err.message);
       setLoading(false);
     }

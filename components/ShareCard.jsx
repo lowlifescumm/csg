@@ -70,7 +70,7 @@ export default function ShareCard({ interpretation, readingId, cards = [], onSha
         imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       });
     } catch (error) {
-      logger.error("[ShareCard] Share error:", error);
+      console.error("[ShareCard] Share error:", error);
       // Error handling is done in the hook
     }
   };
@@ -85,7 +85,7 @@ export default function ShareCard({ interpretation, readingId, cards = [], onSha
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      logger.error("Failed to copy:", error);
+      console.error("Failed to copy:", error);
     }
   };
 

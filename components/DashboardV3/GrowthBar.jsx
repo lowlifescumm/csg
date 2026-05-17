@@ -124,10 +124,10 @@ export default function GrowthBar({
         // Reset canClaim state
         setCanClaim(false);
       } else {
-        logger.error("Failed to claim reward:", data.error);
+        console.error("Failed to claim reward:", data.error);
       }
     } catch (err) {
-      logger.error("Error claiming reward:", err);
+      console.error("Error claiming reward:", err);
     } finally {
       setClaiming(false);
     }

@@ -51,7 +51,7 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
         }
       }
     } catch (error) {
-      logger.error('Error loading existing chart:', error);
+      console.error('Error loading existing chart:', error);
     }
   };
 
@@ -108,14 +108,14 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
             return; // Success! Exit early
           } else if (data.status === 'ZERO_RESULTS') {
             // Continue to fallback
-            logger.info('Google Maps: No results, trying fallback...');
+            console.info('Google Maps: No results, trying fallback...');
           } else if (data.status === 'REQUEST_DENIED') {
-            logger.error('Google Maps API key issue:', data.error_message);
+            console.error('Google Maps API key issue:', data.error_message);
           }
         }
       }
     } catch (error) {
-      logger.error('Google Maps API error:', error);
+      console.error('Google Maps API error:', error);
     }
     
     // Fallback to OpenStreetMap (free)
@@ -141,7 +141,7 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
         }
       }
     } catch (error) {
-      logger.error('OpenStreetMap error:', error);
+      console.error('OpenStreetMap error:', error);
     }
     
     // All services failed - show manual entry
@@ -238,7 +238,7 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
         alert(data.error || 'Failed to generate chart');
       }
     } catch (error) {
-      logger.error('Error generating chart:', error);
+      console.error('Error generating chart:', error);
       alert('Failed to generate chart. Please try again.');
     } finally {
       setLoading(false);

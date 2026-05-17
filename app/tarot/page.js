@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { Sparkles, Loader2, Heart, Moon, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -27,7 +26,7 @@ export default function TarotPage() {
       const data = await response.json();
       setIsPremium(data.isPremium || false);
     } catch (error) {
-      logger.error("Error checking credits:", error);
+      console.error("Error checking credits:", error);
       setIsPremium(false);
     } finally {
       setLoadingCredits(false);

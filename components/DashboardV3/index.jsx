@@ -110,7 +110,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //         }
   //       })
   //       .catch(err => {
-  //         logger.error('Failed to fetch meditations:', err);
+  //         console.error('Failed to fetch meditations:', err);
   //       });
   //   }
   // }, [showMeditations]);
@@ -135,7 +135,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //       alert(data.error || 'Failed to start meditation');
   //     }
   //   } catch (error) {
-  //     logger.error('Error starting meditation:', error);
+  //     console.error('Error starting meditation:', error);
   //     alert('Failed to start meditation');
   //   }
   // };

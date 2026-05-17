@@ -18,7 +18,7 @@ export default function MoonPhaseWidget() {
           setMoonData(result.data);
         }
       } catch (error) {
-        logger.error('Failed to fetch moon data:', error);
+        console.error('Failed to fetch moon data:', error);
       } finally {
         setLoading(false);
       }

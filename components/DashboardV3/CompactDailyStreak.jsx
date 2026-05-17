@@ -33,7 +33,7 @@ export default function CompactDailyStreak({ userId, streak }) {
           }
         }
       } catch (err) {
-        logger.error("Failed to fetch stats:", err);
+        console.error("Failed to fetch stats:", err);
       }
     }
 

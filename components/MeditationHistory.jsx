@@ -31,7 +31,7 @@ export default function MeditationHistory({ userId }) {
         }
       }
     } catch (err) {
-      logger.error("Failed to fetch meditation sessions:", err);
+      console.error("Failed to fetch meditation sessions:", err);
     } finally {
       setLoading(false);
     }

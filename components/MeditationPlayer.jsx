@@ -74,7 +74,7 @@ export default function MeditationPlayer({
       audio.pause();
     } else {
       audio.play().catch((err) => {
-        logger.error("Play error:", err);
+        console.error("Play error:", err);
       });
     }
     setIsPlaying(!isPlaying);
@@ -108,7 +108,7 @@ export default function MeditationPlayer({
         onComplete(data);
       }
     } catch (error) {
-      logger.error("Error completing meditation:", error);
+      console.error("Error completing meditation:", error);
     }
   };
 
@@ -291,7 +291,7 @@ export default function MeditationPlayer({
             setAmbientEnabled(!ambientEnabled);
             if (ambientAudioRef.current) {
               if (!ambientEnabled) {
-                ambientAudioRef.current.play().catch((err) => logger.error("Audio playback error:", err));
+                ambientAudioRef.current.play().catch((err) => console.error("Audio playback error:", err));
               } else {
                 ambientAudioRef.current.pause();
               }

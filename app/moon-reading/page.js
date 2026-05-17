@@ -37,14 +37,14 @@ function CheckoutForm({ paymentType, formData, onSuccess }) {
     });
 
     if (submitError) {
-      logger.error('Stripe payment error:', submitError);
+      console.error('Stripe payment error:', submitError);
       setError(submitError.message);
       setIsProcessing(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
       const paymentIntentId = paymentIntent.id || sessionStorage.getItem('pendingPaymentIntentId');
       await onSuccess(paymentIntentId);
     } else {
-      logger.error('Payment status:', paymentIntent?.status);
+      console.error('Payment status:', paymentIntent?.status);
       setError('Payment requires additional verification');
       setIsProcessing(false);
     }
@@ -96,13 +96,13 @@ export default function PersonalizedMoonReading() {
       const response = await fetch('/api/auth/user');
       const data = await response.json();
       
-      logger.info('User data:', data.user);
+      console.info('User data:', data.user);
       
       if (data.user) {
         const isAdmin = data.user.role === 'admin';
         const hasSubscription = data.user.stripe_subscription_id && data.user.stripe_subscription_id.length > 0;
         const access = isAdmin || hasSubscription;
-        logger.info('Premium access check:', { isAdmin, hasSubscription, access });
+        console.info('Premium access check:', { isAdmin, hasSubscription, access });
         setHasAccess(access);
         setIsPremium(hasSubscription);
       }
@@ -116,7 +116,7 @@ export default function PersonalizedMoonReading() {
         setCreditsRemaining(0);
       }
     } catch (error) {
-      logger.error('Error checking access:', error);
+      console.error('Error checking access:', error);
     } finally {
       setCheckingAccess(false);
     }
@@ -133,7 +133,7 @@ export default function PersonalizedMoonReading() {
       setReading(mockReading);
       setStep('reading');
     } catch (error) {
-      logger.error('Error generating reading:', error);
+      console.error('Error generating reading:', error);
       alert('Failed to generate reading. Please try again.');
     } finally {
       setIsLoading(false);
@@ -203,7 +203,7 @@ export default function PersonalizedMoonReading() {
         throw new Error(data.error || 'Failed to create payment');
       }
     } catch (error) {
-      logger.error('Payment error:', error);
+      console.error('Payment error:', error);
       alert('Failed to initialize payment. Please try again.');
       setStep('intro');
     } finally {
@@ -232,7 +232,7 @@ export default function PersonalizedMoonReading() {
         setStep('intro');
       }
     } catch (error) {
-      logger.error('Verification error:', error);
+      console.error('Verification error:', error);
       alert('Payment verification failed. Please contact support.');
       setStep('intro');
     }

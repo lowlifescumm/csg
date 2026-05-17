@@ -22,7 +22,7 @@ export default function Header() {
         setUser(data.user);
       }
     } catch (error) {
-      logger.error("Auth check failed:", error);
+      console.error("Auth check failed:", error);
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export default function Header() {
       router.push("/");
       router.refresh();
     } catch (error) {
-      logger.error("Logout failed:", error);
+      console.error("Logout failed:", error);
     }
   };
 

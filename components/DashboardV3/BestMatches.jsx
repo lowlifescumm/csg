@@ -105,7 +105,7 @@ export default function BestMatches({ userId }) {
         }
       }
     } catch (err) {
-      logger.error("Failed to fetch top matches:", err);
+      console.error("Failed to fetch top matches:", err);
     } finally {
       setLoading(false);
     }

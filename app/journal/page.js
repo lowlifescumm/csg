@@ -53,7 +53,7 @@ export default function JournalPage() {
         setEntries(data.entries || []);
       }
     } catch (error) {
-      logger.error("Failed to fetch journal entries:", error);
+      console.error("Failed to fetch journal entries:", error);
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export default function JournalPage() {
       // For now, just remove from local state
       setEntries(entries.filter(e => e.id !== entryId));
     } catch (error) {
-      logger.error("Failed to delete entry:", error);
+      console.error("Failed to delete entry:", error);
       alert("Failed to delete entry");
     }
   };

@@ -38,7 +38,7 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
             setMoonPhase(data.data);
           }
         })
-        .catch(err => logger.error("Failed to fetch moon phase:", err));
+        .catch(err => console.error("Failed to fetch moon phase:", err));
     } else {
       setMoonPhase(propMoonPhase);
     }

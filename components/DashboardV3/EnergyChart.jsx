@@ -98,7 +98,7 @@ export default function EnergyChart({
           }
         }
       } catch (err) {
-        logger.info("Could not fetch energy data:", err);
+        console.info("Could not fetch energy data:", err);
       }
     }
 

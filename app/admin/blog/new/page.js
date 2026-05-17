@@ -42,7 +42,7 @@ export default function NewBlogPostPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      logger.error('Auth error:', error);
+      console.error('Auth error:', error);
       window.location.href = '/login';
     }
   };
@@ -67,11 +67,11 @@ export default function NewBlogPostPage() {
       if (response.ok && data.url) {
         setPost(prev => ({ ...prev, featured_image: data.url }));
       } else {
-        logger.error('Upload failed:', data);
+        console.error('Upload failed:', data);
         alert('Failed to upload image: ' + (data.error || 'Unknown error') + (data.details ? ' - ' + data.details : ''));
       }
     } catch (error) {
-      logger.error('Upload error:', error);
+      console.error('Upload error:', error);
       alert('Failed to upload image: ' + error.message);
     } finally {
       setUploadingImage(false);
@@ -133,11 +133,11 @@ export default function NewBlogPostPage() {
         alert('Blog post saved successfully!');
         router.push('/admin/blog');
       } else {
-        logger.error('Failed to save post:', data.error);
+        console.error('Failed to save post:', data.error);
         alert('Failed to save post: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
-      logger.error('Failed to save post:', error);
+      console.error('Failed to save post:', error);
       alert('Failed to save post: ' + error.message);
     } finally {
       setSaving(false);

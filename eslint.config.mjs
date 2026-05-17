@@ -38,6 +38,12 @@ const eslintConfig = [
       'no-console': 'off',
     },
   },
+  {
+    files: ['app/**/page.js', 'app/**/page.jsx', 'components/**/*.js', 'components/**/*.jsx'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
 ];
 
 export default eslintConfig;

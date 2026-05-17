@@ -22,7 +22,7 @@ const CreditManagementWidget = () => {
         });
       }
     } catch (err) {
-      logger.error('Failed to fetch user stats');
+      console.error('Failed to fetch user stats');
     } finally {
       setLoading(false);
     }

@@ -69,7 +69,7 @@ function LoginPageContent({ router, searchParams }) {
     // Use public origin to ensure we hit the correct domain
     const callbackUrl = `${window.location.origin}${returnUrl}`;
     
-    logger.info('[Login] Initiating Google sign-in with callbackUrl:', callbackUrl);
+    console.info('[Login] Initiating Google sign-in with callbackUrl:', callbackUrl);
     
     // Let NextAuth handle the redirect
     signIn("google", {
@@ -105,7 +105,7 @@ function LoginPageContent({ router, searchParams }) {
         setError(data.error || "Something went wrong");
       }
     } catch (err) {
-      logger.error("Login/signup error:", err);
+      console.error("Login/signup error:", err);
       setError("Failed to connect to server. Please check your connection and try again.");
     } finally {
       setLoading(false);
