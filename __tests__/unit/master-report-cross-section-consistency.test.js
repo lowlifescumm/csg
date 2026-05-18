@@ -157,7 +157,7 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   // -------------------------------------------------------------------------
   // 1. Planetary placements in narrative vs chart wheel
   // -------------------------------------------------------------------------
-  test('P0 — validator does NOT catch a mismatched Sun sign in birth chart narrative', async () => {
+  test('validator catches a mismatched Sun sign in birth chart narrative', async () => {
     // AI returns a Sun sign that contradicts the chart wheel (wheel says Gemini)
     generateText
       .mockResolvedValueOnce('Welcome Alex. Your Sun is in Taurus...') // birth_chart (wrong Sun)
@@ -170,7 +170,7 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
 
     const result = await generatePremiumReport('MASTER', baseData);
 
-    // The validator should have flagged the Taurus/Gemini mismatch, but it doesn't.
+    // The validator now flags the Taurus/Gemini mismatch.
     const errorCalls = logger.error.mock.calls;
     const consistencyErrors = errorCalls.filter(
       (call) =>
@@ -178,9 +178,12 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
         call[0].includes('Cross-section consistency')
     );
 
-    // This assertion documents the structural gap:
-    // the validator is blind to planetary placement mismatches.
-    expect(consistencyErrors.length).toBe(0);
+    expect(consistencyErrors.length).toBeGreaterThan(0);
+    expect(
+      consistencyErrors.some((call) =>
+        JSON.stringify(call).includes('planetary placement mismatch')
+      )
+    ).toBe(true);
 
     // Verify the mismatch is actually present in the output
     const birthText = getSectionText(getSection(result.sections, 'birth_chart'));
@@ -227,18 +230,17 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
     expect(transitText).toContain('July 15, 2026');
     expect(annualText).toContain('August 1, 2026');
 
-    // The validator now catches this contradiction
-    const errorCalls = logger.error.mock.calls;
-    const consistencyErrors = errorCalls.filter(
+    // Transit date contradictions are warnings by default (not errors),
+    // since narrative text often uses approximate dates.
+    const warnCalls = logger.warn.mock.calls;
+    const consistencyWarnings = warnCalls.filter(
       (call) =>
         typeof call[0] === 'string' &&
         call[0].includes('Cross-section consistency')
     );
-    expect(consistencyErrors.length).toBeGreaterThan(0);
-    // pdf-generator logs errors as logger.error('[PDF Generator] Cross-section consistency errors:', validationResult.errors)
-    // so the individual error messages are in call[1]
+    expect(consistencyWarnings.length).toBeGreaterThan(0);
     expect(
-      consistencyErrors.some((call) =>
+      consistencyWarnings.some((call) =>
         JSON.stringify(call).includes('contradictory transit date')
       )
     ).toBe(true);
@@ -264,7 +266,7 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   // -------------------------------------------------------------------------
   // 3. Karmic Nodal Axis alignment with birth chart
   // -------------------------------------------------------------------------
-  test('P0 — validator does NOT catch a mismatched North Node sign in karmic section', async () => {
+  test('validator catches a mismatched North Node sign in karmic section', async () => {
     generateText
       .mockResolvedValueOnce('Welcome Alex. Your Sun is in Gemini...')
       .mockResolvedValueOnce('Your compatibility with Jordan...')
@@ -286,7 +288,12 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
         typeof call[0] === 'string' &&
         call[0].includes('Cross-section consistency')
     );
-    expect(consistencyErrors.length).toBe(0);
+    expect(consistencyErrors.length).toBeGreaterThan(0);
+    expect(
+      consistencyErrors.some((call) =>
+        JSON.stringify(call).includes('nodal axis mismatch')
+      )
+    ).toBe(true);
   });
 
   test('passes when karmic section aligns with chart wheel nodal axis', async () => {
