@@ -195,10 +195,25 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
       const data = await response.json();
       
       if (data.success) {
+        if (!user) {
+          // Anonymous user: store preview in sessionStorage and redirect to Essential Report
+          sessionStorage.setItem('anonymousEssentialReport', JSON.stringify({
+            chart: data.chart,
+            birthInfo: {
+              date: formData.birthDate,
+              time: formData.birthTime,
+              location: formData.location,
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude
+            },
+            timestamp: Date.now()
+          }));
+          router.push('/reports/essential');
+          return;
+        }
         setChart(data.chart);
       } else if (response.status === 401) {
-        // Anonymous user needs to login - show preview first
-        // Generate a temporary chart for preview
+        // Fallback: anonymous user hit auth wall — store manually and redirect
         const tempChart = await generateTemporaryChart({
           date: formData.birthDate,
           time: formData.birthTime,
@@ -206,8 +221,19 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude
         });
-        setChart(tempChart);
-        setShowLoginPrompt(true);
+        sessionStorage.setItem('anonymousEssentialReport', JSON.stringify({
+          chart: tempChart,
+          birthInfo: {
+            date: formData.birthDate,
+            time: formData.birthTime,
+            location: formData.location,
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude
+          },
+          timestamp: Date.now()
+        }));
+        router.push('/reports/essential');
+        return;
       } else {
         alert(data.error || 'Failed to generate chart');
       }

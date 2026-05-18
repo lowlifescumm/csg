@@ -286,5 +286,42 @@ describe('Report Consistency Validator', () => {
       expect(result.warnings).toHaveLength(0);
       expect(result.errors).toHaveLength(0);
     });
+
+    test('does not flag non-birth dates (e.g. transit dates) as birth date contradictions', () => {
+      const result = validateReportConsistency({
+        sections: [
+          {
+            type: 'transit',
+            title: 'Transit Forecast',
+            content: 'Saturn conjuncts your Sun on December 15, 2024. This transit activates your career house until March 2025.',
+          },
+        ],
+        canonicalBirthData: { birthDate: '1990-01-01' },
+      });
+      // Transit dates are NOT birth dates — should not trigger birth date contradictions
+      expect(result.valid).toBe(true);
+      expect(result.warnings).toHaveLength(0);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    test('transit date contradictions are warnings by default (not errors)', () => {
+      const result = validateReportConsistency({
+        sections: [
+          {
+            type: 'transit',
+            title: 'Transit Forecast',
+            content: 'transiting Saturn conjuncts your natal Sun around December 15, 2025, bringing lessons.',
+          },
+        ],
+        canonicalBirthData: { birthDate: '1990-01-01' },
+        canonicalTransits: [
+          { transitingBody: 'Saturn', aspect: 'Conjunct', natalPoint: 'Sun', exactDate: '2025-06-15' },
+        ],
+      });
+      // Transit date contradictions should be warnings (valid remains true)
+      expect(result.valid).toBe(true);
+      const transitWarnings = result.warnings.filter(w => w.includes('transit date'));
+      expect(transitWarnings.length).toBeGreaterThan(0);
+    });
   });
 });

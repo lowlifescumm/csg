@@ -9,6 +9,26 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+function parseLocalDate(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+  const d = new Date(`${dateStr}T00:00:00`);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatForecastDateRange(forecast, opts = { month: 'short', day: 'numeric' }) {
+  if (forecast.forecast_type === 'weekly' && forecast.day_breakdown?.length > 0) {
+    const start = parseLocalDate(forecast.day_breakdown[0]?.date);
+    const end = parseLocalDate(forecast.day_breakdown[forecast.day_breakdown.length - 1]?.date);
+    if (start && end) {
+      const year = start.getFullYear() === end.getFullYear()
+        ? `, ${start.getFullYear()}`
+        : ` – ${end.getFullYear()}`;
+      return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}${year}`;
+    }
+  }
+  return null;
+}
+
 export default function ForecastsPage() {
   const [forecasts, setForecasts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -218,19 +238,23 @@ function ForecastCard({ forecast, onClick }) {
   };
 
   const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
+    const date = parseLocalDate(dateStr);
+    if (!date) return dateStr;
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (date.toDateString() === today.toDateString()) {
+
+    if (date.getTime() === today.getTime()) {
       return 'Today';
-    } else if (date.toDateString() === yesterday.toDateString()) {
+    } else if (date.getTime() === yesterday.getTime()) {
       return 'Yesterday';
     } else {
       return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     }
   };
+
+  const displayDate = formatForecastDateRange(forecast) || formatDate(forecast.forecast_date);
 
   return (
     <div
@@ -251,7 +275,7 @@ function ForecastCard({ forecast, onClick }) {
                 </span>
               </div>
               <p className="text-white/60 text-sm mt-1">
-                {formatDate(forecast.forecast_date)}
+                {displayDate}
               </p>
             </div>
           </div>
@@ -317,12 +341,18 @@ function ForecastDetail({ forecast, onBack }) {
                 {forecast.headline}
               </h1>
               <p className="text-white/80 text-lg">
-                {new Date(forecast.forecast_date).toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
+                {formatForecastDateRange(forecast, { month: 'long', day: 'numeric' })
+                  || (() => {
+                    const date = parseLocalDate(forecast.forecast_date);
+                    return date
+                      ? date.toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })
+                      : forecast.forecast_date;
+                  })()}
               </p>
             </div>
             <div className={`px-4 py-2 rounded-full text-sm font-semibold ${
@@ -342,6 +372,55 @@ function ForecastDetail({ forecast, onBack }) {
             {forecast.full_text}
           </div>
         </div>
+
+        {forecast.forecast_type === 'weekly' && forecast.day_breakdown && forecast.day_breakdown.length > 0 && (
+          <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-8 mb-8 shadow-2xl">
+            <h2 className="text-2xl font-bold text-white mb-6">Day-by-Day Breakdown</h2>
+            <div className="space-y-6">
+              {forecast.day_breakdown.map((day, idx) => (
+                <div key={idx} className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xl font-bold text-white">{day.day}</h3>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      day.urgency === 'high' ? 'bg-red-500/30 text-red-200' :
+                      day.urgency === 'normal' ? 'bg-purple-500/30 text-purple-200' :
+                      'bg-blue-500/30 text-blue-200'
+                    }`}>
+                      {day.urgency}
+                    </span>
+                  </div>
+                  <p className="text-white/90 font-medium mb-2">{day.headline}</p>
+                  <p className="text-white/70 mb-4">{day.theme}</p>
+                  {day.transitSummary && day.transitSummary.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-white/60 text-sm mb-2">Key Transits:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {day.transitSummary.map((t, tIdx) => (
+                          <span key={tIdx} className="px-2 py-1 rounded-full bg-white/10 text-white/80 text-xs">
+                            {t.planet} {t.aspect} {t.to}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {day.suggestedActions && day.suggestedActions.length > 0 && (
+                    <div>
+                      <p className="text-white/60 text-sm mb-2">Suggested Actions:</p>
+                      <ul className="space-y-1">
+                        {day.suggestedActions.map((action, aIdx) => (
+                          <li key={aIdx} className="text-white/80 text-sm flex items-start gap-2">
+                            <span className="text-purple-400 mt-0.5">•</span>
+                            {action}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {forecast.suggested_actions && forecast.suggested_actions.length > 0 && (
           <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl p-6 border border-purple-500/30 mb-8">

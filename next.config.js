@@ -52,6 +52,11 @@ const nextConfig = {
   
   // Remove X-Powered-By header
   poweredByHeader: false,
+
+  // Disable built-in ESLint during build (we run it separately via `npm run lint`)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 module.exports = nextConfig;

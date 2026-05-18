@@ -105,27 +105,52 @@ function EssentialReportInner() {
     async function loadChart() {
       try {
         setLoading(true);
+
+        // 1. Try authenticated saved chart first (source of truth)
         const res = await fetch("/api/birth-chart", { credentials: "include" });
         if (cancelled) return;
 
         if (res.status === 401) {
-          setUnauthenticated(true);
-          setLoading(false);
-          return;
+          // Not authenticated — fall through to anonymous path
+        } else {
+          const data = await res.json();
+          if (res.ok && data.hasChart) {
+            setChartData(data.chart);
+            setBirthInfo(data.birthInfo);
+            setInterpretation(data.interpretation || null);
+            setLoading(false);
+            return;
+          }
         }
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data?.error || "Failed to load birth chart");
+        // 2. Fallback: anonymous chart from sessionStorage (set by BirthChartForm)
+        if (typeof window !== "undefined") {
+          const raw = sessionStorage.getItem("anonymousEssentialReport");
+          if (raw) {
+            try {
+              const parsed = JSON.parse(raw);
+              // Accept data within 30 minutes
+              if (parsed.timestamp && Date.now() - parsed.timestamp < 30 * 60 * 1000) {
+                setChartData(parsed.chart);
+                setBirthInfo(parsed.birthInfo);
+                setInterpretation(null);
+                setLoading(false);
+                return;
+              } else {
+                sessionStorage.removeItem("anonymousEssentialReport");
+              }
+            } catch {
+              sessionStorage.removeItem("anonymousEssentialReport");
+            }
+          }
         }
-        if (!data.hasChart) {
-          setError(data.message || "No birth chart found.");
-          setLoading(false);
-          return;
+
+        // 3. No chart data available
+        if (res.status === 401) {
+          setUnauthenticated(true);
+        } else {
+          setError("No birth chart found.");
         }
-        setChartData(data.chart);
-        setBirthInfo(data.birthInfo);
-        setInterpretation(data.interpretation || null);
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {

@@ -160,28 +160,28 @@ describe('generatePremiumReport — cross-section consistency (GSTA-50)', () => 
     const result = await generatePremiumReport('MASTER', data);
     expect(result.sections.length).toBeGreaterThan(0);
 
-    // Should log errors for inconsistencies
-    const errorCalls = logger.error.mock.calls;
-    const consistencyError = errorCalls.find(
+    // In non-strict mode inconsistencies produce warnings, not errors
+    const warnCalls = logger.warn.mock.calls;
+    const consistencyWarning = warnCalls.find(
       (call) =>
         typeof call[0] === 'string' &&
-        call[0].includes('Cross-section consistency errors')
+        call[0].includes('Cross-section consistency warnings')
     );
-    expect(consistencyError).toBeTruthy();
+    expect(consistencyWarning).toBeTruthy();
   });
 
   test('passes validation when all data is consistent', async () => {
     generateText
-      .mockResolvedValueOnce('Welcome Alice Smith, born January 1, 1990 in New York...')
-      .mockResolvedValueOnce('Your extended forecast for Alice Smith...')
+      .mockResolvedValueOnce('Welcome John, born January 1, 1990 in New York...')
+      .mockResolvedValueOnce('Your extended forecast for John...')
       .mockResolvedValueOnce('Your destiny path begins on January 1, 1990...')
-      .mockResolvedValueOnce('Your partner Bob Jones, born February 2, 1992 in Los Angeles...')
-      .mockResolvedValueOnce('Your karmic reading for Alice Smith...')
-      .mockResolvedValueOnce('May the stars guide you, Alice Smith...');
+      .mockResolvedValueOnce('Your partner Jane, born February 2, 1992 in Los Angeles...')
+      .mockResolvedValueOnce('Your karmic reading for John...')
+      .mockResolvedValueOnce('May the stars guide you, John...');
 
     const data = {
-      name: 'Alice Smith',
-      partner_name: 'Bob Jones',
+      name: 'John',
+      partner_name: 'Jane',
       natalChart: baseNatalChart,
       compatibility_data: { partner: basePartnerChart },
       chartData: { partner: basePartnerChart, matrix_scores: {} },

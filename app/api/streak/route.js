@@ -5,6 +5,108 @@ import { pool } from '@/lib/db';
 import { getLocalDateString, getLocalDateOffset } from '@/lib/date-utils';
 import logger from '@/lib/logger';
 
+/**
+ * Collect distinct activity dates for a user from multiple engagement tables.
+ * Gracefully handles tables that may not exist yet (lazy-created in some routes).
+ */
+async function getActivityDates(userId, timezone) {
+  const activityDates = new Set();
+
+  // Helper to safely query a table and collect date strings
+  const safeQuery = async (sql, params, dateField = 'activity_date') => {
+    try {
+      const { rows } = await pool.query(sql, params);
+      rows.forEach(row => activityDates.add(row[dateField]));
+    } catch (err) {
+      // Table likely doesn't exist yet; ignore silently
+      logger.debug(`Streak query skipped for table: ${err.message}`);
+    }
+  };
+
+  // 1. Readings (tarot, horoscope, etc.) — base table, always exists
+  await safeQuery(
+    `SELECT DISTINCT to_char((created_at::timestamptz AT TIME ZONE $2)::date, 'YYYY-MM-DD') as activity_date
+     FROM readings
+     WHERE user_id=$1
+     ORDER BY activity_date DESC
+     LIMIT 30`,
+    [userId, timezone]
+  );
+
+  // 2. Daily task completions
+  await safeQuery(
+    `SELECT DISTINCT to_char(completed_date, 'YYYY-MM-DD') as activity_date
+     FROM user_tasks
+     WHERE user_id=$1
+     ORDER BY activity_date DESC
+     LIMIT 30`,
+    [userId]
+  );
+
+  // 3. Journal entries
+  await safeQuery(
+    `SELECT DISTINCT to_char((created_at::timestamptz AT TIME ZONE $2)::date, 'YYYY-MM-DD') as activity_date
+     FROM journal_entries
+     WHERE user_id=$1
+     ORDER BY activity_date DESC
+     LIMIT 30`,
+    [userId, timezone]
+  );
+
+  // 4. Energy logs
+  await safeQuery(
+    `SELECT DISTINCT to_char(date, 'YYYY-MM-DD') as activity_date
+     FROM energy_logs
+     WHERE user_id=$1
+     ORDER BY activity_date DESC
+     LIMIT 30`,
+    [userId]
+  );
+
+  // 5. Meditation sessions
+  await safeQuery(
+    `SELECT DISTINCT to_char((started_at::timestamptz AT TIME ZONE $2)::date, 'YYYY-MM-DD') as activity_date
+     FROM meditation_sessions
+     WHERE user_id=$1
+     ORDER BY activity_date DESC
+     LIMIT 30`,
+    [userId, timezone]
+  );
+
+  // 6. Birth charts created
+  await safeQuery(
+    `SELECT DISTINCT to_char((created_at::timestamptz AT TIME ZONE $2)::date, 'YYYY-MM-DD') as activity_date
+     FROM birth_charts
+     WHERE user_id=$1
+     ORDER BY activity_date DESC
+     LIMIT 30`,
+    [userId, timezone]
+  );
+
+  // 7. Compatibility reports
+  await safeQuery(
+    `SELECT DISTINCT to_char((created_at::timestamptz AT TIME ZONE $2)::date, 'YYYY-MM-DD') as activity_date
+     FROM compatibility_reports
+     WHERE user_id=$1
+     ORDER BY activity_date DESC
+     LIMIT 30`,
+    [userId, timezone]
+  );
+
+  // 8. Moon reading purchases
+  await safeQuery(
+    `SELECT DISTINCT to_char((created_at::timestamptz AT TIME ZONE $2)::date, 'YYYY-MM-DD') as activity_date
+     FROM moon_reading_purchases
+     WHERE user_id=$1
+     ORDER BY activity_date DESC
+     LIMIT 30`,
+    [userId, timezone]
+  );
+
+  // Sort descending so most recent dates are first
+  return Array.from(activityDates).sort((a, b) => b.localeCompare(a));
+}
+
 export async function GET(request) {
   try {
     const cookieStore = await cookies();
@@ -24,18 +126,10 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const timezone = searchParams.get('timezone') || 'UTC';
 
-    // Calculate streak from reading activity
-    // Get all unique dates when user created readings
-    const { rows } = await pool.query(
-      `SELECT DISTINCT to_char((created_at::timestamptz AT TIME ZONE $2)::date, 'YYYY-MM-DD') as activity_date
-       FROM readings
-       WHERE user_id=$1
-       ORDER BY activity_date DESC
-       LIMIT 30`,
-      [userId, timezone]
-    );
+    // Calculate streak from all meaningful daily activity
+    const activityDates = await getActivityDates(userId, timezone);
 
-    if (rows.length === 0) {
+    if (activityDates.length === 0) {
       return NextResponse.json({
         currentStreak: 0,
         longestStreak: 0,
@@ -47,10 +141,8 @@ export async function GET(request) {
     let currentStreak = 0;
     const today = getLocalDateString(timezone);
     const yesterday = getLocalDateOffset(timezone, -1);
-    
+
     // Check if user was active today or yesterday
-    const activityDates = rows.map(r => r.activity_date);
-    
     if (activityDates.includes(today)) {
       currentStreak = 1;
     } else if (activityDates.includes(yesterday)) {
@@ -80,7 +172,7 @@ export async function GET(request) {
       const prevDate = new Date(activityDates[i - 1]);
       const currDate = new Date(activityDates[i]);
       const daysDiff = Math.floor((prevDate - currDate) / (1000 * 60 * 60 * 24));
-      
+
       if (daysDiff === 1) {
         tempStreak++;
         longestStreak = Math.max(longestStreak, tempStreak);
@@ -102,4 +194,3 @@ export async function GET(request) {
     );
   }
 }
-

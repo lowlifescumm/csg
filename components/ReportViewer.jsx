@@ -13,14 +13,14 @@ import { Download, FileText, Loader2, CheckCircle, XCircle, ChevronDown, Chevron
  * - MASTER: All sections including cover, charts, matrix, karmic, annual (full e-book layout)
  */
 
-// Tier-specific configurations matching REPORT_RECIPES in premium-pdf-generator.js
+// Tier-specific configurations matching actual backend section generation in pdf-generator.js
 const TIER_CONFIG = {
   ESSENTIAL: {
     label: 'Essential Report',
     colorScheme: 'purple',
     showCover: true,
     showTableOfContents: false,
-    sections: ['cover', 'tarot', 'moon', 'transit', 'closing'],
+    sections: ['tarot', 'moon', 'transit', 'closing'],
     tierClass: 'essential-tier',
   },
   ADVANCED: {
@@ -28,7 +28,7 @@ const TIER_CONFIG = {
     colorScheme: 'violet',
     showCover: true,
     showTableOfContents: true,
-    sections: ['cover', 'birth_chart', 'core_identity', 'planetary_analysis', 'transit', 'compatibility', 'closing'],
+    sections: ['advanced_houses', 'advanced_aspects', 'advanced_career', 'advanced_relationships', 'advanced_life_purpose', 'advanced_financial', 'advanced_health', 'compatibility', 'transit', 'closing'],
     tierClass: 'advanced-tier',
   },
   MASTER: {
@@ -36,8 +36,16 @@ const TIER_CONFIG = {
     colorScheme: 'rose',
     showCover: true,
     showTableOfContents: true,
-    sections: ['cover', 'birth_chart', 'partner_birth_chart', 'core_identity', 'planetary_analysis', 'relationship_matrix', 'compatibility', 'transit', 'annual', 'karmic', 'closing'],
+    sections: ['birth_chart', 'partner_birth_chart', 'compatibility', 'transit', 'annual_forecast', 'matrix', 'karmic', 'closing'],
     tierClass: 'master-tier',
+  },
+  COMPATIBILITY: {
+    label: 'Compatibility Report',
+    colorScheme: 'violet',
+    showCover: true,
+    showTableOfContents: true,
+    sections: ['compatibility', 'relationship_matrix', 'closing'],
+    tierClass: 'compatibility-tier',
   },
 };
 
@@ -79,11 +87,19 @@ const SECTION_LABELS = {
   core_identity: 'Core Identity',
   planetary_analysis: 'Planetary Analysis',
   relationship_matrix: 'Relationship Matrix',
+  matrix: 'Relationship Matrix',
   compatibility: 'Compatibility Analysis',
   annual_forecast: 'Annual Forecast',
   annual: 'Annual Forecast',
   karmic: 'Karmic & Shadow Work',
   closing: 'Closing Blessing',
+  advanced_houses: 'Planetary Houses',
+  advanced_aspects: 'Aspect Interpretations',
+  advanced_career: 'Career Path',
+  advanced_relationships: 'Relationship Insights',
+  advanced_life_purpose: 'Life Purpose',
+  advanced_financial: 'Financial Outlook',
+  advanced_health: 'Health & Wellness',
 };
 
 // Icons for each section type
@@ -97,11 +113,19 @@ const SECTION_ICONS = {
   core_identity: Layers,
   planetary_analysis: Layers,
   relationship_matrix: Layers,
+  matrix: Layers,
   compatibility: Star,
   annual_forecast: Star,
   annual: Star,
   karmic: Zap,
   closing: BookOpen,
+  advanced_houses: Star,
+  advanced_aspects: Star,
+  advanced_career: Star,
+  advanced_relationships: Star,
+  advanced_life_purpose: Star,
+  advanced_financial: Star,
+  advanced_health: Star,
 };
 
 export default function ReportViewer({ jobId, resultId, reportType, autoDownload = true }) {
@@ -343,11 +367,11 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
     const sectionType = section.type || `section-${idx}`;
     const label = section.title || SECTION_LABELS[sectionType] || `Section ${idx + 1}`;
     const Icon = SECTION_ICONS[sectionType] || FileText;
-    const isSpecial = ['birth_chart', 'partner_birth_chart', 'relationship_matrix', 'cover'].includes(sectionType);
+    const isSpecial = ['birth_chart', 'partner_birth_chart', 'relationship_matrix', 'matrix', 'cover'].includes(sectionType);
     const isExpanded = expandedSections[idx] !== false && (isSpecial || tierConfig.showTableOfContents);
 
-    // Special: Render chart sections visually
-    if ((sectionType === 'birth_chart' || sectionType === 'partner_birth_chart') && section.chartImage) {
+    // Special: Render chart sections visually (includes advanced_houses which may contain chartImage)
+    if ((sectionType === 'birth_chart' || sectionType === 'partner_birth_chart' || sectionType === 'advanced_houses') && section.chartImage) {
       return (
         <div key={idx} id={`section-${idx}`}
           className={`section-block rounded-xl overflow-hidden mb-6 border ${tierColors.border} bg-white`}>
@@ -373,7 +397,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
     }
 
     // Special: Render matrix/relationship section with scores table
-    if (sectionType === 'relationship_matrix') {
+    if (sectionType === 'relationship_matrix' || sectionType === 'matrix') {
       return (
         <div key={idx} id={`section-${idx}`}
           className={`section-block rounded-xl overflow-hidden mb-6 border ${tierColors.border} bg-white`}>
@@ -504,6 +528,20 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
 
   const sections = contentJson?.sections || [];
 
+  // Filter sections by tier configuration. Cover is rendered separately via renderCover().
+  const allowedTypes = new Set(tierConfig.sections);
+  const displaySections = sections.filter((s) => {
+    const t = s.type;
+    if (t === 'cover') return false; // cover rendered separately
+    if (allowedTypes.has(t)) return true;
+    // Safety valve: render unknown sections rather than silently dropping them,
+    // but log so we can catch schema drift.
+    if (typeof console !== 'undefined') {
+      console.warn(`[ReportViewer] Section type "${t}" not in tierConfig for ${normalizedReportType}; rendering anyway`);
+    }
+    return true;
+  });
+
   // Tier badge for visual identification
   const renderTierBadge = () => (
     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold uppercase
@@ -570,12 +608,12 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
       {renderCover()}
 
       {/* Table of Contents */}
-      {renderTableOfContents(sections)}
+      {renderTableOfContents(displaySections)}
 
       {/* Content Sections */}
       <div className="space-y-2">
-        {sections.length > 0 ? (
-          sections.map((section, idx) => renderSection(section, idx))
+        {displaySections.length > 0 ? (
+          displaySections.map((section, idx) => renderSection(section, idx))
         ) : (
           contentJson.content ? (
             <div className="text-gray-700 whitespace-pre-wrap prose max-w-none">
@@ -605,6 +643,7 @@ function getReportTitle(reportType) {
     'moon_reading': 'Moon Phase Reading',
     'birth_chart': 'Birth Chart Analysis',
     'compatibility': 'Compatibility Report',
+    'COMPATIBILITY': 'Compatibility Report',
     'transit_forecast_short': 'Short-Term Forecast',
     'transit_forecast_extended': 'Extended Forecast',
     'ESSENTIAL': 'Essential Report',

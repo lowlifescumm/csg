@@ -66,6 +66,9 @@ export async function GET(req) {
       rituals: typeof forecast.rituals === 'string'
         ? JSON.parse(forecast.rituals)
         : forecast.rituals,
+      day_breakdown: typeof forecast.day_breakdown === 'string'
+        ? JSON.parse(forecast.day_breakdown)
+        : forecast.day_breakdown,
     }));
 
     return NextResponse.json({

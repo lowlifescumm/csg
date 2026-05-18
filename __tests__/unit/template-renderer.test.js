@@ -2,7 +2,7 @@
  * Unit tests for template renderer HTML generation
  */
 
-import { renderFromTemplate } from '../../lib/template-renderer.js';
+const { renderFromTemplate } = require('../../lib/template-renderer.js');
 
 describe('renderFromTemplate', () => {
   const sampleData = {
@@ -224,12 +224,12 @@ describe('renderFromTemplate', () => {
       expect(result).toContain('John Doe');
     });
 
-    it('should throw error for unrecognized format', () => {
+    it('should throw error for unrecognized format', async () => {
       const template = {
         unknown: 'format',
       };
 
-      expect(() => renderFromTemplate(template, sampleData)).toThrow('Unrecognized template format');
+      await expect(renderFromTemplate(template, sampleData)).rejects.toThrow('Unrecognized template format');
     });
 
     it('should parse string JSON', () => {
