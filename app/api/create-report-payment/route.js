@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import Stripe from 'stripe';
 import { verifyToken } from '@/lib/auth';
-import { getUserById, updateUserStripeInfo } from '@/lib/db';
-import { pool } from '@/lib/db.js';
+import { getUserById, updateUserStripeInfo, pool } from '@/lib/db';
 import logger from '@/lib/logger';
 import { getPremiumReportById, PREMIUM_REPORTS } from '@/lib/pricing';
 
