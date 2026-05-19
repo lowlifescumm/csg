@@ -7,8 +7,19 @@ html {
   background-color: #050214;
   color: #e2ddf4;
 }
+
+/* Dashboard background fix - prevent cream body from showing through gradient gaps */
 body {
   background-color: transparent;
+}
+
+/* Logo sizing fix - preserve 10:3 aspect ratio */
+.logo-text {
+  width: clamp(110px, 16vw, 180px);
+  height: auto;
+  aspect-ratio: 10 / 3;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 @layer base {
