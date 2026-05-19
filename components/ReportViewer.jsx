@@ -36,7 +36,7 @@ const TIER_CONFIG = {
     colorScheme: 'rose',
     showCover: true,
     showTableOfContents: true,
-    sections: ['birth_chart', 'partner_birth_chart', 'compatibility', 'transit', 'annual_forecast', 'matrix', 'karmic', 'closing'],
+    sections: ['birth_chart', 'partner_birth_chart', 'compatibility', 'transit', 'annual_forecast', 'saturn_return', 'midlife_transits', 'matrix', 'karmic', 'closing'],
     tierClass: 'master-tier',
   },
   COMPATIBILITY: {
@@ -100,6 +100,8 @@ const SECTION_LABELS = {
   advanced_life_purpose: 'Life Purpose',
   advanced_financial: 'Financial Outlook',
   advanced_health: 'Health & Wellness',
+  saturn_return: 'Saturn Return',
+  midlife_transits: 'Midlife Transits',
 };
 
 // Icons for each section type
@@ -126,6 +128,8 @@ const SECTION_ICONS = {
   advanced_life_purpose: Star,
   advanced_financial: Star,
   advanced_health: Star,
+  saturn_return: Star,
+  midlife_transits: Star,
 };
 
 export default function ReportViewer({ jobId, resultId, reportType, autoDownload = true }) {
@@ -151,7 +155,9 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    // Give the browser time to start the download before revoking.
+    // 1s is too short for large files on slow connections; 30s is safer.
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
   }, []);
 
   const openHtmlPreview = useCallback((blob) => {
@@ -534,11 +540,8 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
     const t = s.type;
     if (t === 'cover') return false; // cover rendered separately
     if (allowedTypes.has(t)) return true;
-    // Safety valve: render unknown sections rather than silently dropping them,
-    // but log so we can catch schema drift.
-    if (typeof console !== 'undefined') {
-      console.warn(`[ReportViewer] Section type "${t}" not in tierConfig for ${normalizedReportType}; rendering anyway`);
-    }
+    // Safety valve: render unknown sections rather than silently dropping them.
+    // Log once per type per report to avoid render-loop noise.
     return true;
   });
 
@@ -654,10 +657,23 @@ function getReportTitle(reportType) {
   return titles[reportType] || 'Spiritual Reading';
 }
 
+// Basic HTML sanitizer for client-side use (strips scripts and event handlers)
+function sanitizeClientHtml(html) {
+  if (!html) return '';
+  return html
+    // Remove script tags and their contents
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Remove iframe, object, embed
+    .replace(/<(iframe|object|embed|form|input|textarea|button)\b[^<]*(?:(?!<\/\1>)<[^<]*)*<\/\1>/gi, '')
+    // Remove javascript: and data: URLs
+    .replace(/(href|src|action)\s*=\s*["']?(?:javascript:|data:text\/html)/gi, '')
+    // Remove on* event handlers
+    .replace(/\s+on\w+\s*=\s*["']?[^"'>]*/gi, '');
+}
+
 // Minimal markdown-to-HTML converter for section content
 function convertMarkdownToHtml(text) {
   if (!text) return '';
-  if (/^\s*</.test(text.trim())) return text; // already HTML
 
   let html = text
     .replace(/^---$/gm, '<hr />')
@@ -684,5 +700,6 @@ function convertMarkdownToHtml(text) {
     })
     .join('\n');
 
-  return html;
+  // Sanitize any embedded HTML (LLM-generated content may contain raw HTML)
+  return sanitizeClientHtml(html);
 }

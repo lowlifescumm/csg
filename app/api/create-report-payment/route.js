@@ -137,6 +137,16 @@ export async function POST(request) {
           quantity: 1,
         },
       ],
+      payment_intent_data: {
+        metadata: {
+          type: 'premium_report',
+          report_id: reportId,
+          report_name: report.name,
+          user_id: user?.id?.toString() || '',
+          has_partner_data: partnerData ? 'true' : 'false',
+          skip_partner_data: skipPartnerData ? 'true' : 'false',
+        },
+      },
       success_url: `${baseUrl}/reports/success?session_id={CHECKOUT_SESSION_ID}&report=${reportId}`,
       cancel_url: `${baseUrl}/services?canceled=true`,
       metadata: {

@@ -9,6 +9,7 @@ import { authOptions } from '@/lib/auth-config';
 import { getJobById } from '@/lib/reading-jobs.js';
 import { pool } from '@/lib/db.js';
 import { serializeJob } from '@/lib/reading-jobs.js';
+import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
