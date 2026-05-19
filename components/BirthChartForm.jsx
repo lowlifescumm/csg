@@ -5,7 +5,7 @@ import { ArrowRight, Heart, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import BirthChartWheel from './BirthChartWheel';
 
-export default function BirthChartForm({ updateMode = false, user = null }) {
+export default function BirthChartForm({ updateMode = false, user = null, redirect = null }) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     birthDate: '',
@@ -208,7 +208,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
             },
             timestamp: Date.now()
           }));
-          router.push('/reports/essential');
+          router.push(redirect || '/reports/essential');
           return;
         }
         setChart(data.chart);
@@ -232,7 +232,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
           },
           timestamp: Date.now()
         }));
-        router.push('/reports/essential');
+        router.push(redirect || '/reports/essential');
         return;
       } else {
         alert(data.error || 'Failed to generate chart');

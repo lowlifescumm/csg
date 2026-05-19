@@ -201,7 +201,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
           triggerBlobDownload(blob, `${baseFilename}.${format === 'html' ? 'html' : 'txt'}`);
         }
       } catch (err) {
-        logger.error('[ReportViewer] download error:', err);
+        console.error('[ReportViewer] download error:', err);
         if (!silent) {
           alert(err.message || 'Failed to download report. Please try again.');
         }
@@ -268,7 +268,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
 
   const fetchResult = async () => {
     try {
-      const res = await fetch(`/api/jobs/${resultId}`);
+      const res = await fetch(`/api/reports/${resultId}`);
       const data = await res.json();
 
       if (!res.ok) {

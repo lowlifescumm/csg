@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import Stripe from 'stripe';
 import { verifyToken } from '@/lib/auth';
 import { getUserById, updateUserStripeInfo } from '@/lib/db';
+import { pool } from '@/lib/db.js';
 import logger from '@/lib/logger';
 import { getPremiumReportById, PREMIUM_REPORTS } from '@/lib/pricing';
 
@@ -66,7 +67,7 @@ async function getOrCreateReportPrice(report) {
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { reportId } = body;
+    const { reportId, partnerData, skipPartnerData } = body;
 
     if (!reportId) {
       return NextResponse.json({ error: 'Report ID is required' }, { status: 400 });
@@ -89,6 +90,21 @@ export async function POST(request) {
       user = await getUserById(decoded.userId);
       if (user) {
         customerId = user.stripe_customer_id;
+      }
+    }
+
+    // Check if authenticated user has a birth chart
+    if (user) {
+      const { rows: chartRows } = await pool.query(
+        'SELECT id FROM birth_charts WHERE user_id = $1 LIMIT 1',
+        [user.id]
+      );
+      if (chartRows.length === 0) {
+        return NextResponse.json({
+          error: 'You need a birth chart before purchasing a report.',
+          requiresBirthChart: true,
+          message: 'Please create your free birth chart first.',
+        }, { status: 400 });
       }
     }
 
@@ -128,6 +144,8 @@ export async function POST(request) {
         report_name: report.name,
         user_id: user?.id?.toString() || '',
         type: 'premium_report',
+        has_partner_data: partnerData ? 'true' : 'false',
+        skip_partner_data: skipPartnerData ? 'true' : 'false',
       },
     });
 

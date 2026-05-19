@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { authOptions } from '@/lib/auth-config';
 import { pool } from '@/lib/db.js';
+import logger from '@/lib/logger';
 
 const parseContentJson = (content) => {
   if (!content) return null;
@@ -45,7 +46,7 @@ export async function GET(request, { params }) {
       `SELECT rr.*, rj.reading_type, rj.options
        FROM reading_results rr
        JOIN reading_jobs rj ON rr.reading_job_id = rj.id
-       WHERE rr.id = $1 AND rj.user_id = $2`,
+       WHERE rr.id = $1 AND rr.user_id = $2`,
       [resultId, userId]
     );
     
@@ -87,13 +88,10 @@ export async function GET(request, { params }) {
     const filename = `cosmic-report-${result.reading_type}-${resultId}.${format === 'pdf' ? 'pdf' : 'html'}`;
     
     if (format === 'pdf') {
-      // Check if PDF URL exists in result
       if (result.pdf_url) {
-        // Redirect to Cloudinary PDF URL
         return NextResponse.redirect(result.pdf_url);
       }
       
-      // Generate PDF on-demand if not stored
       try {
         const { generatePDF } = await import('@/lib/pdf-generator.js');
         const reportType = result.reading_type;
@@ -108,14 +106,16 @@ export async function GET(request, { params }) {
         });
         
         if (pdfResult.pdfUrl) {
-          // Redirect to generated PDF
+          await pool.query(
+            'UPDATE reading_results SET pdf_url = $1 WHERE id = $2',
+            [pdfResult.pdfUrl, resultId]
+          );
           return NextResponse.redirect(pdfResult.pdfUrl);
         }
       } catch (error) {
         logger.error('[ReportDownload] PDF generation error:', error);
       }
       
-      // Fallback: return HTML
       return new NextResponse(html, {
         headers: {
           'Content-Type': 'text/html',

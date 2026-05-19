@@ -12,6 +12,7 @@ function BirthChartPageInner() {
   const [checkingChart, setCheckingChart] = useState(true);
   const [mounted, setMounted] = useState(false);
   const updateMode = searchParams?.get('update') === 'true';
+  const redirect = searchParams?.get('redirect') || null;
 
   useEffect(() => {
     setMounted(true);
@@ -91,7 +92,7 @@ function BirthChartPageInner() {
           </p>
         </div>
       </div>
-      <BirthChartForm updateMode={updateMode} user={user} />
+      <BirthChartForm updateMode={updateMode} user={user} redirect={redirect} />
     </div>
   );
 }

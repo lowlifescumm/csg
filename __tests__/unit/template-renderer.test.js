@@ -2,6 +2,10 @@
  * Unit tests for template renderer HTML generation
  */
 
+jest.mock('../../lib/image-inliner.js', () => ({
+  inlineImagesInHtml: jest.fn((html) => Promise.resolve(html)),
+}));
+
 const { renderFromTemplate } = require('../../lib/template-renderer.js');
 
 describe('renderFromTemplate', () => {
@@ -16,12 +20,12 @@ describe('renderFromTemplate', () => {
   };
 
   describe('HTML template format', () => {
-    it('should render HTML template with Mustache placeholders', () => {
+    it('should render HTML template with Mustache placeholders', async () => {
       const template = {
         html: '<h1>Hello, {{userName}}!</h1><p>Your sun sign is {{userSunSign}}.</p>',
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('Hello, John Doe!');
       expect(result).toContain('Your sun sign is Leo.');
@@ -30,12 +34,12 @@ describe('renderFromTemplate', () => {
       expect(result).toContain('<style>');
     });
 
-    it('should wrap partial HTML in full document structure', () => {
+    it('should wrap partial HTML in full document structure', async () => {
       const template = {
         html: '<div>Simple content</div>',
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toMatch(/<!doctype html>/i);
       expect(result).toContain('<html');
@@ -45,7 +49,7 @@ describe('renderFromTemplate', () => {
       expect(result).toContain('</body>');
     });
 
-    it('should preserve full HTML documents', () => {
+    it('should preserve full HTML documents', async () => {
       const fullHtml = `<!doctype html>
 <html>
 <head><title>Test</title></head>
@@ -53,19 +57,19 @@ describe('renderFromTemplate', () => {
 </html>`;
 
       const template = { html: fullHtml };
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('Hello, John Doe!');
       expect(result).toContain('<!doctype html>');
     });
 
-    it('should include inline styles and fonts', () => {
+    it('should include inline styles and fonts', async () => {
       const template = {
         html: '<p>{{userName}}</p>',
         styles: 'p { color: blue; }',
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('<style>');
       expect(result).toContain('font-family');
@@ -74,7 +78,7 @@ describe('renderFromTemplate', () => {
   });
 
   describe('Layout blocks format', () => {
-    it('should render text blocks', () => {
+    it('should render text blocks', async () => {
       const template = {
         layout: {
           blocks: [
@@ -86,7 +90,7 @@ describe('renderFromTemplate', () => {
         },
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('Welcome, John Doe!');
       expect(result).toContain('Your sign is Leo.');
@@ -94,7 +98,7 @@ describe('renderFromTemplate', () => {
       expect(result).toContain('class="text-block"');
     });
 
-    it('should render image blocks', () => {
+    it('should render image blocks', async () => {
       const template = {
         layout: {
           blocks: [
@@ -107,7 +111,7 @@ describe('renderFromTemplate', () => {
         },
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('src="https://example.com/Leo.jpg"');
       expect(result).toContain('alt="Chart for John Doe"');
@@ -115,7 +119,7 @@ describe('renderFromTemplate', () => {
       expect(result).toContain('class="image-block"');
     });
 
-    it('should render HTML blocks', () => {
+    it('should render HTML blocks', async () => {
       const template = {
         layout: {
           blocks: [
@@ -127,33 +131,33 @@ describe('renderFromTemplate', () => {
         },
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('The stars align');
       expect(result).toContain('class="forecast"');
       expect(result).toContain('class="html-block"');
     });
 
-    it('should render SVG blocks', () => {
+    it('should render SVG blocks', async () => {
       const template = {
         layout: {
           blocks: [
             {
               type: 'svg',
-              svg: '{{chartSvg}}',
+              svg: '{{{chartSvg}}}',
             },
           ],
         },
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('<svg xmlns');
       expect(result).toContain('<circle');
       expect(result).toContain('class="svg-block"');
     });
 
-    it('should handle multiple blocks', () => {
+    it('should handle multiple blocks', async () => {
       const template = {
         layout: {
           blocks: [
@@ -164,14 +168,14 @@ describe('renderFromTemplate', () => {
         },
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('Title: Birth Chart Analysis');
       expect(result).toContain('Your birth chart reveals');
       expect(result).toContain('Generated: January 15, 2025');
     });
 
-    it('should include custom styles from template', () => {
+    it('should include custom styles from template', async () => {
       const template = {
         styles: 'body { background: #f0f0f0; } .custom { color: red; }',
         layout: {
@@ -181,7 +185,7 @@ describe('renderFromTemplate', () => {
         },
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('background: #f0f0f0');
       expect(result).toContain('color: red');
@@ -190,36 +194,36 @@ describe('renderFromTemplate', () => {
   });
 
   describe('Edge cases', () => {
-    it('should handle missing data gracefully', () => {
+    it('should handle missing data gracefully', async () => {
       const template = {
         html: '<p>Hello, {{userName}}! Your sign is {{missingField}}.</p>',
       };
 
-      const result = renderFromTemplate(template, { userName: 'John' });
+      const result = await renderFromTemplate(template, { userName: 'John' });
 
       expect(result).toContain('Hello, John!');
       expect(result).toContain('Your sign is .'); // Empty replacement
     });
 
-    it('should handle empty template', () => {
+    it('should handle empty template', async () => {
       const template = {
         html: '',
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('<!doctype html>');
       expect(result).toContain('<body>');
     });
 
-    it('should handle nested template_json structure', () => {
+    it('should handle nested template_json structure', async () => {
       const template = {
         template_json: {
           html: '<p>{{userName}}</p>',
         },
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('John Doe');
     });
@@ -232,46 +236,46 @@ describe('renderFromTemplate', () => {
       await expect(renderFromTemplate(template, sampleData)).rejects.toThrow('Unrecognized template format');
     });
 
-    it('should parse string JSON', () => {
+    it('should parse string JSON', async () => {
       const templateJson = JSON.stringify({
         html: '<p>{{userName}}</p>',
       });
 
-      const result = renderFromTemplate(templateJson, sampleData);
+      const result = await renderFromTemplate(templateJson, sampleData);
 
       expect(result).toContain('John Doe');
     });
   });
 
   describe('Puppeteer compatibility', () => {
-    it('should include all necessary meta tags', () => {
+    it('should include all necessary meta tags', async () => {
       const template = {
         html: '<p>Test</p>',
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('<meta charset="utf-8">');
       expect(result).toContain('<meta name="viewport"');
     });
 
-    it('should include fonts for consistent rendering', () => {
+    it('should include fonts for consistent rendering', async () => {
       const template = {
         html: '<p>Test</p>',
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       expect(result).toContain('fonts.googleapis.com');
       expect(result).toContain('font-family');
     });
 
-    it('should have proper document structure', () => {
+    it('should have proper document structure', async () => {
       const template = {
         html: '<p>Content</p>',
       };
 
-      const result = renderFromTemplate(template, sampleData);
+      const result = await renderFromTemplate(template, sampleData);
 
       // Check structure
       const htmlStart = result.indexOf('<!doctype');

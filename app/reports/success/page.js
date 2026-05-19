@@ -96,16 +96,16 @@ export default function ReportSuccessPage() {
             
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
-                href={`/reports/${reportId?.toLowerCase()}`}
+                href="/dashboard"
                 className="flex-1 text-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg transition-all font-medium"
               >
-                Generate My Report
+                Go to Dashboard
               </Link>
               <Link
-                href="/dashboard"
+                href="/services"
                 className="flex-1 text-center px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all"
               >
-                Go to Dashboard
+                Browse More Services
               </Link>
             </div>
           </div>
