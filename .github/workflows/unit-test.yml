@@ -32,8 +32,8 @@ jobs:
           NEXTAUTH_SECRET: test-nextauth-secret-for-ci-only
           NEXTAUTH_URL: http://localhost:5000
 
-      - name: Run API smoke tests
-        run: npx jest __tests__/api/smoke.test.js --no-coverage --testTimeout=15000
+      - name: Run API tests (mocked DB)
+        run: npx jest __tests__/api/ --no-coverage --testTimeout=15000
         env:
           CI: true
           GROQ_API_KEY: test-groq-key-for-ci-only

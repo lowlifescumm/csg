@@ -18,7 +18,7 @@ const TIER_CONFIG = {
   ESSENTIAL: {
     label: 'Essential Report',
     colorScheme: 'purple',
-    showCover: true,
+    showCover: false,
     showTableOfContents: false,
     sections: ['tarot', 'moon', 'transit', 'closing'],
     tierClass: 'essential-tier',
@@ -142,8 +142,8 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
   const [expandedSections, setExpandedSections] = useState({});
   const hasAutoDownloaded = useRef(false);
 
-  // Determine tier info
-  const normalizedReportType = (reportType || '').toUpperCase();
+  // Determine tier info from prop or loaded result
+  const normalizedReportType = (result?.reading_type || reportType || '').toUpperCase();
   const tierConfig = TIER_CONFIG[normalizedReportType] || TIER_CONFIG.MASTER;
   const tierColors = TIER_COLORS[tierConfig.colorScheme] || TIER_COLORS.purple;
 
@@ -310,18 +310,33 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
   const renderCover = () => {
     if (!tierConfig.showCover) return null;
     const title = getReportTitle(normalizedReportType);
+    const isMaster = (normalizedReportType || '').toUpperCase() === 'MASTER';
     return (
       <div className={`cover-page mb-8 rounded-2xl p-8 text-center relative overflow-hidden ${tierColors.coverOverlay}`}>
         <div className="relative z-10">
-          <div className="text-6xl mb-4">✨</div>
+          {isMaster && (
+            <>
+              <div className="text-5xl mb-3">🌟</div>
+              <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-yellow-300 to-transparent mx-auto mb-4" />
+            </>
+          )}
+          <div className="text-6xl mb-4">{isMaster ? '🌌' : '✨'}</div>
           <h1 className="text-4xl font-bold text-white mb-2">COSMIC SPIRIT GUIDE</h1>
-          <h2 className="text-2xl font-semibold text-yellow-200 mb-4">{title}</h2>
+          <h2 className={`text-2xl font-semibold mb-4 ${isMaster ? 'text-yellow-200' : 'text-yellow-200'}`}>{title}</h2>
+          {isMaster && (
+            <p className="text-rose-200 text-sm italic mb-3">
+              A complete astrological journey through the cosmos
+            </p>
+          )}
           {result?.completed_at && (
-            <p className="text-purple-200 text-sm">
+            <p className={`text-sm ${isMaster ? 'text-rose-200' : 'text-purple-200'}`}>
               Completed {new Date(result.completed_at).toLocaleDateString('en-US', {
                 year: 'numeric', month: 'long', day: 'numeric'
               })}
             </p>
+          )}
+          {isMaster && (
+            <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-yellow-300 to-transparent mx-auto mt-4" />
           )}
         </div>
         <div className="absolute inset-0 opacity-10"
@@ -373,11 +388,15 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
     const sectionType = section.type || `section-${idx}`;
     const label = section.title || SECTION_LABELS[sectionType] || `Section ${idx + 1}`;
     const Icon = SECTION_ICONS[sectionType] || FileText;
-    const isSpecial = ['birth_chart', 'partner_birth_chart', 'relationship_matrix', 'matrix', 'cover'].includes(sectionType);
-    const isExpanded = expandedSections[idx] !== false && (isSpecial || tierConfig.showTableOfContents);
+    const isChartSection = ['birth_chart', 'partner_birth_chart', 'advanced_houses'].includes(sectionType);
+    const isMatrixSection = ['relationship_matrix', 'matrix'].includes(sectionType);
+    const isClosingSection = sectionType === 'closing';
+    const isSpecial = isChartSection || isMatrixSection || sectionType === 'cover';
+    const isExpanded = expandedSections[idx] !== false && (isSpecial || isClosingSection || tierConfig.showTableOfContents);
+    const normalizedType = (normalizedReportType || '').toUpperCase();
 
-    // Special: Render chart sections visually (includes advanced_houses which may contain chartImage)
-    if ((sectionType === 'birth_chart' || sectionType === 'partner_birth_chart' || sectionType === 'advanced_houses') && section.chartImage) {
+    // Special: Render chart sections visually
+    if (isChartSection && section.chartImage) {
       return (
         <div key={idx} id={`section-${idx}`}
           className={`section-block rounded-xl overflow-hidden mb-6 border ${tierColors.border} bg-white`}>
@@ -403,7 +422,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
     }
 
     // Special: Render matrix/relationship section with scores table
-    if (sectionType === 'relationship_matrix' || sectionType === 'matrix') {
+    if (isMatrixSection) {
       return (
         <div key={idx} id={`section-${idx}`}
           className={`section-block rounded-xl overflow-hidden mb-6 border ${tierColors.border} bg-white`}>
@@ -412,13 +431,11 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
             <h3 className="text-lg font-semibold">{label}</h3>
           </div>
           <div className="p-4">
-            {/* Matrix SVG chart */}
             {section.matrixChartSVG && (
               <div className="flex justify-center mb-6"
                 dangerouslySetInnerHTML={{ __html: section.matrixChartSVG }}
               />
             )}
-            {/* Compatibility scores table */}
             {section.compatibilityScores && (
               <table className="w-full mb-6 border-collapse">
                 <thead>
@@ -451,33 +468,143 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
       );
     }
 
-    // Default section rendering with collapsible support for long sections
+    // Closing section - render distinctively per tier
+    if (isClosingSection) {
+      if (normalizedType === 'MASTER') {
+        return (
+          <div key={idx} id={`section-${idx}`}
+            className={`section-block rounded-xl overflow-hidden mb-6 bg-gradient-to-br from-rose-50 via-white to-pink-50 border-2 ${tierColors.border} shadow-lg`}>
+            <div className="px-6 py-5 text-center border-b border-rose-200">
+              <div className="text-4xl mb-3">🙏</div>
+              <h3 className="text-xl font-bold text-rose-800">{label}</h3>
+            </div>
+            <div className="px-6 py-5 prose max-w-none">
+              <div className="text-gray-700 leading-relaxed text-lg"
+                dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(getSectionContent(section)) }}
+              />
+            </div>
+            <div className="px-6 py-3 text-center text-xs text-rose-400 border-t border-rose-200">
+              ✦ Master Report · Cosmic Spirit Guide ✦
+            </div>
+          </div>
+        );
+      }
+      if (normalizedType === 'ADVANCED') {
+        return (
+          <div key={idx} id={`section-${idx}`}
+            className={`section-block rounded-xl overflow-hidden mb-6 bg-gradient-to-r from-violet-50 to-indigo-50 border ${tierColors.border}`}>
+            <div className="px-5 py-4 border-b border-violet-200">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">💫</span>
+                <h3 className="text-lg font-bold text-violet-800">{label}</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 prose max-w-none">
+              <div className="text-gray-700"
+                dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(getSectionContent(section)) }}
+              />
+            </div>
+          </div>
+        );
+      }
+      // Essential: simple warm closing without collapsible
+      return (
+        <div key={idx} id={`section-${idx}`}
+          className={`section-block rounded-lg overflow-hidden mb-4 border ${tierColors.border} bg-gradient-to-r from-purple-50 to-pink-50`}>
+          <div className="px-4 py-2.5 border-b border-purple-200">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">✨</span>
+              <h3 className="text-base font-semibold text-purple-800">{label}</h3>
+            </div>
+          </div>
+          <div className="px-4 py-3 prose max-w-none">
+            <div className="text-gray-700 text-sm"
+              dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(getSectionContent(section)) }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Default section rendering with tier-specific layouts
+    const isMaster = normalizedType === 'MASTER';
+    const isAdvanced = normalizedType === 'ADVANCED';
+    const isEssential = normalizedType === 'ESSENTIAL';
+
+    // Master tier: elaborate section with story-like layout
+    if (isMaster) {
+      return (
+        <div key={idx} id={`section-${idx}`}
+          className={`section-block rounded-xl overflow-hidden mb-8 border ${tierColors.border} bg-white shadow-sm`}>
+          <div className={`px-5 py-4 flex items-center gap-3 border-b ${tierColors.border} ${tierColors.sectionHeader}`}>
+            <div className="p-2 rounded-full bg-white/80">
+              <Icon className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold">{label}</h3>
+          </div>
+          <div className="p-5 prose max-w-none">
+            <div className="text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(getSectionContent(section)) }}
+            />
+          </div>
+          {section.summary && (
+            <div className="mx-5 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Key Insight</p>
+              <p className="text-sm text-amber-900">{section.summary}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Advanced tier: structured chapter with section number prefix
+    if (isAdvanced) {
+      return (
+        <div key={idx} id={`section-${idx}`}
+          className={`section-block rounded-xl overflow-hidden mb-6 border ${tierColors.border} bg-white`}>
+          <div className={`px-4 py-3 flex items-center gap-2 border-b ${tierColors.border} ${tierColors.sectionHeader}`}>
+            <Icon className="w-5 h-5" />
+            <h3 className="text-lg font-bold">{label}</h3>
+          </div>
+          <div className="px-4 pb-4 prose max-w-none">
+            <div className="text-gray-700"
+              dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(getSectionContent(section)) }}
+            />
+          </div>
+          {section.summary && (
+            <div className="mx-4 mb-4 p-2 bg-violet-50 border-l-4 border-violet-400 rounded">
+              <p className="text-xs text-violet-700">{section.summary}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Essential tier: compact card with collapsible content
     return (
       <div key={idx} id={`section-${idx}`}
-        className={`section-block rounded-xl overflow-hidden mb-6 border ${tierColors.border} bg-white transition-all duration-300 ${!isExpanded ? 'max-h-[200px] overflow-hidden' : ''}`}>
+        className={`section-block rounded-lg overflow-hidden mb-4 border ${tierColors.border} bg-white transition-all duration-300 ${!isExpanded ? 'max-h-[200px] overflow-hidden' : ''}`}>
         <button
           onClick={() => toggleSection(idx)}
-          className={`w-full px-4 py-3 flex items-center justify-between gap-2 ${tierColors.sectionHeader} hover:opacity-90 transition-opacity`}
+          className={`w-full px-4 py-2.5 flex items-center justify-between gap-2 ${tierColors.sectionHeader} hover:opacity-90 transition-opacity`}
         >
           <div className="flex items-center gap-2">
-            <Icon className="w-5 h-5" />
-            <h3 className="text-lg font-semibold">{label}</h3>
+            <Icon className="w-4 h-4" />
+            <h3 className="text-base font-semibold">{label}</h3>
           </div>
-          {isSpecial ? null : (
-            <span className="transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}">
-              <ChevronDown className="w-5 h-5" />
-            </span>
-          )}
+          <span className={`transition-transform duration-200 ${isExpanded ? '' : ''}`}>
+            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+          </span>
         </button>
-        {isExpanded || isSpecial ? (
-          <div className="px-4 pb-4 prose max-w-none">
-            <div className="text-gray-700 whitespace-pre-wrap"
+        {isExpanded ? (
+          <div className="px-4 py-3 prose max-w-none">
+            <div className="text-gray-700 text-sm leading-relaxed"
               dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(getSectionContent(section)) }}
             />
           </div>
         ) : (
-          <div className="px-4 pb-3 text-sm text-right">
-            <span className={`${tierColors.accent} font-medium cursor-pointer hover:underline`}
+          <div className="px-4 pb-2.5 text-sm text-right">
+            <span className={`${tierColors.accent} font-medium cursor-pointer hover:underline text-xs`}
               onClick={(e) => { e.stopPropagation(); toggleSection(idx); }}>
               Read more ▾
             </span>
@@ -538,11 +665,9 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
   const allowedTypes = new Set(tierConfig.sections);
   const displaySections = sections.filter((s) => {
     const t = s.type;
-    if (t === 'cover') return false; // cover rendered separately
+    if (t === 'cover') return false;
     if (allowedTypes.has(t)) return true;
-    // Safety valve: render unknown sections rather than silently dropping them.
-    // Log once per type per report to avoid render-loop noise.
-    return true;
+    return false;
   });
 
   // Tier badge for visual identification
@@ -630,8 +755,15 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
         )}
       </div>
 
+      {/* Decorative Divider */}
+      <div className={`mt-10 mb-2 text-center text-xs ${tierColors.accent} opacity-40`}>
+        {normalizedReportType === 'MASTER' ? '✦ ✦ ✦ End of Master Report ✦ ✦ ✦' :
+         normalizedReportType === 'ADVANCED' ? '✦ ✦ ✦ End of Advanced Report ✦ ✦ ✦' :
+         '✦ ✦ ✦ End of Report ✦ ✦ ✦'}
+      </div>
+
       {/* Status Badge */}
-      <div className="mt-8 pt-4 border-t flex items-center gap-2 text-sm text-gray-500">
+      <div className="mt-2 pt-4 border-t flex items-center gap-2 text-sm text-gray-500">
         <CheckCircle className="w-4 h-4 text-green-600" />
         <span>Status: {result.status || 'completed'}</span>
         <span className="ml-auto text-xs opacity-60">{tierConfig.label}</span>

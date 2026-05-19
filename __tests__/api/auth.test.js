@@ -1,9 +1,10 @@
 const { Pool } = require('pg');
+const { describeIf } = require('./helpers');
 
 process.env.JWT_SECRET = 'test-jwt-secret';
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
 
-describe('Authentication API', () => {
+describeIf(process.env.TEST_DATABASE_URL)('Authentication API', () => {
   let pool;
   let testUser;
   let baseUrl = 'http://localhost:5000';

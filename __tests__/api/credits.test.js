@@ -1,11 +1,12 @@
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
+const { describeIf } = require('./helpers');
 
 // Mock environment variables
 process.env.JWT_SECRET = 'test-jwt-secret';
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
 
-describe('Credit Management API', () => {
+describeIf(process.env.TEST_DATABASE_URL)('Credit Management API', () => {
   let pool;
   let testUserId;
   let authToken;

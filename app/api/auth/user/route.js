@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifyToken, getUserById } from '@/lib/auth';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
+import logger from '@/lib/logger';
 
 export async function GET() {
   try {
