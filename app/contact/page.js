@@ -37,7 +37,7 @@ export default function ContactPage() {
         setStatus("error");
       }
     } catch (error) {
-      logger.error("Contact form error:", error);
+      console.error("Contact form error:", error);
       setStatus("error");
     } finally {
       setLoading(false);

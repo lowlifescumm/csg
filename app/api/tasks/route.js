@@ -1,8 +1,9 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
 import { pool } from "@/lib/db";
+import { getLocalDateString } from '@/lib/date-utils';
+import logger from '@/lib/logger';
 
 export const runtime = "nodejs";
 
@@ -20,7 +21,10 @@ export async function GET(request) {
     }
 
     const { userId } = authResult;
-    const today = new Date().toISOString().split("T")[0];
+
+    const { searchParams } = new URL(request.url);
+    const timezone = searchParams.get('timezone');
+    const today = getLocalDateString(timezone);
 
     // Check if tasks table exists, if not create it
     try {

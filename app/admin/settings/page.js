@@ -42,7 +42,7 @@ export default function SiteSettingsPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      logger.error('Auth error:', error);
+      console.error('Auth error:', error);
       window.location.href = '/login';
     }
   };
@@ -55,7 +55,7 @@ export default function SiteSettingsPage() {
         setSettings({ ...settings, ...data.settings });
       }
     } catch (error) {
-      logger.error('Failed to fetch settings:', error);
+      console.error('Failed to fetch settings:', error);
     }
   };
 
@@ -74,10 +74,10 @@ export default function SiteSettingsPage() {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       } else {
-        logger.error('Failed to save settings');
+        console.error('Failed to save settings');
       }
     } catch (error) {
-      logger.error('Failed to save settings:', error);
+      console.error('Failed to save settings:', error);
     } finally {
       setLoading(false);
     }

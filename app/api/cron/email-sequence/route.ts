@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    logger.error('Email sequence cron error:', error);
+    console.error('Email sequence cron error:', error);
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

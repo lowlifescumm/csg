@@ -150,7 +150,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         }
       }
     } catch (err) {
-      logger.error("Failed to fetch readings:", err);
+      console.error("Failed to fetch readings:", err);
     } finally {
       setLoading(false);
     }
@@ -167,7 +167,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         }
       }
     } catch (err) {
-      logger.info("Could not fetch favorites:", err);
+      console.info("Could not fetch favorites:", err);
     }
   };
 
@@ -204,7 +204,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         alert("Saved to journal!");
       }
     } catch (err) {
-      logger.error("Error saving to journal:", err);
+      console.error("Error saving to journal:", err);
       alert("Failed to save to journal");
     } finally {
       setSavingToJournal(null);
@@ -258,7 +258,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         });
       }
     } catch (err) {
-      logger.error("Error toggling favorite:", err);
+      console.error("Error toggling favorite:", err);
     }
   };
 

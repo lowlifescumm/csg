@@ -6,7 +6,7 @@ import { ArrowRight, Heart, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import BirthChartWheel from './BirthChartWheel';
 
-export default function BirthChartForm({ updateMode = false, user = null }) {
+export default function BirthChartForm({ updateMode = false, user = null, redirect = null }) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     birthDate: '',
@@ -15,6 +15,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
     manualLat: '',
     manualLon: ''
   });
+  const [errors, setErrors] = useState({});
   const [coordinates, setCoordinates] = useState(null);
   const [chart, setChart] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -51,12 +52,41 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
         }
       }
     } catch (error) {
-      logger.error('Error loading existing chart:', error);
+      console.error('Error loading existing chart:', error);
     }
+  };
+
+  // Validation function for birth date
+  const validateDate = (dateStr) => {
+    if (!dateStr) return 'Birth date is required';
+    const date = new Date(dateStr + 'T00:00:00');
+    if (isNaN(date.getTime())) return 'Invalid date format';
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const testDate = new Date(year, month - 1, day);
+    if (testDate.getMonth() !== month - 1 || testDate.getDate() !== day) {
+      return `Invalid date: ${month}/${day}/${year} does not exist`;
+    }
+    const now = new Date();
+    if (date > now) return 'Birth date cannot be in the future';
+    const minDate = new Date('1900-01-01');
+    if (date < minDate) return 'Birth date must be after 1900';
+    return null;
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    const dateError = validateDate(formData.birthDate);
+    if (dateError) newErrors.birthDate = dateError;
+    if (!formData.birthTime) newErrors.birthTime = 'Birth time is required';
+    if (!formData.location.trim()) newErrors.location = 'Birth location is required';
+    if (!coordinates) newErrors.coordinates = 'Please search for and select a valid location';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleLocationSearch = async () => {
     setLocationError('');
+    setErrors(prev => ({ ...prev, location: undefined, coordinates: undefined }));
     
     // Try Google Maps Geocoding API first (most reliable)
     try {
@@ -79,14 +109,14 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
             return; // Success! Exit early
           } else if (data.status === 'ZERO_RESULTS') {
             // Continue to fallback
-            logger.info('Google Maps: No results, trying fallback...');
+            console.info('Google Maps: No results, trying fallback...');
           } else if (data.status === 'REQUEST_DENIED') {
-            logger.error('Google Maps API key issue:', data.error_message);
+            console.error('Google Maps API key issue:', data.error_message);
           }
         }
       }
     } catch (error) {
-      logger.error('Google Maps API error:', error);
+      console.error('Google Maps API error:', error);
     }
     
     // Fallback to OpenStreetMap (free)
@@ -112,7 +142,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
         }
       }
     } catch (error) {
-      logger.error('OpenStreetMap error:', error);
+      console.error('OpenStreetMap error:', error);
     }
     
     // All services failed - show manual entry
@@ -137,10 +167,7 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!coordinates) {
-      alert('Please search for your birth location first');
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     
@@ -169,10 +196,25 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
       const data = await response.json();
       
       if (data.success) {
+        if (!user) {
+          // Anonymous user: store preview in sessionStorage and redirect to Essential Report
+          sessionStorage.setItem('anonymousEssentialReport', JSON.stringify({
+            chart: data.chart,
+            birthInfo: {
+              date: formData.birthDate,
+              time: formData.birthTime,
+              location: formData.location,
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude
+            },
+            timestamp: Date.now()
+          }));
+          router.push(redirect || '/reports/essential');
+          return;
+        }
         setChart(data.chart);
       } else if (response.status === 401) {
-        // Anonymous user needs to login - show preview first
-        // Generate a temporary chart for preview
+        // Fallback: anonymous user hit auth wall — store manually and redirect
         const tempChart = await generateTemporaryChart({
           date: formData.birthDate,
           time: formData.birthTime,
@@ -180,13 +222,24 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude
         });
-        setChart(tempChart);
-        setShowLoginPrompt(true);
+        sessionStorage.setItem('anonymousEssentialReport', JSON.stringify({
+          chart: tempChart,
+          birthInfo: {
+            date: formData.birthDate,
+            time: formData.birthTime,
+            location: formData.location,
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude
+          },
+          timestamp: Date.now()
+        }));
+        router.push(redirect || '/reports/essential');
+        return;
       } else {
         alert(data.error || 'Failed to generate chart');
       }
     } catch (error) {
-      logger.error('Error generating chart:', error);
+      console.error('Error generating chart:', error);
       alert('Failed to generate chart. Please try again.');
     } finally {
       setLoading(false);
@@ -438,6 +491,11 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
               required
               placeholder="Select your birth date"
             />
+            {errors.birthDate && (
+              <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <span>⚠️</span> {errors.birthDate}
+              </p>
+            )}
           </div>
 
           <div>
@@ -467,7 +525,10 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                 name="birthLocation"
                 type="text"
                 value={formData.location}
-                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, location: e.target.value});
+                  setErrors(prev => ({ ...prev, location: undefined, coordinates: undefined }));
+                }}
                 placeholder="e.g., New York, USA"
                 className="flex-1 p-3 border border-white/15 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required={!showManualEntry}
@@ -481,6 +542,18 @@ export default function BirthChartForm({ updateMode = false, user = null }) {
                 Search
               </button>
             </div>
+            
+            {errors.location && (
+              <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <span>⚠️</span> {errors.location}
+              </p>
+            )}
+            
+            {errors.coordinates && (
+              <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <span>⚠️</span> {errors.coordinates}
+              </p>
+            )}
             
             {locationError && (
               <div className="mt-2 p-3 bg-cosmic-gold/5 border border-yellow-200 rounded-lg">

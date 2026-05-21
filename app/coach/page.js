@@ -25,7 +25,7 @@ export default function CoachPage() {
         setIsPremium(data.role === 'admin' || (data.stripe_subscription_id && data.stripe_subscription_id !== ''));
       }
     } catch (e) {
-      logger.error("Failed to fetch user data");
+      console.error("Failed to fetch user data");
     }
   };
 

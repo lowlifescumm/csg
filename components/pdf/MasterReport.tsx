@@ -366,7 +366,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         }
         // #endregion
         if (!relationshipMatrixSection) {
-          logger.info('[MasterReport] Relationship matrix section not found - returning null');
+          console.log('[MasterReport] Relationship matrix section not found - returning null');
           return null;
         }
         return wrapWithStationery(
@@ -385,7 +385,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         }
         // #endregion
         if (!compatibilitySection && !finalCompatibilityChartSvg && !compatibilityScores) {
-          logger.info('[MasterReport] Compatibility section not found - returning null', {
+          console.log('[MasterReport] Compatibility section not found - returning null', {
             hasCompatibilitySection: !!compatibilitySection,
             hasChartSvg: !!finalCompatibilityChartSvg,
             hasScores: !!compatibilityScores,
@@ -545,7 +545,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
         }
         // #endregion
         if (!closingSection) {
-          logger.info('[MasterReport] Closing section not found - returning null');
+          console.log('[MasterReport] Closing section not found - returning null');
           return null;
         }
         // TASK 2: Sanitize closing content and ensure signature is present

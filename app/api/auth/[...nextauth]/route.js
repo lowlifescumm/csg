@@ -1,6 +1,7 @@
 const logger = require('../../../../lib/logger');
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth-config";
+import logger from "@/lib/logger";
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL?.trim() || "";
 

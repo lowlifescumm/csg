@@ -46,7 +46,7 @@ export default function EnergyLogPage() {
         setError(data.error || "Failed to log energy");
       }
     } catch (err) {
-      logger.error("Error logging energy:", err);
+      console.error("Error logging energy:", err);
       setError("Failed to log energy. Please try again.");
     } finally {
       setLoading(false);

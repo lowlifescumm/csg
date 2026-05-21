@@ -20,6 +20,7 @@
  *   promote      → social_copy record created (manual post or auto-post flag)
  */
 
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { createPostInSanity, updatePostInSanity } from '@/lib/sanity-write.js';

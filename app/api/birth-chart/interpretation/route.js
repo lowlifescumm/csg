@@ -6,6 +6,7 @@ import { interpretBirthChart } from '@/lib/astrology.js';
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
 import { getAuthenticatedUser } from '@/lib/auth.js';
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter';
 
 /**
  * POST /api/birth-chart/interpretation
@@ -21,6 +22,16 @@ export async function POST(req) {
     }
     
     const { userId } = authResult;
+
+    // Apply rate limiting: 5 req/min for free users, 20 req/min for premium
+    const isPremium = authResult.role === 'premium' || authResult.role === 'admin';
+    const rateLimitResult = checkRateLimit(getClientIdentifier(req, userId), isPremium ? 20 : 5, 60000);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000) },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)) } }
+      );
+    }
 
     // Check access permissions for Natal Chart interpretation
     const accessCheck = await canAccessReading(userId, 'NATAL_CHART');
@@ -84,21 +95,17 @@ export async function POST(req) {
 
     // Generate AI interpretation
     let interpretation = '';
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        interpretation = await interpretBirthChart(chartData);
-      } catch (error) {
-        logger.error('Failed to generate interpretation:', error);
-        return NextResponse.json({
-          error: 'Failed to generate interpretation',
-          details: error.message
-        }, { status: 500 });
+    try {
+      interpretation = await interpretBirthChart(chartData);
+    } catch (error) {
+      // Fallback: return cached interpretation from DB if available
+      if (savedChart.interpretation) {
+        interpretation = savedChart.interpretation;
+      } else {
+        // Generic template fallback
+        const sunSign = chartData.planets?.find(p => p.name === 'Sun')?.sign || 'your sign';
+        interpretation = `Based on your birth chart with the Sun in ${sunSign}, you possess a unique cosmic fingerprint that shapes your core identity and life path. Your natal chart reveals the positions of the planets at your moment of birth, offering insights into your personality, relationships, career, and spiritual growth. For a detailed AI-generated interpretation, please try again later.`;
       }
-    } else {
-      return NextResponse.json({
-        error: 'Interpretation service unavailable',
-        details: 'OpenAI API key not configured'
-      }, { status: 503 });
     }
 
     // Consume credits for the interpretation

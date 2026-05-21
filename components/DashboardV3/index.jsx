@@ -14,6 +14,7 @@ import CompactDailyStreak from "./CompactDailyStreak";
 import BestMatches from "./BestMatches";
 import ReadingHistory from "./ReadingHistory";
 import PremiumCard from "./PremiumCard";
+import PremiumReports from "./PremiumReports";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import CardCountSelector from "@/components/CardCountSelector";
@@ -114,7 +115,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //         }
   //       })
   //       .catch(err => {
-  //         logger.error('Failed to fetch meditations:', err);
+  //         console.error('Failed to fetch meditations:', err);
   //       });
   //   }
   // }, [showMeditations]);
@@ -139,7 +140,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //       alert(data.error || 'Failed to start meditation');
   //     }
   //   } catch (error) {
-  //     logger.error('Error starting meditation:', error);
+  //     console.error('Error starting meditation:', error);
   //     alert('Failed to start meditation');
   //   }
   // };
@@ -518,9 +519,12 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             variant="auto"
             onUpgrade={() => {
               // Optional: track upgrade click
-              logger.info("Premium upgrade initiated");
+              console.info("Premium upgrade initiated");
             }}
           />
+
+          {/* Premium Reports */}
+          <PremiumReports />
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">

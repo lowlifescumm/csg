@@ -7,6 +7,7 @@ import spreads from "@/lib/tarot-spreads.json";
 import FocusModal from "@/components/FocusModal";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import ShareCard from "@/components/ShareCard";
+import logger from "@/lib/logger";
 
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general", cardCount = null, question: initialQuestion = "", spreadId = null }) {
   const [selectedCards, setSelectedCards] = useState([]);
@@ -149,7 +150,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       }
     } catch (error) {
       alert("Failed to generate reading");
-      logger.error(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -220,7 +221,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
             cards={reading.cards}
             onShareComplete={(credits) => {
               // Optionally show a toast notification
-              logger.info(`${credits} credits awarded for sharing!`);
+              console.info(`${credits} credits awarded for sharing!`);
             }}
           />
 

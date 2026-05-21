@@ -165,7 +165,7 @@ export default function HomePage() {
       const res = await fetch("/api/auth/user");
       const data = await res.json();
       if (data.user) setUser(data.user);
-    } catch (e) { logger.error("Auth check failed"); }
+    } catch (e) { console.error("Auth check failed"); }
     finally { setLoading(false); }
   };
 
@@ -226,15 +226,15 @@ export default function HomePage() {
 
             {/* Trust badges */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-sm">
-              <div className="flex items-center gap-2 text-cosmic-lavender/60">
+              <div className="flex items-center gap-2 text-cosmic-lavender/80">
                 <Check className="w-4 h-4 text-cosmic-gold" />
                 <span>50,000+ Readings</span>
               </div>
-              <div className="flex items-center gap-2 text-cosmic-lavender/60">
+              <div className="flex items-center gap-2 text-cosmic-lavender/80">
                 <Check className="w-4 h-4 text-cosmic-gold" />
                 <span>No Credit Card</span>
               </div>
-              <div className="flex items-center gap-2 text-cosmic-lavender/60">
+              <div className="flex items-center gap-2 text-cosmic-lavender/80">
                 <Check className="w-4 h-4 text-cosmic-gold" />
                 <span>Instant Results</span>
               </div>
@@ -265,7 +265,7 @@ export default function HomePage() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-cosmic-lavender/40">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-cosmic-lavender/70">
           <span className="text-xs uppercase tracking-widest">Scroll</span>
           <div className="w-px h-8 bg-gradient-to-b from-cosmic-violet to-transparent" />
         </div>
@@ -282,7 +282,7 @@ export default function HomePage() {
               Mystical Guidance for
               <span className="text-cosmic-gold"> Every Journey</span>
             </h2>
-            <p className="text-cosmic-lavender/60 text-lg max-w-2xl mx-auto">
+            <p className="text-cosmic-lavender/80 text-lg max-w-2xl mx-auto">
               From daily tarot insights to deep birth chart analysis, discover tools designed to illuminate your path.
             </p>
           </div>
@@ -312,7 +312,7 @@ export default function HomePage() {
                     <service.icon className="w-6 h-6" style={{ color: service.color }} />
                   </div>
                   <h3 className="text-xl font-semibold mb-2 text-white">{service.title}</h3>
-                  <p className="text-cosmic-lavender/60 leading-relaxed">{service.desc}</p>
+                  <p className="text-cosmic-lavender/80 leading-relaxed">{service.desc}</p>
                   <div className="mt-4 flex items-center gap-1 text-sm font-medium" style={{ color: service.color }}>
                     <span>Learn more</span>
                     <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -350,9 +350,9 @@ export default function HomePage() {
                 <div className="w-20 h-20 rounded-full border border-cosmic-violet/30 bg-cosmic-void/80 backdrop-blur-sm flex items-center justify-center mx-auto mb-6 relative z-10">
                   <step.icon className="w-8 h-8 text-cosmic-gold" />
                 </div>
-                <div className="text-5xl font-bold text-cosmic-violet/20 mb-2">{step.num}</div>
+                <div className="text-5xl font-bold text-cosmic-violet/50 mb-2">{step.num}</div>
                 <h3 className="text-xl font-semibold mb-3 text-white">{step.title}</h3>
-                <p className="text-cosmic-lavender/60">{step.desc}</p>
+                <p className="text-cosmic-lavender/80">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -388,7 +388,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="font-medium text-white">{t.name}</div>
-                    <div className="text-sm text-cosmic-lavender/50">{t.role}</div>
+                    <div className="text-sm text-cosmic-lavender/80">{t.role}</div>
                   </div>
                 </div>
               </div>
@@ -408,7 +408,7 @@ export default function HomePage() {
                   Precision Meets
                   <span className="text-cosmic-gold"> Mystical Intuition</span>
                 </h2>
-                <p className="text-cosmic-lavender/60 text-lg mb-8">
+                <p className="text-cosmic-lavender/80 text-lg mb-8">
                   We combine ancient divination systems with state-of-the-art AI to deliver readings that feel personal, accurate, and actionable.
                 </p>
 
@@ -457,7 +457,7 @@ export default function HomePage() {
             <br />Awaits
           </h2>
 
-          <p className="text-xl text-cosmic-lavender/60 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-cosmic-lavender/80 mb-10 max-w-2xl mx-auto">
             The universe has been trying to reach you. Start with a free tarot reading and discover what the stars have planned.
           </p>
 
@@ -468,7 +468,7 @@ export default function HomePage() {
             ✨ Start Free Reading
           </button>
 
-          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-cosmic-lavender/50">
+          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-cosmic-lavender/80">
             <span className="flex items-center gap-1"><Check className="w-4 h-4 text-cosmic-gold" /> No credit card</span>
             <span className="flex items-center gap-1"><Check className="w-4 h-4 text-cosmic-gold" /> Cancel anytime</span>
             <span className="flex items-center gap-1"><Check className="w-4 h-4 text-cosmic-gold" /> Private & secure</span>
@@ -485,20 +485,21 @@ export default function HomePage() {
                 <Eye className="w-6 h-6 text-cosmic-gold" />
                 <span className="font-bold text-lg">Cosmic Spirit Guide</span>
               </div>
-              <p className="text-sm text-cosmic-lavender/50">AI-powered spiritual guidance for modern seekers.</p>
+              <p className="text-sm text-cosmic-lavender/80">AI-powered spiritual guidance for modern seekers.</p>
             </div>
             <div>
               <h4 className="font-semibold mb-4 text-cosmic-lavender">Services</h4>
-              <ul className="space-y-2 text-sm text-cosmic-lavender/50">
+              <ul className="space-y-2 text-sm text-cosmic-lavender/80">
                 <li><Link href="/tarot" className="hover:text-cosmic-gold transition-colors">Tarot Readings</Link></li>
                 <li><Link href="/birth-chart" className="hover:text-cosmic-gold transition-colors">Birth Charts</Link></li>
                 <li><Link href="/compatibility" className="hover:text-cosmic-gold transition-colors">Compatibility</Link></li>
+                <li><Link href="/horoscope" className="hover:text-cosmic-gold transition-colors">Horoscopes</Link></li>
                 <li><Link href="/forecasts" className="hover:text-cosmic-gold transition-colors">Forecasts</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4 text-cosmic-lavender">Company</h4>
-              <ul className="space-y-2 text-sm text-cosmic-lavender/50">
+              <ul className="space-y-2 text-sm text-cosmic-lavender/80">
                 <li><Link href="/about" className="hover:text-cosmic-gold transition-colors">About</Link></li>
                 <li><Link href="/blog" className="hover:text-cosmic-gold transition-colors">Blog</Link></li>
                 <li><Link href="/pricing" className="hover:text-cosmic-gold transition-colors">Pricing</Link></li>
@@ -507,13 +508,13 @@ export default function HomePage() {
             </div>
             <div>
               <h4 className="font-semibold mb-4 text-cosmic-lavender">Legal</h4>
-              <ul className="space-y-2 text-sm text-cosmic-lavender/50">
+              <ul className="space-y-2 text-sm text-cosmic-lavender/80">
                 <li><Link href="/privacy" className="hover:text-cosmic-gold transition-colors">Privacy</Link></li>
                 <li><Link href="/terms" className="hover:text-cosmic-gold transition-colors">Terms</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-cosmic-violet/20 pt-8 text-center text-sm text-cosmic-lavender/40">
+          <div className="border-t border-cosmic-violet/20 pt-8 text-center text-sm text-cosmic-lavender/70">
             © 2024 Cosmic Spirit Guide. All rights reserved.
           </div>
         </div>

@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { authOptions } from '@/lib/auth-config';
 import { drawCards } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
+import logger from "@/lib/logger";
 import { generateTarotReading } from "@/lib/groq";
 import { saveReading } from "@/lib/db";
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';

@@ -99,7 +99,8 @@ export default function DashboardShell({ children }) {
 
       // Fetch streak (optional - gracefully handles if endpoint doesn't exist)
       try {
-        const streakRes = await fetch("/api/streak", { credentials: 'include' });
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const streakRes = await fetch(`/api/streak?timezone=${encodeURIComponent(timezone)}`, { credentials: 'include' });
         if (streakRes.ok) {
           const streakData = await safeJson(streakRes, 'streak');
           const cleanedStreak = cleanEmptyObjects(streakData);

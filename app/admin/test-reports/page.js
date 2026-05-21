@@ -297,7 +297,7 @@ export default function TestReportsPage() {
           setTemplates(data.templates);
         }
       } catch (error) {
-        logger.error('Failed to fetch templates:', error);
+        console.error('Failed to fetch templates:', error);
       } finally {
         setLoadingTemplates(false);
       }
@@ -484,7 +484,7 @@ export default function TestReportsPage() {
         alert('PDF generation failed. Please try again.');
       }
     } catch (err) {
-      logger.error('PDF download error:', err);
+      console.error('PDF download error:', err);
       alert('Failed to download PDF. Please try again.');
     }
   };
@@ -1042,7 +1042,7 @@ export default function TestReportsPage() {
       setGeocoding(prev => ({ ...prev, [type]: false }));
       return null;
     } catch (error) {
-      logger.error(`Geocoding error for ${type}:`, error);
+      console.error(`Geocoding error for ${type}:`, error);
       setLocationErrors(prev => ({ 
         ...prev, 
         [type]: 'Geocoding service unavailable. Please try again.' 

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth.js';
 import { validateReadingPrerequisites } from '@/lib/reading-prerequisites.js';
+import logger from '@/lib/logger';
 import { pool } from '@/lib/db.js';
 
 export const runtime = 'nodejs';

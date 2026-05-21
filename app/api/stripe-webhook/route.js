@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Pool } from 'pg';
@@ -163,6 +162,59 @@ export async function POST(request) {
             } else {
               logger.error(`[Credit Engine] Failed to add credits to user ${userId}:`, result.error);
             }
+          }
+        }
+        
+        // Handle premium report purchases
+        if (paymentIntent.metadata?.type === 'premium_report') {
+          const reportId = paymentIntent.metadata.report_id;
+          const reportName = paymentIntent.metadata.report_name;
+          const userId = paymentIntent.metadata.user_id;
+          
+          if (!userId) {
+            logger.info(`[Report Purchase] Payment succeeded for report ${reportId} by guest - no user_id in metadata, skipping auto-generation`);
+            break;
+          }
+          
+          logger.info(`[Report Purchase] Payment succeeded for report ${reportId} (${reportName}) by user ${userId}`);
+          
+          try {
+            await pool.query(
+              `INSERT INTO report_purchases (user_id, report_type, stripe_payment_intent_id, amount, status, created_at)
+               VALUES ($1, $2, $3, $4, $5, NOW())
+               ON CONFLICT (user_id, stripe_payment_intent_id) DO NOTHING`,
+              [parseInt(userId), reportId, paymentIntent.id, paymentIntent.amount, 'paid']
+            );
+            logger.info(`[Report Purchase] Recorded purchase for user ${userId}, report ${reportId}`);
+            
+            // Trigger report generation job - skip credit charge (already paid via Stripe)
+            const readingType = reportId.toLowerCase(); // ESSENTIAL -> essential
+            const { createJobRecord } = await import('@/lib/reading-jobs.js');
+            const { processJob } = await import('@/lib/job-queue.js');
+            const { getJobProcessor } = await import('@/lib/job-processors.js');
+            
+            const job = await createJobRecord({
+              userId: parseInt(userId),
+              readingType,
+              options: { report_type: reportId },
+            });
+            
+            // Bypass credit charge: mark as queued directly
+            await pool.query(
+              `UPDATE reading_jobs SET status = 'queued', progress_message = 'Processing premium report...' WHERE id = $1`,
+              [job.id]
+            );
+            job.status = 'queued';
+            
+            const processor = getJobProcessor(readingType);
+            if (processor) {
+              processJob(job, processor).catch(err => {
+                logger.error(`[Report Purchase] Report generation job ${job.id} failed:`, err);
+              });
+              logger.info(`[Report Purchase] Report generation job ${job.id} submitted for user ${userId}`);
+            }
+          } catch (dbError) {
+            logger.error(`[Report Purchase] Failed to process purchase:`, dbError);
           }
         }
         break;

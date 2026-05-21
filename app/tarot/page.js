@@ -4,6 +4,7 @@ const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, Loader2, Moon, ArrowRight, Lock, X, Bookmark, BookmarkCheck } from "lucide-react";
 import Link from "next/link";
+import logger from "@/lib/logger";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
@@ -38,7 +39,7 @@ export default function TarotPage() {
       setIsPremium(data.isPremium || false);
       setCreditsAvailable(getAvailableCredits(data));
     } catch (error) {
-      logger.error("Error checking credits:", error);
+      console.error("Error checking credits:", error);
       setIsPremium(false);
       setCreditsAvailable(0);
     } finally {

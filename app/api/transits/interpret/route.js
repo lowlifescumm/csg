@@ -5,6 +5,7 @@ import Groq from 'groq-sdk';
 import { pool } from '@/lib/db.js';
 import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter';
 
 const openai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -27,6 +28,16 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthorized', requiresAuth: true }, { status: 401 });
     }
 
+    // Apply rate limiting: 5 req/min for free users, 20 req/min for premium
+    const isPremium = authResult.role === 'premium' || authResult.role === 'admin';
+    const rateLimitResult = checkRateLimit(getClientIdentifier(req, authResult.userId), isPremium ? 20 : 5, 60000);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000) },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const userResult = await pool.query(
       'SELECT role, stripe_subscription_id FROM users WHERE id = $1',
       [authResult.userId],
@@ -38,9 +49,9 @@ export async function POST(req) {
 
     const user = userResult.rows[0];
     const isAdmin = user.role === 'admin';
-    const isPremium = Boolean(user.stripe_subscription_id);
+    const hasPremium = Boolean(user.stripe_subscription_id);
 
-    if (!isAdmin && !isPremium) {
+    if (!isAdmin && !hasPremium) {
       return NextResponse.json(
         { error: 'Premium subscription required', requiresPremium: true },
         { status: 402 },

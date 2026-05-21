@@ -37,7 +37,7 @@ export default function UserManagementPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      logger.error('Auth error:', error);
+      console.error('Auth error:', error);
       window.location.href = '/login';
     }
   };
@@ -51,10 +51,10 @@ export default function UserManagementPage() {
       if (response.ok) {
         setCredits(data.credits);
       } else {
-        logger.error('Failed to fetch credits:', data.error);
+        console.error('Failed to fetch credits:', data.error);
       }
     } catch (error) {
-      logger.error('Failed to fetch credits:', error);
+      console.error('Failed to fetch credits:', error);
     }
   };
 
@@ -104,7 +104,7 @@ export default function UserManagementPage() {
         setCreditError(data.error || 'Failed to update credits');
       }
     } catch (error) {
-      logger.error('Failed to update credits:', error);
+      console.error('Failed to update credits:', error);
       setCreditError('Failed to connect to server');
     } finally {
       setIsUpdatingCredits(false);
@@ -119,10 +119,10 @@ export default function UserManagementPage() {
       if (response.ok) {
         setUsers(data.users || []);
       } else {
-        logger.error('Failed to fetch users:', data.error);
+        console.error('Failed to fetch users:', data.error);
       }
     } catch (error) {
-      logger.error('Failed to fetch users:', error);
+      console.error('Failed to fetch users:', error);
     } finally {
       setLoading(false);
     }

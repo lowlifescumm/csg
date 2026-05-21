@@ -87,7 +87,8 @@ export default function DailyTasks({ userId, streak }) {
 
   const fetchTasksAndStats = async () => {
     try {
-      const res = await fetch("/api/tasks");
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const res = await fetch(`/api/tasks?timezone=${encodeURIComponent(timezone)}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -107,7 +108,7 @@ export default function DailyTasks({ userId, streak }) {
         }
       }
     } catch (err) {
-      logger.error("Failed to fetch tasks:", err);
+      console.error("Failed to fetch tasks:", err);
     } finally {
       setLoading(false);
     }
@@ -127,6 +128,7 @@ export default function DailyTasks({ userId, streak }) {
         body: JSON.stringify({
           taskId,
           userId,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       });
 
@@ -178,7 +180,7 @@ export default function DailyTasks({ userId, streak }) {
         });
       }
     } catch (err) {
-      logger.error("Error completing task:", err);
+      console.error("Error completing task:", err);
       showToast({
         type: "error",
         message: "Failed to complete task. Please try again.",

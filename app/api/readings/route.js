@@ -1,9 +1,9 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserReadings, getUserBirthCharts, getUserStats } from "@/lib/db";
 import { cookies } from "next/headers";
 import { authOptions } from '@/lib/auth-config';
+import logger from "@/lib/logger";
 
 export async function GET(request) {
   try {

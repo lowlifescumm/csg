@@ -1,6 +1,7 @@
 const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getUserByEmail, verifyPassword, generateToken } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 export async function POST(request) {
   try {

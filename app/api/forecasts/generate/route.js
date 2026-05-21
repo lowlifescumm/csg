@@ -77,6 +77,11 @@ export async function POST(req) {
           ? JSON.parse(forecastData.rituals)
           : forecastData.rituals;
       }
+      if (forecastData.day_breakdown) {
+        forecastData.day_breakdown = typeof forecastData.day_breakdown === 'string'
+          ? JSON.parse(forecastData.day_breakdown)
+          : forecastData.day_breakdown;
+      }
     }
 
     return NextResponse.json({

@@ -100,7 +100,7 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
         }
       } catch (err) {
         // Use default tiles if API fails
-        logger.info("Using default tiles configuration");
+        console.info("Using default tiles configuration");
       }
     };
 
@@ -172,7 +172,7 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
         onReadingComplete(data.reading || data);
       }
     } catch (err) {
-      logger.error("Error generating reading:", err);
+      console.error("Error generating reading:", err);
       setError({
         type: "error",
         message: "Failed to connect to server. Please try again.",

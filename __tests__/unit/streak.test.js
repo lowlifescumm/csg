@@ -1,255 +1,239 @@
 /**
  * Streak Tracking Unit Tests
- * Tests for daily login streak increment and streak API updates
+ * Tests for daily streak calculation across multiple activity sources
  */
 
-const { Pool } = require('pg');
-
-// Mock dependencies
-jest.mock('@/lib/db', () => {
-  const mockPool = {
-    query: jest.fn(),
-  };
-  return { pool: mockPool };
-});
-
-jest.mock('@/lib/auth', () => ({
-  getAuthenticatedUser: jest.fn(),
+// Mock Next.js server dependencies
+jest.mock('next/server', () => ({
+  NextResponse: {
+    json: (data, init = {}) => ({
+      status: init.status || 200,
+      json: async () => data,
+    }),
+  },
 }));
 
-const { pool } = require('@/lib/db');
-const { getAuthenticatedUser } = require('@/lib/auth');
+jest.mock('next/headers', () => ({
+  cookies: jest.fn(),
+}));
 
-describe('Streak Tracking', () => {
+jest.mock('@/lib/auth', () => ({
+  verifyToken: jest.fn(),
+}));
+
+jest.mock('@/lib/db', () => ({
+  pool: {
+    query: jest.fn(),
+  },
+}));
+
+jest.mock('@/lib/logger', () => ({
+  __esModule: true,
+  default: {
+    error: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+  },
+}));
+
+const { cookies } = require('next/headers');
+const { verifyToken } = require('@/lib/auth');
+const { pool } = require('@/lib/db');
+const { GET } = require('@/app/api/streak/route');
+
+describe('Streak Tracking API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('Daily Login Streak Increment', () => {
-    test('should increment streak on first login of the day', async () => {
-      const userId = 1;
-      const today = new Date().toISOString().split('T')[0];
+  function createMockRequest(url) {
+    return { url };
+  }
 
-      // Mock: No login today yet
-      pool.query
-        .mockResolvedValueOnce({ rows: [] }) // Check for today's login
-        .mockResolvedValueOnce({ rows: [{ id: 1, current_streak: 0, last_login_date: null }] }) // Get current streak
-        .mockResolvedValueOnce({ rows: [{ id: 1, current_streak: 1, last_login_date: today }] }); // Update streak
+  function setupAuth(userId = 1) {
+    cookies.mockResolvedValue({
+      get: (name) => (name === 'auth_token' ? { value: 'valid-token' } : undefined),
+    });
+    verifyToken.mockReturnValue({ userId });
+  }
 
-      // Simulate streak update
-      const checkResult = await pool.query(
-        `SELECT id, current_streak, last_login_date 
-         FROM user_streaks 
-         WHERE user_id = $1 AND last_login_date = CURRENT_DATE`,
-        [userId]
-      );
+  describe('Authentication', () => {
+    test('should return 401 when no auth token', async () => {
+      cookies.mockResolvedValue({
+        get: () => undefined,
+      });
 
-      if (checkResult.rows.length === 0) {
-        const currentStreak = await pool.query(
-          `SELECT id, current_streak, last_login_date 
-           FROM user_streaks 
-           WHERE user_id = $1`,
-          [userId]
-        );
+      const request = createMockRequest('http://localhost/api/streak');
+      const response = await GET(request);
 
-        let newStreak = 1;
-        if (currentStreak.rows.length > 0) {
-          const lastLogin = currentStreak.rows[0].last_login_date;
-          if (lastLogin) {
-            const daysDiff = Math.floor((new Date() - new Date(lastLogin)) / (1000 * 60 * 60 * 24));
-            if (daysDiff === 1) {
-              // Consecutive day
-              newStreak = currentStreak.rows[0].current_streak + 1;
-            } else if (daysDiff > 1) {
-              // Streak broken
-              newStreak = 1;
-            } else {
-              // Same day
-              newStreak = currentStreak.rows[0].current_streak;
-            }
-          }
-        }
-
-        await pool.query(
-          `INSERT INTO user_streaks (user_id, current_streak, last_login_date)
-           VALUES ($1, $2, CURRENT_DATE)
-           ON CONFLICT (user_id)
-           DO UPDATE SET 
-             current_streak = $2,
-             last_login_date = CURRENT_DATE,
-             updated_at = NOW()`,
-          [userId, newStreak]
-        );
-      }
-
-      expect(pool.query).toHaveBeenCalled();
-      const lastCall = pool.query.mock.calls[pool.query.mock.calls.length - 1];
-      expect(lastCall[1][1]).toBe(1); // New streak should be 1
+      expect(response.status).toBe(401);
+      const data = await response.json();
+      expect(data.error).toBe('Unauthorized');
     });
 
-    test('should increment streak on consecutive days', async () => {
-      const userId = 1;
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+    test('should return 401 when token is invalid', async () => {
+      cookies.mockResolvedValue({
+        get: (name) => (name === 'auth_token' ? { value: 'bad-token' } : undefined),
+      });
+      verifyToken.mockReturnValue(null);
 
-      pool.query
-        .mockResolvedValueOnce({ rows: [] }) // No login today
-        .mockResolvedValueOnce({ rows: [{ id: 1, current_streak: 5, last_login_date: yesterdayStr }] }) // Current streak
-        .mockResolvedValueOnce({ rows: [{ id: 1, current_streak: 6, last_login_date: new Date().toISOString().split('T')[0] }] }); // Updated
+      const request = createMockRequest('http://localhost/api/streak');
+      const response = await GET(request);
 
-      // Simulate consecutive day login
-      const checkResult = await pool.query(
-        `SELECT id, current_streak, last_login_date 
-         FROM user_streaks 
-         WHERE user_id = $1 AND last_login_date = CURRENT_DATE`,
-        [userId]
-      );
-
-      if (checkResult.rows.length === 0) {
-        const currentStreak = await pool.query(
-          `SELECT id, current_streak, last_login_date 
-           FROM user_streaks 
-           WHERE user_id = $1`,
-          [userId]
-        );
-
-        const daysDiff = Math.floor((new Date() - new Date(yesterdayStr)) / (1000 * 60 * 60 * 24));
-        const newStreak = daysDiff === 1 ? currentStreak.rows[0].current_streak + 1 : 1;
-
-        await pool.query(
-          `INSERT INTO user_streaks (user_id, current_streak, last_login_date)
-           VALUES ($1, $2, CURRENT_DATE)
-           ON CONFLICT (user_id)
-           DO UPDATE SET 
-             current_streak = $2,
-             last_login_date = CURRENT_DATE,
-             updated_at = NOW()`,
-          [userId, newStreak]
-        );
-      }
-
-      expect(pool.query).toHaveBeenCalled();
-      const lastCall = pool.query.mock.calls[pool.query.mock.calls.length - 1];
-      expect(lastCall[1][1]).toBe(6); // Streak should increment to 6
-    });
-
-    test('should reset streak when login gap is more than 1 day', async () => {
-      const userId = 1;
-      const threeDaysAgo = new Date();
-      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-      const threeDaysAgoStr = threeDaysAgo.toISOString().split('T')[0];
-
-      pool.query
-        .mockResolvedValueOnce({ rows: [] }) // No login today
-        .mockResolvedValueOnce({ rows: [{ id: 1, current_streak: 10, last_login_date: threeDaysAgoStr }] }) // Old streak
-        .mockResolvedValueOnce({ rows: [{ id: 1, current_streak: 1, last_login_date: new Date().toISOString().split('T')[0] }] }); // Reset
-
-      // Simulate broken streak
-      const checkResult = await pool.query(
-        `SELECT id, current_streak, last_login_date 
-         FROM user_streaks 
-         WHERE user_id = $1 AND last_login_date = CURRENT_DATE`,
-        [userId]
-      );
-
-      if (checkResult.rows.length === 0) {
-        const currentStreak = await pool.query(
-          `SELECT id, current_streak, last_login_date 
-           FROM user_streaks 
-           WHERE user_id = $1`,
-          [userId]
-        );
-
-        const daysDiff = Math.floor((new Date() - new Date(threeDaysAgoStr)) / (1000 * 60 * 60 * 24));
-        const newStreak = daysDiff === 1 ? currentStreak.rows[0].current_streak + 1 : 1;
-
-        await pool.query(
-          `INSERT INTO user_streaks (user_id, current_streak, last_login_date)
-           VALUES ($1, $2, CURRENT_DATE)
-           ON CONFLICT (user_id)
-           DO UPDATE SET 
-             current_streak = $2,
-             last_login_date = CURRENT_DATE,
-             updated_at = NOW()`,
-          [userId, newStreak]
-        );
-      }
-
-      expect(pool.query).toHaveBeenCalled();
-      const lastCall = pool.query.mock.calls[pool.query.mock.calls.length - 1];
-      expect(lastCall[1][1]).toBe(1); // Streak should reset to 1
-    });
-
-    test('should not increment streak on same day multiple logins', async () => {
-      const userId = 1;
-      const today = new Date().toISOString().split('T')[0];
-
-      pool.query
-        .mockResolvedValueOnce({ rows: [{ id: 1, current_streak: 5, last_login_date: today }] }); // Already logged in today
-
-      // Simulate same-day login
-      const checkResult = await pool.query(
-        `SELECT id, current_streak, last_login_date 
-         FROM user_streaks 
-         WHERE user_id = $1 AND last_login_date = CURRENT_DATE`,
-        [userId]
-      );
-
-      if (checkResult.rows.length > 0) {
-        // Already logged in today, no update needed
-        expect(checkResult.rows[0].current_streak).toBe(5);
-      }
-
-      // Should only have the check query
-      expect(pool.query).toHaveBeenCalledTimes(1);
+      expect(response.status).toBe(401);
     });
   });
 
-  describe('Streak API Endpoint', () => {
-    test('should return current streak data', async () => {
-      const userId = 1;
-      const mockStreak = {
-        current_streak: 7,
-        last_login_date: new Date().toISOString().split('T')[0],
-        longest_streak: 10,
-      };
+  describe('Streak calculation from multiple sources', () => {
+    test('should calculate streak from readings only', async () => {
+      setupAuth(1);
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
-      getAuthenticatedUser.mockResolvedValue({ userId });
-
-      pool.query.mockResolvedValueOnce({
-        rows: [mockStreak],
+      // Mock all table queries — only readings returns data
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('FROM readings')) {
+          return { rows: [{ activity_date: today }, { activity_date: yesterday }] };
+        }
+        return { rows: [] };
       });
 
-      // Simulate API call
-      const result = await pool.query(
-        `SELECT current_streak, last_login_date, longest_streak
-         FROM user_streaks
-         WHERE user_id = $1`,
-        [userId]
-      );
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
 
-      expect(result.rows[0]).toEqual(mockStreak);
-      expect(result.rows[0].current_streak).toBe(7);
+      expect(data.currentStreak).toBe(2);
+      expect(data.lastLogin).toBe(today);
     });
 
-    test('should handle user with no streak record', async () => {
-      const userId = 999;
+    test('should include task completions in streak', async () => {
+      setupAuth(1);
+      const today = new Date().toISOString().split('T')[0];
 
-      getAuthenticatedUser.mockResolvedValue({ userId });
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('FROM readings')) return { rows: [] };
+        if (sql.includes('FROM user_tasks')) {
+          return { rows: [{ activity_date: today }] };
+        }
+        return { rows: [] };
+      });
 
-      pool.query.mockResolvedValueOnce({ rows: [] });
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
 
-      // Simulate API call
-      const result = await pool.query(
-        `SELECT current_streak, last_login_date, longest_streak
-         FROM user_streaks
-         WHERE user_id = $1`,
-        [userId]
-      );
+      expect(data.currentStreak).toBe(1);
+      expect(data.lastLogin).toBe(today);
+    });
 
-      expect(result.rows).toHaveLength(0);
+    test('should merge dates from multiple tables', async () => {
+      setupAuth(1);
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0];
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('FROM readings')) {
+          return { rows: [{ activity_date: today }] };
+        }
+        if (sql.includes('FROM user_tasks')) {
+          return { rows: [{ activity_date: yesterday }] };
+        }
+        if (sql.includes('FROM journal_entries')) {
+          return { rows: [{ activity_date: twoDaysAgo }] };
+        }
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(3);
+    });
+
+    test('should handle missing tables gracefully', async () => {
+      setupAuth(1);
+      const today = new Date().toISOString().split('T')[0];
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('FROM readings')) {
+          return { rows: [{ activity_date: today }] };
+        }
+        if (sql.includes('FROM user_tasks') || sql.includes('FROM journal_entries')) {
+          throw new Error('relation does not exist');
+        }
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(1);
+    });
+
+    test('should return 0 streak when no activity at all', async () => {
+      setupAuth(1);
+
+      pool.query.mockResolvedValue({ rows: [] });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(0);
+      expect(data.longestStreak).toBe(0);
+    });
+
+    test('should reset streak when gap is more than 1 day', async () => {
+      setupAuth(1);
+      const threeDaysAgo = new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0];
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('FROM readings')) {
+          return { rows: [{ activity_date: threeDaysAgo }] };
+        }
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(0);
+      expect(data.lastLogin).toBe(threeDaysAgo);
+    });
+
+    test('should calculate longest streak correctly', async () => {
+      setupAuth(1);
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0];
+      const fiveDaysAgo = new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0];
+      const sixDaysAgo = new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0];
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('FROM readings')) {
+          return {
+            rows: [
+              { activity_date: today },
+              { activity_date: yesterday },
+              { activity_date: twoDaysAgo },
+              { activity_date: fiveDaysAgo },
+              { activity_date: sixDaysAgo },
+            ],
+          };
+        }
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(3); // today, yesterday, 2 days ago
+      expect(data.longestStreak).toBe(3);
     });
   });
 });
-

@@ -57,7 +57,7 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
         setProcessing(false);
       }
     } catch (error) {
-      logger.error("Subscription error:", error);
+      console.error("Subscription error:", error);
       alert("Failed to start subscription process");
       setProcessing(false);
     }

@@ -1,4 +1,7 @@
 "use client";
+
+"use client";
+
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";

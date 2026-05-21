@@ -179,7 +179,7 @@ function calculateCompositeChart(
       rising: { sign: compositeAscendantSign },
     };
   } catch (error) {
-    logger.error('[calculateCompositeChart] Error:', error);
+    console.error('[calculateCompositeChart] Error:', error);
     // Return safe defaults on error
     return {
       sun: { sign: 'Unknown', house: 0 },
@@ -523,7 +523,7 @@ async function calculateShortTermTransits(natalChart: BirthChartResult): Promise
       strengthScore: transit.strengthScore,
     }));
   } catch (error) {
-    logger.error('[chartHydrator] Error calculating short-term transits:', error);
+    console.error('[chartHydrator] Error calculating short-term transits:', error);
     return [];
   }
 }
@@ -658,7 +658,7 @@ function calculateRelationshipMatrix(
       physical: physicalScore,
     };
   } catch (error) {
-    logger.error("[calculateRelationshipMatrix] Error calculating matrix:", error);
+    console.error("[calculateRelationshipMatrix] Error calculating matrix:", error);
     return {
       emotional: 50,
       communication: 50,
@@ -679,7 +679,7 @@ function calculateRelationshipMatrix(
  * 5. Synastry compatibility scoring (if partner data provided)
  */
 export async function hydrateReportData(input: UserInput): Promise<CalculatedChartData & { user?: CalculatedChartData; partner?: any; matrix_scores?: any; compatibility_score?: number | null; composite?: any }> {
-  logger.info('HYDRATOR INPUT:', JSON.stringify(input, null, 2));
+  console.log('HYDRATOR INPUT:', JSON.stringify(input, null, 2));
   validateInput(input);
 
   const coordinates = await resolveCoordinates(input);
@@ -734,7 +734,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
 
   // Check if partner data exists
   if (hasPartner) {
-    logger.info('Partner Data Found. Calculating...');
+    console.log('Partner Data Found. Calculating...');
     try {
       // Validate partner input
       if (!input.partnerBirthTime) {
@@ -817,7 +817,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
                          matrixScores.stability === 50 && 
                          matrixScores.physical === 50;
       if (allDefaults) {
-        logger.warn(
+        console.warn(
           `[chartHydrator] Matrix scores are all 50 (defaults). ` +
           `This may indicate synastry calculation failed. ` +
           `User chart: ${userChart.sunSign}/${userChart.moonSign}, ` +
@@ -844,7 +844,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
         composite: compositeChart, // Composite chart data for relationship analysis
       } as CalculatedChartData & { user?: CalculatedChartData; partner?: any; matrix_scores?: any; compatibility_score?: number | null; composite?: any };
     } catch (error) {
-      logger.error("[chartHydrator] Error calculating partner chart:", error);
+      console.error("[chartHydrator] Error calculating partner chart:", error);
       // Return user chart only if partner calculation fails (include Essential data)
       return {
         ...userChart, // Spread to include tarot_spread, moon_data, short_transits
@@ -856,7 +856,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
     }
   }
 
-  logger.info('No Partner Data Found. Skipping...');
+  console.log('No Partner Data Found. Skipping...');
   // No partner data - return user chart only (include Essential data)
   return {
     ...userChart, // Spread to include tarot_spread, moon_data, short_transits
@@ -994,7 +994,7 @@ async function geocodeWithGoogle(city: string): Promise<Omit<Coordinates, "sourc
       longitude: lng,
     };
   } catch (error) {
-    logger.warn("[chartHydrator] Google geocoding failed:", error);
+    console.warn("[chartHydrator] Google geocoding failed:", error);
     return null;
   }
 }
@@ -1020,7 +1020,7 @@ async function geocodeWithOpenStreetMap(city: string): Promise<Omit<Coordinates,
       longitude: parseFloat(match.lon),
     };
   } catch (error) {
-    logger.warn("[chartHydrator] OpenStreetMap geocoding failed:", error);
+    console.warn("[chartHydrator] OpenStreetMap geocoding failed:", error);
     return null;
   }
 }
@@ -1217,7 +1217,7 @@ async function calculateHumanDesign(
 
     return bodyGraph;
   } catch (error) {
-    logger.error('[chartHydrator] Error calculating Human Design:', error);
+    console.error('[chartHydrator] Error calculating Human Design:', error);
     return undefined;
   }
 }
@@ -1343,7 +1343,7 @@ async function getCurrentTransitPositions(date: Date = new Date()): Promise<Arra
         longitude: normalizeLongitude(ecliptic.elon),
       });
     } catch (error) {
-      logger.warn(`[chartHydrator] Failed to calculate ${planetName} position:`, error);
+      console.warn(`[chartHydrator] Failed to calculate ${planetName} position:`, error);
     }
   }
 

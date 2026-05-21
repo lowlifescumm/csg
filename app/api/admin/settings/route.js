@@ -40,7 +40,7 @@ export async function GET() {
       try {
         settings[row.key] = JSON.parse(row.value);
       } catch (err) {
-        console.error("[admin/settings] JSON parse error for key", row.key, err);
+        logger.error("[admin/settings] JSON parse error for key", row.key, err);
         settings[row.key] = row.value;
       }
     });

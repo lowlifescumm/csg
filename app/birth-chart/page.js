@@ -12,6 +12,7 @@ function BirthChartPageInner() {
   const [checkingChart, setCheckingChart] = useState(true);
   const [mounted, setMounted] = useState(false);
   const updateMode = searchParams?.get('update') === 'true';
+  const redirect = searchParams?.get('redirect') || null;
 
   useEffect(() => {
     setMounted(true);
@@ -45,13 +46,13 @@ function BirthChartPageInner() {
               }
             } catch (chartError) {
               // Chart check failed, continue to show form
-              logger.info('Chart check failed:', chartError);
+              console.info('Chart check failed:', chartError);
             }
           }
         }
         // No user or no chart - show the form (no redirect to login)
       } catch (error) {
-        logger.info('Auth check failed, showing form anyway:', error);
+        console.info('Auth check failed, showing form anyway:', error);
       } finally {
         setLoading(false);
         setCheckingChart(false);
@@ -91,7 +92,7 @@ function BirthChartPageInner() {
           </p>
         </div>
       </div>
-      <BirthChartForm updateMode={updateMode} user={user} />
+      <BirthChartForm updateMode={updateMode} user={user} redirect={redirect} />
     </div>
   );
 }

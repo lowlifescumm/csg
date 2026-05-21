@@ -15,13 +15,19 @@ import { authOptions } from "@/lib/auth-config";
 // Mock dependencies
 jest.mock("@/lib/db");
 jest.mock("@/lib/auth");
+jest.mock("@/lib/logger", () => ({
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn(),
+}));
 jest.mock("@/lib/auth-config", () => ({
   authOptions: {},
 }));
 
 describe("Meditation API Routes", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   describe("GET /api/meditations", () => {
@@ -138,7 +144,7 @@ describe("Meditation API Routes", () => {
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.xpAwarded).toBe(10); // Short meditation = 10 XP
+      expect(data.xpAwarded).toBe(20); // 180s = medium meditation = 20 XP
       expect(data.totalXP).toBe(10);
     });
 

@@ -1,4 +1,3 @@
-const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getCachedHoroscope, generateDailyHoroscope, saveHoroscope } from '@/lib/horoscope';
 import { getServerSession } from 'next-auth/next';
@@ -62,7 +61,7 @@ export async function GET(request) {
           }
         }
       } catch (error) {
-        logger.error('Error fetching user birth chart:', error);
+        console.error('Error fetching user birth chart:', error);
       }
     }
 
@@ -96,7 +95,7 @@ export async function GET(request) {
       // Save to cache
       await saveHoroscope(sign, horoscopeData.content);
     } catch (error) {
-      logger.error('Error generating horoscope:', error);
+      console.error('Error generating horoscope:', error);
       
       // Fallback to a simple message if generation fails
       return NextResponse.json({
@@ -125,7 +124,7 @@ export async function GET(request) {
       luckyColor
     });
   } catch (error) {
-    logger.error('Horoscope API error:', error);
+    console.error('Horoscope API error:', error);
     return NextResponse.json(
       { 
         success: false,

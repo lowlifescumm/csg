@@ -21,7 +21,7 @@ export default function DailyHoroscope({ userSign = null }) {
         setHoroscope(data.horoscope);
       }
     } catch (error) {
-      logger.error('Failed to load horoscope:', error);
+      console.error('Failed to load horoscope:', error);
     } finally {
       setLoading(false);
     }
