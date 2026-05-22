@@ -36,6 +36,7 @@
     "@pdfme/generator": "^4.4.1",
     "@pinecone-database/pinecone": "^6.1.2",
     "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.8.0",
     "@sparticuz/chromium": "^141.0.0",
     "@stripe/react-stripe-js": "^5.0.0",
     "@stripe/stripe-js": "^8.0.0",
