@@ -27,8 +27,8 @@ jest.mock('@/lib/pdf-utils', () => ({
 }));
 
 jest.mock('@/lib/report-prompts', () => ({
-  getPromptByType: jest.fn(() => 'mock prompt'),
-  getClosingBlessingPrompt: jest.fn(() => 'mock closing prompt'),
+  getPromptByType: jest.fn((type) => `__SECTION__${type}__`),
+  getClosingBlessingPrompt: jest.fn(() => '__SECTION__closing__'),
 }));
 
 jest.mock('@/lib/logger', () => ({
@@ -146,6 +146,29 @@ function getSectionText(section) {
 }
 
 // ---------------------------------------------------------------------------
+// Mock helper: maps section type (from __SECTION__{type}__ in prompt) to content
+// ---------------------------------------------------------------------------
+function buildGenerateTextMock(sectionContent) {
+  const defaults = {
+    birth_chart: 'Welcome Alex. Your Sun is in Gemini, Moon in Virgo...',
+    compatibility: 'Your compatibility with Jordan...',
+    transit_forecast_extended: 'Your extended forecast...',
+    saturn_return: 'Your annual forecast...',
+    midlife_transits: 'Your annual forecast...',
+    annual_forecast: 'Your annual forecast...',
+    relationship_matrix: 'Your relationship matrix...',
+    karmic_reading: 'Your karmic reading...',
+    closing: 'May the stars guide you...',
+  };
+  const merged = { ...defaults, ...sectionContent };
+  generateText.mockImplementation((prompt) => {
+    const match = prompt.match(/__SECTION__(\w+)__/);
+    const sectionType = match ? match[1] : 'default';
+    return merged[sectionType] || `Default content for ${sectionType}`;
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
@@ -159,14 +182,9 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   // -------------------------------------------------------------------------
   test('validator catches a mismatched Sun sign in birth chart narrative', async () => {
     // AI returns a Sun sign that contradicts the chart wheel (wheel says Gemini)
-    generateText
-      .mockResolvedValueOnce('Welcome Alex. Your Sun is in Taurus...') // birth_chart (wrong Sun)
-      .mockResolvedValueOnce('Your compatibility with Jordan...')       // compatibility
-      .mockResolvedValueOnce('Your extended forecast...')               // transit
-      .mockResolvedValueOnce('Your annual forecast...')                 // destiny/annual
-      .mockResolvedValueOnce('Your relationship matrix...')            // relationship_matrix
-      .mockResolvedValueOnce('Your karmic reading...')                // karmic
-      .mockResolvedValueOnce('May the stars guide you...');           // closing
+    buildGenerateTextMock({
+      birth_chart: 'Welcome Alex. Your Sun is in Taurus...', // wrong Sun
+    });
 
     const result = await generatePremiumReport('MASTER', baseData);
 
@@ -191,14 +209,7 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   });
 
   test('passes when birth chart narrative matches chart wheel placements', async () => {
-    generateText
-      .mockResolvedValueOnce('Welcome Alex. Your Sun is in Gemini, Moon in Virgo...')
-      .mockResolvedValueOnce('Your compatibility with Jordan...')
-      .mockResolvedValueOnce('Your extended forecast...')
-      .mockResolvedValueOnce('Your annual forecast...')
-      .mockResolvedValueOnce('Your relationship matrix...')
-      .mockResolvedValueOnce('Your karmic reading...')
-      .mockResolvedValueOnce('May the stars guide you...');
+    buildGenerateTextMock();
 
     const result = await generatePremiumReport('MASTER', baseData);
     const birthText = getSectionText(getSection(result.sections, 'birth_chart'));
@@ -212,14 +223,10 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   test('validator catches contradictory transit dates across forecast sections', async () => {
     // Extended Transit says Jupiter conjunct Sun on July 15
     // Annual Forecast says the SAME transit on August 1 (contradiction)
-    generateText
-      .mockResolvedValueOnce('Welcome Alex. Your Sun is in Gemini...')
-      .mockResolvedValueOnce('Your compatibility with Jordan...')
-      .mockResolvedValueOnce('On July 15, 2026, transiting Jupiter conjuncts your natal Sun...') // transit
-      .mockResolvedValueOnce('On August 1, 2026, transiting Jupiter conjuncts your natal Sun...') // annual (contradiction)
-      .mockResolvedValueOnce('Your relationship matrix...')
-      .mockResolvedValueOnce('Your karmic reading...')
-      .mockResolvedValueOnce('May the stars guide you...');
+    buildGenerateTextMock({
+      transit_forecast_extended: 'On July 15, 2026, transiting Jupiter conjuncts your natal Sun...',
+      saturn_return: 'On August 1, 2026, transiting Jupiter conjuncts your natal Sun...', // contradiction
+    });
 
     const result = await generatePremiumReport('MASTER', baseData);
 
@@ -247,14 +254,10 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   });
 
   test('passes when transit dates are consistent across forecast sections', async () => {
-    generateText
-      .mockResolvedValueOnce('Welcome Alex. Your Sun is in Gemini...')
-      .mockResolvedValueOnce('Your compatibility with Jordan...')
-      .mockResolvedValueOnce('On July 15, 2026, transiting Jupiter conjuncts your natal Sun...')
-      .mockResolvedValueOnce('On July 15, 2026, transiting Jupiter continues its conjunction to your Sun...')
-      .mockResolvedValueOnce('Your relationship matrix...')
-      .mockResolvedValueOnce('Your karmic reading...')
-      .mockResolvedValueOnce('May the stars guide you...');
+    buildGenerateTextMock({
+      transit_forecast_extended: 'On July 15, 2026, transiting Jupiter conjuncts your natal Sun...',
+      saturn_return: 'On July 15, 2026, transiting Jupiter continues its conjunction to your Sun...',
+    });
 
     const result = await generatePremiumReport('MASTER', baseData);
     const transitText = getSectionText(getSection(result.sections, 'transit'));
@@ -267,14 +270,9 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   // 3. Karmic Nodal Axis alignment with birth chart
   // -------------------------------------------------------------------------
   test('validator catches a mismatched North Node sign in karmic section', async () => {
-    generateText
-      .mockResolvedValueOnce('Welcome Alex. Your Sun is in Gemini...')
-      .mockResolvedValueOnce('Your compatibility with Jordan...')
-      .mockResolvedValueOnce('Your extended forecast...')
-      .mockResolvedValueOnce('Your annual forecast...')
-      .mockResolvedValueOnce('Your relationship matrix...')
-      .mockResolvedValueOnce('Your North Node is in Pisces in the 12th House...') // wrong sign & house
-      .mockResolvedValueOnce('May the stars guide you...');
+    buildGenerateTextMock({
+      karmic_reading: 'Your North Node is in Pisces in the 12th House...', // wrong sign & house
+    });
 
     const result = await generatePremiumReport('MASTER', baseData);
 
@@ -297,14 +295,9 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   });
 
   test('passes when karmic section aligns with chart wheel nodal axis', async () => {
-    generateText
-      .mockResolvedValueOnce('Welcome Alex. Your Sun is in Gemini...')
-      .mockResolvedValueOnce('Your compatibility with Jordan...')
-      .mockResolvedValueOnce('Your extended forecast...')
-      .mockResolvedValueOnce('Your annual forecast...')
-      .mockResolvedValueOnce('Your relationship matrix...')
-      .mockResolvedValueOnce('Your North Node is in Aquarius in the 11th House...')
-      .mockResolvedValueOnce('May the stars guide you...');
+    buildGenerateTextMock({
+      karmic_reading: 'Your North Node is in Aquarius in the 11th House...',
+    });
 
     const result = await generatePremiumReport('MASTER', baseData);
     const karmicText = getSectionText(getSection(result.sections, 'karmic'));
