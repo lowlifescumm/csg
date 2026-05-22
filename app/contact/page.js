@@ -3,6 +3,7 @@ const logger = require('../../lib/logger');
 import { useState } from "react";
 import Link from "next/link";
 import { Mail, Send, ArrowLeft, MessageSquare, CheckCircle } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -19,23 +20,10 @@ export default function ContactPage() {
     setStatus("");
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus("success");
-        setFormData({ name: "", email: "", message: "" });
-        setTimeout(() => setStatus(""), 5000);
-      } else {
-        setStatus("error");
-      }
+      await apiClient.post("/api/contact", formData);
+      setStatus("success");
+      setFormData({ name: "", email: "", message: "" });
+      setTimeout(() => setStatus(""), 5000);
     } catch (error) {
       console.error("Contact form error:", error);
       setStatus("error");

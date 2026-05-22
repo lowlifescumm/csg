@@ -1,16 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
 
-/**
- * DashboardShell - Top-level component that fetches and provides dashboard data
- * 
- * Fetches:
- * - User profile from /api/auth/user
- * - Credits from /api/credits
- * - Reading history from /api/readings
- * - Streak from /api/streak (optional, handles gracefully if missing)
- */
 export default function DashboardShell({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
@@ -25,7 +17,6 @@ export default function DashboardShell({ children }) {
     fetchDashboardData();
   }, []);
 
-  // Utility function to recursively clean empty objects
   const cleanEmptyObjects = (obj) => {
     if (obj === null || obj === undefined) return null;
     if (typeof obj !== 'object') return obj;
@@ -54,25 +45,12 @@ export default function DashboardShell({ children }) {
     return cleaned;
   };
 
-  const safeJson = async (response, label) => {
-    try {
-      return await response.json();
-    } catch (error) {
-      console.error(`[DashboardShell] Failed to parse ${label} response:`, error);
-      return null;
-    }
-  };
-
   const fetchDashboardData = async () => {
     try {
       setError(null);
       
       // Fetch user profile
-      const userRes = await fetch("/api/auth/user", { credentials: 'include' });
-      if (!userRes.ok) {
-        throw new Error(`User fetch failed with status ${userRes.status}`);
-      }
-      const userData = await safeJson(userRes, 'user profile');
+      const userData = await apiClient.get("/api/auth/user");
       if (!userData || !userData.user) {
         console.warn("[DashboardShell] No authenticated user returned, redirecting to login");
         router.replace("/login?redirect=dashboard&message=save-readings");
@@ -82,30 +60,29 @@ export default function DashboardShell({ children }) {
       setUser(userData.user);
 
       // Fetch credits
-      const creditsRes = await fetch("/api/credits", { credentials: 'include' });
-      if (creditsRes.ok) {
-        const creditsData = await safeJson(creditsRes, 'credits');
+      try {
+        const creditsData = await apiClient.get("/api/credits");
         const cleanedCredits = cleanEmptyObjects(creditsData);
         setCredits(cleanedCredits);
+      } catch (credErr) {
+        console.log("Credits endpoint not available:", credErr);
       }
 
       // Fetch readings
-      const readingsRes = await fetch("/api/readings", { credentials: 'include' });
-      if (readingsRes.ok) {
-        const readingsData = await safeJson(readingsRes, 'readings');
+      try {
+        const readingsData = await apiClient.get("/api/readings");
         const cleanedReadings = cleanEmptyObjects(readingsData);
         setReadings(cleanedReadings);
+      } catch (readErr) {
+        console.log("Readings endpoint not available:", readErr);
       }
 
       // Fetch streak (optional - gracefully handles if endpoint doesn't exist)
       try {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const streakRes = await fetch(`/api/streak?timezone=${encodeURIComponent(timezone)}`, { credentials: 'include' });
-        if (streakRes.ok) {
-          const streakData = await safeJson(streakRes, 'streak');
-          const cleanedStreak = cleanEmptyObjects(streakData);
-          setStreak(cleanedStreak);
-        }
+        const streakData = await apiClient.get(`/api/streak?timezone=${encodeURIComponent(timezone)}`);
+        const cleanedStreak = cleanEmptyObjects(streakData);
+        setStreak(cleanedStreak);
       } catch (streakError) {
         // Streak endpoint is optional, continue if it fails
         console.log("Streak endpoint not available:", streakError);
@@ -113,13 +90,10 @@ export default function DashboardShell({ children }) {
 
       // Fetch moon phase (optional - gracefully handles if endpoint doesn't exist)
       try {
-        const moonRes = await fetch("/api/moon-phase", { credentials: 'include' });
-        if (moonRes.ok) {
-          const moonData = await safeJson(moonRes, 'moon phase');
-          if (moonData.success && moonData.data) {
-            const cleanedMoonPhase = cleanEmptyObjects(moonData.data);
-            setMoonPhase(cleanedMoonPhase);
-          }
+        const moonData = await apiClient.get("/api/moon-phase");
+        if (moonData.success && moonData.data) {
+          const cleanedMoonPhase = cleanEmptyObjects(moonData.data);
+          setMoonPhase(cleanedMoonPhase);
         }
       } catch (moonError) {
         // Moon phase endpoint is optional, continue if it fails

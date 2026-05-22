@@ -1,13 +1,16 @@
 'use client';
-const logger = require('../lib/logger');
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
+import { useToast } from '@/components/ui';
 import { ArrowRight, Heart, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import BirthChartWheel from './BirthChartWheel';
 
 export default function BirthChartForm({ updateMode = false, user = null, redirect = null }) {
   const router = useRouter();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     birthDate: '',
     birthTime: '',
@@ -18,24 +21,101 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
   const [errors, setErrors] = useState({});
   const [coordinates, setCoordinates] = useState(null);
   const [chart, setChart] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [needsTempChart, setNeedsTempChart] = useState(false);
+  const [submitVersion, setSubmitVersion] = useState(0);
+
+  const { loading: isSubmitting } = useApiClientWithToast(
+    apiClient,
+    (c) => c.post('/api/birth-chart', {
+      date: formData.birthDate,
+      time: formData.birthTime,
+      location: formData.location,
+      latitude: coordinates?.latitude,
+      longitude: coordinates?.longitude,
+      generateInterpretation: false,
+      ...(user ? { userId: user.id } : {}),
+    }, { timeout: 90_000 }),
+    [submitVersion, formData, coordinates, user],
+    {
+      enabled: submitVersion > 0,
+      onSuccess: (data) => {
+        setSubmitVersion(0);
+        if (data.success) {
+          if (!user) {
+            sessionStorage.setItem('anonymousEssentialReport', JSON.stringify({
+              chart: data.chart,
+              birthInfo: {
+                date: formData.birthDate,
+                time: formData.birthTime,
+                location: formData.location,
+                latitude: coordinates?.latitude,
+                longitude: coordinates?.longitude,
+              },
+              timestamp: Date.now(),
+            }));
+            router.push(redirect || '/reports/essential');
+            return;
+          }
+          setChart(data.chart);
+        } else {
+          alert(data.error || 'Failed to generate chart');
+        }
+      },
+      onErrorWithToast: (error) => {
+        setSubmitVersion(0);
+        if (error.status === 401) {
+          setNeedsTempChart(true);
+          return false;
+        }
+        return 'Failed to generate chart. Check your connection.';
+      },
+    },
+  );
+
+  useEffect(() => {
+    if (needsTempChart && formData.birthDate && coordinates) {
+      const genTemp = async () => {
+        try {
+          const tempChart = await generateTemporaryChart({
+            date: formData.birthDate,
+            time: formData.birthTime,
+            location: formData.location,
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+          });
+          sessionStorage.setItem('anonymousEssentialReport', JSON.stringify({
+            chart: tempChart,
+            birthInfo: {
+              date: formData.birthDate,
+              time: formData.birthTime,
+              location: formData.location,
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude,
+            },
+            timestamp: Date.now(),
+          }));
+          router.push(redirect || '/reports/essential');
+        } catch (err) {
+          console.error('Error generating temp chart:', err);
+          toast.error('Failed to generate chart. Check your connection.');
+        }
+      };
+      genTemp();
+      setNeedsTempChart(false);
+    }
+  }, [needsTempChart, formData, coordinates, redirect, router, toast]);
   const [locationError, setLocationError] = useState('');
   const [showManualEntry, setShowManualEntry] = useState(false);
 
-  useEffect(() => {
-    if (updateMode && user) {
-      loadExistingChart();
-    }
-  }, [updateMode, user]);
-  
-  const loadExistingChart = async () => {
-    try {
-      const response = await fetch('/api/birth-chart');
-      if (response.ok) {
-        const data = await response.json();
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/birth-chart'),
+    [updateMode, user],
+    {
+      enabled: !!updateMode && !!user,
+      onSuccess: (data) => {
         if (data.hasChart && data.birthInfo) {
-          // Pre-fill form with existing chart data
           setFormData({
             birthDate: data.birthInfo.date || '',
             birthTime: data.birthInfo.time || '',
@@ -50,11 +130,10 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
             });
           }
         }
-      }
-    } catch (error) {
-      console.error('Error loading existing chart:', error);
-    }
-  };
+      },
+      toastMessages: { error: 'Could not load your birth chart.' },
+    },
+  );
 
   // Validation function for birth date
   const validateDate = (dateStr) => {
@@ -165,85 +244,10 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
     setLocationError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
-    setLoading(true);
-    
-    try {
-      // Build request body
-      const requestBody = {
-        date: formData.birthDate,
-        time: formData.birthTime,
-        location: formData.location,
-        latitude: coordinates.latitude,
-        longitude: coordinates.longitude,
-        generateInterpretation: false
-      };
-
-      // If user is logged in, include their info
-      if (user) {
-        requestBody.userId = user.id;
-      }
-
-      const response = await fetch('/api/birth-chart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        if (!user) {
-          // Anonymous user: store preview in sessionStorage and redirect to Essential Report
-          sessionStorage.setItem('anonymousEssentialReport', JSON.stringify({
-            chart: data.chart,
-            birthInfo: {
-              date: formData.birthDate,
-              time: formData.birthTime,
-              location: formData.location,
-              latitude: coordinates.latitude,
-              longitude: coordinates.longitude
-            },
-            timestamp: Date.now()
-          }));
-          router.push(redirect || '/reports/essential');
-          return;
-        }
-        setChart(data.chart);
-      } else if (response.status === 401) {
-        // Fallback: anonymous user hit auth wall — store manually and redirect
-        const tempChart = await generateTemporaryChart({
-          date: formData.birthDate,
-          time: formData.birthTime,
-          location: formData.location,
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude
-        });
-        sessionStorage.setItem('anonymousEssentialReport', JSON.stringify({
-          chart: tempChart,
-          birthInfo: {
-            date: formData.birthDate,
-            time: formData.birthTime,
-            location: formData.location,
-            latitude: coordinates.latitude,
-            longitude: coordinates.longitude
-          },
-          timestamp: Date.now()
-        }));
-        router.push(redirect || '/reports/essential');
-        return;
-      } else {
-        alert(data.error || 'Failed to generate chart');
-      }
-    } catch (error) {
-      console.error('Error generating chart:', error);
-      alert('Failed to generate chart. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    setSubmitVersion(v => v + 1);
   };
 
   // Generate a temporary chart for preview (client-side calculation)
@@ -645,10 +649,10 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
 
           <button
             type="submit"
-            disabled={loading || !coordinates}
+            disabled={isSubmitting || !coordinates}
             className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-lg"
           >
-            {loading ? 'Creating Your Chart...' : 'Generate My Free Birth Chart'}
+            {isSubmitting ? 'Creating Your Chart...' : 'Generate My Free Birth Chart'}
           </button>
           <p className="text-center text-sm text-cosmic-purple font-medium">✓ No credit card required • Instant results • Save for free</p>
         </div>

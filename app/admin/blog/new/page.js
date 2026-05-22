@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, Eye, Calendar, Tag, Image, FileText } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function NewBlogPostPage() {
   const router = useRouter();
@@ -32,15 +33,10 @@ export default function NewBlogPostPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
-      if (response.ok && data.user) {
-        setUser(data.user);
-        if (data.user.role !== 'admin') {
-          window.location.href = '/dashboard';
-        }
-      } else {
-        window.location.href = '/login';
+      const data = await apiClient.get('/api/auth/user');
+      setUser(data.user);
+      if (data.user.role !== 'admin') {
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -57,23 +53,15 @@ export default function NewBlogPostPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-      
-      if (response.ok && data.url) {
+      const data = await apiClient.post('/api/upload/image', formData);
+      if (data.url) {
         setPost(prev => ({ ...prev, featured_image: data.url }));
       } else {
-        console.error('Upload failed:', data);
-        alert('Failed to upload image: ' + (data.error || 'Unknown error') + (data.details ? ' - ' + data.details : ''));
+        alert('Failed to upload image: Unknown error');
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload image: ' + error.message);
+      alert('Failed to upload image: ' + (error.message || ''));
     } finally {
       setUploadingImage(false);
     }
@@ -117,26 +105,13 @@ export default function NewBlogPostPage() {
         return;
       }
 
-      const response = await fetch('/api/blog', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...post,
-          status,
-          author_id: user.id
-        }),
+      const data = await apiClient.post('/api/blog', {
+        ...post,
+        status,
+        author_id: user.id
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        alert('Blog post saved successfully!');
-        router.push('/admin/blog');
-      } else {
-        console.error('Failed to save post:', data.error);
-        alert('Failed to save post: ' + (data.error || 'Unknown error'));
-      }
+      alert('Blog post saved successfully!');
+      router.push('/admin/blog');
     } catch (error) {
       console.error('Failed to save post:', error);
       alert('Failed to save post: ' + error.message);

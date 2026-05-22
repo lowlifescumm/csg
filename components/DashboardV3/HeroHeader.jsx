@@ -1,8 +1,8 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Moon, CreditCard, Zap, Crown, X } from "lucide-react";
 import Link from "next/link";
+import { apiClient } from '@/lib/api-client';
 
 // Credit packs matching the existing system
 const creditPacks = [
@@ -28,18 +28,16 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch moon phase if not provided
   useEffect(() => {
     const validMoonPhase = propMoonPhase && typeof propMoonPhase === 'object' && Object.keys(propMoonPhase).length > 0;
     if (!validMoonPhase) {
-      fetch("/api/moon-phase")
-        .then(res => res.json())
+      apiClient.get("/api/moon-phase")
         .then(data => {
           if (data.success && data.data && typeof data.data === 'object' && Object.keys(data.data).length > 0) {
             setMoonPhase(data.data);
           }
         })
-        .catch(err => console.error("Failed to fetch moon phase:", err));
+        .catch(() => {});
     } else {
       setMoonPhase(propMoonPhase);
     }

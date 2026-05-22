@@ -3,6 +3,7 @@ const logger = require('../../lib/logger');
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
 
 export default function NewsletterPage() {
   const router = useRouter();
@@ -23,16 +24,9 @@ export default function NewsletterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        setSuccess(data.message || "You’re in! Check your email for your guide.");
+      const data = await apiClient.post("/api/newsletter", formData);
+      if (data.success) {
+        setSuccess(data.message || "You're in! Check your email for your guide.");
         if (data.downloadUrl) {
           setDownloadUrl(data.downloadUrl);
         }

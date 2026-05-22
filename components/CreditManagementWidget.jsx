@@ -1,7 +1,7 @@
 "use client";
-const logger = require('../lib/logger');
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api-client';
 
 const CreditManagementWidget = () => {
   const [userStats, setUserStats] = useState(null);
@@ -13,10 +13,9 @@ const CreditManagementWidget = () => {
 
   const fetchUserStats = async () => {
     try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
+      const data = await apiClient.get('/api/auth/user');
       
-      if (response.ok && data.user) {
+      if (data.user) {
         setUserStats({
           credits: data.user.credits || 0,
           status: data.user.role === 'admin' ? 'Admin' : (data.user.subscription_status === 'active' ? 'Premium' : 'Free')

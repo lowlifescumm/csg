@@ -1,4 +1,3 @@
-const logger = require('../../../../lib/logger');
 /**
  * Forecast Generation Cron Job
  * 
@@ -11,6 +10,7 @@ const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { generateForecast, saveForecast, getForecastPreferences } from '@/lib/forecast-engine.js';
 import { pool } from '@/lib/db.js';
+import logger from '@/lib/logger.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,8 +90,84 @@ async function generateForecastForUser(user, date) {
 }
 
 /**
+ * Get users with weekly forecast delivery cadence
+ */
+async function getActiveWeeklyUsers() {
+  const result = await pool.query(`
+    SELECT DISTINCT u.id, u.email, u.role, u.stripe_subscription_id,
+           fp.delivery_cadence, fp.tone, fp.default_length, fp.topics,
+           fp.include_actions, fp.ai_rewrite_enabled
+    FROM users u
+    LEFT JOIN forecast_preferences fp ON fp.user_id = u.id
+    WHERE (
+      EXISTS (SELECT 1 FROM natal_charts WHERE user_id = u.id AND is_primary = true)
+      OR EXISTS (SELECT 1 FROM birth_charts WHERE user_id = u.id)
+    )
+    AND fp.delivery_cadence = 'weekly'
+    AND (u.role = 'admin' OR u.stripe_subscription_id IS NOT NULL AND u.stripe_subscription_id != '')
+    ORDER BY u.id
+  `);
+  return result.rows;
+}
+
+/**
+ * Get the Monday of the current week
+ */
+function getMondayOfWeek(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/**
+ * Generate weekly forecast for a single user
+ */
+async function generateWeeklyForecastForUser(user, weekStartStr) {
+  try {
+    logger.info(`[${user.id}] Generating weekly forecast for ${user.email}...`);
+    
+    const existing = await pool.query(
+      'SELECT id FROM forecasts WHERE user_id = $1 AND forecast_date = $2 AND forecast_type = $3',
+      [user.id, weekStartStr, 'weekly']
+    );
+    
+    if (existing.rows.length > 0) {
+      logger.info(`[${user.id}] Weekly forecast already exists, skipping`);
+      return { status: 'skipped', reason: 'already_exists' };
+    }
+    
+    const prefs = await getForecastPreferences(user.id);
+    
+    const isAdmin = user.role === 'admin';
+    const isPremium = user.stripe_subscription_id !== null && user.stripe_subscription_id !== '';
+    const aiRewrite = (isAdmin || isPremium) && prefs.ai_rewrite_enabled;
+    
+    const forecast = await generateForecast(user.id, weekStartStr, {
+      type: 'weekly',
+      length: prefs.default_length,
+      tone: prefs.tone,
+      topics: prefs.topics,
+      includeActions: prefs.include_actions,
+      aiRewrite,
+    });
+    
+    const forecastId = await saveForecast(forecast);
+    
+    logger.info(`[${user.id}] ✓ Weekly forecast generated successfully (ID: ${forecastId})`);
+    
+    return { status: 'success', forecastId };
+  } catch (error) {
+    logger.error(`[${user.id}] ✗ Error generating weekly forecast:`, error.message);
+    return { status: 'error', error: error.message };
+  }
+}
+
+/**
  * GET /api/cron/generate-forecasts
- * Run the daily forecast generation service
+ * Run the daily forecast generation service (and weekly on Mondays)
  * 
  * Headers:
  * - Authorization: Bearer <CRON_SECRET>
@@ -142,26 +218,16 @@ export async function GET(req) {
       }, { status: 401 });
     }
 
-    // Get today's date
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
+    
+    // ===== DAILY FORECASTS =====
     logger.info('[Cron] Starting daily forecast generation...');
     logger.info(`[Cron] Generating forecasts for: ${dateStr}`);
     
-    // Get active users
     const users = await getActiveUsers();
-    logger.info(`[Cron] Found ${users.length} active users`);
+    logger.info(`[Cron] Found ${users.length} active daily users`);
     
-    if (users.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: 'No users to process',
-        count: 0,
-        duration: ((Date.now() - startTime) / 1000).toFixed(2)
-      });
-    }
-    
-    // Process in batches
     const results = {
       success: 0,
       skipped: 0,
@@ -171,36 +237,71 @@ export async function GET(req) {
     
     for (let i = 0; i < users.length; i += BATCH_SIZE) {
       const batch = users.slice(i, i + BATCH_SIZE);
-      logger.info(`[Cron] Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(users.length / BATCH_SIZE)}`);
+      logger.info(`[Cron] Processing daily batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(users.length / BATCH_SIZE)}`);
       
-      // Process batch in parallel
       const promises = batch.map(user => generateForecastForUser(user, dateStr));
       const batchResults = await Promise.all(promises);
       
-      // Tally results
       batchResults.forEach(result => {
         results[result.status]++;
       });
       
-      // Delay between batches (rate limiting)
       if (i + BATCH_SIZE < users.length) {
         await sleep(DELAY_MS);
       }
     }
     
-    // Summary
+    // ===== WEEKLY FORECASTS (Mondays only) =====
+    const isMonday = today.getDay() === 1;
+    const weeklyResults = { success: 0, skipped: 0, error: 0, total: 0 };
+    
+    if (isMonday) {
+      const weekStart = getMondayOfWeek(today);
+      const weekStartStr = weekStart.toISOString().split('T')[0];
+      
+      logger.info(`[Cron] Today is Monday — starting weekly forecast generation for week of ${weekStartStr}...`);
+      
+      const weeklyUsers = await getActiveWeeklyUsers();
+      weeklyResults.total = weeklyUsers.length;
+      logger.info(`[Cron] Found ${weeklyUsers.length} active weekly users`);
+      
+      for (let i = 0; i < weeklyUsers.length; i += BATCH_SIZE) {
+        const batch = weeklyUsers.slice(i, i + BATCH_SIZE);
+        logger.info(`[Cron] Processing weekly batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(weeklyUsers.length / BATCH_SIZE)}`);
+        
+        const promises = batch.map(user => generateWeeklyForecastForUser(user, weekStartStr));
+        const batchResults = await Promise.all(promises);
+        
+        batchResults.forEach(result => {
+          weeklyResults[result.status]++;
+        });
+        
+        if (i + BATCH_SIZE < weeklyUsers.length) {
+          await sleep(DELAY_MS);
+        }
+      }
+      
+      logger.info('[Cron] === Weekly Forecast Generation Summary ===');
+      logger.info(`[Cron] Weekly total: ${weeklyResults.total}`);
+      logger.info(`[Cron] ✓ Success: ${weeklyResults.success}`);
+      logger.info(`[Cron] ⊘ Skipped: ${weeklyResults.skipped}`);
+      logger.info(`[Cron] ✗ Errors: ${weeklyResults.error}`);
+    } else {
+      logger.info(`[Cron] Today is not Monday (day ${today.getDay()}), skipping weekly forecast generation`);
+    }
+    
+    // Combined summary
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    logger.info('[Cron] === Forecast Generation Summary ===');
-    logger.info(`[Cron] Total users: ${results.total}`);
-    logger.info(`[Cron] ✓ Success: ${results.success}`);
-    logger.info(`[Cron] ⊘ Skipped: ${results.skipped}`);
-    logger.info(`[Cron] ✗ Errors: ${results.error}`);
+    logger.info('[Cron] === Combined Forecast Generation Summary ===');
+    logger.info(`[Cron] Daily — Total: ${results.total}, Success: ${results.success}, Skipped: ${results.skipped}, Errors: ${results.error}`);
+    logger.info(`[Cron] Weekly — Total: ${weeklyResults.total}, Success: ${weeklyResults.success}, Skipped: ${weeklyResults.skipped}, Errors: ${weeklyResults.error}`);
     logger.info(`[Cron] Duration: ${duration}s`);
 
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
-      results,
+      daily: results,
+      weekly: weeklyResults,
       duration: `${duration}s`
     });
 

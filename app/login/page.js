@@ -5,6 +5,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { apiClient } from "@/lib/api-client";
 
 export const dynamic = 'force-dynamic';
 
@@ -76,21 +77,12 @@ function LoginPageContent({ router, searchParams }) {
     setLoading(true);
     try {
       const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        router.push(returnUrl);
-        router.refresh();
-      } else {
-        setError(data.error || "Something went wrong");
-      }
+      const data = await apiClient.post(endpoint, formData);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      router.push(returnUrl);
+      router.refresh();
     } catch (err) {
-      setError("Failed to connect to server. Please check your connection and try again.");
+      setError(err.message || "Failed to connect to server. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }

@@ -1,12 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Moon, Sparkles, Calendar, Heart, Briefcase, Droplet, Star, ChevronRight, RefreshCw, X } from 'lucide-react';
+import { Moon, Sparkles, Calendar, Heart, Briefcase, Droplet, Star, ChevronRight, X } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { SUBSCRIPTION_TIERS } from '@/lib/pricing';
 import LowCreditsUpsellBanner from '@/components/LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
 import logger from "@/lib/logger";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
+import { useToast } from '@/components/ui';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -14,8 +17,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
  * Fetch moon phase data from API
  */
 async function fetchMoonPhaseData() {
-  const response = await fetch('/api/moon-phase');
-  const result = await response.json();
+  const result = await apiClient.get('/api/moon-phase');
   
   if (!result.success || !result.data) {
     throw new Error(result.error || 'Failed to fetch moon phase data');
@@ -177,6 +179,7 @@ function CheckoutForm({ paymentType, formData, onSuccess }) {
 }
 
 export default function PersonalizedMoonReading() {
+  const toast = useToast();
   const [step, setStep] = useState('intro');
   const [formData, setFormData] = useState({
     name: '',
@@ -189,45 +192,46 @@ export default function PersonalizedMoonReading() {
   const [clientSecret, setClientSecret] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
-  const [checkingAccess, setCheckingAccess] = useState(true);
   const [creditsRemaining, setCreditsRemaining] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [showFloatingPrompt, setShowFloatingPrompt] = useState(false);
 
-  useEffect(() => {
-    checkPremiumAccess();
-  }, []);
+  const { loading: checkingAccess } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/auth/user'),
+    [],
+    {
+      onSuccess: (data) => {
+        if (data.user) {
+          const isAdmin = data.user.role === 'admin';
+          const hasSubscription = data.user.stripe_subscription_id && data.user.stripe_subscription_id.length > 0;
+          const access = isAdmin || hasSubscription;
+          setHasAccess(access);
+          setIsPremium(hasSubscription);
+        }
+      },
+      onErrorWithToast: () => false,
+    },
+  );
 
-  const checkPremiumAccess = async () => {
-    try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
-      
-      console.info('User data:', data.user);
-      
-      if (data.user) {
-        const isAdmin = data.user.role === 'admin';
-        const hasSubscription = data.user.stripe_subscription_id && data.user.stripe_subscription_id.length > 0;
-        const access = isAdmin || hasSubscription;
-        console.info('Premium access check:', { isAdmin, hasSubscription, access });
-        setHasAccess(access);
-        setIsPremium(hasSubscription);
-      }
-      
-      // Also check credits
-      const creditRes = await fetch('/api/credits');
-      const creditData = await creditRes.json();
-      if (creditRes.ok && creditData.isPremium) {
-        setCreditsRemaining(creditData.credits?.moon_reading?.remaining || 0);
-      } else {
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/credits'),
+    [],
+    {
+      onSuccess: (creditData) => {
+        if (creditData.isPremium) {
+          setCreditsRemaining(creditData.credits?.moon_reading?.remaining || 0);
+        } else {
+          setCreditsRemaining(0);
+        }
+      },
+      onErrorWithToast: () => {
         setCreditsRemaining(0);
-      }
-    } catch (error) {
-      console.error('Error checking access:', error);
-    } finally {
-      setCheckingAccess(false);
-    }
-  };
+        return false;
+      },
+    },
+  );
 
   const handleDirectGenerate = async () => {
     if (!formData.name || !formData.birthDate || !formData.currentFocus) {
@@ -242,7 +246,7 @@ export default function PersonalizedMoonReading() {
       setStep('reading');
     } catch (error) {
       console.error('Error generating reading:', error);
-      alert('Failed to generate reading. Please try again.');
+      toast.error('Failed to generate reading. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -262,15 +266,7 @@ export default function PersonalizedMoonReading() {
         ? '/api/create-payment-intent' 
         : '/api/create-subscription';
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
-      });
-
-      const data = await response.json();
+      const data = await apiClient.post(endpoint, {});
       
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
@@ -282,7 +278,7 @@ export default function PersonalizedMoonReading() {
       }
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Failed to initialize payment. Please try again.');
+      toast.error('Failed to initialize payment. Please try again.');
       setStep('intro');
     } finally {
       setIsLoading(false);
@@ -291,30 +287,21 @@ export default function PersonalizedMoonReading() {
 
   const handlePaymentSuccess = async (paymentIntentId) => {
     try {
-      const response = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ paymentIntentId })
-      });
-
-      const data = await response.json();
+      const data = await apiClient.post('/api/verify-payment', { paymentIntentId });
       
       if (data.success && data.status === 'succeeded') {
         sessionStorage.removeItem('pendingPaymentIntentId');
-        // Fetch live moon data instead of using mock
         const moonData = await fetchMoonPhaseData();
         const mappedReading = mapMoonDataToReading(moonData, formData);
         setReading(mappedReading);
         setStep('reading');
       } else {
-        alert('Payment verification failed. Please contact support.');
+        toast.error('Payment verification failed. Please contact support.');
         setStep('intro');
       }
     } catch (error) {
       console.error('Verification error:', error);
-      alert('Payment verification failed. Please contact support.');
+      toast.error('Payment verification failed. Please contact support.');
       setStep('intro');
     }
   };

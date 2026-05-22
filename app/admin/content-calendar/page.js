@@ -9,6 +9,7 @@ import {
   BarChart3, Target, Eye, TrendingUp, CalendarDays,
   ArrowLeft, RefreshCw, Wifi, WifiOff, Zap, X
 } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 const WORKFLOW_STEPS = [
   { key: 'research',       label: 'Research',      color: 'bg-blue-500' },
@@ -344,15 +345,10 @@ export default function ContentCalendarPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
-      if (response.ok && data.user) {
-        setUser(data.user);
-        if (data.user.role !== 'admin') {
-          window.location.href = '/dashboard';
-        }
-      } else {
-        window.location.href = '/login';
+      const data = await apiClient.get('/api/auth/user');
+      setUser(data.user);
+      if (data.user.role !== 'admin') {
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -366,37 +362,30 @@ export default function ContentCalendarPage() {
         console.warn('NEXT_PUBLIC_ADMIN_API_KEY not set');
         return;
       }
-      const response = await fetch(`/api/paperclip/status`, {
+      const data = await apiClient.get(`/api/paperclip/status`, {
         headers: { 'x-api-key': apiKey },
-        cache: 'no-store',
       });
-      if (response.ok) {
-        const data = await response.json();
-        setPaperclipStatus(data);
-        if (data.calendar) {
-          setCalendar(prev => {
-            // Merge: update existing items, add new ones
-            const merged = [...prev];
-            for (const newItem of data.calendar) {
-              const idx = merged.findIndex(c => c.id === newItem.id);
-              if (idx >= 0) {
-              // Deep merge workflow steps
-                const existingSteps = merged[idx].workflow_steps || [];
-                const newSteps = newItem.workflow_steps || [];
-                const stepMap = {};
-                [...existingSteps, ...newSteps].forEach(s => { stepMap[s.step_name] = s; });
-                merged[idx] = { ...merged[idx], ...newItem, workflow_steps: Object.values(stepMap) };
-              } else {
-                merged.push(newItem);
-              }
+      setPaperclipStatus(data);
+      if (data.calendar) {
+        setCalendar(prev => {
+          const merged = [...prev];
+          for (const newItem of data.calendar) {
+            const idx = merged.findIndex(c => c.id === newItem.id);
+            if (idx >= 0) {
+              const existingSteps = merged[idx].workflow_steps || [];
+              const newSteps = newItem.workflow_steps || [];
+              const stepMap = {};
+              [...existingSteps, ...newSteps].forEach(s => { stepMap[s.step_name] = s; });
+              merged[idx] = { ...merged[idx], ...newItem, workflow_steps: Object.values(stepMap) };
+            } else {
+              merged.push(newItem);
             }
-            return merged;
-          });
-        }
-        setLastPoll(new Date());
-        setIsConnected(true);
-      } else {
-        setIsConnected(false);
+          }
+          return merged;
+        });
+      }
+      setLastPoll(new Date());
+      setIsConnected(true);
       }
     } catch (err) {
       console.error("[admin/content-calendar] Polling error:", err);

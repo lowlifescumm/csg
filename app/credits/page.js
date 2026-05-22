@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { apiClient } from "@/lib/api-client";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -84,13 +85,7 @@ function CheckoutWrapper({ pack, onSuccess, onError }) {
     // Create payment intent when pack is selected
     const createPaymentIntent = async () => {
       try {
-        const res = await fetch("/api/credits/purchase", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ packSize: pack.size, packPrice: pack.price })
-        });
-
-        const data = await res.json();
+        const data = await apiClient.post("/api/credits/purchase", { packSize: pack.size, packPrice: pack.price });
         if (data.success && data.clientSecret) {
           setClientSecret(data.clientSecret);
         } else {
@@ -143,8 +138,7 @@ export default function CreditsPage() {
 
   useEffect(() => {
     // Fetch user credits
-    fetch("/api/auth/user")
-      .then(res => res.json())
+    apiClient.get("/api/auth/user")
       .then(data => {
         if (data.user?.credits) setUserCredits(data.user.credits);
       })
@@ -155,11 +149,11 @@ export default function CreditsPage() {
     setMessage("Credits added successfully!");
     setSelectedPack(null);
     // Refresh credits
-    fetch("/api/auth/user")
-      .then(res => res.json())
+    apiClient.get("/api/auth/user")
       .then(data => {
         if (data.user?.credits) setUserCredits(data.user.credits);
-      });
+      })
+      .catch(() => {});
   };
 
   const handleError = (error) => {

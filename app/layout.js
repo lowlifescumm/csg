@@ -332,6 +332,29 @@ export default function RootLayout({ children }) {
         className="min-h-screen bg-cosmic-void antialiased"
         suppressHydrationWarning={true}
       >
+        <noscript>
+          <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-cosmic-void px-6 text-center">
+            <div className="max-w-md">
+              <h1 className="font-display text-4xl text-cosmic-gold mb-4">
+                Cosmic Spirit Guide
+              </h1>
+              <p className="text-cosmic-lavender text-lg mb-2">
+                JavaScript is required to use this site.
+              </p>
+              <p className="text-white/50 text-sm mb-6 leading-relaxed">
+                Our interactive tarot readings, birth charts, and astrology tools
+                need JavaScript to create your personalized experience.
+              </p>
+              <a
+                href="https://www.enable-javascript.com/"
+                className="inline-block rounded-lg bg-cosmic-violet px-6 py-3 text-white font-medium hover:bg-cosmic-violet/80 transition-colors"
+              >
+                Learn how to enable JavaScript
+              </a>
+            </div>
+          </div>
+        </noscript>
+
         <AuthProviderWrapper>
           {/* Google Analytics */}
           <Script

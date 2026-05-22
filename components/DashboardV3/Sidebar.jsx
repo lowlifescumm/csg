@@ -2,6 +2,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useEffect } from "react";
+import { apiClient } from '@/lib/api-client';
 import { 
   LayoutDashboard, 
   Sparkles, 
@@ -26,7 +27,7 @@ export default function Sidebar({ user, onLinkClick }) {
   }, [pathname, onLinkClick]);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await apiClient.post("/api/auth/logout");
     window.location.href = "/login";
   };
 

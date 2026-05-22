@@ -1,11 +1,11 @@
 "use client";
-const logger = require('../lib/logger');
 import { useState, useEffect } from "react";
 import { Check, Sparkles, Zap, Crown, Loader2, Clock } from "lucide-react";
 import { CREDIT_PACKS, SUBSCRIPTION, FREE_CREDITS } from "@/lib/pricing";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -90,13 +90,7 @@ function CreditPackCheckoutWrapper({ pack, onSuccess, onError, onCancel }) {
   useEffect(() => {
     const createPaymentIntent = async () => {
       try {
-        const res = await fetch("/api/credits/purchase", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ packSize: pack.credits, packPrice: pack.priceInCents })
-        });
-
-        const data = await res.json();
+        const data = await apiClient.post("/api/credits/purchase", { packSize: pack.credits, packPrice: pack.priceInCents });
         if (data.success && data.clientSecret) {
           setClientSecret(data.clientSecret);
         } else {
@@ -182,13 +176,9 @@ export default function PricingTiers() {
     setProcessingSubscription(true);
     setError("");
     try {
-      const response = await fetch('/api/create-subscription', {
-        method: 'POST',
-      });
+      const data = await apiClient.post("/api/create-subscription");
 
-      const data = await response.json();
-
-      if (response.ok && data.checkoutUrl) {
+      if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
         setError(data.error || 'Failed to create subscription');

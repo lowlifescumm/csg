@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Zap, Star, Heart, TrendingUp, Check } from 'lucide-react';
+import { apiClient } from "@/lib/api-client";
 
 export default function SubscriptionPage() {
   const router = useRouter();
@@ -16,8 +17,7 @@ export default function SubscriptionPage() {
 
   const checkAuth = useCallback(async () => {
     try {
-      const res = await fetch('/api/auth/user');
-      const data = await res.json();
+      const data = await apiClient.get('/api/auth/user');
       
       if (!data.user) {
         router.push('/login');
@@ -38,15 +38,9 @@ export default function SubscriptionPage() {
   const handleSubscribe = async (tierId = 'MYSTIC_LITE') => {
     setProcessing(true);
     try {
-      const response = await fetch('/api/create-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: tierId }),
-      });
+      const data = await apiClient.post('/api/create-subscription', { tier: tierId });
 
-      const data = await response.json();
-
-      if (response.ok && data.checkoutUrl) {
+      if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
         alert(data.error || 'Failed to create subscription');

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, Star, Heart, Check, Zap, Eye, Lock, Moon, Sun, ChevronRight, Flame, Compass, Orbit } from "lucide-react";
 import FreeSampleModal from "@/components/FreeSampleModal";
+import { apiClient } from "@/lib/api-client";
 /* ─── Cosmic Background Canvas ─── */
 function StarField() {
   const canvasRef = useRef(null);
@@ -162,8 +163,7 @@ export default function HomePage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("/api/auth/user");
-      const data = await res.json();
+      const data = await apiClient.get("/api/auth/user");
       if (data.user) setUser(data.user);
     } catch (e) { console.error("Auth check failed"); }
     finally { setLoading(false); }

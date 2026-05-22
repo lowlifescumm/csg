@@ -1,8 +1,8 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain, Briefcase, ChevronRight, CheckCircle, Lock } from "lucide-react";
 import Link from "next/link";
+import { apiClient } from "@/lib/api-client";
 import HeroHeader from "./HeroHeader";
 import FocusGrid from "./FocusGrid";
 import CosmicBriefing from "./CosmicBriefing";
@@ -67,8 +67,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   // Check if user has a birth chart
   useEffect(() => {
     if (user?.id) {
-      fetch('/api/birth-chart')
-        .then(res => res.json())
+      apiClient.get('/api/birth-chart')
         .then(data => {
           setHasBirthChart(data.hasChart || false);
         })
@@ -83,9 +82,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
     let cancelled = false;
     async function initXP() {
       try {
-        const res = await fetch("/api/tasks");
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await apiClient.get("/api/tasks");
         if (!data?.success) return;
         const totalXP = data.stats?.totalXP || 0;
         const level = Math.floor(totalXP / 100) + 1;
@@ -161,8 +158,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   
   useEffect(() => {
     if (user?.id) {
-      fetch('/api/birth-chart')
-        .then(res => res.json())
+      apiClient.get('/api/birth-chart')
         .then(data => {
           if (data.chart?.planets?.sun?.sign) {
             setUserSign(data.chart.planets.sun.sign);

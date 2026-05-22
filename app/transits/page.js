@@ -1,9 +1,10 @@
 'use client';
-const logger = require('../../lib/logger');
 
 export const dynamic = 'force-static';
 
 import { useState, useEffect, useCallback } from 'react';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 import { 
   Zap, TrendingUp, AlertTriangle, Sparkles, Calendar, 
   Bell, ChevronRight, Clock, Star, Heart, Briefcase, 
@@ -15,49 +16,33 @@ import { SUBSCRIPTION_TIERS } from '@/lib/pricing';
 export default function TransitDashboard() {
   const [selectedTransit, setSelectedTransit] = useState(null);
   const [timeframe, setTimeframe] = useState('year');
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [requiresPremium, setRequiresPremium] = useState(false);
   const [needsBirthChart, setNeedsBirthChart] = useState(false);
 
-  const fetchTransits = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/transits');
-      
-      if (response.status === 402) {
-        const data = await response.json();
-        setRequiresPremium(true);
-        setLoading(false);
-        return;
-      }
-
-      if (response.status === 400) {
-        const data = await response.json();
-        if (data.needsBirthChart) {
-          setNeedsBirthChart(true);
-          setLoading(false);
-          return;
+  const { loading, refetch } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/transits'),
+    [],
+    {
+      onSuccess: (transitData) => {
+        setData(transitData);
+      },
+      onErrorWithToast: (err) => {
+        if (err.status === 402) {
+          setRequiresPremium(true);
+          return false;
         }
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch transits');
-      }
-
-      const transitData = await response.json();
-      setData(transitData);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTransits();
-  }, [fetchTransits]);
+        if (err.status === 400) {
+          setNeedsBirthChart(true);
+          return false;
+        }
+        setError(err.message);
+        return "Failed to load transit data.";
+      },
+    },
+  );
 
   // Filter transits based on timeframe
   const getFilteredTransits = () => {
@@ -459,67 +444,39 @@ function TransitCard({ transit, onClick }) {
 
 function TransitDetailView({ transit, onBack }) {
   const [interpretation, setInterpretation] = useState(transit.interpretation);
-  const [loadingInterpretation, setLoadingInterpretation] = useState(false);
+  const [interpretVersion, setInterpretVersion] = useState(0);
+
+  const fallbackInterpretation = {
+    summary: 'Unable to generate interpretation. Please try again later.',
+    fullGuidance: '',
+    timing: '',
+    areas: { career: '', relationships: '', wellness: '' },
+    advice: []
+  };
 
   useEffect(() => {
     if (!transit.interpretation || !transit.interpretation.fullGuidance) {
-      fetchInterpretation();
+      setInterpretVersion(v => v + 1);
     }
-  }, [fetchInterpretation, transit.interpretation]);
+  }, []);
 
-  const fetchInterpretation = async () => {
-    try {
-      setLoadingInterpretation(true);
-      const response = await fetch('/api/transits/interpret', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ transit }),
-      });
-
-      const data = await response.json();
-
-      if (response.status === 401 && data.requiresAuth) {
-        setInterpretation({
-          summary: 'Your session has expired. Please log in again to view this interpretation.',
-          fullGuidance: '',
-          timing: '',
-          areas: { career: '', relationships: '', wellness: '' },
-          advice: []
-        });
-        return;
-      }
-
-      if (response.status === 402 && data.requiresPremium) {
-        setInterpretation({
-          summary: 'This feature requires an active premium subscription. Upgrade to unlock full transit interpretations.',
-          fullGuidance: '',
-          timing: '',
-          areas: { career: '', relationships: '', wellness: '' },
-          advice: []
-        });
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch interpretation');
-      }
-
-      setInterpretation(data.interpretation);
-    } catch (error) {
-      console.error('Error fetching interpretation:', error);
-      setInterpretation({
-        summary: 'Unable to generate interpretation. Please try again later.',
-        fullGuidance: '',
-        timing: '',
-        areas: { career: '', relationships: '', wellness: '' },
-        advice: []
-      });
-    } finally {
-      setLoadingInterpretation(false);
-    }
-  };
+  const { loading: loadingInterpretation } = useApiClientWithToast(
+    apiClient,
+    (c) => c.post('/api/transits/interpret', { transit }),
+    [interpretVersion, transit],
+    {
+      enabled: interpretVersion > 0,
+      onSuccess: (data) => {
+        setInterpretVersion(0);
+        setInterpretation(data.interpretation);
+      },
+      onErrorWithToast: () => {
+        setInterpretVersion(0);
+        setInterpretation(fallbackInterpretation);
+        return false;
+      },
+    },
+  );
 
   const getColorGradient = (color) => {
     const gradients = {

@@ -1,8 +1,8 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, Heart, X, Loader2, Info } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
+import { apiClient } from '@/lib/api-client';
 
 // Crystal data by element
 const CRYSTALS_BY_ELEMENT = {
@@ -132,12 +132,9 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
 
   const fetchElementData = async () => {
     try {
-      const res = await fetch("/api/element/today");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setElementData(data);
-        }
+      const data = await apiClient.get("/api/element/today");
+      if (data.success) {
+        setElementData(data);
       }
     } catch (err) {
       console.info("Could not fetch element data, computing from moon phase:", err);
@@ -186,14 +183,11 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
 
   const checkFavoriteStatus = async (crystalId) => {
     try {
-      const res = await fetch(`/api/user/favorites?type=crystal&itemId=${crystalId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setFavoriteStatus((prev) => ({
-          ...prev,
-          [crystalId]: data.isFavorited || false,
-        }));
-      }
+      const data = await apiClient.get(`/api/user/favorites?type=crystal&itemId=${crystalId}`);
+      setFavoriteStatus((prev) => ({
+        ...prev,
+        [crystalId]: data.isFavorited || false,
+      }));
     } catch (err) {
       console.info("Could not check favorite status:", err);
     }
@@ -204,25 +198,17 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
 
     setFavoriting(true);
     try {
-      const res = await fetch("/api/user/favorites", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const data = await apiClient.post("/api/user/favorites", {
+        type: "crystal",
+        itemId: selectedCrystal.id,
+        name: selectedCrystal.name,
+        metadata: {
+          element: elementData?.element,
+          description: selectedCrystal.description,
         },
-        body: JSON.stringify({
-          type: "crystal",
-          itemId: selectedCrystal.id,
-          name: selectedCrystal.name,
-          metadata: {
-            element: elementData?.element,
-            description: selectedCrystal.description,
-          },
-        }),
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         setFavoriteStatus((prev) => ({
           ...prev,
           [selectedCrystal.id]: true,

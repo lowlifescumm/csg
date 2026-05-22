@@ -1,7 +1,7 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Crown, Sparkles, Star, Heart, MessageCircle, Zap, Loader2, Check } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 /**
  * PremiumCard - Soft upsell card for premium with value justification
@@ -44,13 +44,9 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
     }
 
     try {
-      const response = await fetch("/api/create-subscription", {
-        method: "POST",
-      });
+      const data = await apiClient.post("/api/create-subscription");
 
-      const data = await response.json();
-
-      if (response.ok && data.checkoutUrl) {
+      if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
         alert(data.error || "Failed to start subscription");

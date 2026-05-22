@@ -1,8 +1,8 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { CheckCircle2, Circle, Sparkles, Moon, Heart, Brain, Trophy, Zap, X } from "lucide-react";
 import Link from "next/link";
+import { apiClient } from '@/lib/api-client';
 
 // Task definitions
 const TASK_DEFINITIONS = [
@@ -88,23 +88,18 @@ export default function DailyTasks({ userId, streak }) {
   const fetchTasksAndStats = async () => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const res = await fetch(`/api/tasks?timezone=${encodeURIComponent(timezone)}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setUserStats(data.stats);
-          // Mark completed tasks
-          const completedIds = data.completedTasks || [];
-          setTasks((prevTasks) =>
-            prevTasks.map((task) => ({
-              ...task,
-              completed: completedIds.includes(task.id),
-            }))
-          );
-          // Notify parent of stats update
-          if (onStatsUpdate) {
-            onStatsUpdate(data.stats);
-          }
+      const data = await apiClient.get(`/api/tasks?timezone=${encodeURIComponent(timezone)}`);
+      if (data.success) {
+        setUserStats(data.stats);
+        const completedIds = data.completedTasks || [];
+        setTasks((prevTasks) =>
+          prevTasks.map((task) => ({
+            ...task,
+            completed: completedIds.includes(task.id),
+          }))
+        );
+        if (onStatsUpdate) {
+          onStatsUpdate(data.stats);
         }
       }
     } catch (err) {
@@ -120,21 +115,13 @@ export default function DailyTasks({ userId, streak }) {
     setCompletingTask(taskId);
 
     try {
-      const res = await fetch("/api/tasks/complete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          taskId,
-          userId,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        }),
+      const data = await apiClient.post("/api/tasks/complete", {
+        taskId,
+        userId,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         // Update local state
         setTasks((prevTasks) =>
           prevTasks.map((task) =>

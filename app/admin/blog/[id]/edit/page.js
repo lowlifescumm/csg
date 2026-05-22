@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, Eye, Calendar, Tag, Image, FileText } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function EditBlogPostPage() {
   const router = useRouter();
@@ -38,15 +39,10 @@ export default function EditBlogPostPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
-      if (response.ok && data.user) {
-        setUser(data.user);
-        if (data.user.role !== 'admin') {
-          window.location.href = '/dashboard';
-        }
-      } else {
-        window.location.href = '/login';
+      const data = await apiClient.get('/api/auth/user');
+      setUser(data.user);
+      if (data.user.role !== 'admin') {
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -63,23 +59,15 @@ export default function EditBlogPostPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-      
-      if (response.ok && data.url) {
+      const data = await apiClient.post('/api/upload/image', formData);
+      if (data.url) {
         setPost(prev => ({ ...prev, featured_image: data.url }));
       } else {
-        console.error('Upload failed:', data);
-        alert('Failed to upload image: ' + (data.error || 'Unknown error') + (data.details ? ' - ' + data.details : ''));
+        alert('Failed to upload image: Unknown error');
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload image: ' + error.message);
+      alert('Failed to upload image: ' + (error.message || ''));
     } finally {
       setUploadingImage(false);
     }
@@ -88,10 +76,8 @@ export default function EditBlogPostPage() {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/blog/${postId}?admin=true`);
-      const data = await response.json();
-      
-      if (response.ok && data.post) {
+      const data = await apiClient.get(`/api/blog/${postId}?admin=true`);
+      if (data.post) {
         setPost({
           title: data.post.title || '',
           slug: data.post.slug || '',
@@ -105,13 +91,12 @@ export default function EditBlogPostPage() {
           meta_description: data.post.meta_description || ''
         });
         
-        // Auto-detect HTML mode if content starts with HTML tag
         if (data.post.content && /^\s*</.test(data.post.content.trim())) {
           setHtmlMode(true);
         }
       } else {
-        console.error('Failed to fetch post:', data.error);
-        alert('Failed to load post: ' + (data.error || 'Post not found'));
+        console.error('Failed to fetch post: Post not found');
+        alert('Failed to load post: Post not found');
         router.push('/admin/blog');
       }
     } catch (error) {
@@ -161,23 +146,14 @@ export default function EditBlogPostPage() {
         return;
       }
 
-      const response = await fetch('/api/blog', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: postId,
-          ...post,
-          status,
-          author_id: user.id
-        }),
+      const data = await apiClient.put('/api/blog', {
+        id: postId,
+        ...post,
+        status,
+        author_id: user.id
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        alert('Blog post updated successfully!');
-        router.push('/admin/blog');
+      alert('Blog post updated successfully!');
+      router.push('/admin/blog');
       } else {
         console.error('Failed to update post:', data);
         alert('Failed to update post: ' + (data.error || 'Unknown error') + (data.details ? ' - ' + data.details : ''));

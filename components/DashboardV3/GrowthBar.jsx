@@ -1,7 +1,7 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Trophy, Sparkles, Zap, Crown, Gift, Loader2, Info } from "lucide-react";
+import { apiClient } from '@/lib/api-client';
 
 /**
  * Level perks by level
@@ -100,29 +100,18 @@ export default function GrowthBar({
 
     setClaiming(true);
     try {
-      const res = await fetch("/api/rewards/claim", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          level,
-        }),
+      const data = await apiClient.post("/api/rewards/claim", {
+        userId,
+        level,
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        // Call level up callback
+      if (data.success) {
         if (onLevelUp) {
           onLevelUp({
             level: data.newLevel || level + 1,
             rewards: data.rewards,
           });
         }
-        
-        // Reset canClaim state
         setCanClaim(false);
       } else {
         console.error("Failed to claim reward:", data.error);

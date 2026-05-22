@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -31,22 +32,11 @@ function ResetPasswordContent() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setSuccess(data.message);
-        setFormData({ ...formData, email: "" });
-      } else {
-        setError(data.error || "Something went wrong");
-      }
+      const data = await apiClient.post('/api/auth/forgot-password', { email: formData.email });
+      setSuccess(data.message);
+      setFormData({ ...formData, email: "" });
     } catch (err) {
-      setError("Failed to connect to server");
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -70,27 +60,13 @@ function ResetPasswordContent() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          token: token, 
-          password: formData.password 
-        })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setSuccess(data.message);
-        setTimeout(() => {
-          router.push('/login');
-        }, 3000);
-      } else {
-        setError(data.error || "Something went wrong");
-      }
+      const data = await apiClient.post('/api/auth/reset-password', { token, password: formData.password });
+      setSuccess(data.message);
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
     } catch (err) {
-      setError("Failed to connect to server");
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

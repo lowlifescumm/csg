@@ -1,11 +1,13 @@
-const logger = require('./lib/logger');
 #!/usr/bin/env node
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 import fs from "fs";
+import { createRequire } from "module";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
+const logger = require("../lib/logger.js");
 dotenv.config({ path: resolve(__dirname, "../.env.local") });
 import { generatePremiumPdf } from "../lib/premium-pdf-generator.js";
 const testUserData = {

@@ -1,6 +1,6 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
+import { apiClient } from '@/lib/api-client';
 import {
   AreaChart,
   Area,
@@ -88,15 +88,12 @@ export default function EnergyChart({
     // Otherwise, try to fetch from API
     if (userId) {
       try {
-        const res = await fetch("/api/energy");
-        if (res.ok) {
-          const result = await res.json();
-          if (result.success && result.data && result.data.length > 0) {
-            setData(result.data);
-            setHasData(true);
-            setLoading(false);
-            return;
-          }
+        const result = await apiClient.get("/api/energy");
+        if (result.success && result.data && result.data.length > 0) {
+          setData(result.data);
+          setHasData(true);
+          setLoading(false);
+          return;
         }
       } catch (err) {
         console.info("Could not fetch energy data:", err);

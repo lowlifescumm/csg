@@ -6,18 +6,38 @@ import spreads from "@/lib/tarot-spreads.json";
 import FocusModal from "@/components/FocusModal";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import ShareCard from "@/components/ShareCard";
-import logger from "@/lib/logger";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general", cardCount = null, question: initialQuestion = "", spreadId = null }) {
   const [selectedCards, setSelectedCards] = useState([]);
   const [availableCards, setAvailableCards] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showReading, setShowReading] = useState(false);
   const [reading, setReading] = useState(null);
   const [question, setQuestion] = useState(initialQuestion);
   const [showFocusModal, setShowFocusModal] = useState(false);
   const [error, setError] = useState("");
   const [flashMismatch, setFlashMismatch] = useState(false);
+  const [submitVersion, setSubmitVersion] = useState(0);
+  const [submitIntent, setSubmitIntent] = useState("");
+  const [submitCardData, setSubmitCardData] = useState(null);
+
+  const { loading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.post("/api/readings/create", submitCardData, { timeout: 90_000 }),
+    [submitVersion, submitCardData],
+    {
+      enabled: submitVersion > 0,
+      onSuccess: (data) => {
+        setSubmitVersion(0);
+        if (data.success) {
+          setReading(data.reading);
+          setShowReading(true);
+        }
+      },
+      toastMessages: { error: "Failed to generate reading. Check your connection." },
+    },
+  );
   
   const spread = (function resolveSpread() {
     // Map old spreadType strings to config ids
@@ -102,57 +122,30 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setShowFocusModal(true);
   };
 
-  const handleFocusSubmit = async (userIntent) => {
-    // Close the focus modal
+  const handleFocusSubmit = (userIntent) => {
     setShowFocusModal(false);
-    
-    // Update question state with user's intent
     setQuestion(userIntent);
-    
-    // If question was required but not provided, show error
+
     if (spread.ui?.require_question && !userIntent.trim()) {
       setError("Please enter your question before submitting.");
       return;
     }
 
-    setLoading(true);
-    
-    try {
-      // Prepare the selected cards data
-      const selectedCardsData = selectedCards.map(index => ({
-        ...availableCards[index],
-        reversed: Math.random() > 0.5,
-        position: positions[selectedCards.indexOf(index)]
-      }));
+    const selectedCardsData = selectedCards.map((index) => ({
+      ...availableCards[index],
+      reversed: Math.random() > 0.5,
+      position: positions[selectedCards.indexOf(index)],
+    }));
 
-      const res = await fetch("/api/readings/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question: userIntent, // Use the intent from focus modal
-          spreadType,
-          readingType,
-          specificCards: selectedCardsData,
-          spreadId: spread.id,
-          cardCount: (spreadType === "custom_spread" && cardCount !== null) ? cardCount : undefined
-        }),
-      });
-
-      const data = await res.json();
-      
-      if (res.ok && data.success) {
-        setReading(data.reading);
-        setShowReading(true);
-      } else {
-        // Handle errors
-        alert(data.error || "Something went wrong");
-      }
-    } catch (error) {
-      alert("Failed to generate reading");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    setSubmitCardData({
+      question: userIntent,
+      spreadType,
+      readingType,
+      specificCards: selectedCardsData,
+      spreadId: spread.id,
+      cardCount: (spreadType === "custom_spread" && cardCount !== null) ? cardCount : undefined,
+    });
+    setSubmitVersion((v) => v + 1);
   };
 
   const handleNewReading = () => {

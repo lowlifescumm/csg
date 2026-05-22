@@ -1,9 +1,11 @@
 'use client';
-const logger = require('../../lib/logger');
 
 export const dynamic = 'force-static';
 
 import { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
+import { useToast } from '@/components/ui';
 import { 
   Calendar, Star, Sparkles, TrendingUp, AlertTriangle, 
   Clock, Target, ArrowLeft, Loader2, Plus, Settings
@@ -31,61 +33,41 @@ function formatForecastDateRange(forecast, opts = { month: 'short', day: 'numeri
 }
 
 export default function ForecastsPage() {
+  const toast = useToast();
   const [forecasts, setForecasts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState(null);
   const [selectedForecast, setSelectedForecast] = useState(null);
   const [range, setRange] = useState('7d');
 
-  useEffect(() => {
-    fetchForecasts();
-  }, [range]);
-
-  const fetchForecasts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/forecasts?range=${range}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch forecasts');
-      }
-
-      const data = await response.json();
-      setForecasts(data.forecasts);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-    }
-  };
+  const { loading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get(`/api/forecasts?range=${range}`),
+    [range],
+    {
+      onSuccess: (data) => {
+        setForecasts(data.forecasts);
+      },
+      toastMessages: { error: "Failed to load forecasts." },
+    },
+  );
 
   const generateTodaysForecast = async () => {
     try {
       setGenerating(true);
-      const response = await fetch('/api/forecasts/generate', {
-        method: 'POST',
-      });
+      const data = await apiClient.post('/api/forecasts/generate');
 
-      if (!response.ok) {
-        const data = await response.json();
-        if (data.needsBirthChart) {
-          alert('Please create your birth chart first to generate forecasts.');
-          return;
-        }
-        throw new Error(data.error || 'Failed to generate forecast');
-      }
-
-      const data = await response.json();
-      
-      // Remove existing forecast with same ID to prevent duplicates
       const updatedForecasts = forecasts.filter(f => f.id !== data.forecast.id);
       setForecasts([data.forecast, ...updatedForecasts]);
       setSelectedForecast(data.forecast);
       setGenerating(false);
     } catch (err) {
+      if (err.status === 400 && err.message?.includes('natal chart')) {
+        toast.error('Please create your birth chart first to generate forecasts.');
+        setGenerating(false);
+        return;
+      }
       console.error('Error generating forecast:', err);
-      alert(err.message);
+      toast.error(err.message || 'Failed to generate forecast.');
       setGenerating(false);
     }
   };

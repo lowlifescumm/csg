@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { PREMIUM_REPORTS } from "@/lib/pricing";
 import PartnerDataForm from "@/components/PartnerDataForm";
+import { apiClient } from "@/lib/api-client";
 
 export default function MasterReportClient() {
   const [processing, setProcessing] = useState(false);
@@ -25,20 +26,13 @@ export default function MasterReportClient() {
   const handlePurchase = async (partnerDataToSend = null) => {
     setProcessing(true);
     try {
-      const response = await fetch("/api/create-report-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          reportId: "MASTER",
-          partnerData: partnerDataToSend?.partnerData || null,
-          skipPartnerData: partnerDataToSend?.skipPartnerData || false,
-        }),
+      const data = await apiClient.post("/api/create-report-payment", {
+        reportId: "MASTER",
+        partnerData: partnerDataToSend?.partnerData || null,
+        skipPartnerData: partnerDataToSend?.skipPartnerData || false,
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.checkoutUrl) {
+      if (data.checkoutUrl) {
         setPartnerData(null);
         window.location.href = data.checkoutUrl;
       } else {

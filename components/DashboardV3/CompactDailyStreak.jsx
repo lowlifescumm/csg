@@ -1,7 +1,9 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Trophy, Zap, Flame } from "lucide-react";
+import StreakMilestones from "./StreakMilestones";
+import StreakMilestoneCelebration from "./StreakMilestoneCelebration";
+import { apiClient } from '@/lib/api-client';
 
 /**
  * CompactDailyStreak - Compact widget combining level progress and streak info
@@ -9,6 +11,7 @@ import { Trophy, Zap, Flame } from "lucide-react";
  */
 export default function CompactDailyStreak({ userId, streak }) {
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100, totalXP: 0 });
+  const [showCelebration, setShowCelebration] = useState(false);
   
   // Safely extract streak value, ensuring we never render objects
   const safeStreak = streak && typeof streak === 'object' && Object.keys(streak).length > 0 ? streak : null;
@@ -18,20 +21,17 @@ export default function CompactDailyStreak({ userId, streak }) {
     
     async function fetchStats() {
       try {
-        const res = await fetch("/api/tasks");
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.success && data.stats) {
-            const totalXP = data.stats.totalXP || 0;
-            const level = Math.floor(totalXP / 100) + 1;
-            const xpCurrent = totalXP % 100;
-            setLevelData({
-              level,
-              xpCurrent,
-              xpTarget: 100,
-              totalXP
-            });
-          }
+        const data = await apiClient.get("/api/tasks");
+        if (data?.success && data.stats) {
+          const totalXP = data.stats.totalXP || 0;
+          const level = Math.floor(totalXP / 100) + 1;
+          const xpCurrent = totalXP % 100;
+          setLevelData({
+            level,
+            xpCurrent,
+            xpTarget: 100,
+            totalXP
+          });
         }
       } catch (err) {
         console.error("Failed to fetch stats:", err);
@@ -43,6 +43,15 @@ export default function CompactDailyStreak({ userId, streak }) {
 
   const progressPercent = levelData.xpTarget > 0 ? Math.min((levelData.xpCurrent / levelData.xpTarget) * 100, 100) : 0;
   const currentStreak = safeStreak?.currentStreak || 0;
+  const milestones = safeStreak?.milestones || [];
+  const newMilestone = safeStreak?.newMilestone || null;
+
+  // Show celebration when a new milestone is detected
+  useEffect(() => {
+    if (newMilestone) {
+      setShowCelebration(true);
+    }
+  }, [newMilestone]);
 
   return (
     <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow-lg border border-white border-opacity-40">
@@ -87,7 +96,16 @@ export default function CompactDailyStreak({ userId, streak }) {
         </div>
       </div>
 
-      <p className="text-xs text-purple-300 text-center">
+      {/* Streak Milestones */}
+      <StreakMilestones currentStreak={currentStreak} milestones={milestones} />
+
+      {/* Milestone Celebration */}
+      <StreakMilestoneCelebration
+        newMilestone={showCelebration ? newMilestone : null}
+        onDismiss={() => setShowCelebration(false)}
+      />
+
+      <p className="text-xs text-purple-300 text-center mt-3">
         Complete daily tasks to level up and earn rewards
       </p>
     </div>

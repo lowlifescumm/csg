@@ -4,6 +4,7 @@ const logger = require('../../../lib/logger');
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Settings, ArrowLeft, Save, Globe, Mail, Shield, Database, Palette, Bell } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function SiteSettingsPage() {
   const [settings, setSettings] = useState({
@@ -31,15 +32,10 @@ export default function SiteSettingsPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
-      if (response.ok && data.user) {
-        setUser(data.user);
-        if (data.user.role !== 'admin') {
-          window.location.href = '/dashboard';
-        }
-      } else {
-        window.location.href = '/login';
+      const data = await apiClient.get('/api/auth/user');
+      setUser(data.user);
+      if (data.user.role !== 'admin') {
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -49,9 +45,8 @@ export default function SiteSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/admin/settings');
-      const data = await response.json();
-      if (response.ok && data.settings) {
+      const data = await apiClient.get('/api/admin/settings');
+      if (data.settings) {
         setSettings({ ...settings, ...data.settings });
       }
     } catch (error) {
@@ -62,20 +57,9 @@ export default function SiteSettingsPage() {
   const handleSave = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(settings),
-      });
-
-      if (response.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-      } else {
-        console.error('Failed to save settings');
-      }
+      await apiClient.put('/api/admin/settings', settings);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     } catch (error) {
       console.error('Failed to save settings:', error);
     } finally {

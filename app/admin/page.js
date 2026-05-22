@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
 import { 
   Users, 
   CreditCard, 
@@ -32,28 +33,22 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch("/api/admin/stats");
-      const data = await res.json();
-
-      if (res.ok) {
-        setStats(data.stats);
-        setRecentUsers(data.recentUsers);
-        setRecentReadings(data.recentReadings);
-      } else {
-        setError(data.error || "Failed to load statistics");
-        if (res.status === 401 || res.status === 403) {
-          router.push("/admin/login");
-        }
-      }
+      const data = await apiClient.get("/api/admin/stats");
+      setStats(data.stats);
+      setRecentUsers(data.recentUsers);
+      setRecentReadings(data.recentReadings);
     } catch (err) {
-      setError("Failed to connect to server");
+      setError(err.message || "Failed to connect to server");
+      if (err.status === 401 || err.status === 403) {
+        router.push("/admin/login");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await apiClient.post("/api/auth/logout");
     router.push("/admin/login");
     router.refresh();
   };

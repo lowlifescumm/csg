@@ -161,9 +161,18 @@ function buildGenerateTextMock(sectionContent) {
     closing: 'May the stars guide you...',
   };
   const merged = { ...defaults, ...sectionContent };
+  const callCount = {};
   generateText.mockImplementation((prompt) => {
     const match = prompt.match(/__SECTION__(\w+)__/);
     const sectionType = match ? match[1] : 'default';
+    // Support multiple calls per type: if content is an array, return next item
+    if (merged[sectionType]) {
+      callCount[sectionType] = (callCount[sectionType] || 0) + 1;
+      if (Array.isArray(merged[sectionType])) {
+        const idx = Math.min(callCount[sectionType] - 1, merged[sectionType].length - 1);
+        return merged[sectionType][idx];
+      }
+    }
     return merged[sectionType] || `Default content for ${sectionType}`;
   });
 }
@@ -223,9 +232,12 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
   test('validator catches contradictory transit dates across forecast sections', async () => {
     // Extended Transit says Jupiter conjunct Sun on July 15
     // Annual Forecast says the SAME transit on August 1 (contradiction)
+    // Both use reportType 'transit_forecast_extended' — array provides per-call content
     buildGenerateTextMock({
-      transit_forecast_extended: 'On July 15, 2026, transiting Jupiter conjuncts your natal Sun...',
-      saturn_return: 'On August 1, 2026, transiting Jupiter conjuncts your natal Sun...', // contradiction
+      transit_forecast_extended: [
+        'On July 15, 2026, transiting Jupiter conjuncts your natal Sun...',
+        'On August 1, 2026, transiting Jupiter conjuncts your natal Sun...',
+      ],
     });
 
     const result = await generatePremiumReport('MASTER', baseData);
@@ -255,8 +267,10 @@ describe('Master Report — cross-section consistency audit (GSTA-115)', () => {
 
   test('passes when transit dates are consistent across forecast sections', async () => {
     buildGenerateTextMock({
-      transit_forecast_extended: 'On July 15, 2026, transiting Jupiter conjuncts your natal Sun...',
-      saturn_return: 'On July 15, 2026, transiting Jupiter continues its conjunction to your Sun...',
+      transit_forecast_extended: [
+        'On July 15, 2026, transiting Jupiter conjuncts your natal Sun...',
+        'On July 15, 2026, transiting Jupiter continues its conjunction to your Sun...',
+      ],
     });
 
     const result = await generatePremiumReport('MASTER', baseData);

@@ -1,8 +1,8 @@
 "use client";
-const logger = require('../lib/logger');
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Moon, Sparkles, Calendar, Info } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function MoonPhaseWidget() {
   const router = useRouter();
@@ -13,8 +13,7 @@ export default function MoonPhaseWidget() {
   useEffect(() => {
     const fetchMoonData = async () => {
       try {
-        const response = await fetch('/api/moon-phase');
-        const result = await response.json();
+        const result = await apiClient.get('/api/moon-phase');
         if (result.success) {
           setMoonData(result.data);
         }

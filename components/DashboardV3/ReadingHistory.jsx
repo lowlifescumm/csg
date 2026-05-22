@@ -1,9 +1,10 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect, useRef } from "react";
 import { BookOpen, Calendar, Filter, Sparkles, Star, Eye, RotateCcw, Loader2, X, Heart } from "lucide-react";
 import Link from "next/link";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { apiClient } from "@/lib/api-client";
+import { useToast } from "@/components/ui";
 
 /**
  * Get reading type icon
@@ -70,6 +71,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
   const [hasMore, setHasMore] = useState(true);
   const scrollContainerRef = useRef(null);
   const ITEMS_PER_PAGE = 10;
+  const toast = useToast();
 
   useEffect(() => {
     if (userId) {
@@ -94,63 +96,50 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
     }
 
     try {
-      const res = await fetch("/api/readings");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          // Combine tarot and birth chart readings
-          const allReadings = [
-            ...(data.readings?.tarot || []).map((r) => ({ ...r, type: "tarot" })),
-            ...(data.readings?.birthCharts || []).map((r) => ({ ...r, type: "birth_chart" })),
-          ];
+      const data = await apiClient.get("/api/readings");
+      if (data.success) {
+        const allReadings = [
+          ...(data.readings?.tarot || []).map((r) => ({ ...r, type: "tarot" })),
+          ...(data.readings?.birthCharts || []).map((r) => ({ ...r, type: "birth_chart" })),
+        ];
 
-          // Apply filters
-          let filtered = allReadings;
+        let filtered = allReadings;
 
-          // Filter by type
-          if (filterType !== "all") {
-            filtered = filtered.filter((r) => r.type === filterType);
-          }
-
-          // Filter by date range
-          if (dateRange !== "all") {
-            const now = new Date();
-            const cutoffDate = new Date();
-            switch (dateRange) {
-              case "week":
-                cutoffDate.setDate(now.getDate() - 7);
-                break;
-              case "month":
-                cutoffDate.setMonth(now.getMonth() - 1);
-                break;
-              case "year":
-                cutoffDate.setFullYear(now.getFullYear() - 1);
-                break;
-            }
-            filtered = filtered.filter((r) => {
-              const readingDate = new Date(r.created_at);
-              return readingDate >= cutoffDate;
-            });
-          }
-
-          // Filter by favorites
-          if (favoritesOnly) {
-            filtered = filtered.filter((r) => favoriteIds.has(r.id.toString()));
-          }
-
-          // Sort by date (newest first)
-          filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-          if (reset) {
-            setReadings(filtered);
-          } else {
-            setReadings(filtered);
-          }
-          setHasMore(filtered.length > page * ITEMS_PER_PAGE);
+        if (filterType !== "all") {
+          filtered = filtered.filter((r) => r.type === filterType);
         }
+
+        if (dateRange !== "all") {
+          const now = new Date();
+          const cutoffDate = new Date();
+          switch (dateRange) {
+            case "week":
+              cutoffDate.setDate(now.getDate() - 7);
+              break;
+            case "month":
+              cutoffDate.setMonth(now.getMonth() - 1);
+              break;
+            case "year":
+              cutoffDate.setFullYear(now.getFullYear() - 1);
+              break;
+          }
+          filtered = filtered.filter((r) => {
+            const readingDate = new Date(r.created_at);
+            return readingDate >= cutoffDate;
+          });
+        }
+
+        if (favoritesOnly) {
+          filtered = filtered.filter((r) => favoriteIds.has(r.id.toString()));
+        }
+
+        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        setReadings(filtered);
+        setHasMore(filtered.length > page * ITEMS_PER_PAGE);
       }
     } catch (err) {
-      console.error("Failed to fetch readings:", err);
+      toast.error("Failed to load readings. Check your connection.");
     } finally {
       setLoading(false);
     }
@@ -158,13 +147,10 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
 
   const fetchFavorites = async () => {
     try {
-      const res = await fetch("/api/user/favorites?type=reading");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.favorites) {
-          const ids = new Set(data.favorites.map((f) => f.item_id));
-          setFavoriteIds(ids);
-        }
+      const data = await apiClient.get("/api/user/favorites?type=reading");
+      if (data.success && data.favorites) {
+        const ids = new Set(data.favorites.map((f) => f.item_id));
+        setFavoriteIds(ids);
       }
     } catch (err) {
       console.info("Could not fetch favorites:", err);
@@ -183,29 +169,20 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
     setSavingToJournal(reading.id);
     try {
       const excerpt = getExcerpt(reading);
-      const res = await fetch("/api/journal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const data = await apiClient.post("/api/journal", {
+        content: `${reading.question || "Reading"}\n\n${excerpt}`,
+        type: "reading",
+        metadata: {
+          readingId: reading.id,
+          readingType: reading.type,
         },
-        body: JSON.stringify({
-          content: `${reading.question || "Reading"}\n\n${excerpt}`,
-          type: "reading",
-          metadata: {
-            readingId: reading.id,
-            readingType: reading.type,
-          },
-        }),
       });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        // Show success feedback (could use toast)
-        alert("Saved to journal!");
+      if (data.success) {
+        toast.success("Saved to journal!");
       }
     } catch (err) {
-      console.error("Error saving to journal:", err);
-      alert("Failed to save to journal");
+      toast.error("Failed to save to journal");
     } finally {
       setSavingToJournal(null);
     }
@@ -225,31 +202,21 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
     
     try {
       if (isFavorited) {
-        // Remove from favorites
-        await fetch(`/api/user/favorites?type=reading&itemId=${reading.id}`, {
-          method: "DELETE",
-        });
+        await apiClient.delete(`/api/user/favorites?type=reading&itemId=${reading.id}`);
         setFavoriteIds((prev) => {
           const newSet = new Set(prev);
           newSet.delete(reading.id.toString());
           return newSet;
         });
       } else {
-        // Add to favorites
-        await fetch("/api/user/favorites", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        await apiClient.post("/api/user/favorites", {
+          type: "reading",
+          itemId: reading.id,
+          name: reading.question || `${reading.type} reading`,
+          metadata: {
+            readingType: reading.type,
+            date: reading.created_at,
           },
-          body: JSON.stringify({
-            type: "reading",
-            itemId: reading.id,
-            name: reading.question || `${reading.type} reading`,
-            metadata: {
-              readingType: reading.type,
-              date: reading.created_at,
-            },
-          }),
         });
         setFavoriteIds((prev) => {
           const newSet = new Set(prev);
@@ -258,7 +225,7 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
         });
       }
     } catch (err) {
-      console.error("Error toggling favorite:", err);
+      toast.error("Failed to update favorite");
     }
   };
 

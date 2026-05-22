@@ -1,6 +1,6 @@
 "use client";
-const logger = require('../lib/logger');
 
+import { apiClient } from '@/lib/api-client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Download, FileText, Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp, BookOpen, Star, Moon, Zap, Eye, Layers } from 'lucide-react';
 
@@ -257,13 +257,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
 
   const fetchJobStatus = async () => {
     try {
-      const res = await fetch(`/api/jobs/${jobId}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch job status');
-      }
-
+      const data = await apiClient.get(`/api/jobs/${jobId}`, { timeout: 10000, retry: false });
       setJob(data.job);
       setResult(data.result);
     } catch (err) {
@@ -275,13 +269,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
 
   const fetchResult = async () => {
     try {
-      const res = await fetch(`/api/reports/${resultId}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch result');
-      }
-
+      const data = await apiClient.get(`/api/reports/${resultId}`, { timeout: 30000 });
       setResult(data.result);
     } catch (err) {
       setError(err.message);

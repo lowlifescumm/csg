@@ -1,11 +1,11 @@
 "use client";
-const logger = require('../lib/logger');
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard, Coins, Star, Moon, Heart, Orbit } from "lucide-react";
 import { Logo } from "./Logo";
+import { apiClient } from "@/lib/api-client";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -17,8 +17,7 @@ export default function Header() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("/api/auth/user");
-      const data = await res.json();
+      const data = await apiClient.get("/api/auth/user");
       if (data.user) {
         setUser(data.user);
       }
@@ -45,7 +44,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await apiClient.post("/api/auth/logout");
       setUser(null);
       router.push("/");
       router.refresh();
@@ -67,6 +66,7 @@ export default function Header() {
     { name: "Compatibility", href: "/compatibility", icon: Heart },
     { name: "Services", href: "/services", icon: Sparkles },
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, auth: true },
+    { name: "My Readings", href: "/readings", icon: BookOpen, auth: true },
     { name: "Blog", href: "/blog", icon: BookOpen },
     { name: "Forecasts", href: "/forecasts", icon: Sparkles, auth: true },
   ];

@@ -1,8 +1,8 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, BookOpen, Loader2, Flame, Droplets, Wind, Mountain } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
+import { apiClient } from "@/lib/api-client";
 
 // Element icons mapping
 const elementIcons = {
@@ -53,14 +53,11 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
   useEffect(() => {
     const fetchUserSign = async () => {
       try {
-        const res = await fetch("/api/birth-chart");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.chart?.planets?.sun?.sign) {
-            const sunSign = data.chart.planets.sun.sign;
-            setUserSign(sunSign);
-            setSelectedSign(sunSign);
-          }
+        const data = await apiClient.get("/api/birth-chart");
+        if (data.chart?.planets?.sun?.sign) {
+          const sunSign = data.chart.planets.sun.sign;
+          setUserSign(sunSign);
+          setSelectedSign(sunSign);
         }
       } catch (err) {
         console.info("Could not fetch user sign, defaulting to Aries");
@@ -82,9 +79,8 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/briefing?sign=${sign.toLowerCase()}`);
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await apiClient.get(`/api/briefing?sign=${sign.toLowerCase()}`);
+      if (data.success) {
         setBriefing(data.briefing);
       } else {
         setError(data.error || "Failed to load briefing");
@@ -104,21 +100,13 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
     setError(null);
 
     try {
-      const res = await fetch("/api/readings/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: "guided",
-          sign: selectedSign,
-        }),
+      const data = await apiClient.post("/api/readings/generate", {
+        type: "guided",
+        sign: selectedSign,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 402) {
+      if (data.error) {
+        if (data.status === 402 || data.errorType === "insufficient_credits") {
           setError({
             type: "insufficient_credits",
             message: data.error || "Insufficient credits",
@@ -157,22 +145,14 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
 
     setSavingJournal(true);
     try {
-      const res = await fetch("/api/journal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sign: selectedSign,
-          content: briefing.message || briefing.content,
-          type: "briefing",
-          date: new Date().toISOString().split("T")[0],
-        }),
+      const data = await apiClient.post("/api/journal", {
+        sign: selectedSign,
+        content: briefing.message || briefing.content,
+        type: "briefing",
+        date: new Date().toISOString().split("T")[0],
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         // Show success feedback
         setError(null);
         // Could use a toast notification library here

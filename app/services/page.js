@@ -5,6 +5,7 @@ import { CREDIT_PACKS, READING_COSTS, SUBSCRIPTION_TIERS, PREMIUM_REPORTS, FREE_
 import { Sparkles, Moon, Calendar, Heart, TrendingUp, FileText, Gift, Crown, Zap, ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
 import { ServiceRelatedLinks } from "@/components/RelatedServices";
+import { apiClient } from "@/lib/api-client";
 
 export default function ServicesPage() {
   const [isLoading, setIsLoading] = useState(null);
@@ -21,12 +22,7 @@ export default function ServicesPage() {
   const handlePurchaseReport = async (reportId) => {
     setIsLoading(reportId);
     try {
-      const res = await fetch('/api/create-report-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportId }),
-      });
-      const data = await res.json();
+      const data = await apiClient.post('/api/create-report-payment', { reportId });
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {

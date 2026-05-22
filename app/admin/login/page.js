@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -17,22 +18,11 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        router.push("/admin");
-        router.refresh();
-      } else {
-        setError(data.error || "Invalid admin credentials");
-      }
+      const data = await apiClient.post("/api/admin/login", formData);
+      router.push("/admin");
+      router.refresh();
     } catch (err) {
-      setError("Failed to connect to server");
+      setError(err.message || "Failed to connect to server");
     } finally {
       setLoading(false);
     }

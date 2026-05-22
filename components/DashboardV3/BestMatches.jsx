@@ -1,9 +1,9 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Heart, Loader2, X, Sparkles, Info } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
 import Link from "next/link";
+import { apiClient } from '@/lib/api-client';
 
 /**
  * Get sign emoji
@@ -98,12 +98,9 @@ export default function BestMatches({ userId }) {
   const fetchTopMatches = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/compatibility/top?userId=${userId}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setMatches(data.matches || []);
-        }
+      const data = await apiClient.get(`/api/compatibility/top?userId=${userId}`);
+      if (data.success) {
+        setMatches(data.matches || []);
       }
     } catch (err) {
       console.error("Failed to fetch top matches:", err);

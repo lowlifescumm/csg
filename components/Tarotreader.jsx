@@ -1,37 +1,39 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 export default function TarotReader() {
   const [question, setQuestion] = useState("");
-  const [loading, setLoading] = useState(false);
   const [reading, setReading] = useState(null);
+  const [submitVersion, setSubmitVersion] = useState(0);
 
-  const handleSubmit = async (e) => {
+  const requestBody = { question, spreadType: "three-card" };
+
+  const { loading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.post("/api/tarot", requestBody, { timeout: 90_000 }),
+    [submitVersion, requestBody],
+    {
+      enabled: submitVersion > 0,
+      onSuccess: (data) => {
+        setSubmitVersion(0);
+        if (data.success) {
+          setReading(data.reading);
+        }
+      },
+      toastMessages: { error: "Something went wrong. Check your connection." },
+    },
+  );
+
+  const submitReading = useCallback(() => {
+    setSubmitVersion((v) => v + 1);
+  }, []);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/tarot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question,
-          spreadType: "three-card",
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setReading(data.reading);
-      } else {
-        alert(data.error || "No credits available");
-      }
-    } catch (e) {
-      alert("Something went wrong");
-    } finally {
-      setLoading(false);
-    }
+    submitReading();
   };
 
   return (

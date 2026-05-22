@@ -1,14 +1,14 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { Sparkles, Zap } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function PatternAlert() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/user/patterns')
-      .then(res => res.json())
+    apiClient.get('/api/user/patterns')
       .then(json => {
         setData(json);
         setLoading(false);
