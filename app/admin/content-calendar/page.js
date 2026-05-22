@@ -386,7 +386,6 @@ export default function ContentCalendarPage() {
       }
       setLastPoll(new Date());
       setIsConnected(true);
-      }
     } catch (err) {
       console.error("[admin/content-calendar] Polling error:", err);
       setIsConnected(false);
