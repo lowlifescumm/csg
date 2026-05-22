@@ -76,17 +76,17 @@ export async function POST(request) {
       }, { status: 403 });
     }
 
+    // Validate question requirement BEFORE credit consumption
+    if (spread.ui?.require_question && !question.trim()) {
+      return NextResponse.json({ error: "Please enter your question before submitting." }, { status: 400 });
+    }
+
     // Consume credits for the reading (pass cardCount for custom spreads)
     const creditResult = await consumeCreditsForReading(userId, readingTypeKey, null, isCustomSpread ? actualCardCount : null);
     
     if (!creditResult.success) {
       const errorResponse = formatCreditError(creditResult);
       return NextResponse.json(errorResponse, { status: errorResponse.status });
-    }
-
-    // Validate question requirement
-    if (spread.ui?.require_question && !question.trim()) {
-      return NextResponse.json({ error: "Please enter your question before submitting." }, { status: 400 });
     }
 
     // Determine cards

@@ -1,4 +1,5 @@
 {
   "url": "http://127.0.0.1:18789",
-  "enabled": true
+  "enabled": true,
+  "token": "eff632a7c7e32537fe233c60b5f96be06b5fc1ad5f678bd2"
 }
