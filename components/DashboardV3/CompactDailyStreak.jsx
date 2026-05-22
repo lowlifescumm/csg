@@ -1,45 +1,43 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Trophy, Zap, Flame } from "lucide-react";
+import { Trophy, Zap, Flame, Loader2 } from "lucide-react";
 import StreakMilestones from "./StreakMilestones";
 import StreakMilestoneCelebration from "./StreakMilestoneCelebration";
 import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 /**
  * CompactDailyStreak - Compact widget combining level progress and streak info
  * Replaces the large GrowthBar + DailyTasks widgets to save space
  */
 export default function CompactDailyStreak({ userId, streak }) {
-  const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100, totalXP: 0 });
   const [showCelebration, setShowCelebration] = useState(false);
   
   // Safely extract streak value, ensuring we never render objects
   const safeStreak = streak && typeof streak === 'object' && Object.keys(streak).length > 0 ? streak : null;
 
-  useEffect(() => {
-    if (!userId) return;
-    
-    async function fetchStats() {
-      try {
-        const data = await apiClient.get("/api/tasks");
-        if (data?.success && data.stats) {
-          const totalXP = data.stats.totalXP || 0;
-          const level = Math.floor(totalXP / 100) + 1;
-          const xpCurrent = totalXP % 100;
-          setLevelData({
-            level,
-            xpCurrent,
-            xpTarget: 100,
-            totalXP
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch stats:", err);
-      }
-    }
+  const { data, loading, error } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/tasks", { timeout: 15000 }),
+    [],
+    { toastMessages: { error: "Could not load streak stats." } }
+  );
 
-    fetchStats();
-  }, [userId]);
+  // Calculate level data from API response
+  const levelData = (() => {
+    if (data?.stats) {
+      const totalXP = data.stats.totalXP || 0;
+      const level = Math.floor(totalXP / 100) + 1;
+      const xpCurrent = totalXP % 100;
+      return {
+        level,
+        xpCurrent,
+        xpTarget: 100,
+        totalXP
+      };
+    }
+    return { level: 1, xpCurrent: 0, xpTarget: 100, totalXP: 0 };
+  })();
 
   const progressPercent = levelData.xpTarget > 0 ? Math.min((levelData.xpCurrent / levelData.xpTarget) * 100, 100) : 0;
   const currentStreak = safeStreak?.currentStreak || 0;
@@ -52,6 +50,16 @@ export default function CompactDailyStreak({ userId, streak }) {
       setShowCelebration(true);
     }
   }, [newMilestone]);
+
+  if (loading) {
+    return (
+      <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow-lg border border-white border-opacity-40">
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="glassmorphic rounded-2xl p-4 sm:p-6 apple-shadow-lg border border-white border-opacity-40">

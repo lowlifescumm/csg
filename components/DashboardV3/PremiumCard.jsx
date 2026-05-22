@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Crown, Sparkles, Star, Heart, MessageCircle, Zap, Loader2, Check } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 /**
  * PremiumCard - Soft upsell card for premium with value justification
@@ -13,7 +14,6 @@ import { apiClient } from "@/lib/api-client";
  */
 export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) {
   const [textVariant, setTextVariant] = useState("short");
-  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     // For A/B testing: use localStorage to persist variant
@@ -37,27 +37,33 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
     return null;
   }
 
-  const handleUpgrade = async () => {
-    setProcessing(true);
+  // API hook for creating subscription - disabled initially, triggered by refetch
+  const { data, loading: processing, refetch } = useApiClientWithToast(
+    apiClient,
+    useCallback(
+      (c) => c.post("/api/create-subscription", {}, { timeout: 15000 }),
+      []
+    ),
+    [],
+    { 
+      enabled: false,
+      toastMessages: { error: "Could not start subscription. Please try again." }
+    }
+  );
+
+  // Handle successful subscription creation
+  useEffect(() => {
+    if (data?.checkoutUrl) {
+      window.location.href = data.checkoutUrl;
+    }
+  }, [data]);
+
+  const handleUpgrade = useCallback(() => {
     if (onUpgrade) {
       onUpgrade();
     }
-
-    try {
-      const data = await apiClient.post("/api/create-subscription");
-
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        alert(data.error || "Failed to start subscription");
-        setProcessing(false);
-      }
-    } catch (error) {
-      console.error("Subscription error:", error);
-      alert("Failed to start subscription process");
-      setProcessing(false);
-    }
-  };
+    refetch();
+  }, [onUpgrade, refetch]);
 
   // Perks list
   const perks = [
@@ -214,4 +220,3 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
     </div>
   );
 }
-

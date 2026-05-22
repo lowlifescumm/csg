@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 import {
   AreaChart,
   Area,
@@ -10,7 +11,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { Activity, Info, Zap } from "lucide-react";
+import { Activity, Info, Zap, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 /**
@@ -43,9 +44,6 @@ export default function EnergyChart({
   labels = null,
   userId = null,
 }) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [hasData, setHasData] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [chartWidth, setChartWidth] = useState(800);
 
@@ -64,47 +62,57 @@ export default function EnergyChart({
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
-  useEffect(() => {
-    if (isMounted) {
-      fetchEnergyData();
-    }
-  }, [isMounted, userId, physical, emotional, spiritual, labels]);
+  // Check if props are provided - if so, use them directly without API call
+  const hasPropData = physical && emotional && spiritual && labels;
 
-  const fetchEnergyData = async () => {
-    // If props are provided, use them
-    if (physical && emotional && spiritual && labels) {
+  // Only fetch from API if no prop data is provided
+  const { data, loading, error } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/energy", { timeout: 15000 }),
+    [],
+    { 
+      toastMessages: { error: "Could not load energy data." },
+      enabled: !hasPropData // Skip API call if props are provided
+    }
+  );
+
+  // Build chart data from props or API data
+  const { chartData, hasData, isDummyData } = useMemo(() => {
+    // Priority 1: Use props if provided
+    if (hasPropData) {
       const formattedData = labels.map((label, index) => ({
         day: label,
         physical: physical[index] || 0,
         emotional: emotional[index] || 0,
         spiritual: spiritual[index] || 0,
       }));
-      setData(formattedData);
-      setHasData(true);
-      setLoading(false);
-      return;
+      return { chartData: formattedData, hasData: true, isDummyData: false };
     }
 
-    // Otherwise, try to fetch from API
-    if (userId) {
-      try {
-        const result = await apiClient.get("/api/energy");
-        if (result.success && result.data && result.data.length > 0) {
-          setData(result.data);
-          setHasData(true);
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.info("Could not fetch energy data:", err);
-      }
+    // Priority 2: Use API data if available
+    if (data?.data?.length > 0) {
+      return { chartData: data.data, hasData: true, isDummyData: false };
     }
 
-    // No data available - show empty state
-    setHasData(false);
-    setData([]);
-    setLoading(false);
+    // Priority 3: Fallback to dummy data
+    return { chartData: generateDummyData(), hasData: false, isDummyData: true };
+  }, [hasPropData, physical, emotional, spiritual, labels, data]);
+
+  // Calculate summary word based on today's energy (first day in chart)
+  const calculateSummaryWord = () => {
+    if (chartData.length === 0) return "Balanced";
+    const today = chartData[0];
+    const avgEnergy = (today.physical + today.emotional + today.spiritual) / 3;
+    
+    if (avgEnergy >= 80) return "Magnetic";
+    if (avgEnergy >= 70) return "Active";
+    if (avgEnergy >= 60) return "Steady";
+    if (avgEnergy >= 50) return "Calm";
+    if (avgEnergy >= 40) return "Restful";
+    return "Quiet";
   };
+
+  const summaryWord = calculateSummaryWord();
 
   // Custom tooltip
   const CustomTooltip = ({ active, payload }) => {
@@ -123,31 +131,12 @@ export default function EnergyChart({
     return null;
   };
 
-  // Use dummy data if no real data
-  const chartData = hasData && data.length > 0 ? data : generateDummyData();
-  const isDummyData = !hasData;
-
-  // Calculate summary word based on today's energy (first day in chart)
-  const calculateSummaryWord = () => {
-    if (chartData.length === 0) return "Balanced";
-    const today = chartData[0];
-    const avgEnergy = (today.physical + today.emotional + today.spiritual) / 3;
-    
-    if (avgEnergy >= 80) return "Magnetic";
-    if (avgEnergy >= 70) return "Active";
-    if (avgEnergy >= 60) return "Steady";
-    if (avgEnergy >= 50) return "Calm";
-    if (avgEnergy >= 40) return "Restful";
-    return "Quiet";
-  };
-
-  const summaryWord = calculateSummaryWord();
-
-  if (loading) {
+  // Show loading state only when fetching from API (not when using props)
+  if (loading && !hasPropData) {
     return (
       <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+          <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
         </div>
       </div>
     );
@@ -323,4 +312,3 @@ export default function EnergyChart({
     </div>
   );
 }
-

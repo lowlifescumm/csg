@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Moon, CreditCard, Zap, Crown, X } from "lucide-react";
 import Link from "next/link";
 import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 // Credit packs matching the existing system
 const creditPacks = [
@@ -22,26 +23,29 @@ const creditPacks = [
  * - moonPhase: Moon phase data (optional, will fetch if not provided)
  */
 export default function HeroHeader({ user, credits, streak, moonPhase: propMoonPhase }) {
-  const [moonPhase, setMoonPhase] = useState(propMoonPhase);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [selectedPack, setSelectedPack] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const validMoonPhase = propMoonPhase && typeof propMoonPhase === 'object' && Object.keys(propMoonPhase).length > 0;
-    if (!validMoonPhase) {
-      apiClient.get("/api/moon-phase")
-        .then(data => {
-          if (data.success && data.data && typeof data.data === 'object' && Object.keys(data.data).length > 0) {
-            setMoonPhase(data.data);
-          }
-        })
-        .catch(() => {});
-    } else {
-      setMoonPhase(propMoonPhase);
+  // Check if moonPhase prop is valid
+  const hasValidPropMoonPhase = propMoonPhase && 
+    typeof propMoonPhase === 'object' && 
+    Object.keys(propMoonPhase).length > 0;
+
+  // Fetch moon phase if prop not provided
+  const { data: moonData, loading: moonLoading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/moon-phase", { timeout: 15000 }),
+    [],
+    { 
+      toastMessages: { error: "Could not load moon phase." },
+      enabled: !hasValidPropMoonPhase // Only fetch if prop not provided
     }
-  }, [propMoonPhase]);
+  );
+
+  // Use prop or fetched data
+  const moonPhase = hasValidPropMoonPhase ? propMoonPhase : (moonData?.data || null);
 
   // Get greeting based on time of day
   const getGreeting = () => {
@@ -315,4 +319,3 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
     </>
   );
 }
-

@@ -4,6 +4,7 @@ import { Heart, Briefcase, Sparkles, Brain, Star, Users, Loader2, X } from "luci
 import Link from "next/link";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 // Default tile configuration
 const defaultTiles = [
@@ -87,20 +88,25 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
   const [readingResult, setReadingResult] = useState(null);
   const [error, setError] = useState(null);
 
+  // Fetch tiles using useApiClientWithToast hook
+  const { data: tilesData, error: tilesError } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/dashboard/tiles', { timeout: 15000 }),
+    [],
+    { toastMessages: { error: 'Could not load dashboard tiles. Check your connection.' } }
+  );
+
+  // Update tiles when data loads or tilesConfig changes
   useEffect(() => {
     if (tilesConfig && Array.isArray(tilesConfig)) {
       setTiles(tilesConfig);
       return;
     }
 
-    apiClient.get("/api/dashboard/tiles").then((data) => {
-      if (data.tiles && Array.isArray(data.tiles)) {
-        setTiles(data.tiles);
-      }
-    }).catch(() => {
-      // Use default tiles if API fails
-    });
-  }, [tilesConfig]);
+    if (tilesData?.tiles && Array.isArray(tilesData.tiles)) {
+      setTiles(tilesData.tiles);
+    }
+  }, [tilesConfig, tilesData]);
 
   const handleTileClick = async (tile) => {
     // If tile requires a form (birth chart, compatibility), redirect to that page
@@ -114,12 +120,12 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
     setReadingResult(null);
 
     try {
-      const data = await apiClient.post("/api/readings/generate", {
+      const data = await apiClient.post('/api/readings/generate', {
         type: tile.type,
         focusOptional: tile.focusOptional,
         spreadType: tile.spreadType,
         readingType: tile.readingType,
-      });
+      }, { timeout: 30000 });
 
       setReadingResult({
         tile,
