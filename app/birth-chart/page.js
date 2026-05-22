@@ -1,71 +1,56 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 import BirthChartForm from "@/components/BirthChartForm";
 
 function BirthChartPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [checkingChart, setCheckingChart] = useState(true);
   const [mounted, setMounted] = useState(false);
   const updateMode = searchParams?.get('update') === 'true';
   const redirect = searchParams?.get('redirect') || null;
 
   useEffect(() => {
     setMounted(true);
-    
-    async function checkAuthAndChart() {
-      try {
-        // Check authentication (but don't require it)
-        const res = await fetch('/api/auth/user');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) {
-            setUser(data.user);
-            
-            // If update mode, skip chart check and show form
-            if (updateMode) {
-              setLoading(false);
-              setCheckingChart(false);
-              return;
-            }
-            
-            // Check if user has a birth chart
-            try {
-              const chartRes = await fetch('/api/birth-chart');
-              if (chartRes.ok) {
-                const chartData = await chartRes.json();
-                if (chartData.hasChart) {
-                  // User has a chart, redirect to my-chart page
-                  router.push('/my-chart');
-                  return;
-                }
-              }
-            } catch (chartError) {
-              // Chart check failed, continue to show form
-              console.info('Chart check failed:', chartError);
-            }
-          }
+  }, []);
+
+  const { loading: authLoading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/auth/user'),
+    [],
+    {
+      onErrorWithToast: () => false,
+      onSuccess: (data) => {
+        if (data.user) setUser(data.user);
+      },
+    },
+  );
+
+  const { loading: chartLoading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/birth-chart'),
+    [user],
+    {
+      enabled: !!user && !updateMode,
+      onErrorWithToast: () => false,
+      onSuccess: (data) => {
+        if (data.hasChart) {
+          router.push('/my-chart');
         }
-        // No user or no chart - show the form (no redirect to login)
-      } catch (error) {
-        console.info('Auth check failed, showing form anyway:', error);
-      } finally {
-        setLoading(false);
-        setCheckingChart(false);
-      }
-    }
-    checkAuthAndChart();
-  }, [router, updateMode]);
+      },
+    },
+  );
+
+  const loading = authLoading || (!!user && !updateMode && chartLoading);
 
   if (!mounted) {
     return null;
   }
 
-  if (loading || checkingChart) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center animate-fade-in">
@@ -78,10 +63,8 @@ function BirthChartPageInner() {
     );
   }
 
-  // Show the form - user can be logged in or anonymous
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
-      {/* Page Header with H1 */}
       <div className="relative overflow-hidden py-12 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">

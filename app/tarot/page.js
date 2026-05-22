@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Sparkles, Loader2, Moon, ArrowRight, Lock, X, Bookmark, BookmarkCheck } from "lucide-react";
 import Link from "next/link";
-import logger from "@/lib/logger";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
@@ -16,8 +17,39 @@ export default function TarotPage() {
   const [reading, setReading] = useState(null);
   const [savedReadingId, setSavedReadingId] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [loadingCredits, setLoadingCredits] = useState(true);
+  const [saveVersion, setSaveVersion] = useState(0);
+
+  const { loading: isSaving } = useApiClientWithToast(
+    apiClient,
+    (c) => c.post('/api/save-reading', {
+      readingType: 'tarot',
+      spreadType: selectedType?.name || 'Single Card',
+      question: reading?.question,
+      cards: reading?.cards,
+      interpretation: reading?.interpretation,
+      thumbnailCard: reading?.cards?.[0]?.name || 'The Fool',
+    }, { timeout: 10_000 }),
+    [saveVersion, reading, selectedType],
+    {
+      enabled: saveVersion > 0,
+      onSuccess: (data) => {
+        setSaveVersion(0);
+        if (data.success) {
+          setSavedReadingId(data.savedReading.id);
+        } else {
+          console.error('Failed to save reading:', data.error);
+        }
+      },
+      onErrorWithToast: (error) => {
+        setSaveVersion(0);
+        if (error.status === 401) {
+          setShowAuthModal(true);
+          return false;
+        }
+        return 'Failed to save reading. Check your connection.';
+      },
+    },
+  );
   const [isPremium, setIsPremium] = useState(null);
   const [creditsAvailable, setCreditsAvailable] = useState(0);
   const [showUpsell, setShowUpsell] = useState(false);
@@ -25,26 +57,25 @@ export default function TarotPage() {
   const [teaserABVariant, setTeaserABVariant] = useState("2");
 
   useEffect(() => {
-    checkCreditsStatus();
-    // Assign A/B test variant for teaser count
     setTeaserABVariant(getTeaserABVariant());
   }, []);
 
-  const checkCreditsStatus = async () => {
-    setLoadingCredits(true);
-    try {
-      const response = await fetch("/api/credits");
-      const data = await response.json();
-      setIsPremium(data.isPremium || false);
-      setCreditsAvailable(getAvailableCredits(data));
-    } catch (error) {
-      console.error("Error checking credits:", error);
-      setIsPremium(false);
-      setCreditsAvailable(0);
-    } finally {
-      setLoadingCredits(false);
-    }
-  };
+  const { loading: loadingCredits, refetch: refetchCredits } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/credits"),
+    [],
+    {
+      onSuccess: (data) => {
+        setIsPremium(data.isPremium || false);
+        setCreditsAvailable(getAvailableCredits(data));
+      },
+      onError: () => {
+        setIsPremium(false);
+        setCreditsAvailable(0);
+      },
+      toastMessages: { error: "Could not check credit status." },
+    },
+  );
 
   const handleTypePick = (type) => {
     setSelectedType(type);
@@ -60,7 +91,7 @@ export default function TarotPage() {
   const handleReadingComplete = (readingData) => {
     setReading(readingData);
     setShowCardSelector(false);
-    checkCreditsStatus();
+    refetchCredits();
   };
 
   const handleNewReading = () => {
@@ -69,35 +100,9 @@ export default function TarotPage() {
     setShowCardSelector(false);
     setSavedReadingId(null);
   };
-  const handleSaveReading = async () => {
-    if (!reading || isSaving) return;
-    setIsSaving(true);
-    try {
-      const response = await fetch('/api/save-reading', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          readingType: 'tarot',
-          spreadType: selectedType?.name || 'Single Card',
-          question: reading.question,
-          cards: reading.cards,
-          interpretation: reading.interpretation,
-          thumbnailCard: reading.cards?.[0]?.name || 'The Fool'
-        })
-      });
-      const data = await response.json();
-      if (data.success) {
-        setSavedReadingId(data.savedReading.id);
-      } else if (response.status === 401) {
-        setShowAuthModal(true);
-      } else {
-        console.error('Failed to save reading:', data.error);
-      }
-    } catch (error) {
-      console.error('Error saving reading:', error);
-    } finally {
-      setIsSaving(false);
-    }
+  const handleSaveReading = () => {
+    if (!reading || isSaving || savedReadingId) return;
+    setSaveVersion(v => v + 1);
   };
   const getAvailableCredits = (creditData) => {
     if (typeof creditData?.credits === "number") return creditData.credits;

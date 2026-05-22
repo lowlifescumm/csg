@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 import { ArrowLeft, Sparkles, Star, Heart, TrendingUp, Activity, Loader2 } from 'lucide-react';
 
 const zodiacSigns = [
@@ -30,9 +32,6 @@ const elementColors = {
 export default function SignHoroscopePage() {
   const params = useParams();
   const router = useRouter();
-  const [horoscope, setHoroscope] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const signName = params.sign;
   const sign = zodiacSigns.find(s => s.name.toLowerCase() === signName?.toLowerCase());
@@ -40,29 +39,19 @@ export default function SignHoroscopePage() {
   useEffect(() => {
     if (!sign) {
       router.push('/horoscope');
-      return;
     }
+  }, [sign, router]);
 
-    fetchHoroscope(sign.name.toLowerCase());
-  }, [sign, signName, router]);
-
-  const fetchHoroscope = async (signSlug) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/horoscope?sign=${signSlug}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch horoscope');
-      }
-
-      const data = await response.json();
-      setHoroscope(data);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-    }
-  };
+  const { data: horoscope, loading, error } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get(`/api/horoscope?sign=${sign?.name?.toLowerCase() || ''}`),
+    [sign],
+    {
+      enabled: !!sign,
+      onErrorWithToast: () => false,
+      toastMessages: { error: 'Could not load your horoscope. Check your connection.' },
+    },
+  );
 
   if (!sign) {
     return (
