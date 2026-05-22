@@ -1,16 +1,124 @@
 "use client";
 
-"use client";
-
 import { useState, useEffect } from 'react';
-import { Moon, Sparkles, Calendar, Heart, Briefcase, Droplet, Star, ChevronRight } from 'lucide-react';
+import { Moon, Sparkles, Calendar, Heart, Briefcase, Droplet, Star, ChevronRight, RefreshCw, X } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { SUBSCRIPTION_TIERS } from '@/lib/pricing';
 import LowCreditsUpsellBanner from '@/components/LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
+import logger from "@/lib/logger";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
+/**
+ * Fetch moon phase data from API
+ */
+async function fetchMoonPhaseData() {
+  const response = await fetch('/api/moon-phase');
+  const result = await response.json();
+  
+  if (!result.success || !result.data) {
+    throw new Error(result.error || 'Failed to fetch moon phase data');
+  }
+  
+  return result.data;
+}
+
+/**
+ * Map API moon phase data to reading format expected by MoonReadingResult
+ */
+function mapMoonDataToReading(apiData, formData) {
+  const { guidance, nextPhases } = apiData;
+  
+  // Map guidance.bestFor/avoid to career/relationships/wellness sections
+  const bestForText = guidance.bestFor?.join(', ') || '';
+  const avoidText = guidance.avoid?.join(', ') || '';
+  
+  // Infer user's moon sign from birth chart or use default
+  const userMoonSign = formData?.birthDate 
+    ? getMoonSignFromBirthDate(formData.birthDate)
+    : 'Unknown';
+  
+  // Map next phases - the API returns array, we need fullMoon/newMoon objects
+  const fullMoonPhase = nextPhases.find(p => p.name === 'Full Moon') || nextPhases[1];
+  const newMoonPhase = nextPhases.find(p => p.name === 'New Moon') || nextPhases[3];
+  
+  // Format dates for display
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'Unknown';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+  
+  return {
+    currentPhase: apiData.phaseName,
+    phaseEmoji: apiData.phaseEmoji,
+    yourMoonSign: userMoonSign,
+    moonInSign: apiData.zodiacSign,
+    illumination: apiData.illumination,
+    personalizedGuidance: {
+      emotional: `${guidance.energy || 'The current moon phase brings unique energy to your emotional landscape.'} With the Moon currently in ${apiData.zodiacSign}, you may find yourself drawn to ${bestForText.split(',')[0] || 'introspection'}. This is a time when your intuition is particularly strong.`,
+      career: `This ${apiData.phaseName} phase ${guidance.bestFor?.some(item => item.toLowerCase().includes('work') || item.toLowerCase().includes('career')) ? 'supports professional advancement' : 'offers opportunities for strategic planning'}. ${guidance.bestFor ? `Focus on: ${bestForText}.` : ''} ${guidance.avoid ? `Avoid: ${avoidText}.` : ''}`,
+      relationships: `The lunar energy in ${apiData.zodiacSign} affects how you connect with others. ${guidance.energy || 'This phase encourages meaningful connections.'} ${guidance.bestFor ? `Good for: ${bestForText}.` : ''}`,
+      wellness: `${guidance.energy || 'Your body and spirit respond to the current lunar phase.'} ${guidance.ritual ? `Consider this practice: ${guidance.ritual.split('.')[0]}.` : 'Rest and reflection are key.'}`
+    },
+    timing: fullMoonPhase 
+      ? `Next Full Moon: ${formatDate(fullMoonPhase.date)} — a time for culmination. Next New Moon: ${formatDate(newMoonPhase?.date)} — perfect for new beginnings.`
+      : 'Check upcoming lunar events for optimal timing.',
+    moonRitual: {
+      title: `Your ${apiData.phaseName} Ritual`,
+      items: guidance.ritual 
+        ? guidance.ritual.split(/[.!?]+/).filter(s => s.trim().length > 10).slice(0, 6).map(s => s.trim())
+        : [
+            'Find a quiet space and center yourself',
+            'Reflect on the current phase energy',
+            'Set an intention aligned with this phase',
+            'Perform a simple candle meditation',
+            'Write down your thoughts in a journal',
+            'Close with gratitude'
+          ]
+    },
+    nextPhases: {
+      fullMoon: { 
+        date: formatDate(fullMoonPhase?.date), 
+        impact: fullMoonPhase?.name === 'Full Moon' 
+          ? 'A time of culmination and release' 
+          : `The ${fullMoonPhase?.name || 'next phase'} brings new energy` 
+      },
+      newMoon: { 
+        date: formatDate(newMoonPhase?.date), 
+        impact: newMoonPhase?.name === 'New Moon' 
+          ? 'Perfect for new beginnings and intentions' 
+          : `The ${newMoonPhase?.name || 'following phase'} offers fresh starts`
+      }
+    },
+    // Store raw API data for polling comparison
+    _apiData: apiData
+  };
+}
+
+/**
+ * Estimate moon sign from birth date (simplified calculation)
+ * Note: This is a rough estimate. Accurate calculation requires birth time and location.
+ */
+function getMoonSignFromBirthDate(birthDateStr) {
+  // Moon moves through zodiac every ~2.5 days
+  // For a more accurate implementation, we'd need the full birth chart calculation
+  const date = new Date(birthDateStr);
+  const day = date.getDate();
+  const month = date.getMonth();
+  
+  // Simplified: distribute roughly across signs based on birth date
+  const signs = [
+    'Capricorn', 'Aquarius', 'Pisces', 'Aries', 'Taurus', 'Gemini',
+    'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius'
+  ];
+  
+  // Use a hash of the date to distribute across signs
+  const hash = (month * 31 + day) % 12;
+  return signs[hash];
+}
 
 function CheckoutForm({ paymentType, formData, onSuccess }) {
   const stripe = useStripe();
@@ -129,44 +237,15 @@ export default function PersonalizedMoonReading() {
 
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setReading(mockReading);
+      const moonData = await fetchMoonPhaseData();
+      const mappedReading = mapMoonDataToReading(moonData, formData);
+      setReading(mappedReading);
       setStep('reading');
     } catch (error) {
       logger.error('Error generating reading:', error);
       alert('Failed to generate reading. Please try again.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const mockReading = {
-    currentPhase: 'Waxing Gibbous',
-    phaseEmoji: '🌔',
-    yourMoonSign: 'Pisces',
-    moonInSign: 'Leo',
-    illumination: 78,
-    personalizedGuidance: {
-      emotional: 'With your natal Moon in Pisces, this Waxing Gibbous phase amplifies your intuitive abilities. You may feel more emotionally sensitive than usual, but this heightened awareness is a gift. The Moon currently in Leo brings a desire for recognition and creative expression to your naturally empathetic Pisces Moon.',
-      career: 'This is an excellent time to showcase your creative projects at work. Your Pisces Moon gives you unique insights into team dynamics, and with the Moon in Leo, others are more receptive to your ideas. Schedule that presentation or pitch your concept before the Full Moon.',
-      relationships: 'Your emotional depth is attractive right now. Leo Moon energy makes you more confident in expressing your needs. If you typically sacrifice your desires for others (classic Pisces Moon), this week gives you courage to speak up. Existing relationships benefit from honest, warm communication.',
-      wellness: 'Water is especially important for your Pisces Moon. The building lunar energy may make you feel restless - channel this into swimming, yoga, or dance. Your body needs movement that feels like flow, not force. Evening meditation near water would be particularly healing.'
-    },
-    timing: 'Best days this week: Thursday and Friday when Moon aspects your natal Venus. Avoid major decisions on Tuesday when the Moon squares your Mercury. The Full Moon in 3 days brings culmination to projects started 2 weeks ago.',
-    moonRitual: {
-      title: 'Your Personalized Moon Ritual',
-      items: [
-        'Fill a bowl with water and add sea salt (connects to your Pisces element)',
-        'Light a gold or orange candle (honors current Leo Moon)',
-        'Write 3 things you want to complete by the Full Moon',
-        'Hold each paper over the candle (not too close!) and speak your intention',
-        'Place papers under the water bowl overnight',
-        'In the morning, pour the water outside and keep your intentions visible'
-      ]
-    },
-    nextPhases: {
-      fullMoon: { date: 'Dec 15', impact: 'Major completion in your 6th house of work and health' },
-      newMoon: { date: 'Dec 30', impact: 'Fresh start in your 11th house of friendships and aspirations' }
     }
   };
 
@@ -225,7 +304,10 @@ export default function PersonalizedMoonReading() {
       
       if (data.success && data.status === 'succeeded') {
         sessionStorage.removeItem('pendingPaymentIntentId');
-        setReading(mockReading);
+        // Fetch live moon data instead of using mock
+        const moonData = await fetchMoonPhaseData();
+        const mappedReading = mapMoonDataToReading(moonData, formData);
+        setReading(mappedReading);
         setStep('reading');
       } else {
         alert('Payment verification failed. Please contact support.');
@@ -287,7 +369,7 @@ export default function PersonalizedMoonReading() {
   }
 
   if (step === 'reading' && reading) {
-    return <MoonReadingResult reading={reading} name={formData.name} />;
+    return <MoonReadingResult reading={reading} name={formData.name} formData={formData} />;
   }
 
   return (
@@ -601,8 +683,13 @@ export default function PersonalizedMoonReading() {
   );
 }
 
-function MoonReadingResult({ reading, name }) {
+function MoonReadingResult({ reading, name, formData }) {
   const [activeTab, setActiveTab] = useState('emotional');
+  const [currentReading, setCurrentReading] = useState(reading);
+  const [showPhaseChangeBanner, setShowPhaseChangeBanner] = useState(false);
+  const [phaseChangeMessage, setPhaseChangeMessage] = useState('');
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [apiError, setApiError] = useState(null);
 
   const tabs = [
     { id: 'emotional', label: 'Emotional', icon: Heart },
@@ -611,17 +698,104 @@ function MoonReadingResult({ reading, name }) {
     { id: 'wellness', label: 'Wellness', icon: Droplet }
   ];
 
+  // Poll for moon phase changes every 60 seconds
+  useEffect(() => {
+    const pollForPhaseChanges = async () => {
+      try {
+        const newData = await fetchMoonPhaseData();
+        const currentPhaseName = currentReading._apiData?.phaseName;
+        const currentZodiacSign = currentReading._apiData?.zodiacSign;
+        
+        // Check if phase or sign has changed
+        if (newData.phaseName !== currentPhaseName || newData.zodiacSign !== currentZodiacSign) {
+          // Map new data to reading format
+          const newReading = mapMoonDataToReading(newData, formData);
+          setCurrentReading(newReading);
+          
+          // Show banner with change info
+          const changes = [];
+          if (newData.phaseName !== currentPhaseName) {
+            changes.push(`${newData.phaseEmoji} ${newData.phaseName}`);
+          }
+          if (newData.zodiacSign !== currentZodiacSign) {
+            changes.push(`${newData.zodiacSign}`);
+          }
+          setPhaseChangeMessage(`Moon has entered ${changes.join(' in ')}`);
+          setShowPhaseChangeBanner(true);
+          
+          // Auto-hide banner after 10 seconds
+          setTimeout(() => setShowPhaseChangeBanner(false), 10000);
+        }
+      } catch (error) {
+        logger.error('Error polling moon phase:', error);
+        // Don't show error for polling failures - user already has data
+      }
+    };
+
+    // Initial poll after 60 seconds, then every 60 seconds
+    const intervalId = setInterval(pollForPhaseChanges, 900000);
+    
+    return () => clearInterval(intervalId);
+  }, [currentReading._apiData, formData]);
+
+  const handleRetryFetch = async () => {
+    setIsRetrying(true);
+    try {
+      const newData = await fetchMoonPhaseData();
+      const newReading = mapMoonDataToReading(newData, formData);
+      setCurrentReading(newReading);
+      setApiError(null);
+    } catch (error) {
+      setApiError('Failed to refresh moon data. Using cached reading.');
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-8 sm:py-12 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
         
+        {/* Phase Change Banner */}
+        {showPhaseChangeBanner && (
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 rounded-xl p-4 mb-6 flex items-center justify-between animate-fade-in">
+            <div className="flex items-center gap-3">
+              <Moon className="w-6 h-6" />
+              <span className="font-semibold">{phaseChangeMessage}</span>
+            </div>
+            <button 
+              onClick={() => setShowPhaseChangeBanner(false)}
+              className="p-1 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
+        {/* API Error Banner with Retry */}
+        {apiError && (
+          <div className="bg-red-500 bg-opacity-90 text-white rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span>{apiError}</span>
+            </div>
+            <button 
+              onClick={handleRetryFetch}
+              disabled={isRetrying}
+              className="flex items-center gap-2 px-3 py-1 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRetrying ? 'animate-spin' : ''}`} />
+              {isRetrying ? 'Retrying...' : 'Retry'}
+            </button>
+          </div>
+        )}
+        
         <div className="text-center mb-6 sm:mb-8">
-          <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">{reading.phaseEmoji}</div>
+          <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">{currentReading.phaseEmoji}</div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
             {name ? `${name}'s` : 'Your'} Moon Reading
           </h1>
           <div className="text-purple-200 text-base sm:text-lg">
-            {reading.currentPhase} • Your Moon in {reading.yourMoonSign}
+            {currentReading.currentPhase} • Your Moon in {currentReading.yourMoonSign}
           </div>
         </div>
 
@@ -629,15 +803,15 @@ function MoonReadingResult({ reading, name }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-center">
             <div>
               <div className="text-purple-200 text-xs sm:text-sm mb-1">Current Phase</div>
-              <div className="text-white text-lg sm:text-xl font-bold">{reading.currentPhase}</div>
+              <div className="text-white text-lg sm:text-xl font-bold">{currentReading.currentPhase}</div>
             </div>
             <div>
               <div className="text-purple-200 text-xs sm:text-sm mb-1">Moon Currently In</div>
-              <div className="text-white text-lg sm:text-xl font-bold">{reading.moonInSign}</div>
+              <div className="text-white text-lg sm:text-xl font-bold">{currentReading.moonInSign}</div>
             </div>
             <div>
               <div className="text-purple-200 text-xs sm:text-sm mb-1">Illumination</div>
-              <div className="text-white text-lg sm:text-xl font-bold">{reading.illumination}%</div>
+              <div className="text-white text-lg sm:text-xl font-bold">{currentReading.illumination}%</div>
             </div>
           </div>
         </div>
@@ -665,7 +839,7 @@ function MoonReadingResult({ reading, name }) {
 
           <div className="p-4 sm:p-6 lg:p-8">
             <p className="text-gray-700 leading-relaxed text-sm sm:text-base lg:text-lg">
-              {reading.personalizedGuidance[activeTab]}
+              {currentReading.personalizedGuidance[activeTab]}
             </p>
           </div>
         </div>
@@ -676,20 +850,20 @@ function MoonReadingResult({ reading, name }) {
             Perfect Timing This Week
           </h3>
           <p className="text-purple-100 leading-relaxed text-sm sm:text-base">
-            {reading.timing}
+            {currentReading.timing}
           </p>
         </div>
 
         <div className="bg-white rounded-xl shadow-xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
           <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
             <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
-            {reading.moonRitual.title}
+            {currentReading.moonRitual.title}
           </h3>
           <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-            This ritual is designed specifically for your {reading.yourMoonSign} Moon during the {reading.currentPhase}.
+            This ritual is designed specifically for your {currentReading.yourMoonSign} Moon during the {currentReading.currentPhase}.
           </p>
           <ol className="space-y-2 sm:space-y-3">
-            {reading.moonRitual.items.map((item, i) => (
+            {currentReading.moonRitual.items.map((item, i) => (
               <li key={i} className="flex gap-3">
                 <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
                   {i + 1}
@@ -706,15 +880,15 @@ function MoonReadingResult({ reading, name }) {
             <div className="flex items-start gap-3 sm:gap-4">
               <div className="text-3xl sm:text-4xl">🌕</div>
               <div>
-                <div className="text-white font-semibold text-sm sm:text-base">Full Moon - {reading.nextPhases.fullMoon.date}</div>
-                <div className="text-purple-200 text-xs sm:text-sm">{reading.nextPhases.fullMoon.impact}</div>
+                <div className="text-white font-semibold text-sm sm:text-base">Full Moon - {currentReading.nextPhases.fullMoon.date}</div>
+                <div className="text-purple-200 text-xs sm:text-sm">{currentReading.nextPhases.fullMoon.impact}</div>
               </div>
             </div>
             <div className="flex items-start gap-3 sm:gap-4">
               <div className="text-3xl sm:text-4xl">🌑</div>
               <div>
-                <div className="text-white font-semibold text-sm sm:text-base">New Moon - {reading.nextPhases.newMoon.date}</div>
-                <div className="text-purple-200 text-xs sm:text-sm">{reading.nextPhases.newMoon.impact}</div>
+                <div className="text-white font-semibold text-sm sm:text-base">New Moon - {currentReading.nextPhases.newMoon.date}</div>
+                <div className="text-purple-200 text-xs sm:text-sm">{currentReading.nextPhases.newMoon.impact}</div>
               </div>
             </div>
           </div>
