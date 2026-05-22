@@ -1,0 +1,402 @@
+{
+  "content_briefs_months_2_3": {
+    "version": "1.0",
+    "created": "2026-04-18",
+    "target": "cosmicspiritguide.com",
+    "total_posts": 16,
+    "month_2": {
+      "theme": "Spirituality + Advanced Astrology",
+      "posts": [
+        {
+          "post_number": 9,
+          "title_suggestions": [
+            "How to Manifest Your Desires: The Complete Step-by-Step Guide",
+            "Manifestation Techniques That Actually Work for Beginners",
+            "The Science of Manifestation: Turn Thoughts Into Reality"
+          ],
+          "target_keyword": "how to manifest",
+          "search_intent": "informational - user wants practical manifestation techniques",
+          "content_type": "how-to guide",
+          "target_word_count": 2500,
+          "h2_headings": [
+            "What is Manifestation and How Does It Work?",
+            "The 5 Core Steps to Manifest Anything You Want",
+            "Powerful Manifestation Techniques Anyone Can Use",
+            "Common Manifestation Mistakes (And How to Avoid Them)",
+            "Signs Your Manifestation Is Coming",
+            "FAQ: Manifestation Questions Answered"
+          ],
+          "internal_linking": ["zodiac compatibility calculator", "angel number meanings"],
+          "cta": "Download our free manifestation journal template",
+          "priority": "high"
+        },
+        {
+          "post_number": 10,
+          "title_suggestions": [
+            "Crystal Meanings: A Complete Guide to Healing Stones and Their Powers",
+            "The Ultimate Crystal Guide: Properties, Meanings & Uses",
+            "Which Crystal Do I Need? How to Choose the Right Stone"
+          ],
+          "target_keyword": "crystal meanings",
+          "search_intent": "informational - user wants to understand crystal properties",
+          "content_type": "guide with reference tables",
+          "target_word_count": 3500,
+          "h2_headings": [
+            "How Crystals Work: The Science and Spirituality",
+            "Crystal Meanings A-Z: Your Complete Reference Guide",
+            "Crystals by Intention: Love, Money, Protection, Healing",
+            "How to Choose the Right Crystal for You",
+            "How to Cleanse, Charge, and Program Your Crystals",
+            "Beginner-Friendly Crystals: Start Your Collection Here"
+          ],
+          "internal_linking": ["chakra calculator", "spiritual tools"],
+          "cta": "Shop our curated crystal starter kit",
+          "priority": "high"
+        },
+        {
+          "post_number": 11,
+          "title_suggestions": [
+            "Angel Number Meanings: What Are the Angels Trying to Tell You?",
+            "Seeing Repeating Numbers? Your Angel Number Guide",
+            "Angel Numbers Explained: 111, 222, 333 and Beyond"
+          ],
+          "target_keyword": "angel number meanings",
+          "search_intent": "informational - user sees repeating numbers and wants meaning",
+          "content_type": "reference guide",
+          "target_word_count": 3000,
+          "h2_headings": [
+            "What Are Angel Numbers and Why Do You Keep Seeing Them?",
+            "Angel Numbers 0-9: The Core Meanings",
+            "Triple Digit Angel Numbers: 111 to 999 Meanings",
+            "Master Numbers: 1111, 2222, 3333 and Beyond",
+            "How to Calculate Your Personal Angel Number",
+            "What To Do When You See an Angel Number"
+          ],
+          "internal_linking": ["numerology calculator", "spiritual guidance"],
+          "cta": "Get your personalized angel number reading",
+          "priority": "high"
+        },
+        {
+          "post_number": 12,
+          "title_suggestions": [
+            "11 Meanings of Seeing 111: Why You Keep Seeing This Angel Number",
+            "111 Angel Number: A Message From Your Spirit Guides",
+            "Why Do I Keep Seeing 111? The Spiritual Meaning Explained"
+          ],
+          "target_keyword": "111 meaning",
+          "search_intent": "informational - user keeps seeing 111 and wants specific meaning",
+          "content_type": "focused guide",
+          "target_word_count": 2000,
+          "h2_headings": [
+            "What Does 111 Mean Spiritually?",
+            "11 Reasons You Keep Seeing 111",
+            "111 in Love and Relationships",
+            "111 for Career and Manifestation",
+            "What To Do When You See 111",
+            "Related Angel Numbers: 1111, 1112, 1113"
+          ],
+          "internal_linking": ["angel number meanings", "numerology calculator"],
+          "cta": "Discover your complete numerology chart",
+          "priority": "medium"
+        },
+        {
+          "post_number": 13,
+          "title_suggestions": [
+            "Venus Sign Meaning: How the Planet of Love Shapes Your Relationships",
+            "Your Venus Sign Explained: Love, Beauty, and Attraction",
+            "What Your Venus Sign Says About Your Love Style"
+          ],
+          "target_keyword": "venus sign meaning",
+          "search_intent": "informational - user wants to understand their Venus placement",
+          "content_type": "astrology guide",
+          "target_word_count": 2800,
+          "h2_headings": [
+            "What is Your Venus Sign and Why Does It Matter?",
+            "Venus in Each Zodiac Sign: Complete Breakdown",
+            "How Your Venus Sign Affects Your Love Life",
+            "Venus Sign Compatibility: Who You Attract",
+            "Venus Retrograde: What It Means for You",
+            "How to Find Your Venus Sign (Free Calculator)"
+          ],
+          "internal_linking": ["venus sign calculator", "zodiac compatibility"],
+          "cta": "Calculate your Venus sign now",
+          "priority": "high"
+        },
+        {
+          "post_number": 14,
+          "title_suggestions": [
+            "What House is Venus In? Find Your Love Zone Calculator",
+            "Venus House Calculator: Where Love Lives in Your Birth Chart",
+            "Venus House Meaning: How Your Love Planet is Positioned"
+          ],
+          "target_keyword": "what house is venus in calculator",
+          "search_intent": "transactional - user wants to calculate Venus house placement",
+          "content_type": "calculator tool + guide",
+          "target_word_count": 2200,
+          "h2_headings": [
+            "Venus House Calculator: Find Your Placement Instantly",
+            "What Do the 12 Houses Mean in Astrology?",
+            "Venus in Each House: Complete Meanings",
+            "Venus in the 1st-6th Houses Explained",
+            "Venus in the 7th-12th Houses Explained",
+            "How Venus House Placement Affects Relationships"
+          ],
+          "internal_linking": ["birth chart calculator", "venus sign meaning"],
+          "cta": "Get your full birth chart analysis",
+          "priority": "high"
+        },
+        {
+          "post_number": 15,
+          "title_suggestions": [
+            "Venus in the 7th House: Love, Marriage, and Partnership Meaning",
+            "What Venus in 7th House Means for Your Relationships",
+            "Venus in 7th House: Your Soulmate Placement Explained"
+          ],
+          "target_keyword": "venus in 7th house",
+          "search_intent": "informational - user has this placement and wants specific meaning",
+          "content_type": "focused placement guide",
+          "target_word_count": 2000,
+          "h2_headings": [
+            "What Does Venus in the 7th House Mean?",
+            "Venus in 7th House: Love and Marriage Style",
+            "Venus in 7th House Compatibility",
+            "Challenges of Venus in 7th House",
+            "Famous People with Venus in 7th House",
+            "How to Work With This Placement"
+          ],
+          "internal_linking": ["7th house meaning", "venus house calculator"],
+          "cta": "See how Venus in 7th affects your compatibility",
+          "priority": "medium"
+        },
+        {
+          "post_number": 16,
+          "title_suggestions": [
+            "Juno Sign Meaning: The Asteroid of Marriage and Commitment",
+            "Your Juno Sign: What It Reveals About Your Soulmate",
+            "Juno in Astrology: The Marriage Asteroid Explained"
+          ],
+          "target_keyword": "juno sign meaning",
+          "search_intent": "informational - user wants to understand Juno asteroid meaning",
+          "content_type": "astrology guide",
+          "target_word_count": 2500,
+          "h2_headings": [
+            "What is Juno in Astrology?",
+            "Juno Sign Meanings: What You Need in a Partner",
+            "Juno Through the Zodiac Signs",
+            "Juno Aspects: How It Connects to Your Chart",
+            "Juno and Marriage: What the Asteroid Reveals",
+            "How to Find Your Juno Sign"
+          ],
+          "internal_linking": ["juno sign calculator", "soulmate compatibility"],
+          "cta": "Find your Juno sign and soulmate clues",
+          "priority": "high"
+        }
+      ]
+    },
+    "month_3": {
+      "theme": "Love, Career, Life Purpose",
+      "posts": [
+        {
+          "post_number": 17,
+          "title_suggestions": [
+            "Juno Sign Calculator: Find Your Marriage Asteroid Placement",
+            "What is My Juno Sign? Free Calculator + Meaning",
+            "Juno Sign Calculator: Discover Your Soulmate Indicator"
+          ],
+          "target_keyword": "juno sign calculator",
+          "search_intent": "transactional - user wants to calculate their Juno sign",
+          "content_type": "calculator tool + guide",
+          "target_word_count": 2000,
+          "h2_headings": [
+            "Juno Sign Calculator: Find Your Placement",
+            "What is Juno and Why Calculate It?",
+            "How to Read Your Juno Sign Result",
+            "Juno Sign Meanings Overview",
+            "Juno and Relationship Compatibility",
+            "FAQ: Juno Sign Questions"
+          ],
+          "internal_linking": ["juno sign meaning", "soulmate compatibility test"],
+          "cta": "Get your complete relationship compatibility report",
+          "priority": "high"
+        },
+        {
+          "post_number": 18,
+          "title_suggestions": [
+            "7th House Meaning: Relationships, Marriage, and Open Enemies",
+            "What the 7th House Rules in Astrology: Complete Guide",
+            "7th House Astrology: Your Partnership Zone Explained"
+          ],
+          "target_keyword": "7th house meaning",
+          "search_intent": "informational - user wants to understand 7th house significance",
+          "content_type": "astrology guide",
+          "target_word_count": 2500,
+          "h2_headings": [
+            "What is the 7th House in Astrology?",
+            "What the 7th House Rules: Relationships & Partnerships",
+            "Planets in the 7th House: What They Mean",
+            "7th House Ruler: How to Find and Interpret Yours",
+            "7th House Transits: When Relationships Change",
+            "Empty 7th House: What It Means"
+          ],
+          "internal_linking": ["venus in 7th house", "juno sign meaning"],
+          "cta": "Find what planets are in your 7th house",
+          "priority": "high"
+        },
+        {
+          "post_number": 19,
+          "title_suggestions": [
+            "Midheaven Sign Meaning: Career, Reputation, and Life Purpose",
+            "Your Midheaven (MC): The Key to Your Career Path",
+            "Midheaven Sign Calculator: Find Your Professional Purpose"
+          ],
+          "target_keyword": "midheaven sign meaning",
+          "search_intent": "informational - user wants career/purpose guidance from MC",
+          "content_type": "astrology guide",
+          "target_word_count": 2800,
+          "h2_headings": [
+            "What is the Midheaven in Astrology?",
+            "How to Find Your Midheaven Sign",
+            "Midheaven Through the Zodiac Signs",
+            "Midheaven and Career Success",
+            "Midheaven Aspects: How They Shape Your Path",
+            "Using Your MC for Career Decisions"
+          ],
+          "internal_linking": ["midheaven calculator", "10th house meaning"],
+          "cta": "Calculate your midheaven and career path",
+          "priority": "high"
+        },
+        {
+          "post_number": 20,
+          "title_suggestions": [
+            "Midheaven Sign Calculator: Find Your Career Point Instantly",
+            "What is My Midheaven Sign? Free MC Calculator",
+            "Calculate Your Midheaven: Professional Astrology Tool"
+          ],
+          "target_keyword": "midheaven sign calculator",
+          "search_intent": "transactional - user wants to calculate midheaven",
+          "content_type": "calculator tool + guide",
+          "target_word_count": 2000,
+          "h2_headings": [
+            "Midheaven Calculator: Find Your MC",
+            "What is the Midheaven and Why It Matters",
+            "How to Calculate Your Midheaven Manually",
+            "Midheaven Sign Meanings at a Glance",
+            "MC in Aspect to Other Planets",
+            "Using Your Midheaven for Career Success"
+          ],
+          "internal_linking": ["midheaven sign meaning", "10th house ruler"],
+          "cta": "Get your full career astrology report",
+          "priority": "high"
+        },
+        {
+          "post_number": 21,
+          "title_suggestions": [
+            "10th House Meaning: Career, Status, and Public Life",
+            "What the 10th House Rules: Your Legacy in Astrology",
+            "10th House Astrology: Career and Achievement Zone"
+          ],
+          "target_keyword": "10th house meaning",
+          "search_intent": "informational - user wants to understand 10th house significance",
+          "content_type": "astrology guide",
+          "target_word_count": 2500,
+          "h2_headings": [
+            "What is the 10th House in Astrology?",
+            "What the 10th House Rules: Career & Status",
+            "10th House vs Midheaven: What's the Difference?",
+            "Planets in the 10th House: Career Indicators",
+            "10th House Ruler: Finding Your Career Path",
+            "Empty 10th House: What It Means for Career"
+          ],
+          "internal_linking": ["midheaven sign meaning", "career astrology"],
+          "cta": "Discover your ideal career path",
+          "priority": "high"
+        },
+        {
+          "post_number": 22,
+          "title_suggestions": [
+            "10th House Ruler: How to Find and Interpret Your Career Guide",
+            "What Rules My 10th House? Career Ruler Calculator",
+            "10th House Ruler: Your Career Blueprint in Astrology"
+          ],
+          "target_keyword": "10th house ruler",
+          "search_intent": "informational - user wants to find their 10th house ruler",
+          "content_type": "how-to guide",
+          "target_word_count": 2200,
+          "h2_headings": [
+            "What is a House Ruler in Astrology?",
+            "How to Find Your 10th House Ruler",
+            "10th House Ruler Through the Zodiac Signs",
+            "10th House Ruler Aspects: Career Opportunities",
+            "Using Your 10th House Ruler for Success",
+            "10th House Ruler FAQ"
+          ],
+          "internal_linking": ["10th house meaning", "midheaven calculator"],
+          "cta": "Get your full 10th house analysis",
+          "priority": "medium"
+        },
+        {
+          "post_number": 23,
+          "title_suggestions": [
+            "Part of Fortune: Calculate Your Lucky Point in Astrology",
+            "Part of Fortune Meaning: Where Prosperity Finds You",
+            "Part of Fortune Calculator: Find Your Wealth Indicator"
+          ],
+          "target_keyword": "part of fortune",
+          "search_intent": "mixed - user wants to calculate and understand this Arabic part",
+          "content_type": "calculator tool + guide",
+          "target_word_count": 2400,
+          "h2_headings": [
+            "What is the Part of Fortune in Astrology?",
+            "Part of Fortune Calculator: Find Your Placement",
+            "Part of Fortune in Each Zodiac Sign",
+          "How to Activate Your Part of Fortune",
+            "Part of Fortune Aspects and Transits",
+            "Other Arabic Parts Worth Knowing"
+          ],
+          "internal_linking": ["birth chart calculator", "wealth astrology"],
+          "cta": "Calculate your complete prosperity chart",
+          "priority": "medium"
+        },
+        {
+          "post_number": 24,
+          "title_suggestions": [
+            "Birth Chart Houses Explained: All 12 Houses and Their Meanings",
+            "The 12 Houses of Astrology: Your Complete Guide",
+            "Astrology Houses Meaning: From First to Twelfth House"
+          ],
+          "target_keyword": "birth chart houses",
+          "search_intent": "informational - user wants comprehensive house guide",
+          "content_type": "pillar guide",
+          "target_word_count": 4000,
+          "h2_headings": [
+            "What Are the Houses in Astrology?",
+            "Angular Houses (1st, 4th, 7th, 10th): The Foundation",
+            "Succedent Houses (2nd, 5th, 8th, 11th): Building Resources",
+            "Cadent Houses (3rd, 6th, 9th, 12th): Learning and Service",
+            "House Rulers: Connecting the Chart",
+            "Empty Houses: What They Mean",
+            "How to Read Houses in Your Birth Chart",
+            "Houses vs Signs: Understanding the Difference"
+          ],
+          "internal_linking": ["birth chart calculator", "all house-specific posts"],
+          "cta": "Generate your full birth chart with house placements",
+          "priority": "high",
+          "note": "Pillar content - links to all other house posts"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total_word_count_estimate": "~40,000 words",
+    "transactional_posts": 3,
+    "informational_posts": 13,
+    "internal_linking_opportunities": 48,
+    "cta_variations": [
+      "Download free templates",
+      "Calculate your sign/placement",
+      "Get personalized readings",
+      "Shop spiritual products",
+      "Generate full charts"
+    ]
+  }
+}
