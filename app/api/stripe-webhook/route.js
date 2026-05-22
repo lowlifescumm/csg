@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Pool } from 'pg';
-import { initializeUserCredits } from '../credits/route';
+import { initializeUserCredits } from '@/lib/credits';
 import { purchaseCredits, refundCredits, issueSubscriptionCredits } from '@/lib/credit-engine.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {

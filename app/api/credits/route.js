@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { authOptions } from '@/lib/auth-config';
 import { getCreditBalance } from '@/lib/credit-engine.js';
+import { initializeUserCredits, MONTHLY_CREDIT_ALLOCATION } from '@/lib/credits';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -12,50 +13,8 @@ const pool = new Pool({
     : { rejectUnauthorized: false },
 });
 
-// Credit allocations per month for premium users
-const MONTHLY_CREDIT_ALLOCATION = {
-  'compatibility': 2,
-  'birth_chart': 2,
-  'moon_reading': 4
-};
-
-// Initialize or reset user credits for premium subscribers
-export async function initializeUserCredits(userId) {
-  try {
-    const nextResetDate = new Date();
-    nextResetDate.setMonth(nextResetDate.getMonth() + 1);
-    nextResetDate.setDate(1);
-    nextResetDate.setHours(0, 0, 0, 0);
-
-    for (const [creditType, amount] of Object.entries(MONTHLY_CREDIT_ALLOCATION)) {
-      await pool.query(
-        `INSERT INTO user_credits (user_id, credit_type, credits_remaining, credits_used, reset_date)
-         VALUES ($1, $2, $3, 0, $4)
-         ON CONFLICT (user_id, credit_type) 
-         DO UPDATE SET 
-           credits_remaining = $3,
-           credits_used = 0,
-           reset_date = $4,
-           updated_at = NOW()`,
-        [userId, creditType, amount, nextResetDate]
-      );
-
-      // Log the credit addition
-      await pool.query(
-        `INSERT INTO credit_usage_history (user_id, credit_type, action, amount, description)
-         VALUES ($1, $2, 'added', $3, 'Monthly credit allocation')`,
-        [userId, creditType, amount]
-      );
-    }
-    return true;
-  } catch (error) {
-    logger.error('Error initializing user credits:', error);
-    return false;
-  }
-}
-
 // Check if user has available credits
-export async function checkUserCredits(userId, creditType) {
+async function checkUserCredits(userId, creditType) {
   try {
     const result = await pool.query(
       `SELECT credits_remaining, reset_date FROM user_credits 
@@ -87,7 +46,7 @@ export async function checkUserCredits(userId, creditType) {
 }
 
 // Deduct credits when used
-export async function deductUserCredit(userId, creditType, relatedId = null, description = null) {
+async function deductUserCredit(userId, creditType, relatedId = null, description = null) {
   try {
     // First check if user has credits
     const { hasCredits, creditsRemaining } = await checkUserCredits(userId, creditType);
