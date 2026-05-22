@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain, Briefcase, ChevronRight, CheckCircle, Lock } from "lucide-react";
 import Link from "next/link";
@@ -45,6 +46,10 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   const totalCredits = safeCredits?.stats?.totalAvailable || safeCredits?.credits || 0;
   const readingCount = safeReadings?.stats?.readingCount || 0;
   const chartCount = safeReadings?.stats?.chartCount || 0;
+  const hasSavedDashboardData = readingCount > 0 || chartCount > 0;
+  const joinedDate = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+    : "today";
   const [levelData, setLevelData] = useState({ level: 1, xpCurrent: 0, xpTarget: 100 });
   const [showTarotSelector, setShowTarotSelector] = useState(false);
   const [showTarotTypePicker, setShowTarotTypePicker] = useState(false);
@@ -110,7 +115,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //         }
   //       })
   //       .catch(err => {
-  //         logger.error('Failed to fetch meditations:', err);
+  //         console.error('Failed to fetch meditations:', err);
   //       });
   //   }
   // }, [showMeditations]);
@@ -135,7 +140,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //       alert(data.error || 'Failed to start meditation');
   //     }
   //   } catch (error) {
-  //     logger.error('Error starting meditation:', error);
+  //     console.error('Error starting meditation:', error);
   //     alert('Failed to start meditation');
   //   }
   // };
@@ -178,6 +183,42 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             streak={safeStreak}
             moonPhase={safeMoonPhase}
           />
+
+          {!hasSavedDashboardData && (
+            <div className="celestial-card p-6 sm:p-8 border border-cosmic-gold/30 bg-gradient-to-br from-white/95 to-cosmic-gold/10">
+              <div className="text-center max-w-3xl mx-auto mb-6">
+                <h2 className="text-2xl sm:text-3xl font-bold text-cosmic-indigo mb-3">Your cosmic journey is just beginning</h2>
+                <p className="text-cosmic-indigo/70">Start with a reading or birth chart and this dashboard will turn into your personal spiritual command center.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <Link href="/tarot" className="group rounded-2xl p-5 bg-gradient-to-br from-cosmic-purple to-cosmic-indigo text-white shadow-lg hover:-translate-y-0.5 smooth-transition">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-white/70 mb-1">First step</p>
+                      <h3 className="text-xl font-semibold">Get Your First Tarot Reading</h3>
+                    </div>
+                    <Sparkles className="w-8 h-8 text-cosmic-gold group-hover:scale-110 smooth-transition" />
+                  </div>
+                </Link>
+
+                <Link href="/birth-chart" className="group rounded-2xl p-5 bg-gradient-to-br from-cosmic-gold to-orange-400 text-cosmic-indigo shadow-lg hover:-translate-y-0.5 smooth-transition">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-cosmic-indigo/70 mb-1">Foundation</p>
+                      <h3 className="text-xl font-semibold">Calculate Your Birth Chart</h3>
+                    </div>
+                    <Star className="w-8 h-8 group-hover:scale-110 smooth-transition" />
+                  </div>
+                </Link>
+              </div>
+
+              <div className="text-center text-cosmic-indigo/70 font-medium">
+                0 readings saved | 0 charts calculated | Joined {joinedDate}
+              </div>
+            </div>
+          )}
+
 
           {/* Why Us - Value Proposition */}
           <div className="celestial-card p-4 sm:p-6 md:p-8">

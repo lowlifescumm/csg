@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../../lib/logger');
 
 import { useState, useCallback } from 'react';
 

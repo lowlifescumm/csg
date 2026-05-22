@@ -75,7 +75,7 @@ export default function DashboardShell({ children }) {
       const userData = await safeJson(userRes, 'user profile');
       if (!userData || !userData.user) {
         console.warn("[DashboardShell] No authenticated user returned, redirecting to login");
-        router.push("/login");
+        router.replace("/login?redirect=dashboard&message=save-readings");
         return;
       }
       
@@ -108,7 +108,7 @@ export default function DashboardShell({ children }) {
         }
       } catch (streakError) {
         // Streak endpoint is optional, continue if it fails
-        console.info("Streak endpoint not available:", streakError);
+        console.log("Streak endpoint not available:", streakError);
       }
 
       // Fetch moon phase (optional - gracefully handles if endpoint doesn't exist)
@@ -123,7 +123,7 @@ export default function DashboardShell({ children }) {
         }
       } catch (moonError) {
         // Moon phase endpoint is optional, continue if it fails
-        console.info("Moon phase endpoint not available:", moonError);
+        console.log("Moon phase endpoint not available:", moonError);
       }
 
     } catch (err) {
@@ -142,7 +142,6 @@ export default function DashboardShell({ children }) {
             <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
             <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-400 rounded-full animate-spin mx-auto" style={{ animationDelay: '0.5s', animationDuration: '1.5s' }}></div>
           </div>
-          <p className="text-gray-200 animate-pulse mb-4">Loading your cosmic journey...</p>
           <div className="flex justify-center space-x-1">
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>

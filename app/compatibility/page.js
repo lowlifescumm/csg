@@ -1,16 +1,17 @@
 "use client";
-
+const logger = require('../../lib/logger');
 import { useState, useEffect } from 'react';
-import { Heart, Loader2, Sparkles, ChevronRight, ChevronLeft, Crown, AlertCircle } from 'lucide-react';
+import { Heart, Loader2, Sparkles, ChevronRight, ChevronLeft, Crown, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import LowCreditsUpsellBanner from '@/components/LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
-import { SUBSCRIPTION_TIERS } from '@/lib/pricing';
 
 export default function CompatibilityCalculator() {
   const [step, setStep] = useState(1);
-  const [person1, setPerson1] = useState({ name: '', birthDate: '', birthTime: '', location: '' });
-  const [person2, setPerson2] = useState({ name: '', birthDate: '', birthTime: '', location: '' });
+  const [person1, setPerson1] = useState({ name: '', birthDate: '', birthTime: '', location: '', unknownTime: false });
+  const [person2, setPerson2] = useState({ name: '', birthDate: '', birthTime: '', location: '', unknownTime: false });
+  const [relationshipType, setRelationshipType] = useState('romantic');
   const [coords1, setCoords1] = useState(null);
   const [coords2, setCoords2] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -39,12 +40,86 @@ export default function CompatibilityCalculator() {
         setCreditsRemaining(0);
       }
     } catch (error) {
-      logger.error('Error checking credits:', error);
+      console.error('Error checking credits:', error);
       setIsPremium(false);
       setCreditsRemaining(0);
     } finally {
       setLoadingCredits(false);
     }
+  };
+
+  const getSunSign = (dateStr) => {
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "Aries";
+    if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "Taurus";
+    if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "Gemini";
+    if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "Cancer";
+    if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "Leo";
+    if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "Virgo";
+    if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "Libra";
+    if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "Scorpio";
+    if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "Sagittarius";
+    if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "Capricorn";
+    if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "Aquarius";
+    return "Pisces";
+  };
+
+  const getSunCompatibility = (sign1, sign2) => {
+    const compatMap = {
+      "Aries": { best: ["Leo", "Sagittarius", "Gemini", "Aquarius"], worst: ["Cancer", "Capricorn"] },
+      "Taurus": { best: ["Virgo", "Capricorn", "Cancer", "Pisces"], worst: ["Leo", "Aquarius"] },
+      "Gemini": { best: ["Libra", "Aquarius", "Aries", "Leo"], worst: ["Virgo", "Pisces"] },
+      "Cancer": { best: ["Scorpio", "Pisces", "Taurus", "Virgo"], worst: ["Aries", "Libra"] },
+      "Leo": { best: ["Aries", "Sagittarius", "Gemini", "Libra"], worst: ["Taurus", "Scorpio"] },
+      "Virgo": { best: ["Taurus", "Capricorn", "Cancer", "Scorpio"], worst: ["Gemini", "Sagittarius"] },
+      "Libra": { best: ["Gemini", "Aquarius", "Leo", "Sagittarius"], worst: ["Cancer", "Capricorn"] },
+      "Scorpio": { best: ["Cancer", "Pisces", "Virgo", "Capricorn"], worst: ["Leo", "Aquarius"] },
+      "Sagittarius": { best: ["Aries", "Leo", "Libra", "Aquarius"], worst: ["Virgo", "Pisces"] },
+      "Capricorn": { best: ["Taurus", "Virgo", "Scorpio", "Pisces"], worst: ["Aries", "Libra"] },
+      "Aquarius": { best: ["Gemini", "Libra", "Aries", "Sagittarius"], worst: ["Taurus", "Scorpio"] },
+      "Pisces": { best: ["Cancer", "Scorpio", "Taurus", "Capricorn"], worst: ["Gemini", "Sagittarius"] }
+    };
+    
+    const s1 = compatMap[sign1] || { best: [], worst: [] };
+    if (s1.best.includes(sign2)) return { score: 85, label: "Excellent" };
+    if (s1.worst.includes(sign2)) return { score: 45, label: "Challenging" };
+    return { score: 65, label: "Good" };
+  };
+
+  const generateFreeReport = (sign1, sign2, type) => {
+    const compat = getSunCompatibility(sign1, sign2);
+    const typeLabels = { romantic: "relationship", friendship: "friendship", family: "family bond", professional: "professional partnership" };
+    const label = typeLabels[type] || "relationship";
+    
+    return {
+      score: compat.score,
+      label: compat.label,
+      text: `When ${sign1} meets ${sign2} in a ${label}, there's an immediate ${compat.score >= 80 ? "spark" : compat.score >= 60 ? "connection" : "tension"} that shapes how you interact.\n\n${sign1}'s natural energy ${compat.score >= 80 ? "amplifies" : "interacts with"} ${sign2}'s approach to life. In your ${label}, you may find that ${compat.score >= 80 ? "you naturally complement each other" : "your differences create both friction and growth"}.\n\nThis is just the surface — your full synastry report reveals how your Moon signs shape emotional needs, your Venus placements show romantic compatibility, and your Mars energies reveal passion dynamics.`
+    };
+  };
+
+  const handleFreeCalculate = () => {
+    if (!person1.birthDate || !person2.birthDate) {
+      setError('Please enter birth dates for both people');
+      return;
+    }
+    
+    const sign1 = getSunSign(person1.birthDate);
+    const sign2 = getSunSign(person2.birthDate);
+    const freeResult = generateFreeReport(sign1, sign2, relationshipType);
+    
+    setResult({
+      type: 'free',
+      sign1,
+      sign2,
+      relationshipType,
+      ...freeResult,
+      person1Name: person1.name || 'Person 1',
+      person2Name: person2.name || 'Person 2',
+    });
+    setStep(3);
   };
 
   const handleLocationSearch = async (personNum) => {
@@ -81,6 +156,12 @@ export default function CompatibilityCalculator() {
       return;
     }
 
+    if (isPremium === false) {
+      // Show auth gate for full report
+      setError('Create a free account to unlock the full synastry report with Moon, Venus, Mars, and house overlays.');
+      return;
+    }
+
     // Check if user has a birth chart first (required dependency)
     try {
       const chartResponse = await fetch('/api/birth-chart');
@@ -97,7 +178,7 @@ export default function CompatibilityCalculator() {
         return;
       }
     } catch (err) {
-      logger.error('Error checking birth chart:', err);
+      console.error('Error checking birth chart:', err);
       // Continue anyway, but log the error
     }
 
@@ -162,74 +243,6 @@ export default function CompatibilityCalculator() {
     );
   }
 
-  // Show upgrade to premium screen for non-premium users
-  if (isPremium === false) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 backdrop-blur-sm">
-              <Crown className="w-10 h-10 text-yellow-400" />
-            </div>
-            <h1 className="text-5xl font-bold text-white mb-4">Premium Feature</h1>
-            <p className="text-xl text-purple-200">Compatibility reports are available for premium members</p>
-          </div>
-
-          <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
-            <div className="text-center mb-6">
-              <div className="text-6xl font-bold text-white mb-2">${(SUBSCRIPTION_TIERS.MYSTIC_LITE.priceInCents / 100).toFixed(2)}</div>
-              <div className="text-purple-200">per month</div>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-3">
-                <div className="text-green-400 mt-1">✓</div>
-                <div className="text-white">
-                  <strong>2 Compatibility Reports</strong> per month
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="text-green-400 mt-1">✓</div>
-                <div className="text-white">
-                  <strong>2 Birth Chart Analyses</strong> per month
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="text-green-400 mt-1">✓</div>
-                <div className="text-white">
-                  <strong>4 Moon Phase Readings</strong> per month
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="text-green-400 mt-1">✓</div>
-                <div className="text-white">AI-powered astrological insights</div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="text-green-400 mt-1">✓</div>
-                <div className="text-white">Unlimited daily horoscopes & tarot readings</div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => router.push('/subscription')}
-              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-4 rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
-            >
-              <Crown className="w-5 h-5" />
-              Upgrade to Premium
-            </button>
-
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="w-full mt-4 bg-white bg-opacity-20 text-white font-bold py-4 rounded-lg hover:bg-opacity-30 transition-all"
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Show compatibility report if already generated
   if (step === 3 && result) {
     return <CompatibilityReport 
@@ -250,7 +263,7 @@ export default function CompatibilityCalculator() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-6">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-4 sm:px-6">
       {/* Show upsell banner when credits are low */}
       {isPremium && creditsRemaining !== null && creditsRemaining < 1 && (
         <LowCreditsUpsellBanner 
@@ -273,8 +286,8 @@ export default function CompatibilityCalculator() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 backdrop-blur-sm">
             <Heart className="w-10 h-10 text-pink-300" />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">Compatibility Calculator</h1>
-          <p className="text-xl text-purple-200">Discover your astrological compatibility</p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">Free Love Compatibility Test</h1>
+          <p className="text-xl text-purple-200">Enter both birth details for a free compatibility preview, then unlock the full synastry report.</p>
         </div>
 
         <div className="flex items-center justify-center mb-8">
@@ -305,7 +318,6 @@ export default function CompatibilityCalculator() {
                   onChange={(e) => setPerson1({...person1, name: e.target.value})}
                   className="w-full p-4 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
                   placeholder="Enter name"
-                  disabled={creditsRemaining === 0}
                 />
               </div>
               <div className="grid md:grid-cols-2 gap-4">
@@ -316,8 +328,7 @@ export default function CompatibilityCalculator() {
                     value={person1.birthDate}
                     onChange={(e) => setPerson1({...person1, birthDate: e.target.value})}
                     className="w-full p-4 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    disabled={creditsRemaining === 0}
-                  />
+                    />
                 </div>
                 <div>
                   <label className="block text-purple-200 font-medium mb-2">Birth Time</label>
@@ -326,26 +337,23 @@ export default function CompatibilityCalculator() {
                     value={person1.birthTime}
                     onChange={(e) => setPerson1({...person1, birthTime: e.target.value})}
                     className="w-full p-4 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    disabled={creditsRemaining === 0}
-                  />
+                    />
                 </div>
               </div>
               <div>
                 <label className="block text-purple-200 font-medium mb-2">Birth Location</label>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <input
                     type="text"
                     value={person1.location}
                     onChange={(e) => setPerson1({...person1, location: e.target.value})}
                     className="flex-1 p-4 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
                     placeholder="City, State, Country"
-                    disabled={creditsRemaining === 0}
-                  />
+                    />
                   <button
                     onClick={() => handleLocationSearch(1)}
                     className="px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={creditsRemaining === 0}
-                  >
+                    >
                     Search
                   </button>
                 </div>
@@ -356,7 +364,7 @@ export default function CompatibilityCalculator() {
             </div>
             <button
               onClick={() => setStep(2)}
-              disabled={!person1.name || !person1.birthDate || !person1.birthTime || !coords1 || creditsRemaining === 0}
+              disabled={!person1.name || !person1.birthDate || !person1.birthTime || !coords1}
               className="w-full mt-8 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               Continue to Person 2
@@ -401,7 +409,7 @@ export default function CompatibilityCalculator() {
               </div>
               <div>
                 <label className="block text-purple-200 font-medium mb-2">Birth Location</label>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <input
                     type="text"
                     value={person2.location}
@@ -420,6 +428,30 @@ export default function CompatibilityCalculator() {
                   <p className="text-sm text-green-300 mt-2">✓ Location found</p>
                 )}
               </div>
+              <div className="mt-4">
+                <label className="block text-purple-200 font-medium mb-2">Relationship Type</label>
+                <select
+                  value={relationshipType}
+                  onChange={(e) => setRelationshipType(e.target.value)}
+                  className="w-full p-4 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                >
+                  <option value="romantic">💕 Romantic</option>
+                  <option value="friendship">🤝 Friendship</option>
+                  <option value="family">🏠 Family</option>
+                  <option value="professional">💼 Professional</option>
+                </select>
+              </div>
+              <div className="mt-4">
+                <label className="flex items-center gap-2 text-purple-200">
+                  <input
+                    type="checkbox"
+                    checked={person2.unknownTime}
+                    onChange={(e) => setPerson2({...person2, unknownTime: e.target.checked, birthTime: e.target.checked ? '' : person2.birthTime})}
+                    className="w-4 h-4 rounded border-purple-300"
+                  />
+                  Birth time unknown
+                </label>
+              </div>
             </div>
 
             {error && (
@@ -435,28 +467,58 @@ export default function CompatibilityCalculator() {
               </div>
             )}
 
-            <div className="flex gap-4 mt-8">
+            {isPremium === false && hasPreviewInputs && (
+              <div className="mt-6 rounded-2xl border border-yellow-300/30 bg-yellow-300/10 p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-widest text-yellow-200">Free preview</p>
+                    <h3 className="mt-1 text-2xl font-bold text-white">{person1.name} + {person2.name}: {getPreviewScore()}% cosmic pull</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-purple-100">
+                      Preview unlocked: emotional chemistry, communication style, and long-term potential are ready. Upgrade to reveal the full synastry breakdown and guidance.
+                    </p>
+                  </div>
+                  <Crown className="h-12 w-12 flex-shrink-0 text-yellow-300" />
+                </div>
+              </div>
+            )}
+
+            <div className="mt-8 space-y-4">
               <button
-                onClick={() => setStep(1)}
-                className="flex-1 bg-white bg-opacity-20 text-white font-bold py-4 rounded-lg hover:bg-opacity-30 transition-all flex items-center justify-center gap-2"
+                onClick={handleFreeCalculate}
+                disabled={!person1.birthDate || !person2.birthDate}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <ChevronLeft className="w-5 h-5" />
-                Back
+                <Sparkles className="w-5 h-5" />
+                Get Free Sun Sign Compatibility
               </button>
+              
+              <p className="text-center text-purple-300 text-sm">
+                No account needed • Instant results
+              </p>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/20"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-purple-900/50 text-purple-300">or unlock full report</span>
+                </div>
+              </div>
+              
               <button
                 onClick={handleSubmit}
-                disabled={!person2.name || !person2.birthDate || !person2.birthTime || !coords2 || loading}
-                className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={!person2.name || !person2.birthDate || !coords2 || loading}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Generating Report...
+                    Generating Full Report...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5" />
-                    Generate Compatibility Report
+                    <Crown className="w-5 h-5" />
+                    Unlock Full Synastry Report
                   </>
                 )}
               </button>
@@ -485,7 +547,7 @@ function CompatibilityReport({ result, person1, person2, creditsRemaining, onBac
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-6">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 backdrop-blur-sm">

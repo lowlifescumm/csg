@@ -1,23 +1,33 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Loader2, Heart, Moon, ArrowRight } from "lucide-react";
+import { Sparkles, Loader2, Moon, ArrowRight, Lock, X, Bookmark, BookmarkCheck } from "lucide-react";
 import Link from "next/link";
 import logger from "@/lib/logger";
 import TarotReadingTypePicker from "@/components/TarotReadingTypePicker";
 import InteractiveTarotSelector from "@/components/InteractiveTarotSelector";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import PremiumTeaser, { parseInterpretationWithTeasers, getTeaserABVariant } from "@/components/PremiumTeaser";
 import spreads from "@/lib/tarot-spreads.json";
 
 export default function TarotPage() {
   const [selectedType, setSelectedType] = useState(null);
   const [showCardSelector, setShowCardSelector] = useState(false);
   const [reading, setReading] = useState(null);
+  const [savedReadingId, setSavedReadingId] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [loadingCredits, setLoadingCredits] = useState(true);
   const [isPremium, setIsPremium] = useState(null);
+  const [creditsAvailable, setCreditsAvailable] = useState(0);
+  const [showUpsell, setShowUpsell] = useState(false);
+  const [upsellContext, setUpsellContext] = useState(null);
+  const [teaserABVariant, setTeaserABVariant] = useState("2");
 
   useEffect(() => {
     checkCreditsStatus();
+    // Assign A/B test variant for teaser count
+    setTeaserABVariant(getTeaserABVariant());
   }, []);
 
   const checkCreditsStatus = async () => {
@@ -26,9 +36,11 @@ export default function TarotPage() {
       const response = await fetch("/api/credits");
       const data = await response.json();
       setIsPremium(data.isPremium || false);
+      setCreditsAvailable(getAvailableCredits(data));
     } catch (error) {
-      logger.error("Error checking credits:", error);
+      console.error("Error checking credits:", error);
       setIsPremium(false);
+      setCreditsAvailable(0);
     } finally {
       setLoadingCredits(false);
     }
@@ -55,7 +67,116 @@ export default function TarotPage() {
     setReading(null);
     setSelectedType(null);
     setShowCardSelector(false);
+    setSavedReadingId(null);
   };
+  const handleSaveReading = async () => {
+    if (!reading || isSaving) return;
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/save-reading', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          readingType: 'tarot',
+          spreadType: selectedType?.name || 'Single Card',
+          question: reading.question,
+          cards: reading.cards,
+          interpretation: reading.interpretation,
+          thumbnailCard: reading.cards?.[0]?.name || 'The Fool'
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSavedReadingId(data.savedReading.id);
+      } else if (response.status === 401) {
+        setShowAuthModal(true);
+      } else {
+        console.error('Failed to save reading:', data.error);
+      }
+    } catch (error) {
+      console.error('Error saving reading:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  const getAvailableCredits = (creditData) => {
+    if (typeof creditData?.credits === "number") return creditData.credits;
+    if (typeof creditData?.ledgerBalance === "number") return creditData.ledgerBalance;
+    if (typeof creditData?.stats?.totalAvailable === "number") return creditData.stats.totalAvailable;
+    return 0;
+  };
+
+  const trackUpsellEvent = (eventName) => {
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      window.gtag("event", eventName, {
+        event_category: "tarot_upsell",
+        event_label: selectedType?.spreadType || "tarot_result",
+      });
+    }
+  };
+
+  const handleDismissUpsell = () => {
+    setShowUpsell(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("tarotUpsellDismissedUntil", String(Date.now() + 24 * 60 * 60 * 1000));
+    }
+    trackUpsellEvent("upsell_dismissed");
+  };
+
+  const handleUpsellClick = () => {
+    trackUpsellEvent("upsell_clicked");
+  };
+
+  const shouldSuppressUpsell = () => {
+    if (isPremium) return true;
+    if (typeof window === "undefined") return true;
+
+    const dismissedUntil = Number(localStorage.getItem("tarotUpsellDismissedUntil") || 0);
+    return dismissedUntil > Date.now();
+  };
+
+  const openUpsell = (context = null) => {
+    if (showUpsell || shouldSuppressUpsell()) return;
+    setUpsellContext(context);
+    setShowUpsell(true);
+    trackUpsellEvent("upsell_shown");
+  };
+
+  const handleTeaserClick = (teaserPosition) => {
+    const context = teaserPosition === "after_paragraph_2" ? "full_chart" : "transits";
+    openUpsell(context);
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "teaser_clicked", {
+        event_category: "tarot_upsell",
+        event_label: teaserPosition,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!reading) {
+      setShowUpsell(false);
+      return;
+    }
+
+    const timer = setTimeout(openUpsell, 10000);
+    const handleScroll = () => {
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const pageBottom = document.documentElement.scrollHeight - 80;
+
+      if (scrollPosition >= pageBottom) {
+        openUpsell();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [reading, isPremium, selectedType?.spreadType, showUpsell]);
+
 
   if (loadingCredits) {
     return (
@@ -115,37 +236,112 @@ export default function TarotPage() {
                 Interpretation
               </h3>
               <div className="text-purple-100 leading-relaxed">
-                <MarkdownRenderer text={reading.interpretation} className="text-purple-100" />
+                {(() => {
+                  const parsed = parseInterpretationWithTeasers(
+                    reading.interpretation,
+                    reading.cards,
+                    teaserABVariant,
+                    handleTeaserClick
+                  );
+                  return parsed.map((item, i) => {
+                    if (item.type === "teaser") {
+                      return (
+                        <PremiumTeaser
+                          key={`teaser-${i}`}
+                          cards={reading.cards}
+                          onClick={() => handleTeaserClick(item.position)}
+                          variant={item.variant}
+                          position={item.position}
+                        />
+                      );
+                    }
+                    return (
+                      <div key={`p-${i}`} className="text-purple-100 leading-relaxed">
+                        <MarkdownRenderer text={item.content} className="text-purple-100" />
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={handleNewReading}
-              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              New Reading
-            </button>
-            <button
-              onClick={() => {
-                const shareUrl = `${window.location.origin}/readings/${reading.id}`;
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                  alert("Link copied to clipboard!");
-                }).catch(() => {
-                  alert("Failed to copy link");
-                });
-              }}
-              className="flex-1 bg-white bg-opacity-20 text-white font-bold py-4 rounded-xl hover:bg-opacity-30 transition-all flex items-center justify-center gap-2 border border-white border-opacity-30"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              Share Link
-            </button>
-          </div>
+          <button
+            onClick={handleSaveReading}
+            disabled={isSaving || savedReadingId}
+            className={`w-full font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 mb-4 ${
+              savedReadingId 
+                ? 'bg-green-500 text-white cursor-default' 
+                : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
+            } disabled:opacity-50`}
+          >
+            {isSaving ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : savedReadingId ? (
+              <>
+                <BookmarkCheck className="w-5 h-5" />
+                Saved to Journal
+              </>
+            ) : (
+              <>
+                <Bookmark className="w-5 h-5" />
+                Save This Reading
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleNewReading}
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-5 h-5" />
+            New Reading
+          </button>
         </div>
+
+        {showUpsell && (
+          <TarotUpsellModal
+            reading={reading}
+            creditsAvailable={creditsAvailable}
+            onDismiss={handleDismissUpsell}
+            onPrimaryClick={handleUpsellClick}
+            onSecondaryClick={handleUpsellClick}
+            context={upsellContext}
+          />
+        )}
+
+        {showAuthModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Save Your Reading</h2>
+                <button 
+                  onClick={() => setShowAuthModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Create a free account to save unlimited readings and access them anytime from your personal journal.
+              </p>
+              <div className="space-y-3">
+                <Link 
+                  href="/auth/signin?callbackUrl=/tarot"
+                  className="block w-full bg-purple-600 text-white text-center font-bold py-3 rounded-lg hover:bg-purple-700 transition-all"
+                >
+                  Sign In / Create Account
+                </Link>
+                <button
+                  onClick={() => setShowAuthModal(false)}
+                  className="block w-full bg-gray-100 text-gray-700 text-center font-bold py-3 rounded-lg hover:bg-gray-200 transition-all"
+                >
+                  Continue Without Saving
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -219,3 +415,119 @@ export default function TarotPage() {
     </div>
   );
 }
+
+function TarotUpsellModal({ reading, creditsAvailable, onDismiss, onPrimaryClick, onSecondaryClick, context }) {
+  const hasCredits = creditsAvailable >= 2;
+  const lockedInsights = buildLockedInsights(reading?.cards || []);
+
+  // Adjust CTA based on context from teaser
+  const getPrimaryCTA = () => {
+    if (!hasCredits) return "Get 10 Credits — $9.99";
+    if (context === "full_chart") return "Continue to Full Chart — 2 credits";
+    if (context === "transits") return "See Your Transits — 2 credits";
+    return "Unlock My Full Chart — 2 credits";
+  };
+
+  const getPrimaryHref = () => {
+    if (!hasCredits) return "/credits";
+    if (context === "transits") return "/forecasts";
+    return "/birth-chart";
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-6">
+      <div className="relative w-full md:max-w-2xl bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-950 border-t md:border border-yellow-300/30 shadow-2xl shadow-purple-950/60 rounded-t-3xl md:rounded-3xl p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <button
+          onClick={onDismiss}
+          className="absolute top-4 right-4 text-purple-200 hover:text-white transition"
+          aria-label="Dismiss upsell"
+        >
+          <X className="w-6 h-6" />
+        </button>
+
+        <div className="inline-flex items-center gap-2 bg-yellow-300/10 text-yellow-200 border border-yellow-300/30 rounded-full px-3 py-1 text-sm font-semibold mb-5">
+          <Lock className="w-4 h-4" />
+          Deeper insight available
+        </div>
+
+        <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 pr-8">
+          This reading used 3 cards. Your full chart uses 12 houses, 10 planets, and current transits.
+        </h2>
+
+        <p className="text-purple-100 mb-5">
+          Your cards opened the door. The full chart shows where this pattern lives in your actual birth map — and what timing is activating it now.
+        </p>
+
+        <div className="space-y-3 mb-6">
+          {lockedInsights.map((insight, index) => (
+            <div key={index} className="flex gap-3 rounded-2xl bg-white/10 border border-white/10 p-4">
+              <Lock className="w-5 h-5 text-yellow-300 flex-shrink-0 mt-0.5" />
+              <p className="text-sm md:text-base text-purple-50">{insight}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-3">
+          <Link
+            href={getPrimaryHref()}
+            onClick={onPrimaryClick}
+            className="w-full text-center bg-gradient-to-r from-yellow-300 to-amber-500 text-purple-950 font-bold py-4 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-yellow-900/20"
+          >
+            {getPrimaryCTA()}
+          </Link>
+
+          <Link
+            href="/login?next=/tarot"
+            onClick={onSecondaryClick}
+            className="w-full text-center bg-white/10 text-white font-semibold py-3 rounded-xl hover:bg-white/20 border border-white/15 transition-all"
+          >
+            Save This Reading
+          </Link>
+
+          <button
+            onClick={onDismiss}
+            className="w-full text-purple-200 font-semibold py-3 rounded-xl hover:text-white transition-all"
+          >
+            Maybe Later
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function buildLockedInsights(cards) {
+  const selectedCards = cards.slice(0, 3);
+  const fallback = [
+    "Your 12th house pattern reveals why this emotional cycle keeps repeating beneath the surface.",
+    "Your current transits show when this energy peaks — and when to act instead of waiting.",
+    "Your Venus and Moon placements explain what this reading says about love, safety, and timing specifically for you.",
+  ];
+
+  if (selectedCards.length === 0) return fallback;
+
+  return selectedCards.map((card, index) => {
+    const name = card?.name || `Card ${index + 1}`;
+    const reversed = card?.reversed ? " reversed" : "";
+    const lowerName = name.toLowerCase();
+
+    if (lowerName.includes("hermit") && card?.reversed) {
+      return "Your 12th house placement reveals WHY isolation feels chaotic for you specifically — not peaceful.";
+    }
+
+    if (lowerName.includes("lovers")) {
+      return `Your Venus placement shows what ${name}${reversed} is really asking you to choose in love and commitment.`;
+    }
+
+    if (lowerName.includes("tower")) {
+      return `Your current transits reveal whether ${name}${reversed} is a breakdown, breakthrough, or overdue course correction.`;
+    }
+
+    if (lowerName.includes("moon")) {
+      return `Your natal Moon house explains why ${name}${reversed} feels intuitive in one moment and confusing in the next.`;
+    }
+
+    return `Your full chart reveals the house and planetary trigger behind ${name}${reversed} — the part a 3-card reading can only hint at.`;
+  });
+}
+

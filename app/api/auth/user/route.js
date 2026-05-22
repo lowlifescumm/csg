@@ -11,6 +11,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     
     if (session?.user) {
+      const dbUser = session.user.id ? await getUserById(session.user.id) : null;
       // User is authenticated via NextAuth (Google OAuth)
       return NextResponse.json({
         user: {
@@ -20,6 +21,7 @@ export async function GET() {
           lastName: session.user.lastName,
           role: session.user.role,
           stripe_subscription_id: session.user.subscriptionStatus === 'active' ? 'active' : null,
+          createdAt: dbUser?.created_at || null,
         },
       });
     }
@@ -54,6 +56,7 @@ export async function GET() {
         lastName: user.last_name,
         role: user.role,
         stripe_subscription_id: user.stripe_subscription_id,
+        createdAt: user.created_at,
       },
     });
   } catch (error) {

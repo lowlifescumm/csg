@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 /**
  * Content Pipeline Cron Job — Fully Automated
  *
@@ -12,6 +13,8 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { pool } from '@/lib/db';
 import { loadBriefs, buildImageUrl, generateSocialCopy, slugify, generateArticleContent, getThemeForPost } from '@/lib/content-pipeline-lib.js';
+import { createPostInSanity } from '@/lib/sanity-write.js';
+import { sanityClient } from '@/lib/sanity.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +28,7 @@ async function getState() {
       return JSON.parse(readFileSync(STATE_FILE, 'utf8'));
     }
   } catch (err) {
-    console.error("[content-pipeline] Failed to read state file:", err);
+    logger.error("[content-pipeline] Failed to read state file:", err);
   }
   return { lastPost: 0, lastRun: null };
 }
@@ -35,7 +38,7 @@ async function saveState(state) {
     const { writeFileSync } = await import('fs');
     writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
   } catch (err) {
-    console.error("[content-pipeline] Failed to read state file:", err);
+    logger.error("[content-pipeline] Failed to write state file:", err);
   }
 }
 
@@ -201,7 +204,8 @@ async function createBlogPost(post, imageUrl, publish, blogApiKey) {
     }
 
     const data = await res.json();
-    log('post', `Blog post ${publish ? 'published' : 'created'}: ${siteUrl}/blog/${data.slug}`);
+
+    log('post', `Blog post ${publish ? 'published' : 'created'}: ${siteUrl}/blog/${data.post?.slug || data.slug || slug}`);
     return data;
   } catch (err) {
     log('error', `Failed to create blog post: ${err.message}`);
@@ -233,7 +237,7 @@ async function runPipeline(post, publish = false) {
   const blogPost = await createBlogPost(post, cloudinaryUrl, publish, blogApiKey);
 
   // Step 4: Generate social copy
-  const slug = blogPost?.slug || slugify(title.slice(0, 60));
+  const slug = blogPost?.post?.slug || blogPost?.slug || slugify(title.slice(0, 60));
   const socialCopy = generateSocialCopy(post, siteUrl, slug);
   log('social', `Social copy generated: ${socialCopy.postUrl}`);
 

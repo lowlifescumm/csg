@@ -1,5 +1,5 @@
 "use client";
-
+const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Brain, Sparkles, ArrowLeft, Crown, Zap } from "lucide-react";
@@ -25,7 +25,7 @@ export default function CoachPage() {
         setIsPremium(data.role === 'admin' || (data.stripe_subscription_id && data.stripe_subscription_id !== ''));
       }
     } catch (e) {
-      logger.error("Failed to fetch user data");
+      console.error("Failed to fetch user data");
     }
   };
 

@@ -312,15 +312,145 @@ body {
 .prose strong { @apply font-semibold text-white; }
 .prose a { @apply text-cosmic-violet hover:text-cosmic-gold underline transition-colors; }
 
-/* ─── DASHBOARD THEME ───
-   Dashboard uses light theme for readability. Override when dashboard-active. */
+/* =============================================================================
+   DASHBOARD THEME - Cosmic dark void
+   ============================================================================= */
 body.dashboard-active {
-  color: #374151;
-  background-color: #f9fafb;
+  color: #d8d4e0;
+}
+
+#dashboard-main,
+#dashboard-main * {
+  color: inherit;
+}
+
+/* Dark dashboard card backgrounds */
+.dashboard-card {
+  background: rgba(20, 18, 28, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(232, 168, 124, 0.15);
+  color: #d8d4e0;
+}
+
+/* =============================================================================
+   COMPREHENSIVE DARK DASHBOARD OVERRIDES
+   Force all dashboard inner content to match cosmic void theme
+   ============================================================================= */
+
+/* Darken any celestial cards inside dashboard */
+.bg-cosmic-void .celestial-card,
+#dashboard-main .celestial-card {
+  background: rgba(20, 18, 28, 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  border-color: rgba(232, 168, 124, 0.15) !important;
+  color: #d8d4e0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Override headings that use dark indigo text */
+.bg-cosmic-void .celestial-card h1,
+.bg-cosmic-void .celestial-card h2,
+.bg-cosmic-void .celestial-card h3,
+.bg-cosmic-void .celestial-card h4,
+#dashboard-main .celestial-card h1,
+#dashboard-main .celestial-card h2,
+#dashboard-main .celestial-card h3,
+#dashboard-main .celestial-card h4,
+#dashboard-main h1.text-cosmic-indigo,
+#dashboard-main h2.text-cosmic-indigo,
+#dashboard-main h3.text-cosmic-indigo,
+#dashboard-main h4.text-cosmic-indigo,
+#dashboard-main .text-cosmic-indigo {
+  color: #e8d5c4 !important;
+}
+
+/* Muted paragraph text inside dark dashboard */
+#dashboard-main .celestial-card p {
+  color: #b098a8 !important;
+}
+
+/* Override solid white card backgrounds in dashboard */
+.bg-cosmic-void .bg-white,
+#dashboard-main .bg-white {
+  background: rgba(20, 18, 28, 0.65) !important;
+  color: #d8d4e0 !important;
+}
+
+/* Override gray text in dashboard */
+.bg-cosmic-void .text-gray-800,
+.bg-cosmic-void .text-gray-700,
+.bg-cosmic-void .text-gray-600,
+.bg-cosmic-void .text-gray-500,
+#dashboard-main .text-gray-800,
+#dashboard-main .text-gray-700,
+#dashboard-main .text-gray-600,
+#dashboard-main .text-gray-500 {
+  color: #c4b5b0 !important;
+}
+
+/* Override purple borders in dashboard */
+.bg-cosmic-void .border-purple-100,
+#dashboard-main .border-purple-100 {
+  border-color: rgba(232, 168, 124, 0.15) !important;
+}
+
+/* Override purple-50 backgrounds */
+.bg-cosmic-void .bg-purple-50,
+#dashboard-main .bg-purple-50 {
+  background: rgba(232, 168, 124, 0.08) !important;
+}
+
+/* Override purple-100 backgrounds */
+.bg-cosmic-void .bg-purple-100,
+#dashboard-main .bg-purple-100 {
+  background: rgba(232, 168, 124, 0.12) !important;
+}
+
+/* Keep accent backgrounds (indigo circles, gold buttons) visible */
+.bg-cosmic-void .bg-cosmic-indigo:not(.min-h-screen):not(.rounded-3xl),
+#dashboard-main .bg-cosmic-indigo:not(.min-h-screen):not(.rounded-3xl) {
+  /* Keep accent backgrounds as-is */
+}
+
+/* Purple text links in dashboard */
+.bg-cosmic-void .text-purple-600,
+#dashboard-main .text-purple-600 {
+  color: #e8a87c !important;
+}
+
+.bg-cosmic-void .text-purple-700,
+#dashboard-main .text-purple-700 {
+  color: #f4c8a0 !important;
+}
+
+/* Override gray border colors */
+.bg-cosmic-void .border-gray-200,
+#dashboard-main .border-gray-200 {
+  border-color: rgba(232, 168, 124, 0.12) !important;
+}
+
+/* Override prose text inside dashboard */
+.bg-cosmic-void .prose,
+#dashboard-main .prose,
+.bg-cosmic-void .prose p,
+#dashboard-main .prose p {
+  color: #b098a8 !important;
+}
+
+.bg-cosmic-void .prose strong,
+#dashboard-main .prose strong {
+  color: #e8d5c4 !important;
+}
+
+/* ─── DASHBOARD THEME ───
+   Dashboard uses dark cosmic void theme for consistency. */
+body.dashboard-active {
+  color: #d8d4e0;
+  background-color: transparent;
 }
 body.dashboard-active #dashboard-main,
 body.dashboard-active #dashboard-main * {
-  color: #374151;
+  color: inherit;
 }
 
 /* Print */

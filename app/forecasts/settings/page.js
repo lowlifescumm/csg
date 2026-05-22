@@ -1,4 +1,5 @@
 'use client';
+const logger = require('../../../lib/logger');
 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Loader2, Check } from 'lucide-react';
@@ -23,7 +24,7 @@ export default function ForecastSettingsPage() {
       }
       setLoading(false);
     } catch (error) {
-      logger.error('Error fetching preferences:', error);
+      console.error('Error fetching preferences:', error);
       setLoading(false);
     }
   };
@@ -45,7 +46,7 @@ export default function ForecastSettingsPage() {
       }
       setSaving(false);
     } catch (error) {
-      logger.error('Error saving preferences:', error);
+      console.error('Error saving preferences:', error);
       setSaving(false);
     }
   };

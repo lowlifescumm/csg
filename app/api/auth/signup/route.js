@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { createUser, getUserByEmail, generateToken } from '@/lib/auth';
 import { initializeUserCreditsOnSignup } from '@/lib/credits';

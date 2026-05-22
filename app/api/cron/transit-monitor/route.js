@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 /**
  * Transit Monitor Cron Job
  * 

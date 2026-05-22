@@ -6,7 +6,6 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
-// Prevent static prerendering since this page uses useSearchParams
 export const dynamic = 'force-dynamic';
 
 function LoginForm() {
@@ -28,18 +27,22 @@ function LoginPageContent({ router, searchParams }) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [returnUrl, setReturnUrl] = useState("/dashboard");
+  const [notice, setNotice] = useState("");
 
-  // Ensure component is mounted before using NextAuth functions
   useEffect(() => {
     setMounted(true);
-    
-    // Get return URL from query params
     const urlReturn = searchParams.get('returnUrl');
     if (urlReturn) {
       setReturnUrl(decodeURIComponent(urlReturn));
     }
-    
-    // Check for error in URL query parameters (from NextAuth redirect)
+    const redirect = searchParams.get('redirect');
+    if (redirect === 'dashboard') {
+      setReturnUrl('/dashboard');
+    }
+    const message = searchParams.get('message');
+    if (message === 'save-readings') {
+      setNotice('Sign in to track your transits, save readings, and build your cosmic profile.');
+    }
     const errorParam = searchParams.get('error');
     if (errorParam) {
       let errorMessage = 'Authentication failed. Please try again.';
@@ -57,32 +60,20 @@ function LoginPageContent({ router, searchParams }) {
   }, [searchParams]);
 
   const handleGoogleSignIn = () => {
-    // Wait for component to mount and SessionProvider to be ready
     if (!mounted) {
       setError("Please wait, initializing...");
       return;
     }
-
     setGoogleLoading(true);
     setError("");
-    
-    // Use public origin to ensure we hit the correct domain
     const callbackUrl = `${window.location.origin}${returnUrl}`;
-    
-    logger.info('[Login] Initiating Google sign-in with callbackUrl:', callbackUrl);
-    
-    // Let NextAuth handle the redirect
-    signIn("google", {
-      callbackUrl: callbackUrl,
-      redirect: true
-    });
+    signIn("google", { callbackUrl: callbackUrl, redirect: true });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
       const res = await fetch(endpoint, {
@@ -90,41 +81,32 @@ function LoginPageContent({ router, searchParams }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       const data = await res.json();
-
       if (res.ok) {
-        // Clear any existing errors
-        setError("");
-        // Small delay to ensure cookie is set
         await new Promise(resolve => setTimeout(resolve, 100));
-        // Redirect to return URL
         router.push(returnUrl);
         router.refresh();
       } else {
         setError(data.error || "Something went wrong");
       }
     } catch (err) {
-      logger.error("Login/signup error:", err);
       setError("Failed to connect to server. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Don't render until mounted (prevents hydration mismatches)
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center p-6">
-        <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-cosmic-midnight via-cosmic-indigo to-cosmic-indigo flex items-center justify-center p-6">
+        <div className="glassmorphic rounded-3xl p-10 border border-white/10 w-full max-w-md">
           <div className="text-center">
             <div className="inline-block float-animation">
               <div className="flex flex-col items-center mb-4">
-                <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
-                <img src="/logo-text.svg" alt="Cosmic Spirit Guide" className="h-8 object-contain" />
+                <img src="/logos/csg-logo-primary.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
               </div>
             </div>
-            <p className="text-gray-600">Loading...</p>
+            <p className="text-white/60">Loading...</p>
           </div>
         </div>
       </div>
@@ -132,25 +114,31 @@ function LoginPageContent({ router, searchParams }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center p-6">
-      <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-cosmic-midnight via-cosmic-indigo to-cosmic-indigo flex items-center justify-center p-6">
+      <div className="glassmorphic rounded-3xl p-10 border border-white/10 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-block float-animation">
-            <img src="/logo.png" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-4 object-contain" />
+            <img src="/logos/csg-logo-primary.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-4 object-contain" />
           </div>
           <h1 className="text-3xl font-semibold gradient-text mb-2">Cosmic Spirit Guide</h1>
-          <p className="text-gray-600">
-            {returnUrl !== '/dashboard' ? 'Sign in to continue your journey' : 'Welcome back to your spiritual journey'}
+          <p className="text-white/60">
+            {notice || (returnUrl !== '/dashboard' ? 'Sign in to continue your journey' : 'Welcome back to your spiritual journey')}
           </p>
         </div>
 
-        <div className="flex gap-2 mb-8 bg-gray-100 bg-opacity-50 rounded-2xl p-1">
+        {notice && (
+          <div className="mb-6 rounded-2xl border border-purple-300/30 bg-purple-500/15 px-4 py-3 text-sm text-purple-100">
+            {notice}
+          </div>
+        )}
+
+        <div className="flex gap-2 mb-8 bg-white/5 rounded-2xl p-1 border border-white/10">
           <button
             onClick={() => setIsLogin(true)}
             className={`flex-1 py-3 rounded-xl font-medium smooth-transition ${
               isLogin
-                ? "bg-white text-purple-600 apple-shadow"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white/10 text-white apple-shadow"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             Log In
@@ -159,8 +147,8 @@ function LoginPageContent({ router, searchParams }) {
             onClick={() => setIsLogin(false)}
             className={`flex-1 py-3 rounded-xl font-medium smooth-transition ${
               !isLogin
-                ? "bg-white text-purple-600 apple-shadow"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white/10 text-white apple-shadow"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             Sign Up
@@ -171,7 +159,7 @@ function LoginPageContent({ router, searchParams }) {
           {!isLogin && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="firstName" className="block text-sm font-medium text-white/70 mb-2">
                   First Name
                 </label>
                 <input
@@ -180,13 +168,13 @@ function LoginPageContent({ router, searchParams }) {
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
+                  className="w-full p-3 rounded-xl border border-white/10 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 outline-none smooth-transition text-white bg-white/5 placeholder-white/30"
                   required={!isLogin}
                   placeholder="Enter your first name"
                 />
               </div>
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="lastName" className="block text-sm font-medium text-white/70 mb-2">
                   Last Name
                 </label>
                 <input
@@ -195,7 +183,7 @@ function LoginPageContent({ router, searchParams }) {
                   type="text"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
+                  className="w-full p-3 rounded-xl border border-white/10 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 outline-none smooth-transition text-white bg-white/5 placeholder-white/30"
                   required={!isLogin}
                   placeholder="Enter your last name"
                 />
@@ -204,7 +192,7 @@ function LoginPageContent({ router, searchParams }) {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
               Email
             </label>
             <input
@@ -213,7 +201,7 @@ function LoginPageContent({ router, searchParams }) {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
+              className="w-full p-3 rounded-xl border border-white/10 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 outline-none smooth-transition text-white bg-white/5 placeholder-white/30"
               required
               placeholder="Enter your email address"
               autoComplete="email"
@@ -221,7 +209,7 @@ function LoginPageContent({ router, searchParams }) {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-2">
               Password
             </label>
             <input
@@ -230,7 +218,7 @@ function LoginPageContent({ router, searchParams }) {
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
+              className="w-full p-3 rounded-xl border border-white/10 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 outline-none smooth-transition text-white bg-white/5 placeholder-white/30"
               required
               placeholder="Enter your password"
               autoComplete="current-password"
@@ -240,7 +228,7 @@ function LoginPageContent({ router, searchParams }) {
                 <button
                   type="button"
                   onClick={() => router.push('/reset-password')}
-                  className="text-purple-600 hover:text-purple-800 text-sm font-medium smooth-transition"
+                  className="text-white/80 hover:text-white/70 text-sm font-medium smooth-transition"
                 >
                   🔮 Forgot your cosmic password?
                 </button>
@@ -249,7 +237,7 @@ function LoginPageContent({ router, searchParams }) {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+            <div className="bg-cosmic-rose/50/10 border border-red-500/20 text-red-300 px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
@@ -273,22 +261,20 @@ function LoginPageContent({ router, searchParams }) {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white bg-opacity-80 text-gray-500 font-medium">Or continue with</span>
+            <span className="px-4 bg-transparent text-white/40 font-medium">Or continue with</span>
           </div>
         </div>
 
-        {/* Google Sign-In Button */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
           disabled={googleLoading || loading}
-          className="w-full bg-white hover:bg-gray-50 text-gray-700 py-4 rounded-xl font-semibold smooth-transition hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed apple-shadow border border-gray-200 flex items-center justify-center gap-3"
+          className="w-full bg-white/5 hover:bg-white/10 text-white py-4 rounded-xl font-semibold smooth-transition hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed border border-white/10 flex items-center justify-center gap-3"
         >
           {googleLoading ? (
             <span className="flex items-center gap-2">
@@ -315,20 +301,18 @@ function LoginPageContent({ router, searchParams }) {
   );
 }
 
-// Main export with Suspense wrapper
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center p-6">
-        <div className="glassmorphic rounded-3xl p-10 apple-shadow-lg border border-white border-opacity-40 w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-cosmic-midnight via-cosmic-indigo to-cosmic-indigo flex items-center justify-center p-6">
+        <div className="glassmorphic rounded-3xl p-10 border border-white/10 w-full max-w-md">
           <div className="text-center">
             <div className="inline-block float-animation">
               <div className="flex flex-col items-center mb-4">
-                <img src="/logo-eye.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
-                <img src="/logo-text.svg" alt="Cosmic Spirit Guide" className="h-8 object-contain" />
+                <img src="/logos/csg-logo-primary.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
               </div>
             </div>
-            <p className="text-gray-600">Loading...</p>
+            <p className="text-white/60">Loading...</p>
           </div>
         </div>
       </div>

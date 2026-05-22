@@ -49,11 +49,11 @@ export default function Sidebar({ user, onLinkClick }) {
   };
 
   return (
-    <div className="w-full md:w-64 h-full flex flex-col bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-100">
+    <div className="w-full md:w-64 h-full flex flex-col bg-cosmic-void/90 rounded-2xl p-4 sm:p-6 shadow-lg border border-cosmic-gold/15 backdrop-blur-md">
       {/* Header */}
       <div className="mb-4 sm:mb-8">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-1 sm:mb-2">Cosmic Guide</h2>
-        <p className="text-xs sm:text-sm text-gray-600">Welcome back, {userName}</p>
+        <h2 className="text-lg sm:text-xl font-semibold text-cosmic-lavender mb-1 sm:mb-2">Cosmic Guide</h2>
+        <p className="text-xs sm:text-sm text-cosmic-taupe">Welcome back, {userName}</p>
       </div>
 
       {/* Navigation */}
@@ -73,14 +73,14 @@ export default function Sidebar({ user, onLinkClick }) {
               }}
               className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl smooth-transition text-sm sm:text-base ${
                 active
-                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                  : "text-gray-600 hover:bg-purple-50"
+                  ? "bg-gradient-to-r from-cosmic-rose to-cosmic-purple text-white"
+                  : "text-cosmic-taupe hover:bg-cosmic-gold/10"
               }`}
             >
               <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span className="font-medium truncate">{item.label}</span>
               {item.comingSoon && (
-                <span className="ml-auto text-xs text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full">
+                <span className="ml-auto text-xs text-cosmic-gold bg-cosmic-gold/15 px-2 py-0.5 rounded-full">
                   Coming Soon
                 </span>
               )}
@@ -90,7 +90,7 @@ export default function Sidebar({ user, onLinkClick }) {
       </nav>
 
       {/* Footer */}
-      <div className="mt-auto pt-4 sm:pt-6 border-t border-gray-200 space-y-1 sm:space-y-2">
+      <div className="mt-auto pt-4 sm:pt-6 border-t border-cosmic-gold/15 space-y-1 sm:space-y-2">
         <Link
           href="/profile"
           onClick={() => {
@@ -100,8 +100,8 @@ export default function Sidebar({ user, onLinkClick }) {
           }}
           className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl smooth-transition text-sm sm:text-base ${
             pathname === "/profile"
-              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-              : "text-gray-600 hover:bg-purple-50"
+              ? "bg-gradient-to-r from-cosmic-rose to-cosmic-purple text-white"
+              : "text-cosmic-taupe hover:bg-cosmic-gold/10"
           }`}
         >
           <Settings className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
@@ -114,7 +114,7 @@ export default function Sidebar({ user, onLinkClick }) {
             }
             handleLogout();
           }}
-          className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-gray-600 hover:bg-purple-50 smooth-transition text-sm sm:text-base"
+          className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-cosmic-taupe hover:bg-cosmic-gold/10 smooth-transition text-sm sm:text-base"
         >
           <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
           <span className="font-medium truncate">Log Out</span>

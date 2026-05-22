@@ -1,5 +1,5 @@
-const logger = require('./lib/logger');
 #!/usr/bin/env node
+const logger = require('./lib/logger');
 /**
  * dispatch-content-pipeline.js
  * 

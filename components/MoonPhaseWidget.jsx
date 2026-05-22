@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../lib/logger');
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Moon, Sparkles, Calendar, Info } from 'lucide-react';
@@ -18,7 +19,7 @@ export default function MoonPhaseWidget() {
           setMoonData(result.data);
         }
       } catch (error) {
-        logger.error('Failed to fetch moon data:', error);
+        console.error('Failed to fetch moon data:', error);
       } finally {
         setLoading(false);
       }

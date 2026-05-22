@@ -65,6 +65,9 @@ services:
       - key: TWITTER_ACCESS_SECRET
         sync: false
 
+      - key: SANITY_API_TOKEN
+        sync: false
+
 databases:
   - name: cosmic-spiritual-guide-db
     plan: starter
@@ -101,8 +104,8 @@ cronJobs:
         -H "Authorization: Bearer ${CRON_SECRET}"
 
   - name: content-pipeline-publish
-    schedule: "0 11 * * 1"  # Every Monday at 11 AM — processes all briefs and publishes
+    schedule: "0 11 * * 1"  # Every Monday at 11 AM — creates drafts only; publishing requires workflow gates
     service: cosmic-spiritual-guide
     command: |
-      curl -X POST "${NEXT_PUBLIC_BASE_URL}/api/cron/content-pipeline?all=1&publish=1" \
+      curl -X POST "${NEXT_PUBLIC_BASE_URL}/api/cron/content-pipeline?all=1" \
         -H "Authorization: Bearer ${CRON_SECRET}"

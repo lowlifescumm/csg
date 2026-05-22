@@ -95,3 +95,6 @@ artifacts/
 # Cursor rules - should not be committed
 .cursor/rules/
 backup/
+
+# Stray Windows path directories (Lighthouse artifacts)
+undefined:/

@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../lib/logger');
 
 export const dynamic = 'force-static';
 
@@ -164,7 +165,7 @@ export default function HomePage() {
       const res = await fetch("/api/auth/user");
       const data = await res.json();
       if (data.user) setUser(data.user);
-    } catch (e) { logger.error("Auth check failed"); }
+    } catch (e) { console.error("Auth check failed"); }
     finally { setLoading(false); }
   };
 
@@ -181,9 +182,9 @@ export default function HomePage() {
       <StarField />
 
       {/* ─── HERO SECTION ─── */}
-      <section className="relative min-h-screen flex items-center px-4 sm:px-6 lg:px-8">
+      <section className="relative min-h-screen flex items-center overflow-hidden px-4 sm:px-6 lg:px-8">
         {/* Background zodiac constellation */}
-        <div className="absolute right-0 top-1/4 w-[500px] h-[500px] opacity-40 pointer-events-none hidden lg:block">
+        <div className="absolute right-[-140px] xl:right-0 top-1/4 w-[420px] xl:w-[500px] h-[420px] xl:h-[500px] opacity-40 pointer-events-none hidden lg:block overflow-hidden">
           <ZodiacConstellation className="w-full h-full animate-[spin_120s_linear_infinite]" />
         </div>
 
@@ -241,8 +242,8 @@ export default function HomePage() {
           </div>
 
           {/* Right: Visual */}
-          <div className="relative flex items-center justify-center">
-            <div className="relative">
+          <div className="relative flex items-center justify-center overflow-hidden py-10">
+            <div className="relative max-w-full">
               {/* Central orb */}
               <PlanetOrb color="#7c3aed" size={280} />
               {/* Orbiting elements */}
@@ -252,11 +253,11 @@ export default function HomePage() {
               <div className="absolute -bottom-4 -left-12">
                 <PlanetOrb color="#c45b7a" size={80} />
               </div>
-              <div className="absolute top-1/2 -right-16">
+              <div className="absolute top-1/2 -right-8 sm:-right-16">
                 <PlanetOrb color="#5b8a8a" size={50} />
               </div>
               {/* Glow ring */}
-              <div className="absolute inset-0 -m-20 rounded-full border border-cosmic-violet/20 animate-[spin_20s_linear_infinite]" style={{
+              <div className="absolute inset-0 -m-12 sm:-m-20 rounded-full border border-cosmic-violet/20 animate-[spin_20s_linear_infinite]" style={{
                 background: 'conic-gradient(from 0deg, transparent, rgba(124,58,237,0.1), transparent)'
               }} />
             </div>

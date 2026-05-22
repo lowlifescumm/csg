@@ -1,4 +1,5 @@
 'use client';
+const logger = require('../lib/logger');
 import { useState } from 'react';
 
 /**
@@ -117,7 +118,7 @@ export default function PremiumReportInputForm({
       setGeocoding(prev => ({ ...prev, [type]: false }));
       return null;
     } catch (error) {
-      logger.error(`Geocoding error for ${type}:`, error);
+      console.error(`Geocoding error for ${type}:`, error);
       setLocationErrors(prev => ({ 
         ...prev, 
         [type]: 'Geocoding service unavailable. Please try again.' 

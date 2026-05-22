@@ -1,6 +1,5 @@
 "use client";
-import { useMemo, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import nextDynamic from "next/dynamic";
 import DashboardShell from "@/components/DashboardShell";
 import DashboardLayoutShell from "@/components/DashboardLayoutShell";
@@ -14,12 +13,11 @@ const DashboardV3Client = nextDynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="min-h-screen bg-celestial flex items-center justify-center">
+      <div className="min-h-screen bg-cosmic-void flex items-center justify-center">
         <div className="text-center animate-fade-in">
           <div className="relative mb-6">
-            <div className="w-16 h-16 border-4 border-cosmic-lavender/30 border-t-cosmic-purple rounded-full animate-spin mx-auto"></div>
+            <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto"></div>
           </div>
-          <p className="text-cosmic-indigo/60 animate-pulse mb-4">Loading your cosmic journey...</p>
         </div>
       </div>
     ),
@@ -77,12 +75,11 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-celestial flex items-center justify-center">
+        <div className="min-h-screen bg-cosmic-void flex items-center justify-center">
           <div className="text-center animate-fade-in">
             <div className="relative mb-6">
-              <div className="w-16 h-16 border-4 border-cosmic-lavender/30 border-t-cosmic-purple rounded-full animate-spin mx-auto"></div>
+              <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto"></div>
             </div>
-            <p className="text-cosmic-indigo/60 animate-pulse mb-4">Loading your cosmic journey...</p>
           </div>
         </div>
       }

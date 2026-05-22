@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Moon, CreditCard, Zap, Crown, X } from "lucide-react";
 import Link from "next/link";
@@ -38,7 +39,7 @@ export default function HeroHeader({ user, credits, streak, moonPhase: propMoonP
             setMoonPhase(data.data);
           }
         })
-        .catch(err => logger.error("Failed to fetch moon phase:", err));
+        .catch(err => console.error("Failed to fetch moon phase:", err));
     } else {
       setMoonPhase(propMoonPhase);
     }

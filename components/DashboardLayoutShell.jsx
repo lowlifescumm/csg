@@ -36,8 +36,8 @@ export default function DashboardLayoutShell({
 
   return (
     // Light theme - matching landing page style
-    <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50" style={{ color: '#374151' }}>
-        {/* Background removed for light theme - uncomment if you want subtle effects */}
+    <div className="relative min-h-screen bg-cosmic-void text-cosmic-lavender">
+        {/* Subtle starfield canvas or keep as solid dark - using cosmic-void bg */}
         
         {/* Aria live region for dynamic content updates */}
         <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -47,7 +47,7 @@ export default function DashboardLayoutShell({
         {/* Mobile Sidebar Toggle Button */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="md:hidden fixed top-4 left-4 z-50 p-2 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-colors"
+          className="md:hidden fixed top-4 left-4 z-50 p-2 bg-cosmic-gold/20 text-cosmic-gold rounded-lg shadow-lg hover:bg-cosmic-gold/30 transition-colors border border-cosmic-gold/30"
           aria-label="Toggle sidebar"
         >
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -56,7 +56,7 @@ export default function DashboardLayoutShell({
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div
-            className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="md:hidden fixed inset-0 bg-black/70 z-40"
             onClick={() => setSidebarOpen(false)}
           />
         )}

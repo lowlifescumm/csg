@@ -1,0 +1,63 @@
+{
+  "generated_for": "FRO-11102 Keyword Clustering",
+  "site": "cosmicspiritguide.com",
+  "clusters": [
+    {
+      "name": "Spiritual Healing",
+      "pillar": {
+        "keyword": "spiritual healing",
+        "url": "/blog/spiritual-healing-guide",
+        "title": "Spiritual Healing: A Practical Guide to Clearing, Grounding, and Rebuilding Your Energy",
+        "cta": "/energy"
+      },
+      "supporting": [
+        { "priority": "P1", "keyword": "spiritual healing after a breakup", "slug": "spiritual-healing-after-breakup", "cta": "/tarot" },
+        { "priority": "P1", "keyword": "energy cleansing ritual", "slug": "energy-cleansing-ritual", "cta": "/moon-reading" },
+        { "priority": "P1", "keyword": "how to protect your energy", "slug": "how-to-protect-your-energy", "cta": "/energy" },
+        { "priority": "P2", "keyword": "chakra healing for beginners", "slug": "chakra-healing-for-beginners", "cta": "/newsletter" },
+        { "priority": "P2", "keyword": "spiritual meaning of anxiety", "slug": "spiritual-meaning-of-anxiety", "cta": "/journal" },
+        { "priority": "P2", "keyword": "shadow work prompts", "slug": "shadow-work-prompts", "cta": "/journal" },
+        { "priority": "P3", "keyword": "healing crystals for protection", "slug": "healing-crystals-for-protection", "cta": "/newsletter" },
+        { "priority": "P3", "keyword": "full moon healing ritual", "slug": "full-moon-healing-ritual", "cta": "/moon-reading" }
+      ]
+    },
+    {
+      "name": "Manifestation Techniques",
+      "pillar": {
+        "keyword": "manifestation techniques",
+        "url": "/blog/manifestation-techniques",
+        "title": "Manifestation Techniques That Actually Help You Focus, Act, and Follow Through",
+        "cta": "/journal"
+      },
+      "supporting": [
+        { "priority": "P1", "keyword": "369 manifestation method", "slug": "369-manifestation-method", "cta": "/journal" },
+        { "priority": "P1", "keyword": "new moon manifestation ritual", "slug": "new-moon-manifestation-ritual", "cta": "/moon-reading" },
+        { "priority": "P1", "keyword": "manifestation journal prompts", "slug": "manifestation-journal-prompts", "cta": "/journal" },
+        { "priority": "P2", "keyword": "how to manifest love", "slug": "how-to-manifest-love", "cta": "/compatibility" },
+        { "priority": "P2", "keyword": "how to manifest money", "slug": "how-to-manifest-money", "cta": "/tarot" },
+        { "priority": "P2", "keyword": "scripting manifestation examples", "slug": "scripting-manifestation-examples", "cta": "/journal" },
+        { "priority": "P3", "keyword": "vision board ideas", "slug": "vision-board-ideas", "cta": "/newsletter" },
+        { "priority": "P3", "keyword": "affirmations for manifestation", "slug": "affirmations-for-manifestation", "cta": "/newsletter" }
+      ]
+    },
+    {
+      "name": "Predictive Astrology",
+      "pillar": {
+        "keyword": "predictive astrology",
+        "url": "/blog/predictive-astrology-guide",
+        "title": "Predictive Astrology: How Transits, Progressions, and Moon Cycles Shape Your Timing",
+        "cta": "/forecasts"
+      },
+      "supporting": [
+        { "priority": "P1", "keyword": "planetary transits meaning", "slug": "planetary-transits-meaning", "cta": "/transits" },
+        { "priority": "P1", "keyword": "mercury retrograde meaning", "slug": "mercury-retrograde-meaning", "cta": "/forecasts" },
+        { "priority": "P1", "keyword": "saturn return meaning", "slug": "saturn-return-meaning", "cta": "/birth-chart" },
+        { "priority": "P2", "keyword": "venus retrograde meaning", "slug": "venus-retrograde-meaning", "cta": "/compatibility" },
+        { "priority": "P2", "keyword": "mars retrograde meaning", "slug": "mars-retrograde-meaning", "cta": "/forecasts" },
+        { "priority": "P2", "keyword": "astrology transits calculator", "slug": "astrology-transits-calculator", "cta": "/transits" },
+        { "priority": "P3", "keyword": "annual profections astrology", "slug": "annual-profections-astrology", "cta": "/birth-chart" },
+        { "priority": "P3", "keyword": "secondary progressions astrology", "slug": "secondary-progressions-astrology", "cta": "/newsletter" }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../lib/logger');
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,7 +23,7 @@ export default function Header() {
         setUser(data.user);
       }
     } catch (error) {
-      logger.error("Auth check failed:", error);
+      console.error("Auth check failed:", error);
     } finally {
       setLoading(false);
     }
@@ -49,7 +50,7 @@ export default function Header() {
       router.push("/");
       router.refresh();
     } catch (error) {
-      logger.error("Logout failed:", error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -70,7 +71,7 @@ export default function Header() {
     { name: "Forecasts", href: "/forecasts", icon: Sparkles, auth: true },
   ];
 
-  const filteredNav = (!user ? [...navigation, { name: "Log In", href: "/login" }, { name: "Start Free Reading", href: "/login" }] : navigation).filter((item) => !item.auth || user);
+  const filteredNav = navigation.filter((item) => !item.auth || user);
 
   return (
     <header
@@ -150,7 +151,7 @@ export default function Header() {
                   href="/login"
                   className="px-4 py-2 rounded-lg font-medium text-sm bg-cosmic-gold text-cosmic-void hover:bg-cosmic-gold/90 transition-all"
                 >
-                  Sign Up
+                  Start Free Reading
                 </Link>
               </div>
             )}
@@ -241,7 +242,7 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="px-4 py-3 rounded-lg font-medium text-center bg-cosmic-gold text-cosmic-void"
                   >
-                    Sign Up
+                    Start Free Reading
                   </Link>
                 </div>
               )}

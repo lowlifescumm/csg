@@ -1,16 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
-import { X, Sparkles, ArrowRight, Lock } from "lucide-react";
+import { X, Sparkles, ArrowRight, Lock, Mail, Check } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 export default function FreeSampleModal({ isOpen, onClose }) {
-  const [step, setStep] = useState("intention"); // intention | loading | result | signup
+  const [step, setStep] = useState("intention"); // intention | loading | result | capture
   const [question, setQuestion] = useState("");
   const [reading, setReading] = useState(null);
   const [error, setError] = useState("");
   const [isAnimating, setIsAnimating] = useState(false);
+  const [email, setEmail] = useState("");
+  const [captureError, setCaptureError] = useState("");
+  const [captureLoading, setCaptureLoading] = useState(false);
+  const [captured, setCaptured] = useState(false);
 
-  // Reset when modal opens
   useEffect(() => {
     if (isOpen) {
       setStep("intention");
@@ -18,10 +21,13 @@ export default function FreeSampleModal({ isOpen, onClose }) {
       setReading(null);
       setError("");
       setIsAnimating(false);
+      setEmail("");
+      setCaptureError("");
+      setCaptureLoading(false);
+      setCaptured(false);
     }
   }, [isOpen]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -50,12 +56,12 @@ export default function FreeSampleModal({ isOpen, onClose }) {
       const data = await res.json();
       
       if (data.success) {
-        // Simulate card reveal animation delay
+        // Reduced from 1500ms to 500ms — still feels dramatic but not wasteful
         setTimeout(() => {
           setReading(data.reading);
           setStep("result");
           setIsAnimating(false);
-        }, 1500);
+        }, 500);
       } else {
         setError(data.error || "Something went wrong");
         setStep("intention");
@@ -68,15 +74,48 @@ export default function FreeSampleModal({ isOpen, onClose }) {
     }
   };
 
-  const handleGetFullReading = () => {
-    window.location.href = "/dashboard";
+  const handleCaptureEmail = async () => {
+    if (!email.trim() || !email.includes('@')) {
+      setCaptureError("Please enter a valid email address");
+      return;
+    }
+    setCaptureLoading(true);
+    setCaptureError("");
+
+    try {
+      // Store lead in localStorage for now (until we have a lead capture table)
+      const leads = JSON.parse(localStorage.getItem('csg_leads') || '[]');
+      leads.push({ email: email.trim(), question: question.trim(), date: new Date().toISOString() });
+      localStorage.setItem('csg_leads', JSON.stringify(leads));
+      
+      // Also try to submit to a simple API if one exists
+      await fetch('/api/leads/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), source: 'free_sample_modal', question: question.trim() })
+      }).catch(() => {}); // Silently fail if API doesn't exist yet
+      
+      setCaptured(true);
+      setCaptureLoading(false);
+    } catch (err) {
+      setCaptureError("Failed to save. Please try again.");
+      setCaptureLoading(false);
+    }
+  };
+
+  const handleGoToDashboard = () => {
+    // Pre-fill email on login page if captured
+    const params = new URLSearchParams();
+    params.set('returnUrl', '/dashboard');
+    if (captured) params.set('email', email);
+    window.location.href = `/login?${params.toString()}`;
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-      <div className="glassmorphic rounded-3xl p-6 sm:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto apple-shadow-2xl border border-white/40 animate-in fade-in zoom-in duration-300">
+      <div className="glassmorphic rounded-3xl p-6 sm:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto apple-shadow-2xl border border-white/20 animate-in fade-in zoom-in duration-300">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -87,10 +126,10 @@ export default function FreeSampleModal({ isOpen, onClose }) {
               <h2 className="text-xl sm:text-2xl font-bold gradient-text">
                 {step === "intention" && "Your Free Tarot Preview"}
                 {step === "loading" && "The Cards Are Being Drawn..."}
-                {step === "result" && "Your Reading"}
+                {(step === "result" || step === "capture") && "Your Reading"}
               </h2>
-              {step === "result" && (
-                <p className="text-sm text-green-600 font-medium flex items-center gap-1">
+              {(step === "result" || step === "capture") && (
+                <p className="text-sm text-white/80 font-medium flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   Sample reading • Full reading available free
                 </p>
@@ -102,7 +141,7 @@ export default function FreeSampleModal({ isOpen, onClose }) {
             className="p-2 rounded-xl hover:bg-white/20 smooth-transition"
             aria-label="Close"
           >
-            <X className="w-6 h-6 text-gray-600" />
+            <X className="w-6 h-6 text-white/60" />
           </button>
         </div>
 
@@ -110,21 +149,21 @@ export default function FreeSampleModal({ isOpen, onClose }) {
         {step === "intention" && (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <div className="inline-flex items-center gap-2 bg-cosmic-purple/20 text-white/70 px-4 py-2 rounded-full text-sm font-medium mb-4 border border-cosmic-purple/20">
                 <Sparkles className="w-4 h-4" />
                 100% Free • No signup required
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                 Ask the cards what you need to know
               </h3>
-              <p className="text-gray-600 max-w-lg mx-auto">
+              <p className="text-white/60 max-w-lg mx-auto">
                 Get a personalized 3-card tarot reading instantly. 
                 Past, Present, and Future revealed.
               </p>
             </div>
 
             <div className="max-w-xl mx-auto">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white/70 mb-2">
                 What guidance are you seeking?
               </label>
               <textarea
@@ -133,18 +172,17 @@ export default function FreeSampleModal({ isOpen, onClose }) {
                   setQuestion(e.target.value);
                   setError("");
                 }}
-                className="w-full p-4 rounded-2xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition resize-none text-gray-900 placeholder-gray-400 bg-white/70 apple-shadow min-h-[120px]"
+                className="w-full p-4 rounded-2xl border border-white/10 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 outline-none smooth-transition resize-none text-white placeholder-white/30 bg-white/5 min-h-[120px]"
                 placeholder="e.g., What should I focus on in my career? or What do I need to know about my relationship?"
               />
               {error && (
-                <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                  <span className="inline-block w-1.5 h-1.5 bg-red-500 rounded-full" />
+                <p className="text-cosmic-rose text-sm mt-2 flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 bg-red-400 rounded-full" />
                   {error}
                 </p>
               )}
             </div>
 
-            {/* Quick suggestion chips */}
             <div className="flex flex-wrap justify-center gap-2 max-w-xl mx-auto">
               {[
                 "What does my future hold?",
@@ -155,7 +193,7 @@ export default function FreeSampleModal({ isOpen, onClose }) {
                 <button
                   key={suggestion}
                   onClick={() => setQuestion(suggestion)}
-                  className="px-4 py-2 bg-white/60 hover:bg-white border border-purple-100 rounded-full text-sm text-gray-700 smooth-transition hover:border-purple-300"
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm text-white/70 smooth-transition hover:border-purple-400/30"
                 >
                   {suggestion}
                 </button>
@@ -172,14 +210,14 @@ export default function FreeSampleModal({ isOpen, onClose }) {
                 Reveal My Cards
                 <ArrowRight className="w-5 h-5" />
               </button>
-              <p className="text-center text-sm text-gray-500 mt-3">
+              <p className="text-center text-sm text-white/40 mt-3">
                 Takes 2 seconds • No email required
               </p>
             </div>
           </div>
         )}
 
-        {/* Step: Loading / Card Animation */}
+        {/* Step: Loading */}
         {step === "loading" && (
           <div className="py-12 text-center">
             <div className="flex justify-center gap-4 mb-8">
@@ -197,7 +235,6 @@ export default function FreeSampleModal({ isOpen, onClose }) {
                     <div className="w-16 h-16 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '2s' }} />
                   </div>
                   <div className="absolute inset-0 border-2 border-white/30 rounded-xl" />
-                  {/* Card back pattern */}
                   <div className="absolute inset-4 border border-white/20 rounded-lg opacity-50" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     <Sparkles className="w-8 h-8 text-white/60" />
@@ -205,17 +242,17 @@ export default function FreeSampleModal({ isOpen, onClose }) {
                 </div>
               ))}
             </div>
-            <p className="text-lg text-gray-700 font-medium mb-2">
+            <p className="text-lg text-white/80 font-medium mb-2">
               Shuffling the deck...
             </p>
-            <p className="text-gray-500">
+            <p className="text-white/50">
               The cards are aligning with your energy
             </p>
           </div>
         )}
 
-        {/* Step: Result Display */}
-        {step === "result" && reading && (
+        {/* Step: Result + Email Capture */}
+        {(step === "result" || step === "capture") && reading && (
           <div className="space-y-8">
             {/* Cards Display */}
             <div className="grid grid-cols-3 gap-3 sm:gap-6">
@@ -225,7 +262,7 @@ export default function FreeSampleModal({ isOpen, onClose }) {
                   className="text-center animate-in fade-in slide-in-from-bottom-4 duration-500"
                   style={{ animationDelay: `${i * 0.15}s` }}
                 >
-                  <div className="relative bg-white rounded-2xl p-2 sm:p-3 apple-shadow-lg mb-3 group hover:scale-105 smooth-transition">
+                  <div className="relative bg-white/90 rounded-2xl p-2 sm:p-3 shadow-lg mb-3 group hover:scale-105 smooth-transition">
                     <div className="relative overflow-hidden rounded-xl">
                       <img
                         src={card.image}
@@ -233,22 +270,21 @@ export default function FreeSampleModal({ isOpen, onClose }) {
                         className={`w-full h-auto ${card.reversed ? 'rotate-180' : ''}`}
                       />
                       {card.reversed && (
-                        <div className="absolute top-2 right-2 bg-purple-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium">
+                        <div className="absolute top-2 right-2 bg-cosmic-purple/50 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium">
                           Reversed
                         </div>
                       )}
                     </div>
-                    {/* Hover overlay with meaning */}
-                    <div className="absolute inset-2 bg-purple-900/90 rounded-xl opacity-0 group-hover:opacity-100 smooth-transition flex items-center justify-center p-2">
+                    <div className="absolute inset-2 bg-cosmic-indigo/90 rounded-xl opacity-0 group-hover:opacity-100 smooth-transition flex items-center justify-center p-2">
                       <p className="text-white text-xs text-center leading-tight">
                         {card.reversed ? card.reversed : card.upright}
                       </p>
                     </div>
                   </div>
-                  <p className="text-[10px] sm:text-xs font-semibold text-purple-500 uppercase tracking-wider mb-1">
+                  <p className="text-[10px] sm:text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1">
                     {reading.positions[i]}
                   </p>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base leading-tight">
+                  <p className="font-semibold text-white text-sm sm:text-base leading-tight">
                     {card.name}
                   </p>
                 </div>
@@ -256,14 +292,14 @@ export default function FreeSampleModal({ isOpen, onClose }) {
             </div>
 
             {/* Interpretation */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
+            <div className="bg-gradient-to-br from-purple-900/40 to-cosmic-indigo/40 rounded-2xl p-6 border border-white/10">
               <div className="flex items-start gap-3 mb-4">
                 <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 mb-2">Your Guidance</h3>
-                  <div className="text-gray-700 leading-relaxed">
+                  <h3 className="font-semibold text-white mb-2">Your Guidance</h3>
+                  <div className="text-white/80 leading-relaxed">
                     <MarkdownRenderer text={reading.interpretation} />
                   </div>
                 </div>
@@ -271,43 +307,85 @@ export default function FreeSampleModal({ isOpen, onClose }) {
             </div>
 
             {/* Sample notice */}
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-              <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-cosmic-gold/50/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+              <Lock className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-amber-800 font-medium text-sm">
+                <p className="text-amber-200 font-medium text-sm">
                   This is a preview reading
                 </p>
-                <p className="text-amber-700 text-sm mt-1">
-                  Get the full interpretation with detailed card meanings, 
-                  personalized insights, and save your reading history.
+                <p className="text-amber-200/70 text-sm mt-1">
+                  Save your reading to get detailed card meanings, 
+                  personalized daily horoscopes, and reading history.
                 </p>
               </div>
             </div>
 
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handleGetFullReading}
-                className="flex-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold text-lg smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-              >
-                <Sparkles className="w-5 h-5" />
-                Get Your Free Full Reading
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => {
-                  setStep("intention");
-                  setQuestion("");
-                  setReading(null);
-                }}
-                className="sm:w-auto px-6 py-4 border-2 border-gray-200 text-gray-700 rounded-2xl font-semibold smooth-transition hover:bg-gray-50 hover:border-gray-300"
-              >
-                Ask Another Question
-              </button>
-            </div>
+            {/* Email Capture */}
+            {!captured ? (
+              <div className="bg-gradient-to-br from-purple-900/30 to-cosmic-indigo/30 rounded-2xl p-6 border border-purple-500/20">
+                <div className="text-center mb-4">
+                  <Mail className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                  <h3 className="text-lg font-semibold text-white mb-1">Save Your Reading</h3>
+                  <p className="text-white/60 text-sm">
+                    Enter your email to save this reading and get daily cosmic insights
+                  </p>
+                </div>
+                <div className="flex gap-3 max-w-md mx-auto">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setCaptureError("");
+                    }}
+                    placeholder="your@email.com"
+                    className="flex-1 p-3 rounded-xl border border-white/10 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 outline-none smooth-transition text-white placeholder-white/30 bg-white/5"
+                  />
+                  <button
+                    onClick={handleCaptureEmail}
+                    disabled={captureLoading}
+                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold smooth-transition hover:shadow-lg hover:scale-[1.02] disabled:opacity-60 flex items-center gap-2 whitespace-nowrap"
+                  >
+                    {captureLoading ? (
+                      <span className="animate-spin">⟳</span>
+                    ) : (
+                      <>Save <ArrowRight className="w-4 h-4" /></>
+                    )}
+                  </button>
+                </div>
+                {captureError && (
+                  <p className="text-cosmic-rose text-sm text-center mt-2">{captureError}</p>
+                )}
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={handleGoToDashboard}
+                    className="text-white/40 hover:text-white/70 text-sm smooth-transition underline"
+                  >
+                    Skip and continue without saving →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-cosmic-teal/50/10 border border-green-500/20 rounded-2xl p-6 text-center">
+                <Check className="w-10 h-10 text-green-400 mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-white mb-2">Reading Saved!</h3>
+                <p className="text-white/60 text-sm mb-4">
+                  Your reading is saved. Create a free account to unlock full interpretations and daily horoscopes.
+                </p>
+                <button
+                  onClick={handleGoToDashboard}
+                  className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-8 py-4 rounded-2xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] flex items-center justify-center gap-2 mx-auto"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Get Your Free Full Reading
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
 
-            <p className="text-center text-sm text-gray-500">
-              Join 50,000+ people who've discovered their path
+            {/* Bottom trust */}
+            <p className="text-center text-sm text-white/30">
+              ✓ No spam • Unsubscribe anytime • Your data is private
             </p>
           </div>
         )}

@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 /**
  * POST /api/admin/run-credit-migration
  * One-time endpoint to run credit ledger migration on production

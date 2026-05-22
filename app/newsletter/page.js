@@ -1,7 +1,5 @@
 "use client";
-
-"use client";
-
+const logger = require('../../lib/logger');
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -42,7 +40,7 @@ export default function NewsletterPage() {
         setError(data.error || "Something went wrong. Please try again.");
       }
     } catch (err) {
-      logger.error("[Newsletter] subscribe error:", err);
+      console.error("[Newsletter] subscribe error:", err);
       setError("Failed to connect. Please check your connection and try again.");
     } finally {
       setLoading(false);

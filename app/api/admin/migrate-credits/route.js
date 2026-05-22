@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 /**
  * POST /api/admin/migrate-credits
  * One-time endpoint to migrate old credits to new credit ledger system

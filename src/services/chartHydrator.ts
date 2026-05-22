@@ -1,3 +1,4 @@
+const logger = require('../../lib/logger');
 import { calculateBirthChart, degreesToSign } from "@/lib/astrology";
 import { calculateSynastryScore, calculateSynastryAspects } from "@/lib/compatibility";
 import { calculateBodyGraph } from "@/src/utils/humanDesign/hdCalculator";

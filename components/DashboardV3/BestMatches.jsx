@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Heart, Loader2, X, Sparkles, Info } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
@@ -105,7 +106,7 @@ export default function BestMatches({ userId }) {
         }
       }
     } catch (err) {
-      logger.error("Failed to fetch top matches:", err);
+      console.error("Failed to fetch top matches:", err);
     } finally {
       setLoading(false);
     }

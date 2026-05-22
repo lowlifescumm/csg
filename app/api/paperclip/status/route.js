@@ -41,7 +41,7 @@ async function fetchFRO(endpoint) {
     if (!res.ok) return null;
     return await res.json();
   } catch (err) {
-    console.error('[paperclip/status] fetchData error:', err);
+    logger.error('[paperclip/status] fetchData error:', err);
     return null;
   }
 }
@@ -84,7 +84,7 @@ async function getActiveRuns() {
     
     return { active, recent };
   } catch (err) {
-    console.error("[paperclip/status] Failed to fetch runs:", err);
+    logger.error("[paperclip/status] Failed to fetch runs:", err);
     return { active: [], recent: [] };
   }
 }

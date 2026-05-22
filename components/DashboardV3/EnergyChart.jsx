@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import {
   AreaChart,
@@ -98,7 +99,7 @@ export default function EnergyChart({
           }
         }
       } catch (err) {
-        logger.info("Could not fetch energy data:", err);
+        console.info("Could not fetch energy data:", err);
       }
     }
 

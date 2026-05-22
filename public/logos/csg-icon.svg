@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60">
   <defs>
     <linearGradient id="goldIcon" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#F4E4BC"/>
-      <stop offset="50%" style="stop-color:#D4AF37"/>
-      <stop offset="100%" style="stop-color:#B8941F"/>
+      <stop offset="0%" style="stop-color:#F4C8A0"/>
+      <stop offset="50%" style="stop-color:#E8A87C"/>
+      <stop offset="100%" style="stop-color:#D4936A"/>
     </linearGradient>
-    <linearGradient id="violetIcon" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#A78BFA"/>
-      <stop offset="100%" style="stop-color:#8B5CF6"/>
+    <linearGradient id="tealIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7AB5B5"/>
+      <stop offset="100%" style="stop-color:#5B8A8A"/>
     </linearGradient>
   </defs>
   
@@ -34,14 +34,14 @@
           stroke="url(#goldIcon)" 
           stroke-width="1"/>
     
-    <!-- Iris - celestial pattern -->
+    <!-- Iris -->
     <circle cx="25" cy="15" r="3.5" 
             fill="none" 
-            stroke="url(#violetIcon)" 
+            stroke="url(#tealIcon)" 
             stroke-width="0.8"/>
     
     <!-- Constellation dots in iris -->
-    <circle cx="25" cy="15" r="1.5" fill="url(#violetIcon)"/>
+    <circle cx="25" cy="15" r="1.5" fill="url(#tealIcon)"/>
     <circle cx="23.5" cy="13.5" r="0.5" fill="url(#goldIcon)"/>
     <circle cx="26.5" cy="13.5" r="0.5" fill="url(#goldIcon)"/>
     <circle cx="23.5" cy="16.5" r="0.5" fill="url(#goldIcon)"/>
@@ -54,12 +54,12 @@
     <!-- Decorative orbit ring -->
     <ellipse cx="25" cy="15" rx="6" ry="2" 
              fill="none" 
-             stroke="url(#violetIcon)" 
+             stroke="url(#tealIcon)" 
              stroke-width="0.4" 
              opacity="0.7"/>
     <ellipse cx="25" cy="15" rx="2" ry="6" 
              fill="none" 
-             stroke="url(#violetIcon)" 
+             stroke="url(#tealIcon)" 
              stroke-width="0.4" 
              opacity="0.7"/>
   </g>

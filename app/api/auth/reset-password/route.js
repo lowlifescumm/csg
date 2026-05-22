@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { getPasswordResetToken, markPasswordResetTokenAsUsed, updatePassword } from '@/lib/auth';
 import { sendPasswordResetConfirmationEmail } from '@/lib/email';

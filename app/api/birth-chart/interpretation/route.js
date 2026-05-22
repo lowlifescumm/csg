@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth-config';
 import { pool } from '@/lib/db.js';

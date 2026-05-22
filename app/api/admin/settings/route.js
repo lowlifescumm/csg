@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
@@ -39,7 +40,7 @@ export async function GET() {
       try {
         settings[row.key] = JSON.parse(row.value);
       } catch (err) {
-        console.error("[admin/settings] JSON parse error for key", row.key, err);
+        logger.error("[admin/settings] JSON parse error for key", row.key, err);
         settings[row.key] = row.value;
       }
     });

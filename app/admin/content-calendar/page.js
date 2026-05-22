@@ -1,4 +1,5 @@
 'use client';
+const logger = require('../../../lib/logger');
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
@@ -354,7 +355,7 @@ export default function ContentCalendarPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      logger.error('Auth error:', error);
+      console.error('Auth error:', error);
     }
   };
 
@@ -362,7 +363,7 @@ export default function ContentCalendarPage() {
     try {
       const apiKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY || '';
       if (!apiKey) {
-        logger.warn('NEXT_PUBLIC_ADMIN_API_KEY not set');
+        console.warn('NEXT_PUBLIC_ADMIN_API_KEY not set');
         return;
       }
       const response = await fetch(`/api/paperclip/status`, {

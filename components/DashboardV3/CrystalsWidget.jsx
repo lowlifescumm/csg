@@ -1,4 +1,5 @@
 "use client";
+const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, Heart, X, Loader2, Info } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
@@ -139,7 +140,7 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
         }
       }
     } catch (err) {
-      logger.info("Could not fetch element data, computing from moon phase:", err);
+      console.info("Could not fetch element data, computing from moon phase:", err);
       // Compute from moon phase if available
       if (safeMoonPhase?.zodiacSign) {
         const element = getElementFromSign(safeMoonPhase.zodiacSign);
@@ -194,7 +195,7 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
         }));
       }
     } catch (err) {
-      logger.info("Could not check favorite status:", err);
+      console.info("Could not check favorite status:", err);
     }
   };
 
@@ -228,7 +229,7 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
         }));
       }
     } catch (err) {
-      logger.error("Error adding to favorites:", err);
+      console.error("Error adding to favorites:", err);
     } finally {
       setFavoriting(false);
     }

@@ -1,4 +1,6 @@
+
 'use client';
+const logger = require('../../../lib/logger');
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -29,7 +31,7 @@ export default function BlogAdminPage() {
         window.location.href = '/login';
       }
     } catch (error) {
-      logger.error('Auth error:', error);
+      console.error('Auth error:', error);
       window.location.href = '/login';
     }
   };
@@ -41,7 +43,7 @@ export default function BlogAdminPage() {
       const data = await response.json();
       setPosts(data.posts || []);
     } catch (error) {
-      logger.error('Failed to fetch posts:', error);
+      console.error('Failed to fetch posts:', error);
     } finally {
       setLoading(false);
     }
@@ -88,7 +90,7 @@ export default function BlogAdminPage() {
         alert(`Failed to delete post: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
-      logger.error('Delete error:', error);
+      console.error('Delete error:', error);
       alert('Failed to delete post: ' + error.message);
     } finally {
       setDeletingPost(null);
@@ -135,7 +137,7 @@ export default function BlogAdminPage() {
         alert(`Failed to update status: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
-      logger.error('Status change error:', error);
+      console.error('Status change error:', error);
       alert('Failed to update status: ' + error.message);
     } finally {
       setChangingStatus(null);

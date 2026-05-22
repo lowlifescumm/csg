@@ -1,3 +1,4 @@
+const logger = require('../../../../lib/logger');
 // API route to process email nurture sequence
 // Call this daily via cron job to send scheduled emails
 

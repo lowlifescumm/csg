@@ -1,3 +1,4 @@
+const logger = require('../../../lib/logger');
 import { NextResponse } from 'next/server';
 
 // This endpoint is deprecated - we now use a credit-based system
@@ -11,7 +12,7 @@ export async function POST(req) {
       { status: 410 } // 410 Gone - indicates this resource is no longer available
     );
   } catch (error) {
-    console.error('Verify compatibility payment error:', error);
+    logger.error('Verify compatibility payment error:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }
