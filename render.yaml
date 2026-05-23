@@ -5,6 +5,8 @@ services:
     name: cosmic-spiritual-guide
     env: node
     plan: starter
+    branch: master
+    autoDeploy: true
     buildCommand: npm ci && ESLINT=0 next build
     startCommand: npm start
     envVars:
