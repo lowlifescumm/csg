@@ -50,6 +50,51 @@ describe('scrubTemplateArtifacts', () => {
       const result = scrubTemplateArtifacts('NO FUTURE TRANSITS WERE PROVIDED');
       expect(result).toBe('');
     });
+
+    it('should remove "No future transits calculated" (exact prompt fallback)', () => {
+      const result = scrubTemplateArtifacts('Some text. No future transits calculated.');
+      expect(result).toBe('Some text.');
+    });
+
+    it('should remove "No transits calculated" without "future"', () => {
+      const result = scrubTemplateArtifacts('No transits calculated.');
+      expect(result).toBe('');
+    });
+
+    it('should remove "No future transits available"', () => {
+      const result = scrubTemplateArtifacts('No future transits available');
+      expect(result).toBe('');
+    });
+
+    it('should remove "No future transits found"', () => {
+      const result = scrubTemplateArtifacts('No future transits found.');
+      expect(result).toBe('');
+    });
+
+    it('should remove "No future transits scheduled"', () => {
+      const result = scrubTemplateArtifacts('No future transits scheduled.');
+      expect(result).toBe('');
+    });
+
+    it('should remove "No major aspects provided"', () => {
+      const result = scrubTemplateArtifacts('No major aspects provided.');
+      expect(result).toBe('');
+    });
+
+    it('should remove "No specific transits provided"', () => {
+      const result = scrubTemplateArtifacts('No specific transits provided');
+      expect(result).toBe('');
+    });
+
+    it('should remove "Given the lack of specific transits..."', () => {
+      const result = scrubTemplateArtifacts('Given the lack of specific transits, I will provide a general forecast.');
+      expect(result).toBe('');
+    });
+
+    it('should remove "Not available"', () => {
+      const result = scrubTemplateArtifacts('Transits to Natal Points: Not available');
+      expect(result).toBe('Transits to Natal Points:');
+    });
   });
 
   describe('template syntax', () => {
@@ -195,14 +240,14 @@ The stars are aligning for new opportunities. Mars enters your 10th house.
   {{planet}} {{aspect}} {{house}}
 {{/each}}
 
-No future transits were provided.
+No future transits calculated.
 
-In spiritual harmony,
-Cosmic Spirit Guide`;
+  In spiritual harmony,
+  Cosmic Spirit Guide`;
 
       const result = scrubTemplateArtifacts(input);
       expect(result).not.toContain('{{planet}}');
-      expect(result).not.toContain('No future transits were provided');
+      expect(result).not.toContain('No future transits calculated');
       expect(result).not.toContain('[Auto-generated]');
       expect(result).toContain('The stars are aligning');
       expect(result).toContain('In spiritual harmony');
