@@ -1,4 +1,5 @@
 const logger = require('../../lib/logger');
+const { scrubTemplateArtifacts } = require('../../lib/template-scrub.js');
 /**
  * Premium Master Report Component
  * Renders a flowing, semantic document structure for PDF generation
@@ -19,6 +20,7 @@ interface UserData {
   birthChartSvg?: string;
   partnerBirthChartSvg?: string;
   compatibilityChartSvg?: string;
+  compositeChartSvg?: string;
   sections?: ReportSection[];
   compatibilityScores?: CompatibilityScores;
   base64BackgroundImage?: string; // Base64 string (with or without data: prefix) for watermark/cover background
@@ -30,6 +32,7 @@ interface ReportSection {
   type: string;
   title: string;
   content: string;
+  chartDataSource?: { type: string; label: string } | null;
 }
 
 interface CompatibilityScores {
@@ -47,18 +50,39 @@ interface MasterReportProps {
 
 
 /**
- * TASK 2: Utility function to replace placeholder text with "Cosmic Spirit Guide"
+ * Utility function to replace placeholder text with "Cosmic Spirit Guide"
  * Replaces [Your Spiritual Guide], [Your Name], and similar placeholders
+ * Also strips template scaffolding patterns that leak from AI prompts
  */
 const sanitizeSignOffs = (text: string): string => {
   if (!text) return '';
   // Replace various placeholder patterns with "Cosmic Spirit Guide"
-  return text
+  let result = text
     .replace(/\[Your Spiritual Guide\]/gi, 'Cosmic Spirit Guide')
     .replace(/\[Your Name\]/gi, 'Cosmic Spirit Guide')
     .replace(/\[Your Name Here\]/gi, 'Cosmic Spirit Guide')
     .replace(/\[Name\]/gi, 'Cosmic Spirit Guide')
-    .replace(/\[Guide Name\]/gi, 'Cosmic Spirit Guide');
+    .replace(/\[Guide Name\]/gi, 'Cosmic Spirit Guide')
+    // Strip template scaffolding from prompt instructions that leaked through
+    .replace(/\[DATE FROM LIST\]/gi, '')
+    .replace(/\[FUTURE DATE FROM LIST\]/gi, '')
+    .replace(/\[Date\]:\s*\[Transit\]\s*-\s*\[Comprehensive impact description\]/gi, '')
+    .replace(/\[Transit\]/gi, '')
+    .replace(/\[Comprehensive impact description\]/gi, '')
+    .replace(/\[Insert\s+(content|text|data|details)\s+here\]/gi, '')
+    .replace(/\[auto-generated\]/gi, '')
+    .replace(/TODO:/gi, '')
+    .replace(/this\s+(content|section|report)\s+was\s+(auto-)?generated\s+(by\s+)?(AI|an?\s+AI)/gi, '')
+    .replace(/generated\s+(by|using)\s+(AI|OpenAI|GPT|artificial\s+intelligence)/gi, '')
+    // Strip "no data" fallback language
+    .replace(/no\s+(future\s+)?transits?\s+were\s+provided/gi, '')
+    .replace(/no\s+(data|information|content|results?)\s+(were\s+)?(provided|available|found)/gi, '')
+    .replace(/no\s+\w+\s+data\s+(were\s+)?(provided|available|found)/gi, '')
+    .replace(/no\s+\w+\s+were\s+provided/gi, '')
+    .replace(/this\s+(is\s+)?(a\s+)?placeholder/i, '');
+  // Apply the full template scrubbing pipeline
+  result = scrubTemplateArtifacts(result);
+  return result;
 };
 
 /**
@@ -72,11 +96,10 @@ const convertMarkdownToHtml = (text: string): string => {
   // Check if content is already HTML (starts with HTML tag)
   const isHTML = /^\s*</.test(text.trim());
   if (isHTML) {
-    // Content is already HTML - return as-is but ensure proper structure
-    return text;
+    return scrubTemplateArtifacts(text);
   }
   
-  let html = text;
+  let html = scrubTemplateArtifacts(text);
   
   // Convert horizontal rules (---)
   html = html.replace(/^---$/gm, '<hr />');
@@ -162,6 +185,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
     birthChartSvg,
     partnerBirthChartSvg,
     compatibilityChartSvg,
+    compositeChartSvg,
     sections = [],
     compatibilityScores,
     base64BackgroundImage,
@@ -171,6 +195,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
   const processedBirthChartSvg = ensurePreserveAspectRatio(birthChartSvg);
   const processedPartnerBirthChartSvg = ensurePreserveAspectRatio(partnerBirthChartSvg);
   const processedCompatibilityChartSvg = ensurePreserveAspectRatio(compatibilityChartSvg);
+  const processedCompositeChartSvg = ensurePreserveAspectRatio(compositeChartSvg);
   const backgroundImageUrl = toDataUrl(base64BackgroundImage);
   
   // Ensure SVG images are properly formatted for PDF rendering
@@ -191,6 +216,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
   const finalBirthChartSvg = processSvgForPdf(processedBirthChartSvg);
   const finalPartnerBirthChartSvg = processSvgForPdf(processedPartnerBirthChartSvg);
   const finalCompatibilityChartSvg = processSvgForPdf(processedCompatibilityChartSvg);
+  const finalCompositeChartSvg = processSvgForPdf(processedCompositeChartSvg);
 
   // Helper to render section content
   const renderSectionContent = (section: ReportSection, index: number) => {
@@ -327,11 +353,27 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
 
       case 'partner_birth_chart':
         if (!finalPartnerBirthChartSvg) return null;
+        const partnerDataSource = sections.find(s => s.type === 'partner_birth_chart')?.chartDataSource;
         return (
           <div className="report-container">
             <div className="birth-chart-isolated chart-page-container">
               <div className="chart-container chart-page-only">
                 <div dangerouslySetInnerHTML={{ __html: finalPartnerBirthChartSvg }} />
+              </div>
+              <div style={{
+                textAlign: 'center',
+                padding: '8px 20px',
+                fontSize: '9pt',
+                color: '#888',
+                fontStyle: 'italic',
+                borderTop: '1px solid #ddd',
+                marginTop: '10px',
+              }}>
+                Data source: {partnerDataSource?.label || 'Based on birth data you entered for your partner'}
+                <br />
+                <span style={{ fontSize: '8pt', color: '#aaa' }}>
+                  This chart is calculated from birth data you provided and has not been independently verified.
+                </span>
               </div>
             </div>
           </div>
