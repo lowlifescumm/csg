@@ -2,6 +2,7 @@
 const logger = require('../../lib/logger');
 import { useState, useEffect } from 'react';
 import { Heart, Loader2, Sparkles, ChevronRight, ChevronLeft, Crown, Calendar } from 'lucide-react';
+import CompositeChart from '@/components/CompositeChart';
 import { useToast } from "@/components/ui";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -584,6 +585,14 @@ function CompatibilityReport({ result, person1, person2, creditsRemaining, onBac
             </div>
           </div>
         </div>
+
+        {result.compositeChart && (
+          <CompositeChart
+            compositeChart={result.compositeChart}
+            person1Name={person1}
+            person2Name={person2}
+          />
+        )}
 
         <button
           onClick={onBack}

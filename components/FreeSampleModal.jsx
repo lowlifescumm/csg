@@ -17,6 +17,12 @@ export default function FreeSampleModal({ isOpen, onClose }) {
   const [captured, setCaptured] = useState(false);
   const [sampleReq, setSampleReq] = useState({ count: 0, question: null });
 
+  const fireAnalytics = (eventName, extra = {}) => {
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      window.gtag("event", eventName, { event_category: "free_sample", ...extra });
+    }
+  };
+
   useApiClientWithToast(
     apiClient,
     (c) => c.post("/api/tarot/sample", { question: sampleReq.question }, { timeout: 90_000 }),
@@ -26,6 +32,7 @@ export default function FreeSampleModal({ isOpen, onClose }) {
       onSuccess: (data) => {
         setSampleReq({ count: 0, question: null });
         if (data.success) {
+          fireAnalytics("free_reading_completed");
           setTimeout(() => {
             setReading(data.reading);
             setStep("result");

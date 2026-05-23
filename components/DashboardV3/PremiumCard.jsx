@@ -63,10 +63,10 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
   const perks = [
     {
       icon: Sparkles,
-      title: "Unlimited Readings",
+      title: "60 Credits / Month",
       description: textVariant === "long" 
-        ? "Access unlimited tarot readings, daily guidance, and spiritual insights without credit limits"
-        : "Unlimited tarot readings without credit limits",
+        ? "Get 60 credits every month for tarot readings, moon readings, compatibility reports, and more — plus unused credits roll over"
+        : "60 credits monthly for tarot, moon, and transit readings with rollover",
     },
     {
       icon: Star,
@@ -99,7 +99,7 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
   // Subheadline variants
   const subheadline = textVariant === "long"
     ? "Join thousands of spiritual seekers who have elevated their cosmic connection with premium features designed for deep transformation."
-    : "Elevate your cosmic connection with unlimited access to all premium features.";
+    : "Elevate your cosmic connection with 60 monthly credits for all premium features.";
 
   return (
     <div className="relative glassmorphic rounded-3xl p-8 sm:p-10 apple-shadow-xl border border-white border-opacity-40 mb-8 overflow-hidden">
@@ -159,8 +159,8 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
                 <p className="text-purple-200 text-sm">Compatibility Reports/Month</p>
               </div>
               <div>
-                <div className="text-2xl font-bold text-white mb-1">Unlimited</div>
-                <p className="text-purple-200 text-sm">Transit Dashboard</p>
+                <div className="text-2xl font-bold text-white mb-1">60</div>
+                <p className="text-purple-200 text-sm">Credits/Month</p>
               </div>
             </div>
           </div>

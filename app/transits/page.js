@@ -340,7 +340,7 @@ export default function TransitDashboard() {
           <div className="space-y-4">
             {getFilteredTransits().filter(t => t.type === 'major').map((transit) => (
               <TransitCard 
-                key={`${transit.transitPlanet}-${transit.natalPlanet}`}
+                key={`${transit.transitPlanet}-${transit.natalPlanet}-${transit.aspect}`}
                 transit={transit} 
                 onClick={() => setSelectedTransit(transit)}
               />
@@ -357,7 +357,7 @@ export default function TransitDashboard() {
             <div className="space-y-4">
               {getFilteredTransits().filter(t => t.type === 'moderate').map((transit) => (
                 <TransitCard 
-                  key={`${transit.transitPlanet}-${transit.natalPlanet}`}
+                  key={`${transit.transitPlanet}-${transit.natalPlanet}-${transit.aspect}`}
                   transit={transit} 
                   onClick={() => setSelectedTransit(transit)}
                 />

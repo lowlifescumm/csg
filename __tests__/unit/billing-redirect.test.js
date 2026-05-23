@@ -145,7 +145,7 @@ describe('Billing Redirect', () => {
             currency: 'usd',
             product_data: {
               name: 'Cosmic Spiritual Guide - Premium Subscription',
-              description: 'Monthly credits: 4 moon readings, 2 compatibility reports, 2 birth charts + unlimited tarot & transits',
+              description: '150 monthly credits for tarot readings, moon readings, compatibility reports, birth charts & transit forecasts',
             },
             unit_amount: 2999,
             recurring: { interval: 'month' },

@@ -33,6 +33,9 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         if (data.success) {
           setReading(data.reading);
           setShowReading(true);
+          if (onComplete) {
+            onComplete(data.reading);
+          }
         }
       },
       toastMessages: { error: "Failed to generate reading. Check your connection." },
@@ -55,7 +58,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       "yin-yang": "yin_yang",
       "custom_spread": "custom_spread",
     };
-    const id = spreadId || map[spreadType] || spreadType;
+    const resolvedFromType = map[spreadType] || spreadType;
+    const id = spreadId || resolvedFromType;
     const foundSpread = spreads.find(s => s.id === id) || spreads.find(s => s.id === "past_present_future");
     
     // For custom spread, update card_count and layout dynamically

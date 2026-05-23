@@ -111,14 +111,14 @@ function calculateCompositeChart(
   userChart: CalculatedChartData,
   partnerChart: CalculatedChartData
 ): {
-  sun: { sign: string; house: number };
-  moon: { sign: string; house: number };
-  mercury: { sign: string; house: number };
-  venus: { sign: string; house: number };
-  mars: { sign: string; house: number };
-  jupiter: { sign: string; house: number };
-  saturn: { sign: string; house: number };
-  rising: { sign: string };
+  sun: { sign: string; house: number; longitude: number; degree: number };
+  moon: { sign: string; house: number; longitude: number; degree: number };
+  mercury: { sign: string; house: number; longitude: number; degree: number };
+  venus: { sign: string; house: number; longitude: number; degree: number };
+  mars: { sign: string; house: number; longitude: number; degree: number };
+  jupiter: { sign: string; house: number; longitude: number; degree: number };
+  saturn: { sign: string; house: number; longitude: number; degree: number };
+  rising: { sign: string; longitude: number; degree: number };
 } {
   try {
     // Get planetary longitudes from both charts
@@ -146,7 +146,7 @@ function calculateCompositeChart(
     const compositeAscendantSign = degreesToSign(compositeAscendant);
 
     // Calculate composite planets (midpoints)
-    const compositePlanets: Record<string, { longitude: number; sign: string; house: number }> = {};
+    const compositePlanets: Record<string, { longitude: number; sign: string; house: number; degree: number }> = {};
     
     const planetKeys = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn'];
     
@@ -163,33 +163,34 @@ function calculateCompositeChart(
           longitude: compositeLon,
           sign: compositeSign,
           house: compositeHouse,
+          degree: compositeLon % 30,
         };
       }
     }
 
     // Return structured composite chart data
     return {
-      sun: compositePlanets.sun || { sign: 'Unknown', house: 0 },
-      moon: compositePlanets.moon || { sign: 'Unknown', house: 0 },
-      mercury: compositePlanets.mercury || { sign: 'Unknown', house: 0 },
-      venus: compositePlanets.venus || { sign: 'Unknown', house: 0 },
-      mars: compositePlanets.mars || { sign: 'Unknown', house: 0 },
-      jupiter: compositePlanets.jupiter || { sign: 'Unknown', house: 0 },
-      saturn: compositePlanets.saturn || { sign: 'Unknown', house: 0 },
-      rising: { sign: compositeAscendantSign },
+      sun: compositePlanets.sun || { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      moon: compositePlanets.moon || { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      mercury: compositePlanets.mercury || { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      venus: compositePlanets.venus || { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      mars: compositePlanets.mars || { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      jupiter: compositePlanets.jupiter || { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      saturn: compositePlanets.saturn || { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      rising: { sign: compositeAscendantSign, longitude: compositeAscendant, degree: compositeAscendant % 30 },
     };
   } catch (error) {
     console.error('[calculateCompositeChart] Error:', error);
     // Return safe defaults on error
     return {
-      sun: { sign: 'Unknown', house: 0 },
-      moon: { sign: 'Unknown', house: 0 },
-      mercury: { sign: 'Unknown', house: 0 },
-      venus: { sign: 'Unknown', house: 0 },
-      mars: { sign: 'Unknown', house: 0 },
-      jupiter: { sign: 'Unknown', house: 0 },
-      saturn: { sign: 'Unknown', house: 0 },
-      rising: { sign: 'Unknown' },
+      sun: { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      moon: { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      mercury: { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      venus: { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      mars: { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      jupiter: { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      saturn: { sign: 'Unknown', house: 0, longitude: 0, degree: 0 },
+      rising: { sign: 'Unknown', longitude: 0, degree: 0 },
     };
   }
 }
@@ -768,7 +769,7 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
         ? providedPartnerName
         : 'The Partner'; // Safe default - NEVER use userName
 
-      const partnerChartData: CalculatedChartData = {
+      const partnerChartData: CalculatedChartData & { _dataSource?: { type: string; label: string } } = {
         input: {
           name: safePartnerName, // Use safe partner name, never user's name
           birthDate: input.partnerBirthDate || new Date(), // Default to current date if undefined
@@ -790,6 +791,10 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
         houses: partnerHouses || ({} as any), // Type assertion for houses
         isSaturnReturn: Boolean((partnerChart as any)?.isSaturnReturn),
         rawChart: partnerChart,
+        _dataSource: {
+          type: 'user_provided',
+          label: 'Based on birth data you entered for your partner',
+        },
       };
 
       // Calculate synastry compatibility score
@@ -836,6 +841,11 @@ export async function hydrateReportData(input: UserInput): Promise<CalculatedCha
           rising: partnerChartData.risingSign || partnerChart.ascendant,
           name: safePartnerName, // CRITICAL: Use safe partner name, never user's name
           birth_date: input.partnerBirthDate,
+          // Data source transparency: tracks where partner data came from
+          _dataSource: partnerChartData._dataSource || {
+            type: 'user_provided',
+            label: 'Based on birth data you entered for your partner',
+          },
           // Include full partner chart data for compatibility (this includes planets and houses)
           ...partnerChartData,
         } as any, // Type assertion to allow additional properties

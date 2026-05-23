@@ -387,12 +387,12 @@ export default function PricingTiers() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-4">
                 <Crown className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Unlimited Access</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Mystic Lite</h3>
               <div className="text-4xl xl:text-5xl font-bold text-white mb-1 break-words">
                 ${(SUBSCRIPTION.MONTHLY_PRICE_IN_CENTS / 100).toFixed(2)}
                 <span className="text-2xl text-purple-200">/mo</span>
               </div>
-              <p className="text-purple-200 text-sm">Unlimited Access</p>
+              <p className="text-purple-200 text-sm">60 credits per month</p>
             </div>
 
             <div className="space-y-4 mb-8">
@@ -402,10 +402,10 @@ export default function PricingTiers() {
                 </div>
                 <div>
                   <div className="text-white font-semibold mb-1">
-                    🔮 Unlimited Tarot Readings
+                    🔮 60 Credits / Month
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Ask as often as you need, without counting credits
+                    ~60 tarot readings or any mix of reading types
                   </p>
                 </div>
               </div>
@@ -416,10 +416,10 @@ export default function PricingTiers() {
                 </div>
                 <div>
                   <div className="text-white font-semibold mb-1">
-                    ⚡ Unlimited Transit Dashboard
+                    ⭐ Birth Charts — Free
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Real-time cosmic influences
+                    Complete natal chart analysis at no credit cost
                   </p>
                 </div>
               </div>
@@ -430,7 +430,7 @@ export default function PricingTiers() {
                 </div>
                 <div>
                   <div className="text-white font-semibold mb-1">
-                    🌙 4 Moon Reading Credits / Month
+                    🌙 4 Moon Readings / Month
                   </div>
                   <p className="text-purple-200 text-sm">
                     See how the Moon is moving through your real life
@@ -458,10 +458,10 @@ export default function PricingTiers() {
                 </div>
                 <div>
                   <div className="text-white font-semibold mb-1">
-                    ⭐ 2 Birth Charts / Month
+                    🔄 Unused Credits Roll Over
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Complete natal chart analysis
+                    90-day rollover so you never waste a credit
                   </p>
                 </div>
               </div>

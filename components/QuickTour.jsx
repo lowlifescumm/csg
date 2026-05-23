@@ -21,7 +21,7 @@ export default function QuickTour({ onComplete }) {
     {
       target: "[data-tour='stats']",
       title: "Your Progress",
-      content: "Track your credits, readings, and subscription status here. Premium users get unlimited access to all features.",
+      content: "Track your credits, readings, and subscription status here. Premium subscribers get 60 monthly credits for all reading types.",
       position: "top"
     },
     {

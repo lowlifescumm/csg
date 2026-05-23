@@ -74,7 +74,7 @@ export default function SubscriptionPage() {
             {isPremium ? 'Premium Member' : 'Upgrade to Premium'}
           </h1>
           <p className="text-xl text-purple-200">
-            {isPremium ? 'You have full access to all features' : 'Unlock unlimited cosmic guidance'}
+            {isPremium ? 'You have access to all premium features' : 'Unlock premium cosmic guidance'}
           </p>
         </div>
 

@@ -116,7 +116,7 @@ export async function POST(request) {
             
             // Issue monthly subscription credits via new credit engine
             // For MYSTIC_LITE: 5 credits/month
-            // For MYSTIC_PREMIUM: 0 credits (unlimited via cap, but we can still track)
+            // For MYSTIC_PREMIUM: 0 credits (150 via cap, but handled by the credit engine)
             const monthlyCredits = subscriptionTier === 'MYSTIC_LITE' ? 5 : 0;
             
             if (monthlyCredits > 0) {

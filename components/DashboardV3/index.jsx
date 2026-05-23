@@ -470,7 +470,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             {!isPremium && (
               <div className="mt-6 p-4 bg-yellow-500/20 border border-yellow-400/50 rounded-xl">
                 <p className="text-yellow-200 text-sm text-center mb-3">
-                  <strong>Premium Feature:</strong> Unlock unlimited access to Transit Dashboard and priority AI interpretations
+                  <strong>Premium Feature:</strong> Unlock Transit Dashboard with 60 monthly credits and priority AI interpretations
                 </p>
                 <Link
                   href="/subscription"
@@ -587,7 +587,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-1">Unlock Premium Features</h3>
-                    <p className="text-sm text-purple-200">Access unlimited readings and exclusive features</p>
+                    <p className="text-sm text-purple-200">Get 60 monthly credits and exclusive premium features</p>
                   </div>
                 </div>
                 <Link

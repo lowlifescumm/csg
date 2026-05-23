@@ -195,7 +195,14 @@ export default function TarotPage() {
   }
 
   if (reading) {
-    const spread = spreads.find((s) => s.id === selectedType?.spreadType) || spreads.find((s) => s.id === "past_present_future");
+    const spreadTypeMap = {
+      "three-card": "past_present_future", "one-card": "one_card", "daily": "daily_tarot",
+      "daily-love": "daily_love", "career": "daily_career", "yes-no": "yes_no",
+      "love-potential": "love_potential", "breakup": "breakup", "ppf": "past_present_future",
+      "flirt": "daily_flirt", "yin-yang": "yin_yang", "custom_spread": "custom_spread",
+    };
+    const resolvedId = spreadTypeMap[selectedType?.spreadType] || selectedType?.spreadType || "past_present_future";
+    const spread = spreads.find((s) => s.id === resolvedId) || spreads.find((s) => s.id === "past_present_future");
     const positions = spread?.layout || ["Card 1", "Card 2", "Card 3"];
 
     return (
@@ -328,7 +335,7 @@ export default function TarotPage() {
                 </button>
               </div>
               <p className="text-gray-600 mb-6">
-                Create a free account to save unlimited readings and access them anytime from your personal journal.
+                Create a free account to save your readings and access them anytime from your personal journal.
               </p>
               <div className="space-y-3">
                 <Link 
@@ -369,7 +376,7 @@ export default function TarotPage() {
 
         <div className="mt-8 text-center text-purple-200 text-sm">
           {isPremium ? (
-            <p>Premium member - unlimited readings</p>
+            <p>Premium member — readings use your monthly credits</p>
           ) : (
             <p>Basic tarot readings are free</p>
           )}
@@ -413,7 +420,6 @@ export default function TarotPage() {
           onClose={handleCardSelectorClose}
           onComplete={handleReadingComplete}
           spreadType={selectedType.spreadType}
-          spreadId={selectedType.spreadType}
           readingType="general"
         />
       )}

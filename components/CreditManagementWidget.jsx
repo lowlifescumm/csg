@@ -51,7 +51,7 @@ const CreditManagementWidget = () => {
           </div>
         </div>
         <div className="text-center">
-          <p className="text-gray-600 mb-2">You have unlimited access to all features</p>
+          <p className="text-gray-600 mb-2">You have premium access with 60 monthly credits</p>
           <Link
             href="/subscription"
             className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transition-all"
@@ -75,7 +75,7 @@ const CreditManagementWidget = () => {
       </div>
       
       <div className="text-center mb-4">
-        <p className="text-gray-600 mb-2">Upgrade to Premium for unlimited access</p>
+        <p className="text-gray-600 mb-2">Upgrade to Premium for 60 credits every month</p>
         <p className="text-sm text-gray-500 mb-4">✨ Only $9.99/month ✨</p>
         <Link
           href="/subscription"
