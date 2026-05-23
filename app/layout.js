@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import ToastContainerWrapper from "@/components/ui/ToastContainerWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ClientErrorCatcher from "@/components/ClientErrorCatcher";
+import ExitIntentPopup from "@/components/ExitIntentPopup";
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -84,6 +85,9 @@ export default function RootLayout({ children }) {
               </div>
             </div>
           </footer>
+          
+          {/* Exit Intent Popup - shown when user is about to leave */}
+          <ExitIntentPopup />
           
           <ToastContainerWrapper />
           <ClientErrorCatcher />
