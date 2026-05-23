@@ -372,7 +372,7 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
                 Data source: {partnerDataSource?.label || 'Based on birth data you entered for your partner'}
                 <br />
                 <span style={{ fontSize: '8pt', color: '#aaa' }}>
-                  This chart is calculated from birth data you provided and has not been independently verified.
+                  This chart was calculated from birth data you provided for your partner. The placements shown are astrological calculations based on that data and have not been independently verified by your partner.
                 </span>
               </div>
             </div>
@@ -488,6 +488,11 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
                       </tbody>
                     </table>
                   )}
+                  {finalCompositeChartSvg && (
+                    <div className="chart-container" style={{ marginTop: '10mm' }}>
+                      <div dangerouslySetInnerHTML={{ __html: finalCompositeChartSvg }} />
+                    </div>
+                  )}
                   <div className="analysis-block report-text-body" style={{ marginTop: '10mm' }}>
                     <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(compatibilitySection.content) }} />
                   </div>
@@ -541,6 +546,11 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
                         )}
                       </tbody>
                     </table>
+                  )}
+                  {finalCompositeChartSvg && (
+                    <div className="chart-container" style={{ marginTop: '10mm' }}>
+                      <div dangerouslySetInnerHTML={{ __html: finalCompositeChartSvg }} />
+                    </div>
                   )}
                 </>
               )}
@@ -779,7 +789,11 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
                     </tbody>
                   </table>
                 )}
-
+                {finalCompositeChartSvg && (
+                  <div className="chart-container" style={{ marginTop: '10mm' }}>
+                    <div dangerouslySetInnerHTML={{ __html: finalCompositeChartSvg }} />
+                  </div>
+                )}
                 <div className="analysis-block report-text-body" style={{ marginTop: '10mm' }}>
                   <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(compatibilitySection.content) }} />
                 </div>
@@ -843,6 +857,11 @@ export const MasterReport: React.FC<MasterReportProps> = ({ userData, renderSect
                       )}
                     </tbody>
                   </table>
+                )}
+                {finalCompositeChartSvg && (
+                  <div className="chart-container" style={{ marginTop: '10mm' }}>
+                    <div dangerouslySetInnerHTML={{ __html: finalCompositeChartSvg }} />
+                  </div>
                 )}
               </>
             )}
