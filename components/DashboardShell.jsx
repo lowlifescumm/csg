@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 export default function DashboardShell({ children }) {
   const router = useRouter();
