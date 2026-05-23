@@ -129,7 +129,7 @@ const convertMarkdownToHtml = (text: string): string => {
   // Note: This is a simplified approach. For complex cases, a proper parser would be better.
   
   // Convert double newlines to paragraph breaks
-  html = html.split(/\n\n+/).map(para => {
+  html = html.split(/\n\n+/).map((para: string) => {
     const trimmed = para.trim();
     if (!trimmed) return '';
     // Don't wrap headings, lists, or HRs in paragraphs
