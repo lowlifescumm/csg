@@ -1,7 +1,5 @@
 'use client';
 
-export const dynamic = 'force-static';
-
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
@@ -169,7 +167,7 @@ export default function TransitDashboard() {
             <h1 className="text-3xl font-bold text-white mb-4">Error Loading Transits</h1>
             <p className="text-purple-200 mb-8">{error}</p>
             <button
-              onClick={fetchTransits}
+              onClick={refetch}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
             >
               Try Again
@@ -191,7 +189,7 @@ export default function TransitDashboard() {
           <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <p className="text-white text-xl mb-4">Unable to load transit data</p>
           <button
-            onClick={fetchTransits}
+            onClick={refetch}
             className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
           >
             Try Again
