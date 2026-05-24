@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { apiClient } from "@/lib/api-client";
 import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
@@ -9,7 +9,7 @@ export default function TarotReader() {
   const [reading, setReading] = useState(null);
   const [submitVersion, setSubmitVersion] = useState(0);
 
-  const requestBody = { question, spreadType: "three-card" };
+  const requestBody = useMemo(() => ({ question, spreadType: "three-card" }), [question]);
 
   const { loading } = useApiClientWithToast(
     apiClient,

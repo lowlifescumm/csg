@@ -23,7 +23,7 @@ export function useApiClient<T>(
   options: UseApiClientOptions = {},
 ): UseApiClientResult<T> {
   const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const mountedRef = useRef(true);
   const fetcherRef = useRef(fetcher);
