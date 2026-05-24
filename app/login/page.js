@@ -230,7 +230,7 @@ function LoginPageContent({ router, searchParams }) {
                   onClick={() => router.push('/reset-password')}
                   className="text-white/80 hover:text-white/70 text-sm font-medium smooth-transition"
                 >
-                  🔮 Forgot your cosmic password?
+                  Forgot your cosmic password?
                 </button>
               </div>
             )}

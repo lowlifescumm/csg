@@ -412,10 +412,10 @@ export default function PricingTiers() {
                 </div>
                 <div>
                   <div className="text-white font-semibold mb-1">
-                    🔮 Unlimited Tarot Readings
+                    Unlimited Basic Tarot
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Ask as often as you need, without counting credits
+                    Unlimited 3-card tarot readings (deeper spreads use credits)
                   </p>
                 </div>
               </div>
@@ -426,10 +426,10 @@ export default function PricingTiers() {
                 </div>
                 <div>
                   <div className="text-white font-semibold mb-1">
-                    ⚡ Unlimited Transit Dashboard
+                    Daily Transit Updates
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Real-time cosmic influences
+                    See current planetary positions daily
                   </p>
                 </div>
               </div>
