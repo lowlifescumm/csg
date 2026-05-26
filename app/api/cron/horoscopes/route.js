@@ -1,4 +1,4 @@
-const logger = require('../../../../lib/logger');
+import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { generateDailyHoroscope, saveHoroscope } from '@/lib/horoscope';
 import { zodiacSigns } from '@/lib/zodiac-data';
@@ -6,9 +6,17 @@ import { zodiacSigns } from '@/lib/zodiac-data';
 export async function POST(request) {
   try {
     const authHeader = request.headers.get('authorization');
-    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
-    
-    if (!process.env.CRON_SECRET || authHeader !== expectedAuth) {
+    const cronSecret = process.env.CRON_SECRET;
+
+    if (!cronSecret) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const trimmedSecret = (cronSecret || '').trim().replace(/\r?\n/g, '');
+    const trimmedHeader = (authHeader || '').trim();
+    const expectedAuth = `Bearer ${trimmedSecret}`;
+
+    if (trimmedHeader !== expectedAuth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

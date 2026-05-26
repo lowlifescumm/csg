@@ -97,12 +97,22 @@ export async function GET(request) {
     } catch (error) {
       console.error('Error generating horoscope:', error);
       
-      // Fallback to a simple message if generation fails
+      const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const signHash = sign.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      const fallbackSeed = dayOfYear * 997 + signHash;
+      const fallbacks = [
+        `Today brings new opportunities for ${sign}. Trust your instincts and follow your heart. The stars align in your favor, encouraging you to take that step you have been considering.`,
+        `Cosmic energy surrounds ${sign} today. Stay open to unexpected messages and synchronicities — the universe is guiding you toward something meaningful.`,
+        `A moment of clarity awaits ${sign}. Pay attention to the quiet insights that surface during your morning routine. These hold the answers you seek.`,
+        `${sign}, the energy today supports reflection before action. Pause, breathe, and let your intuition lead before making any decisions.`,
+      ];
+      const fallbackText = fallbacks[fallbackSeed % fallbacks.length];
+
       return NextResponse.json({
         success: true,
         sign: sign.charAt(0).toUpperCase() + sign.slice(1),
         date: new Date().toISOString().split('T')[0],
-        horoscope: `Today brings new opportunities for ${sign.charAt(0).toUpperCase() + sign.slice(1)}. Trust your instincts and follow your heart. The stars align in your favor.`,
+        horoscope: fallbackText,
         mood: 'Optimistic',
         luckyNumbers: generateLuckyNumbers(sign),
         luckyColor: getLuckyColor(sign)
