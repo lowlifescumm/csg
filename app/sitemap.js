@@ -1,6 +1,7 @@
 import { getNextTransitDates, zodiacSigns } from '@/lib/pseo/astrology';
+import { getBlogPosts } from '@/lib/blog-server';
 
-export default function sitemap() {
+export default async function sitemap() {
   const baseUrl = 'https://cosmicspiritguide.com';
   
   // Static pages
@@ -54,5 +55,25 @@ export default function sitemap() {
     priority: 0.75,
   }));
 
-  return [...sitemapEntries, ...sunMoonPages, ...transitPages];
+  let blogPostPages = [];
+  try {
+    const blogResult = await getBlogPosts({ status: 'published', limit: 10000 });
+    const blogPosts = blogResult?.posts || [];
+
+    if (!blogPosts.length) {
+      const total = blogResult?.pagination?.total;
+      console.warn('Sitemap: 0 blog posts returned from getBlogPosts (pagination total:', total, ')');
+    }
+
+    blogPostPages = blogPosts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.published_at ? new Date(post.published_at) : post.updated_at ? new Date(post.updated_at) : new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.65,
+    }));
+  } catch (error) {
+    console.warn('Failed to fetch blog posts for sitemap, continuing with existing entries:', error?.message || error);
+  }
+
+  return [...sitemapEntries, ...sunMoonPages, ...transitPages, ...blogPostPages];
 }
