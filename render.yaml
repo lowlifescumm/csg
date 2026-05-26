@@ -88,6 +88,13 @@ cronJobs:
       curl ${NEXT_PUBLIC_BASE_URL}/api/cron/generate-forecasts \
         -H "Authorization: Bearer ${CRON_SECRET}"
 
+  - name: generate-horoscopes
+    schedule: "0 5 * * *"  # Daily at 5 AM — pre-generates all 12 signs before users wake up
+    service: cosmic-spiritual-guide
+    command: |
+      curl -X POST ${NEXT_PUBLIC_BASE_URL}/api/cron/horoscopes \
+        -H "Authorization: Bearer ${CRON_SECRET}"
+
   - name: issue-free-daily-credits
     schedule: "0 0 * * *"  # Daily at midnight
     service: cosmic-spiritual-guide
