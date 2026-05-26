@@ -7,8 +7,8 @@
   },
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 5000",
-    "build": "npx prisma generate && next build && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && mkdir -p .next/standalone/styles && cp -r styles .next/standalone/",
-    "postinstall": "node -e \"process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/db'; require('child_process').execSync('npx prisma generate', {stdio: 'inherit'})\"",
+    "build": "node scripts/prisma-generate.js && next build && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && mkdir -p .next/standalone/styles && cp -r styles .next/standalone/",
+    "postinstall": "node scripts/prisma-generate.js",
     "start": "node .next/standalone/server.js",
     "lint": "eslint --config eslint.config.mjs --max-warnings=0 --ignore-pattern \".next/**\" --ignore-pattern \"app__disabled/**\" .",
     "pinecone:init": "node scripts/pinecone-init.js",
