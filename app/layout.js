@@ -1,5 +1,5 @@
 import "./globals.css";
-import { Inter, Cormorant_Garamond, Playfair_Display } from "next/font/google";
+import { Inter, Cormorant_Garamond, Cinzel } from "next/font/google";
 import AuthProviderWrapper from "@/components/AuthProviderWrapper";
 import Header from "@/components/Header";
 import ToastContainerWrapper from "@/components/ui/ToastContainerWrapper";
@@ -21,11 +21,10 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
-const playfair = Playfair_Display({
+const cinzel = Cinzel({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-playfair",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-cinzel",
   display: "swap",
 });
 
@@ -305,7 +304,7 @@ const websiteSchema = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${cormorant.variable} ${playfair.variable} scroll-smooth`}>
+    <html lang="en" className={`${inter.variable} ${cormorant.variable} ${cinzel.variable} scroll-smooth`}>
       <head>
         {/* Preload primary logo for LCP optimization */}
         <link
@@ -329,7 +328,7 @@ export default function RootLayout({ children }) {
       </head>
 
       <body
-        className="min-h-screen bg-cosmic-void antialiased"
+        className="min-h-screen bg-cosmic-950 antialiased"
         suppressHydrationWarning={true}
       >
         <noscript>
@@ -381,7 +380,7 @@ export default function RootLayout({ children }) {
             </ErrorBoundary>
           </main>
 
-          <footer className="bg-cosmic-indigo text-white/80 border-t border-white/10 py-8 mt-8">
+          <footer className="bg-cosmic-800/50 text-white/80 border-t border-cosmic-gold/10 py-8 mt-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
                 <p className="text-xs sm:text-sm text-white/60 font-light tracking-wide">

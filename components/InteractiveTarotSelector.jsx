@@ -61,18 +61,18 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     const resolvedFromType = map[spreadType] || spreadType;
     const id = spreadId || resolvedFromType;
     const foundSpread = spreads.find(s => s.id === id) || spreads.find(s => s.id === "past_present_future");
+    const spreadClone = foundSpread ? JSON.parse(JSON.stringify(foundSpread)) : null;
     
-    // For custom spread, update card_count and layout dynamically
-    if (id === "custom_spread" && cardCount !== null && cardCount >= 1 && cardCount <= 10) {
-      foundSpread.card_count = cardCount;
-      foundSpread.layout = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
-      if (foundSpread.ui) {
-        foundSpread.ui.required_selection_count = cardCount;
-        foundSpread.ui.selection_labels = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
+    if (id === "custom_spread" && spreadClone && cardCount !== null && cardCount >= 1 && cardCount <= 10) {
+      spreadClone.card_count = cardCount;
+      spreadClone.layout = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
+      if (spreadClone.ui) {
+        spreadClone.ui.required_selection_count = cardCount;
+        spreadClone.ui.selection_labels = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
       }
     }
     
-    return foundSpread;
+    return spreadClone;
   })();
 
   const positions = spread.layout;

@@ -1,7 +1,6 @@
 "use client";
-const logger = require('../../lib/logger');
-
 import { useState, useCallback } from 'react';
+import { apiClient } from "@/lib/api-client";
 
 interface ShareContentParams {
   title: string;
@@ -73,26 +72,16 @@ export function useSocialShare(): UseSocialShareReturn {
    */
   const claimReward = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch('/api/user/reward-share', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const data = await apiClient.post<{ success: boolean; message?: string }>('/api/user/reward-share');
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        console.log('[useSocialShare] Reward claimed:', data);
+      if (data.success) {
         return true;
       } else {
-        console.warn('[useSocialShare] Reward claim failed:', data.message || data.error);
-        // Don't throw - reward failure shouldn't break sharing
+        console.warn('[useSocialShare] Reward claim failed:', data.message);
         return false;
       }
     } catch (error) {
       console.error('[useSocialShare] Reward API error:', error);
-      // Don't throw - reward failure shouldn't break sharing
       return false;
     }
   }, []);

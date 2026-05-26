@@ -15,19 +15,6 @@ import { Activity, Info, Zap, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 /**
- * Generate dummy data for weekly energy levels
- */
-function generateDummyData() {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  return days.map((day) => ({
-    day,
-    physical: Math.floor(Math.random() * 30) + 60, // 60-90
-    emotional: Math.floor(Math.random() * 30) + 60,
-    spiritual: Math.floor(Math.random() * 30) + 60,
-  }));
-}
-
-/**
  * EnergyChart - Weekly forecast chart showing physical, emotional, and spiritual energy
  * 
  * Props:
@@ -77,8 +64,7 @@ export default function EnergyChart({
   );
 
   // Build chart data from props or API data
-  const { chartData, hasData, isDummyData } = useMemo(() => {
-    // Priority 1: Use props if provided
+  const { chartData, hasData, isEmpty } = useMemo(() => {
     if (hasPropData) {
       const formattedData = labels.map((label, index) => ({
         day: label,
@@ -86,33 +72,27 @@ export default function EnergyChart({
         emotional: emotional[index] || 0,
         spiritual: spiritual[index] || 0,
       }));
-      return { chartData: formattedData, hasData: true, isDummyData: false };
+      return { chartData: formattedData, hasData: true, isEmpty: false };
     }
 
-    // Priority 2: Use API data if available
     if (data?.data?.length > 0) {
-      return { chartData: data.data, hasData: true, isDummyData: false };
+      return { chartData: data.data, hasData: true, isEmpty: false };
     }
 
-    // Priority 3: Fallback to dummy data
-    return { chartData: generateDummyData(), hasData: false, isDummyData: true };
+    return { chartData: [], hasData: false, isEmpty: true };
   }, [hasPropData, physical, emotional, spiritual, labels, data]);
 
-  // Calculate summary word based on today's energy (first day in chart)
-  const calculateSummaryWord = () => {
-    if (chartData.length === 0) return "Balanced";
+  const summaryWord = isEmpty ? "Ready" : (() => {
     const today = chartData[0];
+    if (!today) return "Balanced";
     const avgEnergy = (today.physical + today.emotional + today.spiritual) / 3;
-    
     if (avgEnergy >= 80) return "Magnetic";
     if (avgEnergy >= 70) return "Active";
     if (avgEnergy >= 60) return "Steady";
     if (avgEnergy >= 50) return "Calm";
     if (avgEnergy >= 40) return "Restful";
     return "Quiet";
-  };
-
-  const summaryWord = calculateSummaryWord();
+  })();
 
   // Custom tooltip
   const CustomTooltip = ({ active, payload }) => {
@@ -176,17 +156,17 @@ export default function EnergyChart({
         </div>
       </div>
 
-      {isDummyData && (
+      {isEmpty && (
         <div
-          className="mb-4 p-4 bg-yellow-500/20 border border-yellow-400/30 rounded-xl flex items-start gap-3"
+          className="mb-4 p-4 bg-cosmic-violet/20 border border-cosmic-violet/30 rounded-xl flex items-start gap-3"
           role="alert"
           aria-live="polite"
         >
-          <Info className="w-5 h-5 text-yellow-300 flex-shrink-0 mt-0.5" />
+          <Info className="w-5 h-5 text-cosmic-gold flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-yellow-200 font-medium text-sm mb-1">No data available</p>
-            <p className="text-yellow-200/80 text-xs">
-              Tap to log your energy levels and start tracking your weekly forecast.
+            <p className="text-cosmic-gold font-medium text-sm mb-1">Start tracking your energy</p>
+            <p className="text-cosmic-lavender/80 text-xs">
+              Log your physical, emotional, and spiritual energy each day to unlock your personalized weekly forecast.
             </p>
           </div>
         </div>
@@ -195,6 +175,28 @@ export default function EnergyChart({
       <div className="relative w-full" style={{ height: '300px', minHeight: '300px' }} role="img" aria-label="Weekly energy forecast chart">
         {isMounted && (
           <div className="w-full h-full flex items-center justify-center overflow-x-auto">
+            {isEmpty ? (
+              <div className="flex flex-col items-center justify-center w-full h-full gap-4">
+                <div className="w-full max-w-md h-48 relative">
+                  <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
+                    <line x1="40" y1="160" x2="380" y2="160" stroke="rgba(168,85,247,0.2)" strokeWidth="1" strokeDasharray="4 4" />
+                    <line x1="40" y1="120" x2="380" y2="120" stroke="rgba(168,85,247,0.15)" strokeWidth="1" strokeDasharray="4 4" />
+                    <line x1="40" y1="80" x2="380" y2="80" stroke="rgba(168,85,247,0.1)" strokeWidth="1" strokeDasharray="4 4" />
+                    <line x1="40" y1="40" x2="380" y2="40" stroke="rgba(168,85,247,0.05)" strokeWidth="1" strokeDasharray="4 4" />
+                    {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d, i) => (
+                      <text key={d} x={50 + i * 50} y="185" fill="rgba(196,181,253,0.3)" fontSize="11" textAnchor="middle">{d}</text>
+                    ))}
+                    <text x="15" y="164" fill="rgba(196,181,253,0.2)" fontSize="10">0</text>
+                    <text x="15" y="124" fill="rgba(196,181,253,0.2)" fontSize="10">50</text>
+                    <text x="15" y="44" fill="rgba(196,181,253,0.2)" fontSize="10">100</text>
+                    <path d="M70 160 Q120 155 170 158 Q220 150 270 155 Q320 152 370 158" stroke="rgba(168,85,247,0.15)" strokeWidth="2" fill="none" strokeDasharray="6 4" />
+                    <path d="M70 160 Q120 158 170 155 Q220 152 270 156 Q320 150 370 155" stroke="rgba(59,130,246,0.15)" strokeWidth="2" fill="none" strokeDasharray="6 4" />
+                    <path d="M70 160 Q120 156 170 152 Q220 148 270 154 Q320 148 370 152" stroke="rgba(239,68,68,0.15)" strokeWidth="2" fill="none" strokeDasharray="6 4" />
+                  </svg>
+                </div>
+                <p className="text-cosmic-lavender/50 text-sm">Your energy data will appear here once you start logging</p>
+              </div>
+            ) : (
             <AreaChart
               width={chartWidth}
               height={300}
@@ -202,28 +204,24 @@ export default function EnergyChart({
               margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
             >
             <defs>
-              {/* Physical - Vibrant Red/Orange gradient */}
               <linearGradient id="colorPhysical" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#ff4444" stopOpacity={1} />
                 <stop offset="30%" stopColor="#ff6b35" stopOpacity={0.9} />
                 <stop offset="70%" stopColor="#ff8c69" stopOpacity={0.5} />
                 <stop offset="100%" stopColor="#ff4444" stopOpacity={0} />
               </linearGradient>
-              {/* Emotional - Bright Cyan/Blue gradient */}
               <linearGradient id="colorEmotional" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#00d9ff" stopOpacity={1} />
                 <stop offset="30%" stopColor="#3b82f6" stopOpacity={0.9} />
                 <stop offset="70%" stopColor="#60a5fa" stopOpacity={0.5} />
                 <stop offset="100%" stopColor="#00d9ff" stopOpacity={0} />
               </linearGradient>
-              {/* Spiritual - Rich Purple/Violet gradient */}
               <linearGradient id="colorSpiritual" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
                 <stop offset="30%" stopColor="#c084fc" stopOpacity={0.9} />
                 <stop offset="70%" stopColor="#d8b4fe" stopOpacity={0.5} />
                 <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
               </linearGradient>
-              {/* Glow filter for lines */}
               <filter id="glow">
                 <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                 <feMerge>
@@ -288,6 +286,7 @@ export default function EnergyChart({
               filter="url(#glow)"
             />
             </AreaChart>
+            )}
           </div>
         )}
         {!isMounted && (

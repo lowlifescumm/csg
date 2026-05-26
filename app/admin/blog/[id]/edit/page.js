@@ -152,8 +152,13 @@ export default function EditBlogPostPage() {
         status,
         author_id: user.id
       });
-      alert('Blog post updated successfully!');
-      router.push('/admin/blog');
+      if (!data.success) {
+        console.error('Failed to update post:', data);
+        alert('Failed to update post: ' + (data.error || 'Unknown error') + (data.details ? ' - ' + data.details : ''));
+      } else {
+        alert('Blog post updated successfully!');
+        router.push('/admin/blog');
+      }
     } catch (error) {
       console.error('Failed to update post:', error);
       alert('Failed to update post: ' + error.message);
