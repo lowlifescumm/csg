@@ -12,7 +12,7 @@ const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { pool } from '@/lib/db';
-import { loadBriefs, buildImageUrl, generateSocialCopy, slugify, generateArticleContent, getThemeForPost } from '@/lib/content-pipeline-lib.js';
+import { loadBriefs, buildImageUrl, generateSocialCopy, slugify, generateArticleContent, getThemeForPost } from '@/lib/content-pipeline-lib.mjs';
 import { createPostInSanity } from '@/lib/sanity-write.js';
 import { sanityClient } from '@/lib/sanity.js';
 
