@@ -1,6 +1,8 @@
 import { getNextTransitDates, zodiacSigns } from '@/lib/pseo/astrology';
+import { getBlogPosts } from '@/lib/blog-server';
+import { cardSlug, ALL_CARDS } from '@/lib/tarot-data';
 
-export default function sitemap() {
+export default async function sitemap() {
   const baseUrl = 'https://cosmicspiritguide.com';
   
   // Static pages
@@ -14,10 +16,12 @@ export default function sitemap() {
     { path: '/contact', priority: 0.5 },
     { path: '/credits', priority: 0.5 },
     { path: '/dashboard', priority: 0.9 },
+    { path: '/energy', priority: 0.7 },
     { path: '/forecasts', priority: 0.9 },
     { path: '/journal', priority: 0.7 },
     { path: '/login', priority: 0.5 },
     { path: '/moon-reading', priority: 0.9 },
+    { path: '/moon-phase', priority: 0.7 },
     { path: '/my-chart', priority: 0.9 },
     { path: '/newsletter', priority: 0.6 },
     { path: '/pricing', priority: 0.8 },
@@ -38,6 +42,7 @@ export default function sitemap() {
     priority: page.priority,
   }));
 
+  // 144 sun-moon combination pages
   const sunMoonPages = zodiacSigns.flatMap((sun) =>
     zodiacSigns.map((moon) => ({
       url: `${baseUrl}/astrology/${sun.slug}/${moon.slug}`,
@@ -47,6 +52,7 @@ export default function sitemap() {
     }))
   );
 
+  // 30 daily transit pages
   const transitPages = getNextTransitDates(30).map((date) => ({
     url: `${baseUrl}/transits/${date}`,
     lastModified: new Date(),
@@ -54,5 +60,58 @@ export default function sitemap() {
     priority: 0.75,
   }));
 
-  return [...sitemapEntries, ...sunMoonPages, ...transitPages];
+  // 12 zodiac sign pages
+  const zodiacPages = zodiacSigns.map((sign) => ({
+    url: `${baseUrl}/zodiac/${sign.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }));
+
+  // 78 tarot card pages
+  const tarotPages = ALL_CARDS.map((card) => ({
+    url: `${baseUrl}/tarot/${cardSlug(card.name)}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  // 66 zodiac compatibility pair pages
+  const compatPages = [];
+  for (let i = 0; i < zodiacSigns.length; i++) {
+    for (let j = i + 1; j < zodiacSigns.length; j++) {
+      compatPages.push({
+        url: `${baseUrl}/compatibility/${zodiacSigns[i].slug}-and-${zodiacSigns[j].slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.7,
+      });
+    }
+  }
+
+  // Fetch and add blog post entries
+  let blogPostPages = [];
+  try {
+    const blogResult = await getBlogPosts({ status: 'published', limit: 10000 });
+    const blogPosts = blogResult?.posts || [];
+    
+    blogPostPages = blogPosts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.published_at ? new Date(post.published_at) : post.updated_at ? new Date(post.updated_at) : new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.65,
+    }));
+  } catch (error) {
+    console.warn('Failed to fetch blog posts for sitemap, continuing with existing entries:', error.message);
+  }
+
+  return [
+    ...sitemapEntries,
+    ...sunMoonPages,
+    ...transitPages,
+    ...zodiacPages,
+    ...tarotPages,
+    ...compatPages,
+    ...blogPostPages,
+  ];
 }

@@ -103,8 +103,20 @@ async function generateImage(post) {
 const CONTENT_CACHE = {};
 function loadBriefsLocal() {
   if (!CONTENT_CACHE.briefs) {
-    const path = join(__dirname, 'content-briefs-month-1.json');
-    CONTENT_CACHE.briefs = JSON.parse(readFileSync(path, 'utf8'));
+    const files = ['content-briefs-month-1.json', 'content-briefs-months-2-3.json'];
+    let all = [];
+    for (const file of files) {
+      const path = join(__dirname, file);
+      try {
+        if (existsSync(path)) {
+          const data = JSON.parse(readFileSync(path, 'utf8'));
+          all = all.concat(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        logger.warn(`[pipeline] Failed to load ${file}: ${err.message}`);
+      }
+    }
+    CONTENT_CACHE.briefs = all;
   }
   return CONTENT_CACHE.briefs;
 }
@@ -389,9 +401,7 @@ async function postToTwitter(copy) {
 async function runPost(postNumber, publish = false) {
   log('info', `═══ Processing Post #${postNumber} ═══`);
   
-  // Briefs are in the OpenClaw paperclip instances directory
-  const briefPath = join(__dirname, 'content-briefs-month-1.json');
-  const briefs = JSON.parse(readFileSync(briefPath, 'utf8'));
+  const briefs = loadBriefsLocal();
   const post = briefs.find(p => p.post_number === postNumber);
   
   if (!post) {
@@ -432,10 +442,9 @@ async function runPost(postNumber, publish = false) {
 }
 
 async function runAll(publish = false) {
-  // Month 1 = posts 1-8
-  for (let i = 1; i <= 8; i++) {
+  // Months 1-3 = posts 1-24
+  for (let i = 1; i <= 24; i++) {
     await runPost(i, publish);
-    // Small delay between posts to avoid rate limits
     await new Promise(r => setTimeout(r, 2000));
   }
 }
