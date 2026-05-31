@@ -41,7 +41,7 @@ services:
       - key: CRON_SECRET
         generateValue: true
       - key: NEXTAUTH_URL
-        sync: false
+        value: https://cosmicspiritguide.com
       - key: NEXTAUTH_SECRET
         generateValue: true
       - key: GOOGLE_CLIENT_ID
