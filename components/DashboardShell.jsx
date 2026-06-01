@@ -3,6 +3,47 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 
+const REDIRECT_GUARD_KEY = "dashboard_redirect_guard";
+const REDIRECT_THRESHOLD = 2;
+const REDIRECT_WINDOW_MS = 30_000;
+
+function checkRedirectGuard() {
+  try {
+    const raw = sessionStorage.getItem(REDIRECT_GUARD_KEY);
+    if (!raw) return { count: 0, firstTs: 0 };
+    const { count, firstTs } = JSON.parse(raw);
+    if (Date.now() - firstTs > REDIRECT_WINDOW_MS) {
+      sessionStorage.removeItem(REDIRECT_GUARD_KEY);
+      return { count: 0, firstTs: 0 };
+    }
+    return { count, firstTs };
+  } catch {
+    return { count: 0, firstTs: 0 };
+  }
+}
+
+function incrementRedirectGuard() {
+  try {
+    const state = checkRedirectGuard();
+    const newState = {
+      count: state.count + 1,
+      firstTs: state.firstTs || Date.now(),
+    };
+    sessionStorage.setItem(REDIRECT_GUARD_KEY, JSON.stringify(newState));
+    return newState;
+  } catch {
+    // sessionStorage unavailable
+  }
+}
+
+function clearRedirectGuard() {
+  try {
+    sessionStorage.removeItem(REDIRECT_GUARD_KEY);
+  } catch {
+    // sessionStorage unavailable
+  }
+}
+
 export default function DashboardShell({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
@@ -52,10 +93,18 @@ export default function DashboardShell({ children }) {
       // Fetch user profile
       const userData = await apiClient.get("/api/auth/user");
       if (!userData || !userData.user) {
+        const guard = incrementRedirectGuard();
+        if (guard && guard.count >= REDIRECT_THRESHOLD) {
+          console.error("[DashboardShell] Redirect loop detected, showing error instead of redirecting");
+          setError("Your session could not be loaded. Please try clearing your cookies and signing in again.");
+          setLoading(false);
+          return;
+        }
         console.warn("[DashboardShell] No authenticated user returned, redirecting to login");
         router.replace("/login?redirect=dashboard&message=save-readings");
         return;
       }
+      clearRedirectGuard();
       
       setUser(userData.user);
 

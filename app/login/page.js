@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -78,9 +76,7 @@ function LoginPageContent({ router, searchParams }) {
     try {
       const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
       const data = await apiClient.post(endpoint, formData);
-      await new Promise(resolve => setTimeout(resolve, 100));
       router.push(returnUrl);
-      router.refresh();
     } catch (err) {
       setError(err.message || "Failed to connect to server. Please check your connection and try again.");
     } finally {
@@ -229,7 +225,7 @@ function LoginPageContent({ router, searchParams }) {
           </div>
 
           {error && (
-            <div className="bg-cosmic-rose/50/10 border border-red-500/20 text-red-300 px-4 py-3 rounded-xl text-sm">
+            <div data-testid="auth-error" className="bg-cosmic-rose/50/10 border border-red-500/20 text-red-300 px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
