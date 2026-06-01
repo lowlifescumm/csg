@@ -9,11 +9,12 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
-  const hasJwtSession = Boolean(request.cookies.get("auth_token")?.value);
-  const hasNextAuthSession = Boolean(
-    request.cookies.get("next-auth.session-token")?.value ||
-      request.cookies.get("__Secure-next-auth.session-token")?.value
-  );
+  const authToken = request.cookies.get("auth_token")?.value;
+  const nextAuthSessionToken = request.cookies.get("next-auth.session-token")?.value;
+  const secureNextAuthSessionToken = request.cookies.get("__Secure-next-auth.session-token")?.value;
+
+  const hasJwtSession = Boolean(authToken);
+  const hasNextAuthSession = Boolean(nextAuthSessionToken || secureNextAuthSessionToken);
 
   if (!hasJwtSession && !hasNextAuthSession) {
     return NextResponse.redirect(new URL(LOGIN_REDIRECT_URL, request.url));
