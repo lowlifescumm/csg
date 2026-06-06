@@ -217,7 +217,7 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
             <button 
-              onClick={() => router.push("/tarot")}
+              onClick={() => router.push("/free-tarot")}
               className="group px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 hover:scale-105 hover:shadow-2xl hover:shadow-cosmic-gold/25"
             >
               <span className="flex items-center gap-2">
@@ -293,7 +293,7 @@ export default function HomePage() {
               🎴 Get Your First 3-Card Reading Free
             </p>
             <p className="text-white/70 text-lg mb-6">No credit card. No commitment. Just instant guidance.</p>
-            <button onClick={() => router.push("/tarot")} className="px-8 py-4 rounded-full font-semibold bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all">
+            <button onClick={() => router.push("/free-tarot")} className="px-8 py-4 rounded-full font-semibold bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all">
               Try It Now
             </button>
           </div>
@@ -402,7 +402,7 @@ export default function HomePage() {
               Join 50,000+ seekers who've found clarity through the cards.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button onClick={() => router.push("/tarot")} className="px-10 py-5 rounded-full font-semibold text-lg bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all hover:scale-105">
+              <button onClick={() => router.push("/free-tarot")} className="px-10 py-5 rounded-full font-semibold text-lg bg-cosmic-gold text-cosmic-indigo hover:bg-cosmic-gold/90 transition-all hover:scale-105">
                 <span className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5" />
                   Get Your Free Reading

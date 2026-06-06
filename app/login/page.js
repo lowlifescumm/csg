@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: "",
@@ -16,6 +18,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [claimingReading, setClaimingReading] = useState(false);
+
+  // Check for pending reading claim
+  const pendingReadingId = typeof window !== 'undefined' 
+    ? sessionStorage.getItem('pending_reading_claim') 
+    : null;
+  const redirectTo = searchParams.get('redirect');
+  const action = searchParams.get('action');
 
   // Ensure component is mounted before using NextAuth functions (important for mobile)
   useEffect(() => {
@@ -38,6 +48,37 @@ export default function LoginPage() {
       setError(errorMessage);
     }
   }, []);
+
+  // Handle claiming pending reading after successful auth
+  const claimPendingReading = async () => {
+    const readingId = sessionStorage.getItem('pending_reading_claim');
+    if (!readingId) return;
+    
+    setClaimingReading(true);
+    try {
+      const response = await fetch('/api/free-tarot/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ readingId })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Clear pending reading
+        sessionStorage.removeItem('pending_reading_claim');
+        localStorage.removeItem('csg_free_reading_used');
+        localStorage.removeItem('csg_free_reading_data');
+        
+        // Show success and redirect
+        alert('Your free reading has been saved to your account!');
+      }
+    } catch (err) {
+      console.error('Error claiming reading:', err);
+    } finally {
+      setClaimingReading(false);
+    }
+  };
 
   const handleGoogleSignIn = () => {
     // Wait for component to mount and SessionProvider to be ready
@@ -84,9 +125,16 @@ export default function LoginPage() {
       if (res.ok) {
         // Clear any existing errors
         setError("");
+        
+        // Claim pending reading if exists
+        await claimPendingReading();
+        
         // Small delay to ensure cookie is set (especially important on mobile)
         await new Promise(resolve => setTimeout(resolve, 100));
-        router.push("/dashboard");
+        
+        // Redirect to dashboard or specified redirect
+        const redirectPath = redirectTo ? `/${redirectTo}` : "/dashboard";
+        router.push(redirectPath);
         router.refresh();
       } else {
         setError(data.error || "Something went wrong");
@@ -126,7 +174,14 @@ export default function LoginPage() {
             <img src="/logo.png" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-4 object-contain" />
           </div>
           <h1 className="text-3xl font-semibold gradient-text mb-2">Cosmic Spirit Guide</h1>
-          <p className="text-gray-600">Welcome back to your spiritual journey</p>
+          
+          {pendingReadingId ? (
+            <p className="text-gray-600">
+              Create an account to save your free tarot reading!
+            </p>
+          ) : (
+            <p className="text-gray-600">Welcome back to your spiritual journey</p>
+          )}
         </div>
 
         <div className="flex gap-2 mb-8 bg-gray-100 bg-opacity-50 rounded-2xl p-1">
@@ -167,7 +222,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
                   required={!isLogin}
-                  placeholder="Enter your first name"
+                  placeholder="First name"
                 />
               </div>
               <div>
@@ -182,7 +237,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
                   required={!isLogin}
-                  placeholder="Enter your last name"
+                  placeholder="Last name"
                 />
               </div>
             </div>
@@ -200,7 +255,7 @@ export default function LoginPage() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full p-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none smooth-transition text-gray-900 bg-white bg-opacity-70"
               required
-              placeholder="Enter your email address"
+              placeholder="Enter your email"
               autoComplete="email"
             />
           </div>
@@ -241,16 +296,16 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || claimingReading}
             className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed apple-shadow-lg"
           >
-            {loading ? (
+            {loading || claimingReading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                 </svg>
-                {isLogin ? "Logging in..." : "Signing up..."}
+                {claimingReading ? 'Saving your reading...' : (isLogin ? "Logging in..." : "Signing up...")}
               </span>
             ) : (
               isLogin ? "Log In" : "Sign Up"
@@ -295,6 +350,14 @@ export default function LoginPage() {
             </>
           )}
         </button>
+
+        {pendingReadingId && (
+          <div className="mt-6 text-center">
+            <Link href="/free-tarot" className="text-purple-600 hover:text-purple-800 text-sm font-medium">
+              ← Back to my reading
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

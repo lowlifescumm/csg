@@ -59,6 +59,7 @@ export default function Header() {
   };
 
   const navigation = [
+    { name: 'Free Reading', href: '/free-tarot', icon: Sparkles },
     { name: "Home", href: "/", icon: Home },
     { name: "Readings", href: "/tarot", icon: Sparkles },
     { name: "Pricing", href: "/pricing", icon: CreditCard },

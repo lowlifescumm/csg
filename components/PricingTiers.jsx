@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Check, Sparkles, Zap, Crown, Loader2, Clock } from "lucide-react";
-import { CREDIT_PACKS, SUBSCRIPTION, FREE_CREDITS } from "@/lib/pricing";
+import { CREDIT_PACKS, SUBSCRIPTION_TIERS, FREE_CREDITS } from "@/lib/pricing";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useRouter } from "next/navigation";
@@ -162,6 +162,9 @@ export default function PricingTiers() {
   const creditPacksArray = Object.values(CREDIT_PACKS);
   const [selectedPack, setSelectedPack] = useState(creditPacksArray[0].credits);
   const selectedPackData = creditPacksArray.find(p => p.credits === selectedPack) || creditPacksArray[0];
+
+  // Get the mystic tier details
+  const mysticTier = SUBSCRIPTION_TIERS.MYSTIC_LITE;
 
   const handlePackPurchase = (pack) => {
     setCheckoutPack(pack);
@@ -398,10 +401,10 @@ export default function PricingTiers() {
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">The Mystic</h3>
               <div className="text-5xl font-bold text-white mb-1">
-                ${(SUBSCRIPTION.MONTHLY_PRICE_IN_CENTS / 100).toFixed(2)}
+                ${(mysticTier.priceInCents / 100).toFixed(2)}
                 <span className="text-2xl text-purple-200">/mo</span>
               </div>
-              <p className="text-purple-200 text-sm">Unlimited Access</p>
+              <p className="text-purple-200 text-sm">Monthly Credit Allowance</p>
             </div>
 
             <div className="space-y-4 mb-8">
@@ -411,38 +414,10 @@ export default function PricingTiers() {
                 </div>
                 <div>
                   <div className="text-white font-semibold mb-1">
-                    🔮 Unlimited Tarot Readings
-                  </div>
-                  <p className="text-purple-200 text-sm">
-                    No credit limits
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Check className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold mb-1">
-                    ⚡ Unlimited Transit Dashboard
-                  </div>
-                  <p className="text-purple-200 text-sm">
-                    Real-time cosmic influences
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Check className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold mb-1">
                     🌙 4 Moon Reading Credits / Month
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Personalized lunar guidance
+                    Personalized lunar guidance (5 credits each)
                   </p>
                 </div>
               </div>
@@ -456,7 +431,7 @@ export default function PricingTiers() {
                     💕 2 Compatibility Reports / Month
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Detailed relationship insights
+                    Detailed relationship insights (20 credits each)
                   </p>
                 </div>
               </div>
@@ -470,7 +445,49 @@ export default function PricingTiers() {
                     ⭐ 2 Birth Charts / Month
                   </div>
                   <p className="text-purple-200 text-sm">
-                    Complete natal chart analysis
+                    Complete natal chart analysis (12 credits each)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <div className="text-white font-semibold mb-1">
+                    🔮 Tarot Readings via Credits
+                  </div>
+                  <p className="text-purple-200 text-sm">
+                    1-3 credits per reading (approx. 20-60/month)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <div className="text-white font-semibold mb-1">
+                    ⚡ Transit Dashboard Access
+                  </div>
+                  <p className="text-purple-200 text-sm">
+                    Real-time cosmic influences (8 credits each)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-white text-xs font-bold">{mysticTier.creditsPerMonth}</span>
+                </div>
+                <div>
+                  <div className="text-white font-semibold mb-1">
+                    Total: {mysticTier.creditsPerMonth} Credits / Month
+                  </div>
+                  <p className="text-purple-200 text-sm">
+                    {mysticTier.rolloverDays}-day rollover • {mysticTier.reportDiscountPercent}% report discount
                   </p>
                 </div>
               </div>
