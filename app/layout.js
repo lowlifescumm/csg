@@ -304,7 +304,7 @@ const websiteSchema = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${cormorant.variable} ${cinzel.variable} scroll-smooth`}>
+    <html lang="en" className={`${inter.variable} ${cormorant.variable} ${cinzel.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
         {/* Preload primary logo for LCP optimization */}
         <link
@@ -329,7 +329,7 @@ export default function RootLayout({ children }) {
 
       <body
         className="min-h-screen bg-cosmic-950 antialiased"
-        suppressHydrationWarning={true}
+        suppressHydrationWarning
       >
         <noscript>
           <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-cosmic-void px-6 text-center">
@@ -387,7 +387,7 @@ export default function RootLayout({ children }) {
                   Powered by AI • Tarot • Horoscopes • Birth Charts
                 </p>
                 <p className="mt-2 text-xs text-white/40">
-                  © {new Date().getFullYear()} Cosmic Spirit Guide
+                  © 2026 Cosmic Spirit Guide
                 </p>
                 <div className="mt-4 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6">
                   <a href="/privacy" className="text-xs sm:text-sm text-white/50 hover:text-white/80 transition-colors">
