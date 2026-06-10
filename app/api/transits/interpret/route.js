@@ -1,13 +1,11 @@
 const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import Groq from 'groq-sdk';
+import { getClient } from '@/lib/groq.js';
 import { pool } from '@/lib/db.js';
 import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter';
-
-const openai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const parseJsonSafely = (payload, label) => {
   if (!payload) return null;
@@ -103,7 +101,7 @@ Provide a comprehensive interpretation in the following JSON format:
 
 Make the interpretation personalized, insightful, and actionable. Consider the intensity (${transit.intensity}/10) and aspect nature (${transit.aspectNature}).`;
 
-  const completion = await openai.chat.completions.create({
+  const completion = await getClient().chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     messages: [
       {
