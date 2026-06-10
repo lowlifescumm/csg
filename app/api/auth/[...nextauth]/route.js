@@ -19,7 +19,7 @@ export async function GET(request, context) {
   try {
     const expectedHost = NEXTAUTH_URL ? new URL(NEXTAUTH_URL).host : null;
     const reqUrl = new URL(request.url);
-    const incomingHost = request.headers.get('host');
+    const incomingHost = request.headers.get('x-forwarded-host') || request.headers.get('host');
     if (expectedHost && incomingHost && incomingHost !== expectedHost) {
       const redirectUrl = `${NEXTAUTH_URL}${reqUrl.pathname}${reqUrl.search}`;
       logger.info('[NextAuth][GET] Host mismatch, redirecting to public host', { incomingHost, expectedHost, redirectUrl });
@@ -44,7 +44,7 @@ export async function POST(request, context) {
   try {
     const expectedHost = NEXTAUTH_URL ? new URL(NEXTAUTH_URL).host : null;
     const reqUrl = new URL(request.url);
-    const incomingHost = request.headers.get('host');
+    const incomingHost = request.headers.get('x-forwarded-host') || request.headers.get('host');
     if (expectedHost && incomingHost && incomingHost !== expectedHost) {
       const redirectUrl = `${NEXTAUTH_URL}${reqUrl.pathname}${reqUrl.search}`;
       logger.info('[NextAuth][POST] Host mismatch, redirecting to public host', { incomingHost, expectedHost, redirectUrl });
