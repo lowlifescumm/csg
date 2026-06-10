@@ -15,6 +15,24 @@ export async function GET(request, context) {
     forwardedProto: request.headers.get('x-forwarded-proto'),
     userAgent: request.headers.get('user-agent'),
   });
+  // Rewrite internal host in request URL to public host to prevent NextAuth redirect loops
+  try {
+    if (NEXTAUTH_URL) {
+      const expectedHost = new URL(NEXTAUTH_URL).host;
+      const expectedProto = new URL(NEXTAUTH_URL).protocol;
+      const reqUrl = new URL(request.url);
+      if (reqUrl.host !== expectedHost) {
+        const newUrl = new URL(request.url);
+        newUrl.host = expectedHost;
+        newUrl.protocol = expectedProto;
+        request = new Request(newUrl.toString(), request);
+        logger.info('[NextAuth][GET] Rewrote request URL for NextAuth handler:', request.url);
+      }
+    }
+  } catch (e) {
+    logger.error('[NextAuth][GET] Request URL rewrite error:', e);
+  }
+
   // Force public host if request came in via internal service URL
   try {
     const expectedHost = NEXTAUTH_URL ? new URL(NEXTAUTH_URL).host : null;
@@ -40,6 +58,24 @@ export async function POST(request, context) {
     forwardedProto: request.headers.get('x-forwarded-proto'),
     userAgent: request.headers.get('user-agent'),
   });
+  // Rewrite internal host in request URL to public host to prevent NextAuth redirect loops
+  try {
+    if (NEXTAUTH_URL) {
+      const expectedHost = new URL(NEXTAUTH_URL).host;
+      const expectedProto = new URL(NEXTAUTH_URL).protocol;
+      const reqUrl = new URL(request.url);
+      if (reqUrl.host !== expectedHost) {
+        const newUrl = new URL(request.url);
+        newUrl.host = expectedHost;
+        newUrl.protocol = expectedProto;
+        request = new Request(newUrl.toString(), request);
+        logger.info('[NextAuth][POST] Rewrote request URL for NextAuth handler:', request.url);
+      }
+    }
+  } catch (e) {
+    logger.error('[NextAuth][POST] Request URL rewrite error:', e);
+  }
+
   // Force public host if request came in via internal service URL
   try {
     const expectedHost = NEXTAUTH_URL ? new URL(NEXTAUTH_URL).host : null;
