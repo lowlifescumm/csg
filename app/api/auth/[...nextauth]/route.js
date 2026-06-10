@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import { NextRequest } from "next/server";
 import { authOptions } from "@/lib/auth-config";
 import logger from "@/lib/logger";
 
@@ -25,7 +26,7 @@ export async function GET(request, context) {
         const newUrl = new URL(request.url);
         newUrl.host = expectedHost;
         newUrl.protocol = expectedProto;
-        request = new Request(newUrl.toString(), request);
+        request = new NextRequest(newUrl.toString(), request);
         logger.info('[NextAuth][GET] Rewrote request URL for NextAuth handler:', request.url);
       }
     }
@@ -68,7 +69,7 @@ export async function POST(request, context) {
         const newUrl = new URL(request.url);
         newUrl.host = expectedHost;
         newUrl.protocol = expectedProto;
-        request = new Request(newUrl.toString(), request);
+        request = new NextRequest(newUrl.toString(), request);
         logger.info('[NextAuth][POST] Rewrote request URL for NextAuth handler:', request.url);
       }
     }
