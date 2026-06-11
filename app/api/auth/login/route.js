@@ -5,8 +5,10 @@ import logger from '@/lib/logger';
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
+    logger.info('[api/auth/login] Login attempt for email:', email);
 
     if (!email || !password) {
+      logger.warn('[api/auth/login] Missing email or password');
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
@@ -15,11 +17,13 @@ export async function POST(request) {
 
     const user = await getUserByEmail(normalizedEmail);
     if (!user) {
+      logger.warn('[api/auth/login] User not found:', normalizedEmail);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     // Check if user has a password (OAuth users have password_hash = null)
     if (!user.password) {
+      logger.warn('[api/auth/login] User exists but has no password (OAuth user):', normalizedEmail);
       return NextResponse.json({ 
         error: 'This account uses Google sign-in. Please sign in with Google instead.' 
       }, { status: 401 });
@@ -28,14 +32,16 @@ export async function POST(request) {
     try {
       const isValid = await verifyPassword(password, user.password);
       if (!isValid) {
+        logger.warn('[api/auth/login] Incorrect password for user:', normalizedEmail);
         return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
       }
     } catch (error) {
-      logger.error('Password verification error:', error);
+      logger.error('[api/auth/login] Password verification error:', error);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const token = generateToken(user.id);
+    logger.info('[api/auth/login] Password valid. Token generated for userId:', user.id);
 
     const response = NextResponse.json({
       success: true,
@@ -54,6 +60,7 @@ export async function POST(request) {
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
+    logger.info('[api/auth/login] Set auth_token cookie in response');
 
     return response;
   } catch (error) {

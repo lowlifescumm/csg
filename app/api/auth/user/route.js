@@ -4,6 +4,7 @@ import { verifyToken, getUserById } from '@/lib/auth';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import logger from '@/lib/logger';
+import jwt from 'jsonwebtoken';
 
 export async function GET(request) {
   try {
@@ -47,13 +48,18 @@ export async function GET(request) {
 
     // Fall back to JWT cookie authentication (for email/password users)
     const token = cookieStore.get('auth_token')?.value;
+    logger.info('[api/auth/user] auth_token value is present:', !!token);
 
     if (!token) {
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
+    let decoded = null;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || '');
+      logger.info('[api/auth/user] Token verified successfully, decoded userId:', decoded?.userId);
+    } catch (err) {
+      logger.error('[api/auth/user] Token verification failed:', err.message, 'JWT_SECRET length:', process.env.JWT_SECRET?.length || 0);
       const response = NextResponse.json({ user: null }, { status: 200 });
       response.cookies.delete('auth_token');
       return response;
@@ -61,6 +67,7 @@ export async function GET(request) {
 
     const user = await getUserById(decoded.userId);
     if (!user) {
+      logger.warn('[api/auth/user] Token was valid but user not found in DB:', decoded.userId);
       const response = NextResponse.json({ user: null }, { status: 200 });
       response.cookies.delete('auth_token');
       return response;
