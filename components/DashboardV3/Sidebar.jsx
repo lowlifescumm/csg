@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { apiClient } from '@/lib/api-client';
 import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 import { 
@@ -41,18 +41,21 @@ export default function Sidebar({ user, onLinkClick }) {
     }
   );
 
+  const [logoutTriggered, setLogoutTriggered] = useState(false);
+
   // Handle successful logout
   useEffect(() => {
-    if (isLoggingOut) return; // Still loading
+    if (!logoutTriggered || isLoggingOut) return; // Only redirect if logout was triggered and finished loading
     // Navigate to login page after logout completes
     // We use a small timeout to allow the hook state to settle
     const timer = setTimeout(() => {
       window.location.href = "/login";
     }, 100);
     return () => clearTimeout(timer);
-  }, [isLoggingOut]);
+  }, [isLoggingOut, logoutTriggered]);
 
   const handleLogout = useCallback(() => {
+    setLogoutTriggered(true);
     logout();
   }, [logout]);
 
