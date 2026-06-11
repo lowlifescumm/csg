@@ -5,10 +5,29 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import logger from '@/lib/logger';
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll().map(c => ({ name: c.name, value: c.value ? '[PRESENT]' : '[EMPTY]' }));
+    
+    logger.info('[api/auth/user] Incoming request debug:', {
+      url: request?.url,
+      headers: {
+        host: request?.headers?.get('host'),
+        forwardedHost: request?.headers?.get('x-forwarded-host'),
+        forwardedProto: request?.headers?.get('x-forwarded-proto'),
+      },
+      cookiesCount: allCookies.length,
+      cookieNames: allCookies.map(c => c.name),
+    });
+
     // First, check for NextAuth session (for Google OAuth users)
     const session = await getServerSession(authOptions);
+    logger.info('[api/auth/user] getServerSession result:', { 
+      hasSession: !!session, 
+      userEmail: session?.user?.email,
+      userId: session?.user?.id 
+    });
     
     if (session?.user) {
       const dbUser = session.user.id ? await getUserById(session.user.id) : null;
