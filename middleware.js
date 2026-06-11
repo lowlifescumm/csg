@@ -16,10 +16,15 @@ export function middleware(request) {
   const hasJwtSession = Boolean(authToken);
   const hasNextAuthSession = Boolean(nextAuthSessionToken || secureNextAuthSessionToken);
 
+  console.log(`[Middleware] Path: ${pathname}, hasJwtSession: ${hasJwtSession}, hasNextAuthSession: ${hasNextAuthSession}`);
+  console.log(`[Middleware] Cookies present:`, request.cookies.getAll().map(c => c.name));
+
   if (!hasJwtSession && !hasNextAuthSession) {
+    console.log(`[Middleware] Redirecting to login from path: ${pathname}`);
     return NextResponse.redirect(new URL(LOGIN_REDIRECT_URL, request.url));
   }
 
+  console.log(`[Middleware] Allowing access to path: ${pathname}`);
   return NextResponse.next();
 }
 
