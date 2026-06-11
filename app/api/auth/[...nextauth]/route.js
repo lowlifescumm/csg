@@ -20,12 +20,9 @@ export async function GET(request, context) {
   try {
     if (NEXTAUTH_URL) {
       const expectedHost = new URL(NEXTAUTH_URL).host;
-      const expectedProto = new URL(NEXTAUTH_URL).protocol;
       const reqUrl = new URL(request.url);
       if (reqUrl.host !== expectedHost) {
-        const newUrl = new URL(request.url);
-        newUrl.host = expectedHost;
-        newUrl.protocol = expectedProto;
+        const newUrl = new URL(reqUrl.pathname + reqUrl.search, NEXTAUTH_URL);
         request = new NextRequest(newUrl.toString(), request);
         logger.info('[NextAuth][GET] Rewrote request URL for NextAuth handler:', request.url);
       }
@@ -63,12 +60,9 @@ export async function POST(request, context) {
   try {
     if (NEXTAUTH_URL) {
       const expectedHost = new URL(NEXTAUTH_URL).host;
-      const expectedProto = new URL(NEXTAUTH_URL).protocol;
       const reqUrl = new URL(request.url);
       if (reqUrl.host !== expectedHost) {
-        const newUrl = new URL(request.url);
-        newUrl.host = expectedHost;
-        newUrl.protocol = expectedProto;
+        const newUrl = new URL(reqUrl.pathname + reqUrl.search, NEXTAUTH_URL);
         request = new NextRequest(newUrl.toString(), request);
         logger.info('[NextAuth][POST] Rewrote request URL for NextAuth handler:', request.url);
       }
