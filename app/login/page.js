@@ -19,17 +19,21 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [claimingReading, setClaimingReading] = useState(false);
-
-  // Check for pending reading claim
-  const pendingReadingId = typeof window !== 'undefined' 
-    ? sessionStorage.getItem('pending_reading_claim') 
-    : null;
-  const redirectTo = searchParams.get('redirect');
-  const action = searchParams.get('action');
+  const [pendingReadingId, setPendingReadingId] = useState(null);
+  const [redirectTo, setRedirectTo] = useState(null);
+  const [action, setAction] = useState(null);
 
   // Ensure component is mounted before using NextAuth functions (important for mobile)
   useEffect(() => {
     setMounted(true);
+    
+    // Check for pending reading claim (client-side only to avoid hydration mismatch)
+    if (typeof window !== 'undefined') {
+      const pending = sessionStorage.getItem('pending_reading_claim');
+      if (pending) {
+        setPendingReadingId(pending);
+      }
+    }
     
     // Check for error in URL query parameters (from NextAuth redirect)
     const urlParams = new URLSearchParams(window.location.search);
@@ -47,7 +51,13 @@ export default function LoginPage() {
       }
       setError(errorMessage);
     }
-  }, []);
+
+    // Set search params in state to avoid hydration issues
+    const redirect = searchParams.get('redirect');
+    const actionParam = searchParams.get('action');
+    if (redirect) setRedirectTo(redirect);
+    if (actionParam) setAction(actionParam);
+  }, [searchParams]);
 
   // Handle claiming pending reading after successful auth
   const claimPendingReading = async () => {

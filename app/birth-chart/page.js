@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BirthChartForm from "@/components/BirthChartForm";
+import GatedBirthChartForm from "@/components/GatedBirthChartForm";
 
 function BirthChartPageInner() {
   const router = useRouter();
@@ -46,18 +47,23 @@ function BirthChartPageInner() {
               // Chart check failed, continue to show form
               console.log('Chart check failed:', chartError);
             }
-          } else {
-            router.push('/login');
+            
+            // User is authenticated but no chart - let them create one
+            setLoading(false);
+            setCheckingChart(false);
             return;
           }
-        } else {
-          router.push('/login');
-          return;
         }
+        
+        // User is not authenticated - show the gated form (new behavior!)
+        // This is the key change - we no longer redirect to login
+        setUser(null);
+        setLoading(false);
+        setCheckingChart(false);
       } catch (error) {
-        router.push('/login');
-        return;
-      } finally {
+        // Error checking auth - show gated form
+        console.log('Auth check failed:', error);
+        setUser(null);
         setLoading(false);
         setCheckingChart(false);
       }
@@ -82,10 +88,15 @@ function BirthChartPageInner() {
     );
   }
 
-  if (!user) return null;
-
-  // If we get here, user doesn't have a chart or is updating, show the form
-  return <BirthChartForm updateMode={updateMode} />;
+  // If user is authenticated, show the regular form that saves to their account
+  // If user is NOT authenticated, show the gated form
+  if (user) {
+    // Authenticated user - use the existing form
+    return <BirthChartForm updateMode={updateMode} />;
+  } else {
+    // Unauthenticated user - show the new gated form
+    return <GatedBirthChartForm />;
+  }
 }
 
 export default function BirthChartPage() {
