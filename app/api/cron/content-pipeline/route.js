@@ -12,7 +12,7 @@ const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { pool } from '@/lib/db';
-import { loadBriefs, buildImageUrl, generateSocialCopy, slugify, generateArticleContent, getThemeForPost } from '@/lib/content-pipeline-lib.js';
+import { getCalendarBrief, loadBriefs, buildImageUrl, generateSocialCopy, slugify, generateArticleContent, getThemeForPost } from '@/lib/content-pipeline-lib.js';
 import { createPostInSanity } from '@/lib/sanity-write.js';
 import { sanityClient } from '@/lib/sanity.js';
 
@@ -270,7 +270,7 @@ export async function POST(req) {
   const publish = searchParams.get('publish') === '1';
   const postNumber = parseInt(searchParams.get('post') || '0');
 
-  const briefs = loadBriefs();
+  const briefs = await getCalendarBrief();
   const results = [];
 
   try {
@@ -326,7 +326,7 @@ export async function POST(req) {
 // GET handler for status checks
 export async function GET(req) {
   const state = await getState();
-  const briefs = loadBriefs();
+  const briefs = await getCalendarBrief();
   return NextResponse.json({
     state,
     totalBriefs: briefs.length,
