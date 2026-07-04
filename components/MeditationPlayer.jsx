@@ -1,7 +1,7 @@
 "use client";
-const logger = require('../lib/logger');
 import { useState, useEffect, useRef } from "react";
 import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, X, Gauge } from "lucide-react";
+import { apiClient } from '@/lib/api-client';
 
 /**
  * MeditationPlayer - Full-featured meditation audio player
@@ -98,14 +98,8 @@ export default function MeditationPlayer({
     setIsCompleted(true);
 
     try {
-      const res = await fetch(`/api/meditations/${meditation.id}/complete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success && onComplete) {
+      const data = await apiClient.post(`/api/meditations/${meditation.id}/complete`, { sessionId });
+      if (data.success && onComplete) {
         onComplete(data);
       }
     } catch (error) {

@@ -1,23 +1,51 @@
 "use client";
 import { useState, useEffect } from "react";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, Mail } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
 import FocusModal from "@/components/FocusModal";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import ShareCard from "@/components/ShareCard";
-import logger from "@/lib/logger";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
-export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general", cardCount = null, question: initialQuestion = "", spreadId = null }) {
+export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general", cardCount = null, question: initialQuestion = "", spreadId = null, user = null }) {
   const [selectedCards, setSelectedCards] = useState([]);
   const [availableCards, setAvailableCards] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showReading, setShowReading] = useState(false);
   const [reading, setReading] = useState(null);
   const [question, setQuestion] = useState(initialQuestion);
   const [showFocusModal, setShowFocusModal] = useState(false);
   const [error, setError] = useState("");
   const [flashMismatch, setFlashMismatch] = useState(false);
+  const [submitVersion, setSubmitVersion] = useState(0);
+  const [submitIntent, setSubmitIntent] = useState("");
+  const [submitCardData, setSubmitCardData] = useState(null);
+  // Email capture gate state
+  const [showEmailGate, setShowEmailGate] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailGatePending, setEmailGatePending] = useState(false);
+  const [emailGateError, setEmailGateError] = useState("");
+
+  const { loading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.post("/api/readings/create", submitCardData, { timeout: 90_000 }),
+    [submitVersion, submitCardData],
+    {
+      enabled: submitVersion > 0,
+      onSuccess: (data) => {
+        setSubmitVersion(0);
+        if (data.success) {
+          setReading(data.reading);
+          setShowReading(true);
+          if (onComplete) {
+            onComplete(data.reading);
+          }
+        }
+      },
+      toastMessages: { error: "Failed to generate reading. Check your connection." },
+    },
+  );
   
   const spread = (function resolveSpread() {
     // Map old spreadType strings to config ids
@@ -35,20 +63,21 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       "yin-yang": "yin_yang",
       "custom_spread": "custom_spread",
     };
-    const id = spreadId || map[spreadType] || spreadType;
+    const resolvedFromType = map[spreadType] || spreadType;
+    const id = spreadId || resolvedFromType;
     const foundSpread = spreads.find(s => s.id === id) || spreads.find(s => s.id === "past_present_future");
+    const spreadClone = foundSpread ? JSON.parse(JSON.stringify(foundSpread)) : null;
     
-    // For custom spread, update card_count and layout dynamically
-    if (id === "custom_spread" && cardCount !== null && cardCount >= 1 && cardCount <= 10) {
-      foundSpread.card_count = cardCount;
-      foundSpread.layout = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
-      if (foundSpread.ui) {
-        foundSpread.ui.required_selection_count = cardCount;
-        foundSpread.ui.selection_labels = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
+    if (id === "custom_spread" && spreadClone && cardCount !== null && cardCount >= 1 && cardCount <= 10) {
+      spreadClone.card_count = cardCount;
+      spreadClone.layout = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
+      if (spreadClone.ui) {
+        spreadClone.ui.required_selection_count = cardCount;
+        spreadClone.ui.selection_labels = Array.from({ length: cardCount }, (_, i) => `Card ${i + 1}`);
       }
     }
     
-    return foundSpread;
+    return spreadClone;
   })();
 
   const positions = spread.layout;
@@ -77,6 +106,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     // Question input is now handled by Focus Modal - no need to show legacy input
   };
 
+  const isAnonymous = !user || !user.id;
+
   const handleGetReading = () => {
     const required = spread.ui?.required_selection_count ?? spread.card_count;
     const selected = selectedCards.length;
@@ -87,6 +118,12 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         setFlashMismatch(false);
         setSelectedCards([]);
       }, 1500);
+      return;
+    }
+
+    // For anonymous users, show email gate before proceeding
+    if (isAnonymous) {
+      setShowEmailGate(true);
       return;
     }
 
@@ -102,57 +139,80 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     setShowFocusModal(true);
   };
 
-  const handleFocusSubmit = async (userIntent) => {
-    // Close the focus modal
+  const handleEmailGateSubmit = async (skip = false) => {
+    setEmailGateError("");
+    
+    if (!skip) {
+      // Validate email
+      const trimmedEmail = emailInput.trim();
+      if (!trimmedEmail || !trimmedEmail.includes('@')) {
+        setEmailGateError("Please enter a valid email address");
+        return;
+      }
+      
+      setEmailGatePending(true);
+      
+      try {
+        // Capture the lead
+        await apiClient.post("/api/leads/capture", {
+          email: trimmedEmail,
+          source: "tarot_reading_gate",
+          question: question || null,
+        });
+        
+        // Track email capture event
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'email_captured', {
+            event_category: 'engagement',
+            event_label: 'tarot_reading_gate',
+          });
+        }
+      } catch (err) {
+        console.error("Failed to capture email:", err);
+        // Continue anyway - don't block the user from seeing their reading
+      } finally {
+        setEmailGatePending(false);
+      }
+    }
+    
+    // Close email gate and proceed to focus modal or directly to reading
+    setShowEmailGate(false);
+    
+    // For custom spreads with question, go directly to reading
+    const isCustomSpread = spreadType === "custom_spread";
+    if (isCustomSpread && question && question.trim()) {
+      handleFocusSubmit(question);
+      return;
+    }
+    
+    // Otherwise show focus modal
+    setShowFocusModal(true);
+  };
+
+  const handleFocusSubmit = (userIntent) => {
     setShowFocusModal(false);
-    
-    // Update question state with user's intent
     setQuestion(userIntent);
-    
-    // If question was required but not provided, show error
+
     if (spread.ui?.require_question && !userIntent.trim()) {
       setError("Please enter your question before submitting.");
       return;
     }
 
-    setLoading(true);
-    
-    try {
-      // Prepare the selected cards data
-      const selectedCardsData = selectedCards.map(index => ({
-        ...availableCards[index],
-        reversed: Math.random() > 0.5,
-        position: positions[selectedCards.indexOf(index)]
-      }));
+    const selectedCardsData = selectedCards.map((index) => ({
+      ...availableCards[index],
+      reversed: Math.random() > 0.5,
+      position: positions[selectedCards.indexOf(index)],
+    }));
 
-      const res = await fetch("/api/readings/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question: userIntent, // Use the intent from focus modal
-          spreadType,
-          readingType,
-          specificCards: selectedCardsData,
-          spreadId: spread.id,
-          cardCount: (spreadType === "custom_spread" && cardCount !== null) ? cardCount : undefined
-        }),
-      });
-
-      const data = await res.json();
-      
-      if (res.ok && data.success) {
-        setReading(data.reading);
-        setShowReading(true);
-      } else {
-        // Handle errors
-        alert(data.error || "Something went wrong");
-      }
-    } catch (error) {
-      alert("Failed to generate reading");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    setSubmitCardData({
+      question: userIntent,
+      spreadType,
+      readingType,
+      specificCards: selectedCardsData,
+      spreadId: spread.id,
+      cardCount: (spreadType === "custom_spread" && cardCount !== null) ? cardCount : undefined,
+    });
+    setSubmitVersion((v) => v + 1);
   };
 
   const handleNewReading = () => {
@@ -261,6 +321,19 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           )}
         </div>
 
+        <div className="mb-4 sm:mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Your Question <span className="text-gray-400">(optional)</span>
+          </label>
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            className="w-full p-4 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none resize-none text-gray-900 placeholder-gray-400 bg-white bg-opacity-70"
+            rows={2}
+            placeholder="What guidance do you seek today?"
+          />
+        </div>
+
         <div className={`grid gap-3 sm:gap-4 md:gap-8 mb-4 sm:mb-6 md:mb-8 ${
             positions.length === 1 ? 'grid-cols-1' : 
             positions.length === 2 ? 'grid-cols-1 sm:grid-cols-2' : 
@@ -351,6 +424,99 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
               "Start Reading"
             )}
           </button>
+        )}
+
+        {/* Email Gate Modal */}
+        {showEmailGate && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm">
+            <div className="glassmorphic rounded-3xl p-6 sm:p-8 max-w-md w-full apple-shadow-xl border border-white border-opacity-40 bg-gradient-to-br from-violet-900/90 via-purple-900/90 to-indigo-900/90">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white">Your Reading Awaits</h2>
+                    <p className="text-purple-200 text-sm mt-1">Enter your email to see your full reading</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowEmailGate(false);
+                    setEmailInput("");
+                    setEmailGateError("");
+                  }}
+                  className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition text-white"
+                  aria-label="Close modal"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="email-input" className="block text-sm font-medium text-purple-200 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    id="email-input"
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleEmailGateSubmit(false);
+                      }
+                    }}
+                    placeholder="you@example.com"
+                    className="w-full p-4 rounded-xl border border-white border-opacity-30 bg-white bg-opacity-10 text-white placeholder-purple-300 focus:border-purple-400 focus:ring-4 focus:ring-purple-500/30 outline-none smooth-transition"
+                    autoFocus
+                    disabled={emailGatePending}
+                  />
+                  {emailGateError && (
+                    <p className="text-red-300 text-sm mt-2">{emailGateError}</p>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col gap-3 pt-2">
+                  <button
+                    onClick={() => handleEmailGateSubmit(false)}
+                    disabled={emailGatePending}
+                    className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-4 px-6 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {emailGatePending ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5" />
+                        Show My Reading
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleEmailGateSubmit(true)}
+                    disabled={emailGatePending}
+                    className="w-full px-6 py-3 bg-transparent hover:bg-white/10 text-purple-200 hover:text-white rounded-xl font-medium smooth-transition border border-white/20 transition-all"
+                  >
+                    No thanks, just show my reading
+                  </button>
+                </div>
+
+                <p className="text-xs text-center text-purple-300 mt-4">
+                  We&apos;ll send you occasional cosmic insights. Unsubscribe anytime.
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Focus Modal */}

@@ -5,6 +5,7 @@ const logger = require('../../../lib/logger');
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Edit, Trash2, Eye, Calendar, User, Tag, ArrowLeft, Archive, RefreshCw } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function BlogAdminPage() {
   const [posts, setPosts] = useState([]);
@@ -20,15 +21,10 @@ export default function BlogAdminPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
-      if (response.ok && data.user) {
-        setUser(data.user);
-        if (data.user.role !== 'admin') {
-          window.location.href = '/dashboard';
-        }
-      } else {
-        window.location.href = '/login';
+      const data = await apiClient.get('/api/auth/user');
+      setUser(data.user);
+      if (data.user.role !== 'admin') {
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -39,8 +35,7 @@ export default function BlogAdminPage() {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/blog?status=all&limit=50');
-      const data = await response.json();
+      const data = await apiClient.get('/api/blog?status=all&limit=50');
       setPosts(data.posts || []);
     } catch (error) {
       console.error('Failed to fetch posts:', error);
@@ -77,18 +72,9 @@ export default function BlogAdminPage() {
 
     try {
       setDeletingPost(postId);
-      const response = await fetch(`/api/blog/${postId}`, {
-        method: 'DELETE'
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        alert('Post deleted successfully!');
-        fetchPosts(); // Refresh the list
-      } else {
-        alert(`Failed to delete post: ${data.error || 'Unknown error'}`);
-      }
+      const data = await apiClient.delete(`/api/blog/${postId}`);
+      alert('Post deleted successfully!');
+      fetchPosts();
     } catch (error) {
       console.error('Delete error:', error);
       alert('Failed to delete post: ' + error.message);
@@ -108,34 +94,21 @@ export default function BlogAdminPage() {
         return;
       }
 
-      const response = await fetch('/api/blog', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: post.id,
-          title: post.title,
-          slug: post.slug,
-          excerpt: post.excerpt,
-          content: post.content,
-          featured_image: post.featured_image,
-          status: newStatus,
-          tags: post.tags,
-          category: post.category,
-          meta_title: post.meta_title,
-          meta_description: post.meta_description
-        }),
+      await apiClient.put('/api/blog', {
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        featured_image: post.featured_image,
+        status: newStatus,
+        tags: post.tags,
+        category: post.category,
+        meta_title: post.meta_title,
+        meta_description: post.meta_description
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        alert(`Post status changed to ${newStatus}!`);
-        fetchPosts(); // Refresh the list
-      } else {
-        alert(`Failed to update status: ${data.error || 'Unknown error'}`);
-      }
+      alert(`Post status changed to ${newStatus}!`);
+      fetchPosts();
     } catch (error) {
       console.error('Status change error:', error);
       alert('Failed to update status: ' + error.message);

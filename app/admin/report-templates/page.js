@@ -4,6 +4,7 @@ const logger = require('../../../lib/logger');
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, ExternalLink, FileText, Copy, Check, X, Loader2 } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function ReportTemplatesAdminPage() {
   const [json, setJson] = useState('');
@@ -74,15 +75,10 @@ export default function ReportTemplatesAdminPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
-      if (response.ok && data.user) {
-        setUser(data.user);
-        if (data.user.role !== 'admin') {
-          window.location.href = '/dashboard';
-        }
-      } else {
-        window.location.href = '/login';
+      const data = await apiClient.get('/api/auth/user');
+      setUser(data.user);
+      if (data.user.role !== 'admin') {
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -92,9 +88,8 @@ export default function ReportTemplatesAdminPage() {
 
   const fetchTemplates = async () => {
     try {
-      const response = await fetch('/api/admin/templates');
-      const data = await response.json();
-      if (response.ok && data.templates) {
+      const data = await apiClient.get('/api/admin/templates');
+      if (data.templates) {
         setTemplates(data.templates);
       }
     } catch (error) {
@@ -127,31 +122,18 @@ export default function ReportTemplatesAdminPage() {
         return;
       }
 
-      const response = await fetch('/api/admin/templates', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          template_json: templateJson,
-          report_type: reportType,
-          owner_id: ownerId,
-        }),
+      const data = await apiClient.post('/api/admin/templates', {
+        name: name.trim(),
+        template_json: templateJson,
+        report_type: reportType,
+        owner_id: ownerId,
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSaved(true);
-        setName('');
-        setJson('');
-        setReportType('ESSENTIAL');
-        setTimeout(() => setSaved(false), 3000);
-        fetchTemplates(); // Refresh list
-      } else {
-        setError(data.error || 'Failed to save template');
-      }
+      setSaved(true);
+      setName('');
+      setJson('');
+      setReportType('ESSENTIAL');
+      setTimeout(() => setSaved(false), 3000);
+      fetchTemplates();
     } catch (err) {
       setError('Failed to save template: ' + err.message);
     } finally {

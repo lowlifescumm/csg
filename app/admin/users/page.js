@@ -4,6 +4,7 @@ const logger = require('../../../lib/logger');
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Users, Search, Filter, ArrowLeft, Mail, Calendar, Crown, Shield } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
@@ -26,15 +27,10 @@ export default function UserManagementPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/user');
-      const data = await response.json();
-      if (response.ok && data.user) {
-        setUser(data.user);
-        if (data.user.role !== 'admin') {
-          window.location.href = '/dashboard';
-        }
-      } else {
-        window.location.href = '/login';
+      const data = await apiClient.get('/api/auth/user');
+      setUser(data.user);
+      if (data.user.role !== 'admin') {
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -46,13 +42,8 @@ export default function UserManagementPage() {
     setSelectedUser(user);
     setIsModalOpen(true);
     try {
-      const response = await fetch(`/api/credits?userId=${user.id}`);
-      const data = await response.json();
-      if (response.ok) {
-        setCredits(data.credits);
-      } else {
-        console.error('Failed to fetch credits:', data.error);
-      }
+      const data = await apiClient.get(`/api/credits?userId=${user.id}`);
+      setCredits(data.credits);
     } catch (error) {
       console.error('Failed to fetch credits:', error);
     }
@@ -82,30 +73,17 @@ export default function UserManagementPage() {
         return;
       }
 
-      const response = await fetch('/api/admin/credits', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: selectedUser.id, amount }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setCreditSuccess(`${amount > 0 ? 'Added' : 'Adjusted'} ${Math.abs(amount)} credit${Math.abs(amount) !== 1 ? 's' : ''}. New balance: ${data.newBalance}`);
-        setCredits(data.newBalance);
-        setNewCredits('');
-        setTimeout(() => {
-          closeModal();
-          fetchUsers(); // Refresh user list
-        }, 2000);
-      } else {
-        setCreditError(data.error || 'Failed to update credits');
-      }
+      const data = await apiClient.post('/api/admin/credits', { userId: selectedUser.id, amount });
+      setCreditSuccess(`${amount > 0 ? 'Added' : 'Adjusted'} ${Math.abs(amount)} credit${Math.abs(amount) !== 1 ? 's' : ''}. New balance: ${data.newBalance}`);
+      setCredits(data.newBalance);
+      setNewCredits('');
+      setTimeout(() => {
+        closeModal();
+        fetchUsers(); // Refresh user list
+      }, 2000);
     } catch (error) {
       console.error('Failed to update credits:', error);
-      setCreditError('Failed to connect to server');
+      setCreditError(error.message || 'Failed to connect to server');
     } finally {
       setIsUpdatingCredits(false);
     }
@@ -114,13 +92,8 @@ export default function UserManagementPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/users');
-      const data = await response.json();
-      if (response.ok) {
-        setUsers(data.users || []);
-      } else {
-        console.error('Failed to fetch users:', data.error);
-      }
+      const data = await apiClient.get('/api/admin/users');
+      setUsers(data.users || []);
     } catch (error) {
       console.error('Failed to fetch users:', error);
     } finally {

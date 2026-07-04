@@ -1,7 +1,9 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 import { 
   LayoutDashboard, 
   Sparkles, 
@@ -25,10 +27,34 @@ export default function Sidebar({ user, onLinkClick }) {
     }
   }, [pathname, onLinkClick]);
 
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
-  };
+  // API hook for logout - disabled initially, triggered by refetch
+  const { loading: isLoggingOut, refetch: logout } = useApiClientWithToast(
+    apiClient,
+    useCallback(
+      (c) => c.post("/api/auth/logout", {}, { timeout: 15000 }),
+      []
+    ),
+    [],
+    { 
+      enabled: false,
+      toastMessages: { error: "Could not log out. Please try again." }
+    }
+  );
+
+  // Handle successful logout
+  useEffect(() => {
+    if (isLoggingOut) return; // Still loading
+    // Navigate to login page after logout completes
+    // We use a small timeout to allow the hook state to settle
+    const timer = setTimeout(() => {
+      window.location.href = "/login";
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [isLoggingOut]);
+
+  const handleLogout = useCallback(() => {
+    logout();
+  }, [logout]);
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -114,10 +140,11 @@ export default function Sidebar({ user, onLinkClick }) {
             }
             handleLogout();
           }}
-          className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-cosmic-taupe hover:bg-cosmic-gold/10 smooth-transition text-sm sm:text-base"
+          disabled={isLoggingOut}
+          className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-cosmic-taupe hover:bg-cosmic-gold/10 smooth-transition text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-          <span className="font-medium truncate">Log Out</span>
+          <span className="font-medium truncate">{isLoggingOut ? "Logging out..." : "Log Out"}</span>
         </button>
       </div>
     </div>

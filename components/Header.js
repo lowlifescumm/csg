@@ -1,11 +1,11 @@
 "use client";
-const logger = require('../lib/logger');
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Menu, X, Home, LayoutDashboard, BookOpen, Sparkles, User, LogOut, CreditCard, Coins, Star, Moon, Heart, Orbit } from "lucide-react";
 import { Logo } from "./Logo";
+import { apiClient } from "@/lib/api-client";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -17,8 +17,7 @@ export default function Header() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("/api/auth/user");
-      const data = await res.json();
+      const data = await apiClient.get("/api/auth/user");
       if (data.user) {
         setUser(data.user);
       }
@@ -45,7 +44,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await apiClient.post("/api/auth/logout");
       setUser(null);
       router.push("/");
       router.refresh();
@@ -67,6 +66,7 @@ export default function Header() {
     { name: "Compatibility", href: "/compatibility", icon: Heart },
     { name: "Services", href: "/services", icon: Sparkles },
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, auth: true },
+    { name: "My Readings", href: "/readings", icon: BookOpen, auth: true },
     { name: "Blog", href: "/blog", icon: BookOpen },
     { name: "Forecasts", href: "/forecasts", icon: Sparkles, auth: true },
   ];
@@ -77,7 +77,7 @@ export default function Header() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-cosmic-void/90 backdrop-blur-lg border-b border-cosmic-violet/20"
+          ? "glass-nav"
           : "bg-transparent"
       }`}
     >
@@ -171,7 +171,7 @@ export default function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-white/10 animate-fade-in max-h-[calc(100vh-80px)] overflow-y-auto">
+          <div className="lg:hidden rounded-2xl mt-2 p-4 glass-panel animate-fade-in max-h-[calc(100vh-80px)] overflow-y-auto">
             <nav className="flex flex-col space-y-2">
               {filteredNav.map((item) => {
                 const Icon = item.icon;

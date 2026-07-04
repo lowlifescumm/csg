@@ -8,8 +8,7 @@ const nextConfig = {
     NEXT_PUBLIC_DASHBOARD_V3_INVITE: process.env.DASHBOARD_V3_INVITE ?? "",
   },
   
-  // Sitemap configuration removed (was plugin-specific, not Next.js core)
-  // Use next-sitemap for sitemap config instead
+  outputFileTracingRoot: __dirname,
 
   // Exclude heavy browser-only packages from server bundle
   serverExternalPackages: [

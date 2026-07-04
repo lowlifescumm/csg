@@ -1,7 +1,8 @@
 "use client";
-const logger = require('../../lib/logger');
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Trophy, Sparkles, Zap, Crown, Gift, Loader2, Info } from "lucide-react";
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 /**
  * Level perks by level
@@ -75,7 +76,6 @@ export default function GrowthBar({
 }) {
   const [progress, setProgress] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [claiming, setClaiming] = useState(false);
   const [canClaim, setCanClaim] = useState(false);
 
   // Calculate if level can be claimed
@@ -95,44 +95,37 @@ export default function GrowthBar({
     return () => clearTimeout(timer);
   }, [xpCurrent, xpTarget]);
 
-  const handleClaimReward = async () => {
-    if (!userId || claiming || !canClaim) return;
-
-    setClaiming(true);
-    try {
-      const res = await fetch("/api/rewards/claim", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          level,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        // Call level up callback
-        if (onLevelUp) {
-          onLevelUp({
-            level: data.newLevel || level + 1,
-            rewards: data.rewards,
-          });
-        }
-        
-        // Reset canClaim state
-        setCanClaim(false);
-      } else {
-        console.error("Failed to claim reward:", data.error);
-      }
-    } catch (err) {
-      console.error("Error claiming reward:", err);
-    } finally {
-      setClaiming(false);
+  // API hook for claiming rewards - disabled initially, triggered by refetch
+  const { data, loading: claiming, refetch } = useApiClientWithToast(
+    apiClient,
+    useCallback(
+      (c) => c.post("/api/rewards/claim", { userId, level }, { timeout: 15000 }),
+      [userId, level]
+    ),
+    [userId, level],
+    { 
+      enabled: false,
+      toastMessages: { error: "Could not claim reward. Please try again." }
     }
-  };
+  );
+
+  // Handle successful claim
+  useEffect(() => {
+    if (data?.success) {
+      if (onLevelUp) {
+        onLevelUp({
+          level: data.newLevel || level + 1,
+          rewards: data.rewards,
+        });
+      }
+      setCanClaim(false);
+    }
+  }, [data, onLevelUp, level]);
+
+  const handleClaimReward = useCallback(() => {
+    if (!userId || claiming || !canClaim) return;
+    refetch();
+  }, [userId, claiming, canClaim, refetch]);
 
   const levelPerks = getLevelPerks(level);
   const xpRemaining = Math.max(xpTarget - xpCurrent, 0);
@@ -258,4 +251,3 @@ export default function GrowthBar({
     </div>
   );
 }
-

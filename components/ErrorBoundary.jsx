@@ -1,5 +1,4 @@
 "use client";
-const logger = require('../lib/logger');
 
 import React from "react";
 

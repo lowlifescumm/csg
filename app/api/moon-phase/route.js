@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as Astronomy from 'astronomy-engine';
+import logger from '@/lib/logger';
 
 /**
  * Get current moon phase using astronomy-engine

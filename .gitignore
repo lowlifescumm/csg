@@ -89,6 +89,7 @@ fix_static_assets.patch
 # Documentation (optional - remove these lines if you want docs tracked)
 *.md
 !README.md
+!CLAUDE.md
 docs/
 meditations/
 artifacts/
@@ -98,3 +99,9 @@ backup/
 
 # Stray Windows path directories (Lighthouse artifacts)
 undefined:/
+
+# TypeScript
+tsconfig.tsbuildinfo
+
+# Generated test report artifacts
+test-reports/

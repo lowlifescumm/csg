@@ -1,9 +1,10 @@
 "use client";
-const logger = require('../../lib/logger');
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Heart, Loader2, X, Sparkles, Info } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
 import Link from "next/link";
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 /**
  * Get sign emoji
@@ -83,34 +84,18 @@ function RadialProgress({ percentage, size = 60 }) {
  * - userId: User ID for fetching compatibility data
  */
 export default function BestMatches({ userId }) {
-  const [matches, setMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [comparing, setComparing] = useState(false);
 
-  useEffect(() => {
-    if (userId) {
-      fetchTopMatches();
-    }
-  }, [userId]);
+  const { data, loading, error } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get(`/api/compatibility/top?userId=${userId}`, { timeout: 15000 }),
+    [userId],
+    { toastMessages: { error: "Could not load compatibility matches." } }
+  );
 
-  const fetchTopMatches = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/compatibility/top?userId=${userId}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setMatches(data.matches || []);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch top matches:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const matches = data?.matches || [];
 
   const handleCompare = (match) => {
     setSelectedMatch(match);
@@ -288,4 +273,3 @@ export default function BestMatches({ userId }) {
     </>
   );
 }
-

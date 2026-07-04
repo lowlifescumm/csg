@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, Calendar, Sparkles, ArrowLeft, Filter, Search, Trash2, Star } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 export default function JournalPage() {
   const router = useRouter();
@@ -20,16 +22,9 @@ export default function JournalPage() {
     checkAuth();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      fetchReadings();
-    }
-  }, [user, filterType]);
-
   const checkAuth = async () => {
     try {
-      const res = await fetch("/api/auth/user");
-      const data = await res.json();
+      const data = await apiClient.get("/api/auth/user");
       
       if (!data.user) {
         router.push("/login?redirect=/journal");
@@ -43,21 +38,20 @@ export default function JournalPage() {
     }
   };
 
-  const fetchReadings = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/saved-readings");
-      const data = await res.json();
-      
-      if (res.ok && data.success) {
-        setReadings(data.readings || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch saved readings:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/saved-readings"),
+    [user, filterType],
+    {
+      enabled: !!user,
+      onSuccess: (data) => {
+        if (data.success) {
+          setReadings(data.readings || []);
+        }
+      },
+      toastMessages: { error: "Failed to load saved readings." },
+    },
+  );
 
   const handleDelete = async (readingId) => {
     if (!confirm("Are you sure you want to delete this saved reading?")) {

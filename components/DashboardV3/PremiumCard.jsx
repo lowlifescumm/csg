@@ -1,7 +1,8 @@
 "use client";
-const logger = require('../../lib/logger');
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Crown, Sparkles, Star, Heart, MessageCircle, Zap, Loader2, Check } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 /**
  * PremiumCard - Soft upsell card for premium with value justification
@@ -13,7 +14,6 @@ import { Crown, Sparkles, Star, Heart, MessageCircle, Zap, Loader2, Check } from
  */
 export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) {
   const [textVariant, setTextVariant] = useState("short");
-  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     // For A/B testing: use localStorage to persist variant
@@ -37,40 +37,42 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
     return null;
   }
 
-  const handleUpgrade = async () => {
-    setProcessing(true);
+  // API hook for creating subscription - disabled initially, triggered by refetch
+  const { data, loading: processing, refetch } = useApiClientWithToast(
+    apiClient,
+    useCallback(
+      (c) => c.post("/api/create-subscription", {}, { timeout: 15000 }),
+      []
+    ),
+    [],
+    { 
+      enabled: false,
+      toastMessages: { error: "Could not start subscription. Please try again." }
+    }
+  );
+
+  // Handle successful subscription creation
+  useEffect(() => {
+    if (data?.checkoutUrl) {
+      window.location.href = data.checkoutUrl;
+    }
+  }, [data]);
+
+  const handleUpgrade = useCallback(() => {
     if (onUpgrade) {
       onUpgrade();
     }
-
-    try {
-      const response = await fetch("/api/create-subscription", {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        alert(data.error || "Failed to start subscription");
-        setProcessing(false);
-      }
-    } catch (error) {
-      console.error("Subscription error:", error);
-      alert("Failed to start subscription process");
-      setProcessing(false);
-    }
-  };
+    refetch();
+  }, [onUpgrade, refetch]);
 
   // Perks list
   const perks = [
     {
       icon: Sparkles,
-      title: "Unlimited Readings",
+      title: "60 Credits / Month",
       description: textVariant === "long" 
-        ? "Access unlimited tarot readings, daily guidance, and spiritual insights without credit limits"
-        : "Unlimited tarot readings without credit limits",
+        ? "Get 60 credits every month for tarot readings, moon readings, compatibility reports, and more — plus unused credits roll over"
+        : "60 credits monthly for tarot, moon, and transit readings with rollover",
     },
     {
       icon: Star,
@@ -103,7 +105,7 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
   // Subheadline variants
   const subheadline = textVariant === "long"
     ? "Join thousands of spiritual seekers who have elevated their cosmic connection with premium features designed for deep transformation."
-    : "Elevate your cosmic connection with unlimited access to all premium features.";
+    : "Elevate your cosmic connection with 60 monthly credits for all premium features.";
 
   return (
     <div className="relative glassmorphic rounded-3xl p-8 sm:p-10 apple-shadow-xl border border-white border-opacity-40 mb-8 overflow-hidden">
@@ -163,8 +165,8 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
                 <p className="text-purple-200 text-sm">Compatibility Reports/Month</p>
               </div>
               <div>
-                <div className="text-2xl font-bold text-white mb-1">Unlimited</div>
-                <p className="text-purple-200 text-sm">Transit Dashboard</p>
+                <div className="text-2xl font-bold text-white mb-1">60</div>
+                <p className="text-purple-200 text-sm">Credits/Month</p>
               </div>
             </div>
           </div>
@@ -218,4 +220,3 @@ export default function PremiumCard({ isPremium, variant = "auto", onUpgrade }) 
     </div>
   );
 }
-

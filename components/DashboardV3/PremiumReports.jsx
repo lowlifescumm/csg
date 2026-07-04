@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, Loader2, CheckCircle, XCircle, Clock, Download, Eye } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 const REPORT_LABELS = {
   ESSENTIAL: 'Essential Report',
@@ -18,20 +20,14 @@ const STATUS_CONFIG = {
 };
 
 export default function PremiumReports() {
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/reports'),
+    [],
+    { toastMessages: { error: 'Could not load premium reports. Check your connection.' } }
+  );
 
-  useEffect(() => {
-    fetch('/api/reports')
-      .then(res => res.json())
-      .then(data => {
-        setReports(data.reports || []);
-      })
-      .catch(() => {
-        setReports([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const reports = data?.reports || [];
 
   if (loading) {
     return (

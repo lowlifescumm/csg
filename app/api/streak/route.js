@@ -4,6 +4,7 @@ import { verifyToken } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getLocalDateString, getLocalDateOffset } from '@/lib/date-utils';
 import logger from '@/lib/logger';
+import { MILESTONE_DEFINITIONS } from '@/lib/streak-milestones';
 
 /**
  * Collect distinct activity dates for a user from multiple engagement tables.
@@ -107,6 +108,98 @@ async function getActivityDates(userId, timezone) {
   return Array.from(activityDates).sort((a, b) => b.localeCompare(a));
 }
 
+/**
+ * Check which streak milestones the user has hit and auto-award credits for new ones.
+ * Returns { milestones: [...], newMilestone: {...} | null }
+ */
+async function checkAndAwardMilestones(userId, currentStreak) {
+  const milestones = [];
+  let newMilestone = null;
+
+  if (currentStreak < 7) {
+    return { milestones: [], newMilestone: null };
+  }
+
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS streak_milestones (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        milestone_days INTEGER NOT NULL,
+        badge_name VARCHAR(100) NOT NULL,
+        credits_awarded INTEGER DEFAULT 0,
+        achieved_at TIMESTAMP DEFAULT NOW(),
+        notified BOOLEAN DEFAULT false,
+        UNIQUE(user_id, milestone_days)
+      )
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_streak_milestones_user_id ON streak_milestones(user_id)
+    `);
+  } catch (createError) {
+    logger.debug("Milestones table creation:", createError.message);
+  }
+
+  // Fetch already-achieved milestones for this user
+  let achievedSet = new Set();
+  try {
+    const { rows } = await pool.query(
+      `SELECT milestone_days FROM streak_milestones WHERE user_id = $1`,
+      [userId]
+    );
+    rows.forEach(r => achievedSet.add(r.milestone_days));
+  } catch (queryError) {
+    logger.debug("Failed to fetch milestones:", queryError.message);
+    return { milestones: [], newMilestone: null };
+  }
+
+  for (const def of MILESTONE_DEFINITIONS) {
+    if (currentStreak < def.days) break;
+
+    const milestoneEntry = {
+      days: def.days,
+      badgeName: def.badgeName,
+      credits: def.credits,
+      achieved: achievedSet.has(def.days),
+    };
+    milestones.push(milestoneEntry);
+
+    if (!achievedSet.has(def.days)) {
+      // Award credits
+      if (def.credits > 0) {
+        try {
+          await pool.query(
+            `INSERT INTO credits (user_id, credits)
+             VALUES ($1, $2)
+             ON CONFLICT (user_id)
+             DO UPDATE SET credits = credits.credits + $2`,
+            [userId, def.credits]
+          );
+        } catch (creditError) {
+          logger.error("Error awarding milestone credits:", creditError);
+        }
+      }
+
+      // Record milestone
+      try {
+        await pool.query(
+          `INSERT INTO streak_milestones (user_id, milestone_days, badge_name, credits_awarded, notified)
+           VALUES ($1, $2, $3, $4, false)`,
+          [userId, def.days, def.badgeName, def.credits]
+        );
+      } catch (insertError) {
+        logger.error("Error recording milestone:", insertError);
+        continue;
+      }
+
+      milestoneEntry.achieved = true;
+      newMilestone = { days: def.days, badgeName: def.badgeName, credits: def.credits };
+    }
+  }
+
+  return { milestones, newMilestone };
+}
+
 export async function GET(request) {
   try {
     const cookieStore = await cookies();
@@ -181,10 +274,17 @@ export async function GET(request) {
       }
     }
 
+    const finalCurrentStreak = Math.max(currentStreak, 0);
+
+    // Check and award milestones
+    const { milestones, newMilestone } = await checkAndAwardMilestones(userId, finalCurrentStreak);
+
     return NextResponse.json({
-      currentStreak: Math.max(currentStreak, 0),
+      currentStreak: finalCurrentStreak,
       longestStreak: Math.max(longestStreak, 1),
-      lastLogin: activityDates[0] || null
+      lastLogin: activityDates[0] || null,
+      milestones,
+      newMilestone
     });
   } catch (error) {
     logger.error("Error calculating streak:", error);

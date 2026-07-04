@@ -1,8 +1,9 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { CheckCircle2, Circle, Sparkles, Moon, Heart, Brain, Trophy, Zap, X } from "lucide-react";
 import Link from "next/link";
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 // Task definitions
 const TASK_DEFINITIONS = [
@@ -68,7 +69,7 @@ function calculateStreakBonus(currentStreak) {
  * - userId: User ID for tracking completions
  * - streak: Current streak data
  */
-export default function DailyTasks({ userId, streak }) {
+export default function DailyTasks({ userId, streak, onStatsUpdate }) {
   const [tasks, setTasks] = useState(TASK_DEFINITIONS);
   const [userStats, setUserStats] = useState({
     totalXP: 0,
@@ -76,43 +77,36 @@ export default function DailyTasks({ userId, streak }) {
     xpToNextLevel: 100,
     completedTasks: [],
   });
-  const [loading, setLoading] = useState(true);
   const [completingTask, setCompletingTask] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // Fetch tasks and user stats
-  useEffect(() => {
-    fetchTasksAndStats();
-  }, [userId]);
+  // Fetch tasks using useApiClientWithToast hook
+  const { data, loading, refetch } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/tasks', {
+      params: { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+      timeout: 15000
+    }),
+    [userId],
+    { toastMessages: { error: 'Could not load daily tasks. Check your connection.' } }
+  );
 
-  const fetchTasksAndStats = async () => {
-    try {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const res = await fetch(`/api/tasks?timezone=${encodeURIComponent(timezone)}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setUserStats(data.stats);
-          // Mark completed tasks
-          const completedIds = data.completedTasks || [];
-          setTasks((prevTasks) =>
-            prevTasks.map((task) => ({
-              ...task,
-              completed: completedIds.includes(task.id),
-            }))
-          );
-          // Notify parent of stats update
-          if (onStatsUpdate) {
-            onStatsUpdate(data.stats);
-          }
-        }
+  // Sync data from hook to local state
+  useEffect(() => {
+    if (data?.success) {
+      setUserStats(data.stats);
+      const completedIds = data.completedTasks || [];
+      setTasks((prevTasks) =>
+        prevTasks.map((task) => ({
+          ...task,
+          completed: completedIds.includes(task.id),
+        }))
+      );
+      if (onStatsUpdate) {
+        onStatsUpdate(data.stats);
       }
-    } catch (err) {
-      console.error("Failed to fetch tasks:", err);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [data, onStatsUpdate]);
 
   const handleTaskComplete = async (taskId) => {
     if (!userId || completingTask) return;
@@ -120,21 +114,13 @@ export default function DailyTasks({ userId, streak }) {
     setCompletingTask(taskId);
 
     try {
-      const res = await fetch("/api/tasks/complete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          taskId,
-          userId,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        }),
-      });
+      const response = await apiClient.post('/api/tasks/complete', {
+        taskId,
+        userId,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }, { timeout: 15000 });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (response.success) {
         // Update local state
         setTasks((prevTasks) =>
           prevTasks.map((task) =>
@@ -171,12 +157,12 @@ export default function DailyTasks({ userId, streak }) {
 
         // Refresh stats from server
         setTimeout(() => {
-          fetchTasksAndStats();
+          refetch();
         }, 500);
       } else {
         showToast({
           type: "error",
-          message: data.error || "Failed to complete task",
+          message: response.error || 'Failed to complete task',
         });
       }
     } catch (err) {

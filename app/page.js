@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, Star, Heart, Check, Zap, Eye, Lock, Moon, Sun, ChevronRight, Flame, Compass, Orbit } from "lucide-react";
 import FreeSampleModal from "@/components/FreeSampleModal";
+import { apiClient } from "@/lib/api-client";
 /* ─── Cosmic Background Canvas ─── */
 function StarField() {
   const canvasRef = useRef(null);
@@ -162,8 +163,7 @@ export default function HomePage() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("/api/auth/user");
-      const data = await res.json();
+      const data = await apiClient.get("/api/auth/user");
       if (data.user) setUser(data.user);
     } catch (e) { console.error("Auth check failed"); }
     finally { setLoading(false); }
@@ -196,10 +196,10 @@ export default function HomePage() {
               <span className="text-sm text-cosmic-lavender">AI-Powered Spiritual Guidance</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
               <span className="text-white">Unlock Your</span>
               <br />
-              <span className="bg-gradient-to-r from-cosmic-gold via-cosmic-violet to-cosmic-rose bg-clip-text text-transparent">
+              <span className="gradient-gold-text">
                 Cosmic Destiny
               </span>
             </h1>
@@ -212,13 +212,13 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
               <button
                 onClick={() => setShowSampleModal(true)}
-                className="px-8 py-4 rounded-xl font-semibold text-lg bg-gradient-to-r from-cosmic-gold to-amber-500 text-cosmic-void hover:shadow-lg hover:shadow-cosmic-gold/25 transition-all duration-300 hover:scale-105"
+                className="btn-gold text-lg px-8 py-4"
               >
                 ✨ Free Tarot Reading
               </button>
               <button
                 onClick={() => router.push("/dashboard")}
-                className="px-8 py-4 rounded-xl font-semibold text-lg border border-cosmic-violet/40 text-cosmic-lavender hover:bg-cosmic-violet/10 transition-all duration-300"
+                className="px-8 py-4 rounded-xl font-semibold text-lg border border-cosmic-gold/30 text-cosmic-gold hover:bg-cosmic-gold/10 hover:shadow-gold-glow transition-all duration-300"
               >
                 Explore Services →
               </button>
@@ -245,19 +245,19 @@ export default function HomePage() {
           <div className="relative flex items-center justify-center overflow-hidden py-10">
             <div className="relative max-w-full">
               {/* Central orb */}
-              <PlanetOrb color="#7c3aed" size={280} />
+              <PlanetOrb color="#DFB76C" size={280} />
               {/* Orbiting elements */}
               <div className="absolute -top-8 -right-8">
-                <PlanetOrb color="#d4af37" size={60} />
+                <PlanetOrb color="#DFB76C" size={60} />
               </div>
               <div className="absolute -bottom-4 -left-12">
-                <PlanetOrb color="#c45b7a" size={80} />
+                <PlanetOrb color="#7c3aed" size={80} />
               </div>
               <div className="absolute top-1/2 -right-8 sm:-right-16">
-                <PlanetOrb color="#5b8a8a" size={50} />
+                <PlanetOrb color="#DFB76C" size={50} />
               </div>
               {/* Glow ring */}
-              <div className="absolute inset-0 -m-12 sm:-m-20 rounded-full border border-cosmic-violet/20 animate-[spin_20s_linear_infinite]" style={{
+              <div className="absolute inset-0 -m-12 sm:-m-20 rounded-full border border-cosmic-gold/10 animate-[spin_20s_linear_infinite]" style={{
                 background: 'conic-gradient(from 0deg, transparent, rgba(124,58,237,0.1), transparent)'
               }} />
             </div>
@@ -278,9 +278,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-cosmic-gold text-sm font-medium tracking-widest uppercase">Our Services</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-4 mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold mt-4 mb-4">
               Mystical Guidance for
-              <span className="text-cosmic-gold"> Every Journey</span>
+              <span className="gradient-gold-text"> Every Journey</span>
             </h2>
             <p className="text-cosmic-lavender/80 text-lg max-w-2xl mx-auto">
               From daily tarot insights to deep birth chart analysis, discover tools designed to illuminate your path.

@@ -1,8 +1,9 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, Heart, X, Loader2, Info } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 // Crystal data by element
 const CRYSTALS_BY_ELEMENT = {
@@ -116,61 +117,20 @@ const ELEMENT_EXPLANATIONS = {
  * - userSign: User's zodiac sign (optional)
  */
 export default function CrystalsWidget({ moonPhase, userSign }) {
-  const [elementData, setElementData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selectedCrystal, setSelectedCrystal] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [favoriting, setFavoriting] = useState(false);
   const [favoriteStatus, setFavoriteStatus] = useState({});
 
-  // Safely extract moonPhase, ensuring we never render objects
   const safeMoonPhase = moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 ? moonPhase : null;
 
-  useEffect(() => {
-    fetchElementData();
-  }, [safeMoonPhase, userSign]);
-
-  const fetchElementData = async () => {
-    try {
-      const res = await fetch("/api/element/today");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setElementData(data);
-        }
-      }
-    } catch (err) {
-      console.info("Could not fetch element data, computing from moon phase:", err);
-      // Compute from moon phase if available
-      if (safeMoonPhase?.zodiacSign) {
-        const element = getElementFromSign(safeMoonPhase.zodiacSign);
-        setElementData({
-          success: true,
-          element,
-          sign: safeMoonPhase.zodiacSign,
-          explanation: ELEMENT_EXPLANATIONS[element] || "",
-        });
-      } else if (userSign) {
-        const element = getElementFromSign(userSign);
-        setElementData({
-          success: true,
-          element,
-          sign: userSign,
-          explanation: ELEMENT_EXPLANATIONS[element] || "",
-        });
-      } else {
-        // Default to Fire
-        setElementData({
-          success: true,
-          element: "Fire",
-          sign: null,
-          explanation: ELEMENT_EXPLANATIONS["Fire"],
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch element data using useApiClientWithToast hook
+  const { data: elementApiData, loading, error: elementError } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/element/today', { timeout: 15000 }),
+    [],
+    { toastMessages: { error: 'Could not load element data. Check your connection.' } }
+  );
 
   const getElementFromSign = (sign) => {
     const signData = zodiacSigns.find((s) => s.name === sign);
@@ -186,14 +146,11 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
 
   const checkFavoriteStatus = async (crystalId) => {
     try {
-      const res = await fetch(`/api/user/favorites?type=crystal&itemId=${crystalId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setFavoriteStatus((prev) => ({
-          ...prev,
-          [crystalId]: data.isFavorited || false,
-        }));
-      }
+      const data = await apiClient.get(`/api/user/favorites?type=crystal&itemId=${crystalId}`, { timeout: 15000 });
+      setFavoriteStatus((prev) => ({
+        ...prev,
+        [crystalId]: data.isFavorited || false,
+      }));
     } catch (err) {
       console.info("Could not check favorite status:", err);
     }
@@ -204,25 +161,17 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
 
     setFavoriting(true);
     try {
-      const res = await fetch("/api/user/favorites", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const data = await apiClient.post("/api/user/favorites", {
+        type: "crystal",
+        itemId: selectedCrystal.id,
+        name: selectedCrystal.name,
+        metadata: {
+          element: elementApiData?.element,
+          description: selectedCrystal.description,
         },
-        body: JSON.stringify({
-          type: "crystal",
-          itemId: selectedCrystal.id,
-          name: selectedCrystal.name,
-          metadata: {
-            element: elementData?.element,
-            description: selectedCrystal.description,
-          },
-        }),
-      });
+      }, { timeout: 15000 });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         setFavoriteStatus((prev) => ({
           ...prev,
           [selectedCrystal.id]: true,
@@ -245,7 +194,7 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
     );
   }
 
-  const element = elementData?.element || "Fire";
+  const element = elementApiData?.element || "Fire";
   const crystals = CRYSTALS_BY_ELEMENT[element] || CRYSTALS_BY_ELEMENT["Fire"];
   const isFavorited = selectedCrystal ? favoriteStatus[selectedCrystal.id] : false;
 
@@ -284,13 +233,13 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
             <span className="text-2xl">{elementIcons[element]}</span>
             <h3 className="text-xl font-semibold text-white">{element} Element</h3>
           </div>
-          {elementData?.sign && (
+          {elementApiData?.sign && (
             <p className="text-purple-200 text-sm mb-2">
-              Based on {elementData.sign} energy
+              Based on {elementApiData.sign} energy
             </p>
           )}
           <p className="text-purple-200 text-sm leading-relaxed">
-            {elementData?.explanation || ELEMENT_EXPLANATIONS[element]}
+            {elementApiData?.explanation || ELEMENT_EXPLANATIONS[element]}
           </p>
         </div>
 
@@ -360,7 +309,7 @@ export default function CrystalsWidget({ moonPhase, userSign }) {
               <h4 className="text-lg font-semibold text-white mb-3">Why {selectedCrystal.name} for {element} Energy?</h4>
               <p className="text-purple-200 leading-relaxed mb-4">{selectedCrystal.description}</p>
               <p className="text-purple-200/80 text-sm leading-relaxed">
-                {elementData?.explanation || ELEMENT_EXPLANATIONS[element]} This crystal helps you align with today's {element.toLowerCase()} energy and maximize its benefits in your spiritual practice.
+                {elementApiData?.explanation || ELEMENT_EXPLANATIONS[element]} This crystal helps you align with today's {element.toLowerCase()} energy and maximize its benefits in your spiritual practice.
               </p>
             </div>
 

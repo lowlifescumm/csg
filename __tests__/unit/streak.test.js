@@ -1,6 +1,6 @@
 /**
  * Streak Tracking Unit Tests
- * Tests for daily streak calculation across multiple activity sources
+ * Tests for daily streak calculation across multiple activity sources, including milestones
  */
 
 // Mock Next.js server dependencies
@@ -57,6 +57,16 @@ describe('Streak Tracking API', () => {
     verifyToken.mockReturnValue({ userId });
   }
 
+  // Helper to generate sequential activity dates for streak testing
+  function generateSequentialDates(count, startingFrom = 0) {
+    const dates = [];
+    for (let i = 0; i < count; i++) {
+      const d = new Date(Date.now() - (startingFrom + i) * 86400000);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    return dates;
+  }
+
   describe('Authentication', () => {
     test('should return 401 when no auth token', async () => {
       cookies.mockResolvedValue({
@@ -90,11 +100,14 @@ describe('Streak Tracking API', () => {
       const today = new Date().toISOString().split('T')[0];
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
-      // Mock all table queries — only readings returns data
       pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) {
+          return { rows: [] };
+        }
         if (sql.includes('FROM readings')) {
           return { rows: [{ activity_date: today }, { activity_date: yesterday }] };
         }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
         return { rows: [] };
       });
 
@@ -104,6 +117,8 @@ describe('Streak Tracking API', () => {
 
       expect(data.currentStreak).toBe(2);
       expect(data.lastLogin).toBe(today);
+      expect(data.milestones).toEqual([]);
+      expect(data.newMilestone).toBeNull();
     });
 
     test('should include task completions in streak', async () => {
@@ -111,10 +126,12 @@ describe('Streak Tracking API', () => {
       const today = new Date().toISOString().split('T')[0];
 
       pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) return { rows: [] };
         if (sql.includes('FROM readings')) return { rows: [] };
         if (sql.includes('FROM user_tasks')) {
           return { rows: [{ activity_date: today }] };
         }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
         return { rows: [] };
       });
 
@@ -133,6 +150,7 @@ describe('Streak Tracking API', () => {
       const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0];
 
       pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) return { rows: [] };
         if (sql.includes('FROM readings')) {
           return { rows: [{ activity_date: today }] };
         }
@@ -142,6 +160,7 @@ describe('Streak Tracking API', () => {
         if (sql.includes('FROM journal_entries')) {
           return { rows: [{ activity_date: twoDaysAgo }] };
         }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
         return { rows: [] };
       });
 
@@ -157,12 +176,14 @@ describe('Streak Tracking API', () => {
       const today = new Date().toISOString().split('T')[0];
 
       pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) return { rows: [] };
         if (sql.includes('FROM readings')) {
           return { rows: [{ activity_date: today }] };
         }
         if (sql.includes('FROM user_tasks') || sql.includes('FROM journal_entries')) {
           throw new Error('relation does not exist');
         }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
         return { rows: [] };
       });
 
@@ -191,9 +212,11 @@ describe('Streak Tracking API', () => {
       const threeDaysAgo = new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0];
 
       pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) return { rows: [] };
         if (sql.includes('FROM readings')) {
           return { rows: [{ activity_date: threeDaysAgo }] };
         }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
         return { rows: [] };
       });
 
@@ -214,6 +237,7 @@ describe('Streak Tracking API', () => {
       const sixDaysAgo = new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0];
 
       pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) return { rows: [] };
         if (sql.includes('FROM readings')) {
           return {
             rows: [
@@ -225,6 +249,7 @@ describe('Streak Tracking API', () => {
             ],
           };
         }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
         return { rows: [] };
       });
 
@@ -234,6 +259,168 @@ describe('Streak Tracking API', () => {
 
       expect(data.currentStreak).toBe(3); // today, yesterday, 2 days ago
       expect(data.longestStreak).toBe(3);
+    });
+  });
+
+  describe('Streak Milestones', () => {
+    test('should not return milestones for streak below 7', async () => {
+      setupAuth(1);
+      const today = new Date().toISOString().split('T')[0];
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('FROM readings')) {
+          return { rows: [{ activity_date: today }] };
+        }
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(1);
+      expect(data.milestones).toEqual([]);
+      expect(data.newMilestone).toBeNull();
+    });
+
+    test('should detect and award a 7-day milestone', async () => {
+      setupAuth(1);
+      const dates = generateSequentialDates(7, 0);
+
+      let milestoneQueryCount = 0;
+      let insertCount = 0;
+      let creditInsertCount = 0;
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) {
+          milestoneQueryCount++;
+          return { rows: [] };
+        }
+        if (sql.includes('INSERT INTO streak_milestones')) {
+          insertCount++;
+          return { rows: [] };
+        }
+        if (sql.includes('INSERT INTO credits') && sql.includes('ON CONFLICT')) {
+          creditInsertCount++;
+          return { rows: [] };
+        }
+        if (sql.includes('FROM readings')) {
+          return { rows: dates.map(d => ({ activity_date: d })) };
+        }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(7);
+      expect(data.milestones.length).toBe(1);
+      expect(data.milestones[0].days).toBe(7);
+      expect(data.milestones[0].badgeName).toBe("Cosmic Spark");
+      expect(data.milestones[0].achieved).toBe(true);
+      expect(data.newMilestone).not.toBeNull();
+      expect(data.newMilestone.days).toBe(7);
+      expect(creditInsertCount).toBe(1);
+      expect(insertCount).toBe(1);
+    });
+
+    test('should skip already-achieved milestones', async () => {
+      setupAuth(1);
+      const dates = generateSequentialDates(7, 0);
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) {
+          return { rows: [{ milestone_days: 7 }] };
+        }
+        if (sql.includes('INSERT INTO streak_milestones')) {
+          return { rows: [] };
+        }
+        if (sql.includes('INSERT INTO credits') && sql.includes('ON CONFLICT')) {
+          return { rows: [] };
+        }
+        if (sql.includes('FROM readings')) {
+          return { rows: dates.map(d => ({ activity_date: d })) };
+        }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(7);
+      expect(data.milestones.length).toBe(1);
+      expect(data.milestones[0].achieved).toBe(true);
+      expect(data.newMilestone).toBeNull();
+    });
+
+    test('should award multiple milestones at once for a 30-day streak', async () => {
+      setupAuth(1);
+      const dates = generateSequentialDates(30, 0);
+
+      let insertCount = 0;
+      let creditInsertCount = 0;
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('SELECT milestone_days FROM streak_milestones')) {
+          return { rows: [] };
+        }
+        if (sql.includes('INSERT INTO streak_milestones')) {
+          insertCount++;
+          return { rows: [] };
+        }
+        if (sql.includes('INSERT INTO credits') && sql.includes('ON CONFLICT')) {
+          creditInsertCount++;
+          return { rows: [] };
+        }
+        if (sql.includes('FROM readings')) {
+          return { rows: dates.map(d => ({ activity_date: d })) };
+        }
+        if (sql.includes('CREATE TABLE')) return { rows: [] };
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(30);
+      expect(data.milestones.length).toBe(3);
+      expect(data.milestones[0].days).toBe(7);
+      expect(data.milestones[1].days).toBe(14);
+      expect(data.milestones[2].days).toBe(30);
+      expect(data.newMilestone).not.toBeNull();
+      expect(insertCount).toBe(3);
+      expect(creditInsertCount).toBe(3);
+    });
+
+    test('should handle milestone table creation failure gracefully', async () => {
+      setupAuth(1);
+      const dates = generateSequentialDates(7, 0);
+      let milestoneQueryAttempted = false;
+
+      pool.query.mockImplementation(async (sql) => {
+        if (sql.includes('streak_milestones')) {
+          milestoneQueryAttempted = true;
+          throw new Error('relation "streak_milestones" does not exist');
+        }
+        if (sql.includes('FROM readings')) {
+          return { rows: dates.map(d => ({ activity_date: d })) };
+        }
+        return { rows: [] };
+      });
+
+      const request = createMockRequest('http://localhost/api/streak?timezone=UTC');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(data.currentStreak).toBe(7);
+      expect(milestoneQueryAttempted).toBe(true);
+      expect(data.milestones).toEqual([]);
+      expect(data.newMilestone).toBeNull();
     });
   });
 });

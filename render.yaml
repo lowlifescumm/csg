@@ -5,7 +5,9 @@ services:
     name: cosmic-spiritual-guide
     env: node
     plan: starter
-    buildCommand: npm ci && ESLINT=0 next build
+    branch: master
+    autoDeploy: true
+    buildCommand: PUPPETEER_SKIP_DOWNLOAD=true PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install && ESLINT=0 npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV

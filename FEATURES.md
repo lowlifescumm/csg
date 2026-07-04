@@ -125,7 +125,7 @@
 ### 5.3 Compatibility Report
 - [ ] Report generates after both inputs are submitted
 - [ ] Overall compatibility score/percentage is displayed
-- [ ] Breakdown by category: Social, Temperament, Emotional, Intellectual, Romantic, Physical, Long-term
+- [ ] Breakdown by category: Emotional Connection, Communication, Romantic Chemistry, Long-term Potential
 - [ ] Each category has a score and a short interpretation
 - [ ] Report references actual planetary placements, not just Sun signs
 - [ ] No placeholder text or "Coming Soon" messages
@@ -245,7 +245,7 @@ The Master Report is the premium tier — a comprehensive, year-ahead life guide
   - Communication: [score]/100
   - Spiritual Connection: [score]/100
   - Stability: [score]/100
-  - Physical Connection: [score]/100
+  - Physical Chemistry: [score]/100
 - [ ] Each score has a 2-3 paragraph interpretation explaining the dynamic
 - [ ] Radar chart / pentagon visualization renders with all 5 dimensions labeled
 - [ ] Scores table displays: Dimension name + percentage score
@@ -516,7 +516,7 @@ The Master Report is the premium tier — a comprehensive, year-ahead life guide
 - [ ] 500/server error shows a friendly message (not raw stack trace)
 - [ ] Invalid birth dates (e.g., Feb 30) are rejected with clear error
 - [ ] Empty form submissions are blocked with validation
-- [ ] Network timeout shows retry option or friendly message
+- [x] Network timeout shows retry option or friendly message
 - [ ] JavaScript-disabled fallback (if site requires JS, show a notice)
 
 ---

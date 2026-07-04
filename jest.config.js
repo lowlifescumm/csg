@@ -16,6 +16,8 @@ const customJestConfig = {
   testMatch: [
     '**/__tests__/**/*.test.js',
     '**/__tests__/**/*.test.jsx',
+    '**/__tests__/**/*.test.ts',
+    '**/__tests__/**/*.test.tsx',
     '**/__tests__/**/*.spec.js',
   ],
   testPathIgnorePatterns: [
@@ -26,7 +28,7 @@ const customJestConfig = {
   ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx}',
-    'lib/**/*.{js,jsx}',
+    'lib/**/*.{js,jsx,ts,tsx}',
     'components/**/*.{js,jsx}',
     '!**/*.d.ts',
     '!**/node_modules/**',

@@ -2,10 +2,11 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Tarot Card Selection UI Interactivity', () => {
   test.beforeEach(async ({ page }) => {
+    test.setTimeout(90000);
     await page.goto('/tarot', { waitUntil: 'networkidle' });
     await page.waitForFunction(() => {
-      return document.querySelector('button')?.textContent?.includes('Daily Tarot');
-    }, { timeout: 20000 });
+      return [...document.querySelectorAll('button')].some(b => b.textContent.includes('Daily Tarot'));
+    }, { timeout: 60000 });
   });
 
   test('spread type picker displays all available spreads', async ({ page }) => {

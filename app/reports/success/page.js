@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, FileText, ArrowLeft, Loader2 } from 'lucide-react';
+import { apiClient } from "@/lib/api-client";
 
 function ReportSuccessPage() {
   const searchParams = useSearchParams();
@@ -22,8 +23,7 @@ function ReportSuccessPage() {
     }
 
     // Verify the session and get report details
-    fetch(`/api/verify-payment?session_id=${sessionId}`)
-      .then(res => res.json())
+    apiClient.get(`/api/verify-payment?session_id=${sessionId}`)
       .then(data => {
         if (data.success) {
           setStatus('success');

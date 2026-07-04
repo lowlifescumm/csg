@@ -1,8 +1,9 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Sparkles, Star, Moon, Heart, Zap, Crown, CreditCard, X, Brain, Briefcase, ChevronRight, CheckCircle, Lock } from "lucide-react";
 import Link from "next/link";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 import HeroHeader from "./HeroHeader";
 import FocusGrid from "./FocusGrid";
 import CosmicBriefing from "./CosmicBriefing";
@@ -65,44 +66,36 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   // const [showCompactPlayer, setShowCompactPlayer] = useState(false);
 
   // Check if user has a birth chart
+  const { data: birthChartData } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/birth-chart', { timeout: 15000 }),
+    [user?.id],
+    { skip: !user?.id, toastMessages: { error: 'Could not load birth chart data.' } }
+  );
   useEffect(() => {
-    if (user?.id) {
-      fetch('/api/birth-chart')
-        .then(res => res.json())
-        .then(data => {
-          setHasBirthChart(data.hasChart || false);
-        })
-        .catch(() => {
-          setHasBirthChart(false);
-        });
+    if (birthChartData) {
+      setHasBirthChart(birthChartData.hasChart || false);
     }
-  }, [user?.id]);
+  }, [birthChartData]);
 
-  // Initialize level/XP immediately so GrowthBar reflects current progress even before DailyTasks loads
+  // Initialize level/XP using useApiClientWithToast
+  const { data: xpData } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/tasks", { timeout: 15000 }),
+    [],
+    { toastMessages: { error: 'Could not load XP data.' } }
+  );
   useEffect(() => {
-    let cancelled = false;
-    async function initXP() {
-      try {
-        const res = await fetch("/api/tasks");
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!data?.success) return;
-        const totalXP = data.stats?.totalXP || 0;
-        const level = Math.floor(totalXP / 100) + 1;
-        if (!cancelled) {
-          setLevelData({
-            level,
-            xpCurrent: totalXP,
-            xpTarget: level * 100,
-          });
-        }
-      } catch (err) {
-        console.error("[DashboardV3] Failed to load XP data:", err);
-      }
+    if (xpData?.success) {
+      const totalXP = xpData.stats?.totalXP || 0;
+      const level = Math.floor(totalXP / 100) + 1;
+      setLevelData({
+        level,
+        xpCurrent: totalXP,
+        xpTarget: level * 100,
+      });
     }
-    initXP();
-    return () => { cancelled = true; };
-  }, []);
+  }, [xpData]);
 
   // Meditation functions temporarily hidden
   // useEffect(() => {
@@ -156,21 +149,14 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
   //   setMeditationSessionId(null);
   // };
 
-  // Get user's sun sign for Daily Horoscope
+  // Get user's sun sign for Daily Horoscope - uses shared birthChartData from above
   const [userSign, setUserSign] = useState(null);
   
   useEffect(() => {
-    if (user?.id) {
-      fetch('/api/birth-chart')
-        .then(res => res.json())
-        .then(data => {
-          if (data.chart?.planets?.sun?.sign) {
-            setUserSign(data.chart.planets.sun.sign);
-          }
-        })
-        .catch(() => {});
+    if (birthChartData?.chart?.planets?.sun?.sign) {
+      setUserSign(birthChartData.chart.planets.sun.sign);
     }
-  }, [user?.id]);
+  }, [birthChartData]);
 
   return (
     <div className="w-full">
@@ -474,7 +460,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             {!isPremium && (
               <div className="mt-6 p-4 bg-yellow-500/20 border border-yellow-400/50 rounded-xl">
                 <p className="text-yellow-200 text-sm text-center mb-3">
-                  <strong>Premium Feature:</strong> Unlock unlimited access to Transit Dashboard and priority AI interpretations
+                  <strong>Premium Feature:</strong> Unlock Transit Dashboard with 60 monthly credits and priority AI interpretations
                 </p>
                 <Link
                   href="/subscription"
@@ -591,7 +577,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-1">Unlock Premium Features</h3>
-                    <p className="text-sm text-purple-200">Access unlimited readings and exclusive features</p>
+                    <p className="text-sm text-purple-200">Get 60 monthly credits and exclusive premium features</p>
                   </div>
                 </div>
                 <Link
@@ -706,6 +692,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             cardCount={tarotSelectorConfig.cardCount}
             question={tarotSelectorConfig.question}
             spreadId={tarotSelectorConfig.spreadId}
+            user={user}
             onClose={() => {
               setShowTarotSelector(false);
               if (refetch) refetch();

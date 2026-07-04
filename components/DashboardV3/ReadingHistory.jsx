@@ -1,9 +1,11 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect, useRef } from "react";
 import { BookOpen, Calendar, Filter, Sparkles, Star, Eye, RotateCcw, Loader2, X, Heart } from "lucide-react";
 import Link from "next/link";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
+import { useToast } from "@/components/ui";
 
 /**
  * Get reading type icon
@@ -57,119 +59,106 @@ function getExcerpt(reading) {
  * - onReadingSelect: Callback when reading is selected (optional)
  */
 export default function ReadingHistory({ userId, onReadingSelect }) {
-  const [readings, setReadings] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState("all");
   const [dateRange, setDateRange] = useState("all");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [selectedReading, setSelectedReading] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [savingToJournal, setSavingToJournal] = useState(null);
+  // Local state for optimistic favorite updates (must be synced with server)
   const [favoriteIds, setFavoriteIds] = useState(new Set());
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const scrollContainerRef = useRef(null);
   const ITEMS_PER_PAGE = 10;
+  const toast = useToast();
 
-  useEffect(() => {
-    if (userId) {
-      fetchReadings();
-      fetchFavorites();
+  // Parallel mount fetches: fetch readings and favorites together
+  const {
+    data: readingsData,
+    loading: loadingReadings,
+    error: readingsError,
+    refetch: refetchReadings,
+  } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/readings", { timeout: 15000 }),
+    [],
+    {
+      enabled: !!userId,
+      toastMessages: { error: "Failed to load readings. Check your connection." },
     }
-  }, [userId]);
+  );
 
+  const {
+    data: favoritesData,
+    loading: loadingFavorites,
+    error: favoritesError,
+    refetch: refetchFavorites,
+  } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/user/favorites?type=reading", { timeout: 15000 }),
+    [],
+    {
+      enabled: !!userId,
+      // Favorites fetch silently fails - not critical for functionality
+      toastMessages: { error: false },
+    }
+  );
+
+  // Build filtered readings list
+  const readings = (() => {
+    if (!readingsData?.success) return [];
+    
+    const allReadings = [
+      ...(readingsData.readings?.tarot || []).map((r) => ({ ...r, type: "tarot" })),
+      ...(readingsData.readings?.birthCharts || []).map((r) => ({ ...r, type: "birth_chart" })),
+    ];
+
+    let filtered = allReadings;
+
+    if (filterType !== "all") {
+      filtered = filtered.filter((r) => r.type === filterType);
+    }
+
+    if (dateRange !== "all") {
+      const now = new Date();
+      const cutoffDate = new Date();
+      switch (dateRange) {
+        case "week":
+          cutoffDate.setDate(now.getDate() - 7);
+          break;
+        case "month":
+          cutoffDate.setMonth(now.getMonth() - 1);
+          break;
+        case "year":
+          cutoffDate.setFullYear(now.getFullYear() - 1);
+          break;
+      }
+      filtered = filtered.filter((r) => {
+        const readingDate = new Date(r.created_at);
+        return readingDate >= cutoffDate;
+      });
+    }
+
+    if (favoritesOnly) {
+      filtered = filtered.filter((r) => favoriteIds.has(r.id.toString()));
+    }
+
+    filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    return filtered;
+  })();
+
+  // Sync favorites from server data
   useEffect(() => {
-    // Reset to first page when filters change
+    if (favoritesData?.success && favoritesData.favorites) {
+      const ids = new Set(favoritesData.favorites.map((f) => f.item_id));
+      setFavoriteIds(ids);
+    }
+  }, [favoritesData]);
+
+  // Reset page when filters change
+  useEffect(() => {
     setPage(1);
-    setHasMore(true);
-    if (userId) {
-      fetchReadings(true);
-    }
   }, [filterType, dateRange, favoritesOnly]);
-
-  const fetchReadings = async (reset = false) => {
-    if (reset) {
-      setPage(1);
-      setLoading(true);
-    }
-
-    try {
-      const res = await fetch("/api/readings");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          // Combine tarot and birth chart readings
-          const allReadings = [
-            ...(data.readings?.tarot || []).map((r) => ({ ...r, type: "tarot" })),
-            ...(data.readings?.birthCharts || []).map((r) => ({ ...r, type: "birth_chart" })),
-          ];
-
-          // Apply filters
-          let filtered = allReadings;
-
-          // Filter by type
-          if (filterType !== "all") {
-            filtered = filtered.filter((r) => r.type === filterType);
-          }
-
-          // Filter by date range
-          if (dateRange !== "all") {
-            const now = new Date();
-            const cutoffDate = new Date();
-            switch (dateRange) {
-              case "week":
-                cutoffDate.setDate(now.getDate() - 7);
-                break;
-              case "month":
-                cutoffDate.setMonth(now.getMonth() - 1);
-                break;
-              case "year":
-                cutoffDate.setFullYear(now.getFullYear() - 1);
-                break;
-            }
-            filtered = filtered.filter((r) => {
-              const readingDate = new Date(r.created_at);
-              return readingDate >= cutoffDate;
-            });
-          }
-
-          // Filter by favorites
-          if (favoritesOnly) {
-            filtered = filtered.filter((r) => favoriteIds.has(r.id.toString()));
-          }
-
-          // Sort by date (newest first)
-          filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-          if (reset) {
-            setReadings(filtered);
-          } else {
-            setReadings(filtered);
-          }
-          setHasMore(filtered.length > page * ITEMS_PER_PAGE);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch readings:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchFavorites = async () => {
-    try {
-      const res = await fetch("/api/user/favorites?type=reading");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.favorites) {
-          const ids = new Set(data.favorites.map((f) => f.item_id));
-          setFavoriteIds(ids);
-        }
-      }
-    } catch (err) {
-      console.info("Could not fetch favorites:", err);
-    }
-  };
 
   const handleView = (reading) => {
     setSelectedReading(reading);
@@ -183,29 +172,20 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
     setSavingToJournal(reading.id);
     try {
       const excerpt = getExcerpt(reading);
-      const res = await fetch("/api/journal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const data = await apiClient.post("/api/journal", {
+        content: `${reading.question || "Reading"}\n\n${excerpt}`,
+        type: "reading",
+        metadata: {
+          readingId: reading.id,
+          readingType: reading.type,
         },
-        body: JSON.stringify({
-          content: `${reading.question || "Reading"}\n\n${excerpt}`,
-          type: "reading",
-          metadata: {
-            readingId: reading.id,
-            readingType: reading.type,
-          },
-        }),
-      });
+      }, { timeout: 15000 });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        // Show success feedback (could use toast)
-        alert("Saved to journal!");
+      if (data.success) {
+        toast.success("Saved to journal!");
       }
     } catch (err) {
-      console.error("Error saving to journal:", err);
-      alert("Failed to save to journal");
+      toast.error("Failed to save to journal");
     } finally {
       setSavingToJournal(null);
     }
@@ -223,47 +203,57 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
   const handleToggleFavorite = async (reading) => {
     const isFavorited = favoriteIds.has(reading.id.toString());
     
+    // Optimistic update - update UI immediately
+    if (isFavorited) {
+      setFavoriteIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(reading.id.toString());
+        return newSet;
+      });
+    } else {
+      setFavoriteIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(reading.id.toString());
+        return newSet;
+      });
+    }
+    
     try {
       if (isFavorited) {
-        // Remove from favorites
-        await fetch(`/api/user/favorites?type=reading&itemId=${reading.id}`, {
-          method: "DELETE",
-        });
-        setFavoriteIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(reading.id.toString());
-          return newSet;
-        });
+        await apiClient.delete(`/api/user/favorites?type=reading&itemId=${reading.id}`, { timeout: 15000 });
       } else {
-        // Add to favorites
-        await fetch("/api/user/favorites", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        await apiClient.post("/api/user/favorites", {
+          type: "reading",
+          itemId: reading.id,
+          name: reading.question || `${reading.type} reading`,
+          metadata: {
+            readingType: reading.type,
+            date: reading.created_at,
           },
-          body: JSON.stringify({
-            type: "reading",
-            itemId: reading.id,
-            name: reading.question || `${reading.type} reading`,
-            metadata: {
-              readingType: reading.type,
-              date: reading.created_at,
-            },
-          }),
-        });
+        }, { timeout: 15000 });
+      }
+    } catch (err) {
+      // Revert optimistic update on failure
+      if (isFavorited) {
         setFavoriteIds((prev) => {
           const newSet = new Set(prev);
           newSet.add(reading.id.toString());
           return newSet;
         });
+      } else {
+        setFavoriteIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(reading.id.toString());
+          return newSet;
+        });
       }
-    } catch (err) {
-      console.error("Error toggling favorite:", err);
+      toast.error("Failed to update favorite");
     }
   };
 
   const displayedReadings = readings.slice(0, page * ITEMS_PER_PAGE);
   const canLoadMore = readings.length > displayedReadings.length;
+  const loading = loadingReadings || loadingFavorites;
 
   // Infinite scroll on scroll to bottom
   useEffect(() => {
@@ -582,4 +572,3 @@ export default function ReadingHistory({ userId, onReadingSelect }) {
     </>
   );
 }
-

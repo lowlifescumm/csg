@@ -1,55 +1,49 @@
 "use client";
-const logger = require('../../lib/logger');
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Brain, Sparkles, ArrowLeft, Crown, Zap } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
+import { useToast } from "@/components/ui";
 
 export default function CoachPage() {
+  const toast = useToast();
   const [newCard, setNewCard] = useState("");
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [coach, setCoach] = useState("");
-  const [user, setUser] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
+  const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("/api/auth/user");
-      const data = await res.json();
-      if (res.ok) {
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/auth/user"),
+    [],
+    {
+      onSuccess: (data) => {
         setUser(data);
         setIsPremium(data.role === 'admin' || (data.stripe_subscription_id && data.stripe_subscription_id !== ''));
-      }
-    } catch (e) {
-      console.error("Failed to fetch user data");
-    }
-  };
+      },
+      toastMessages: { error: "Failed to load user data." },
+    },
+  );
 
   const runCoach = async () => {
     if (!isPremium) {
-      alert("Premium subscription required for AI Coach access");
+      toast.error("Premium subscription required for AI Coach access");
       return;
     }
     
     setLoading(true);
     try {
-      const res = await fetch("/api/coach/daily", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newCard, question })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await apiClient.post("/api/coach/daily", { newCard, question });
+      if (data.success) {
         setCoach(data.coach);
       } else {
-        alert(data.error || "Coach failed");
+        toast.error(data.error || "Coach failed");
       }
     } catch (e) {
-      alert("Network error");
+      toast.error("Network error. Please check your connection.");
     } finally {
       setLoading(false);
     }

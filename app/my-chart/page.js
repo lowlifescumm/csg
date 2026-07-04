@@ -1,5 +1,4 @@
 'use client';
-const logger = require('../../lib/logger');
 
 export const dynamic = 'force-static';
 
@@ -8,50 +7,44 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BirthChartWheel from '@/components/BirthChartWheel';
 import { ArrowLeft, Loader2, Sparkles, Star } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
+import { useToast } from '@/components/ui';
 
 export default function MyChartPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState(null);
   const [birthInfo, setBirthInfo] = useState(null);
   const [interpretation, setInterpretation] = useState(null);
   const [error, setError] = useState(null);
+  const [generatingInterpretation, setGeneratingInterpretation] = useState(false);
 
-  useEffect(() => {
-    fetchChart();
-  }, []);
+  const toast = useToast();
 
-  const fetchChart = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/birth-chart');
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push('/login');
+  const { loading, refetch } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/birth-chart'),
+    [],
+    {
+      onSuccess: (data) => {
+        if (!data.hasChart) {
+          setError('No birth chart found. Please create one first.');
           return;
         }
-        throw new Error('Failed to fetch birth chart');
-      }
-
-      const data = await response.json();
-      
-      if (!data.hasChart) {
-        setError('No birth chart found. Please create one first.');
-        setLoading(false);
-        return;
-      }
-
-      setChartData(data.chart);
-      setBirthInfo(data.birthInfo);
-      setInterpretation(data.interpretation);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching chart:', err);
-      setError(err.message);
-      setLoading(false);
-    }
-  };
+        setChartData(data.chart);
+        setBirthInfo(data.birthInfo);
+        setInterpretation(data.interpretation);
+      },
+      onErrorWithToast: (err) => {
+        if (err.status === 401) {
+          router.push('/login');
+          return false;
+        }
+        setError(err.message);
+        return 'Failed to load your birth chart.';
+      },
+    },
+  );
 
   if (loading) {
     return (
@@ -313,32 +306,27 @@ This interpretation provides deep insights into your personality traits, strengt
                 </div>
               </div>
               <button
-                onClick={async () => {
-                  setLoading(true);
-                  try {
-                    const response = await fetch('/api/birth-chart/interpretation', {
-                      method: 'POST'
-                    });
-                    const data = await response.json();
-                    if (data.success) {
+                  onClick={async () => {
+                    setGeneratingInterpretation(true);
+                    try {
+                      const data = await apiClient.post('/api/birth-chart/interpretation');
                       setInterpretation(data.interpretation);
-                    } else if (response.status === 402) {
-                      alert(`Insufficient credits. Interpretation requires ${data.cost || 3} credits.`);
-                      window.location.href = '/pricing';
-                    } else {
-                      alert(data.error || 'Failed to generate interpretation');
+                    } catch (apiError) {
+                      if (apiError.status === 402) {
+                        toast.error(`Insufficient credits. Interpretation requires ${apiError.data?.cost || 3} credits.`);
+                        window.location.href = '/pricing';
+                      } else {
+                        toast.error(apiError.message || 'Failed to generate interpretation');
+                      }
+                    } finally {
+                      setGeneratingInterpretation(false);
                     }
-                  } catch (error) {
-                    alert('Failed to generate interpretation');
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                disabled={loading}
+                  }}
+                  disabled={generatingInterpretation}
                 className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-4 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-lg"
               >
                 <Sparkles className="w-5 h-5" />
-                {loading ? 'Generating Interpretation...' : 'Unlock Full Analysis (3 Credits)'}
+                {generatingInterpretation ? 'Generating Interpretation...' : 'Unlock Full Analysis (3 Credits)'}
               </button>
               <p className="text-center text-purple-300 text-sm mt-3">
                 Or <Link href="/subscription" className="text-yellow-400 hover:underline">upgrade to Premium</Link> to get interpretation included

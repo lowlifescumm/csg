@@ -1,5 +1,5 @@
-const logger = require('./lib/logger');
 #!/usr/bin/env node
+const logger = require('./lib/logger');
 /**
  * Content Pipeline — cosmicspiritguide.com
  * 
@@ -103,8 +103,13 @@ async function generateImage(post) {
 const CONTENT_CACHE = {};
 function loadBriefsLocal() {
   if (!CONTENT_CACHE.briefs) {
-    const path = join(__dirname, 'content-briefs-month-1.json');
-    CONTENT_CACHE.briefs = JSON.parse(readFileSync(path, 'utf8'));
+    const path1 = join(__dirname, 'content-briefs-month-1.json');
+    const month1 = JSON.parse(readFileSync(path1, 'utf8'));
+    const path2 = join(__dirname, 'content-briefs-months-2-3.json');
+    const all = JSON.parse(readFileSync(path2, 'utf8'));
+    const month2 = all.content_briefs_months_2_3?.month_2?.posts || [];
+    const month3 = all.content_briefs_months_2_3?.month_3?.posts || [];
+    CONTENT_CACHE.briefs = [...month1, ...month2, ...month3];
   }
   return CONTENT_CACHE.briefs;
 }
@@ -432,10 +437,9 @@ async function runPost(postNumber, publish = false) {
 }
 
 async function runAll(publish = false) {
-  // Month 1 = posts 1-8
-  for (let i = 1; i <= 8; i++) {
+  const briefs = loadBriefsLocal();
+  for (let i = 1; i <= briefs.length; i++) {
     await runPost(i, publish);
-    // Small delay between posts to avoid rate limits
     await new Promise(r => setTimeout(r, 2000));
   }
 }
@@ -474,15 +478,18 @@ if (args.includes('--status')) {
     const publish = args.includes('--publish');
     await runPost(num, publish);
   } else {
-    logger.info(`
+    const briefs = loadBriefsLocal();
+  logger.info(`
 Content Pipeline — cosmicspiritguide.com
 
 Usage:
   node scripts/content-pipeline.js --status              List existing posts on site
   node scripts/content-pipeline.js --post <n>            Process post #n (draft)
   node scripts/content-pipeline.js --post <n> --publish   Process post #n and publish + tweet
-  node scripts/content-pipeline.js --all                  Run all 8 Month 1 posts (drafts)
+  node scripts/content-pipeline.js --all                  Run all ${briefs.length} posts (drafts)
   node scripts/content-pipeline.js --all --publish        Run all + publish + tweet
+
+Briefs in pipeline: ${briefs.length} (posts 1-8 from month 1, 9-24 from months 2-3)
 
 Environment variables required:
   SITE_URL=https://cosmicspiritguide.com

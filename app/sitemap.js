@@ -1,40 +1,46 @@
 import { getNextTransitDates, zodiacSigns } from '@/lib/pseo/astrology';
+import { getAllBlogPostSlugs } from '@/lib/blog-server';
+import { getAllCardSlugs } from '@/lib/tarot-data';
+import { getAllPairSlugs } from '@/lib/compatibility-data';
 
-export default function sitemap() {
+export default async function sitemap() {
   const baseUrl = 'https://cosmicspiritguide.com';
   
-  // Static pages
   const staticPages = [
-    { path: '/', priority: 1.0 },
-    { path: '/about', priority: 0.6 },
-    { path: '/birth-chart', priority: 0.9 },
-    { path: '/blog', priority: 0.7 },
-    { path: '/coach', priority: 0.6 },
-    { path: '/compatibility', priority: 0.9 },
-    { path: '/contact', priority: 0.5 },
-    { path: '/credits', priority: 0.5 },
-    { path: '/dashboard', priority: 0.9 },
-    { path: '/forecasts', priority: 0.9 },
-    { path: '/journal', priority: 0.7 },
-    { path: '/login', priority: 0.5 },
-    { path: '/moon-reading', priority: 0.9 },
-    { path: '/my-chart', priority: 0.9 },
-    { path: '/newsletter', priority: 0.6 },
-    { path: '/pricing', priority: 0.8 },
-    { path: '/privacy', priority: 0.4 },
-    { path: '/profile', priority: 0.6 },
-    { path: '/reset-password', priority: 0.3 },
-    { path: '/services', priority: 0.7 },
-    { path: '/subscription', priority: 0.6 },
-    { path: '/tarot', priority: 0.9 },
-    { path: '/terms', priority: 0.4 },
-    { path: '/transits', priority: 0.8 },
+    { path: '/', changeFrequency: 'weekly', priority: 1.0 },
+    { path: '/about', changeFrequency: 'monthly', priority: 0.6 },
+    { path: '/birth-chart', changeFrequency: 'weekly', priority: 0.9 },
+    { path: '/blog', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/coach', changeFrequency: 'monthly', priority: 0.6 },
+    { path: '/compatibility', changeFrequency: 'weekly', priority: 0.9 },
+    { path: '/contact', changeFrequency: 'monthly', priority: 0.5 },
+    { path: '/credits', changeFrequency: 'monthly', priority: 0.5 },
+    { path: '/dashboard', changeFrequency: 'weekly', priority: 0.9 },
+    { path: '/energy', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/forecasts', changeFrequency: 'daily', priority: 0.9 },
+    { path: '/horoscope', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/journal', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/login', changeFrequency: 'monthly', priority: 0.5 },
+    { path: '/moon-phase', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/moon-reading', changeFrequency: 'weekly', priority: 0.9 },
+    { path: '/my-chart', changeFrequency: 'weekly', priority: 0.9 },
+    { path: '/newsletter', changeFrequency: 'weekly', priority: 0.6 },
+    { path: '/pricing', changeFrequency: 'weekly', priority: 0.8 },
+    { path: '/privacy', changeFrequency: 'monthly', priority: 0.4 },
+    { path: '/profile', changeFrequency: 'weekly', priority: 0.6 },
+    { path: '/reset-password', changeFrequency: 'monthly', priority: 0.3 },
+    { path: '/services', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/subscription', changeFrequency: 'monthly', priority: 0.6 },
+    { path: '/tarot', changeFrequency: 'weekly', priority: 0.9 },
+    { path: '/terms', changeFrequency: 'monthly', priority: 0.4 },
+    { path: '/transits', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/zodiac', changeFrequency: 'weekly', priority: 0.8 },
   ];
 
   const sitemapEntries = staticPages.map(page => ({
     url: `${baseUrl}${page.path}`,
     lastModified: new Date(),
-    changeFrequency: 'weekly',
+    changeFrequency: page.changeFrequency,
     priority: page.priority,
   }));
 
@@ -54,5 +60,48 @@ export default function sitemap() {
     priority: 0.75,
   }));
 
-  return [...sitemapEntries, ...sunMoonPages, ...transitPages];
+  const horoscopePages = zodiacSigns.map((sign) => ({
+    url: `${baseUrl}/horoscope/${sign.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 0.8,
+  }));
+
+  const zodiacPages = zodiacSigns.map((sign) => ({
+    url: `${baseUrl}/zodiac/${sign.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }));
+
+  const tarotCardSlugs = getAllCardSlugs();
+  const tarotPages = tarotCardSlugs.map((slug) => ({
+    url: `${baseUrl}/tarot/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  const pairSlugs = getAllPairSlugs();
+  const compatibilityPages = pairSlugs.map((pair) => ({
+    url: `${baseUrl}/compatibility/${pair}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  let blogPages = [];
+  try {
+    const slugs = await getAllBlogPostSlugs();
+    blogPages = (slugs || []).map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.published_at || Date.now()),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    }));
+  } catch (error) {
+    console.warn('Failed to fetch blog posts for sitemap:', error.message);
+  }
+
+  return [...sitemapEntries, ...sunMoonPages, ...transitPages, ...horoscopePages, ...zodiacPages, ...tarotPages, ...compatibilityPages, ...blogPages];
 }

@@ -1,6 +1,7 @@
 "use client";
 const logger = require('../../../lib/logger');
 
+import { apiClient } from '@/lib/api-client';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -291,9 +292,8 @@ export default function TestReportsPage() {
     if (engine === 'template') {
       setLoadingTemplates(true);
       try {
-        const response = await fetch('/api/admin/templates');
-        const data = await response.json();
-        if (response.ok && data.templates) {
+        const data = await apiClient.get('/api/admin/templates');
+        if (data.templates) {
           setTemplates(data.templates);
         }
       } catch (error) {
@@ -458,21 +458,13 @@ export default function TestReportsPage() {
       }
       
       // Otherwise, trigger PDF generation via API
-      const response = await fetch(`/api/admin/test-report`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          report_type: result.reportType,
-          generate_pdf: true,
-          regenerate: true,
-        }),
+      const data = await apiClient.post('/api/admin/test-report', {
+        report_type: result.reportType,
+        generate_pdf: true,
+        regenerate: true,
       });
       
-      const data = await response.json();
-      
-      if (response.ok && data.pdfUrl) {
+      if (data.pdfUrl) {
         const link = document.createElement('a');
         link.href = data.pdfUrl;
         link.download = `test-report-${result.reportType}-${new Date().toISOString()}.pdf`;

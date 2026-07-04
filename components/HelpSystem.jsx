@@ -66,13 +66,13 @@ export default function HelpSystem() {
           <div>
             <h4 className="font-semibold text-gray-900 mb-2">How Credits Work</h4>
             <p className="text-gray-600 text-sm">
-              Each reading costs credits. Free users get limited credits, while premium subscribers get unlimited access.
+              Each reading costs credits. Free users get 3 daily credits, while premium subscribers get 60 credits every month.
             </p>
           </div>
           <div>
             <h4 className="font-semibold text-gray-900 mb-2">Premium Benefits</h4>
             <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-              <li>Unlimited readings and charts</li>
+              <li>60 monthly credits for all reading types</li>
               <li>Advanced transit analysis</li>
               <li>Priority customer support</li>
               <li>Exclusive premium features</li>

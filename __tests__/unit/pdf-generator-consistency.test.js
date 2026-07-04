@@ -205,3 +205,142 @@ describe('generatePremiumReport — cross-section consistency (GSTA-50)', () => 
     expect(consistencyError).toBeFalsy();
   });
 });
+
+describe('generatePremiumReport — paragraph deduplication (GSTA-158)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    delete process.env.REPORT_DEDUPLICATION_ENABLED;
+  });
+
+  test('deduplicates paragraphs by default for MASTER reports', async () => {
+    // Simulate AI generating duplicate paragraphs across sections
+    const duplicateParagraph = 'Your Sun sign represents your core identity and ego. It influences how you express yourself and shine your light in the world.';
+    
+    generateText
+      .mockResolvedValueOnce(`Birth chart analysis. ${duplicateParagraph}`) // birth_chart
+      .mockResolvedValueOnce(`Compatibility analysis. ${duplicateParagraph}`) // compatibility (duplicate!)
+      .mockResolvedValueOnce('Your extended forecast with unique content...') // transit
+      .mockResolvedValueOnce('Your destiny path with unique content...') // destiny
+      .mockResolvedValueOnce('Your karmic reading with unique content...') // karmic
+      .mockResolvedValueOnce('May the stars guide you...'); // closing
+
+    const data = {
+      name: 'John',
+      partner_name: 'Jane',
+      natalChart: baseNatalChart,
+      compatibility_data: { partner: basePartnerChart },
+      chartData: { partner: basePartnerChart, matrix_scores: {} },
+      matrix_data: { partner: basePartnerChart },
+      birth_chart_data: baseNatalChart,
+      transit_data: {},
+      destiny_data: {},
+      karmic_data: {},
+    };
+
+    const result = await generatePremiumReport('MASTER', data);
+
+    // Deduplication should have run and logged findings
+    const infoCalls = logger.info.mock.calls;
+    const dedupFindingCall = infoCalls.find(
+      (call) =>
+        typeof call[0] === 'string' &&
+        call[0].includes('duplicate/near-duplicate paragraphs')
+    );
+    expect(dedupFindingCall).toBeTruthy();
+  });
+
+  test('can be disabled via REPORT_DEDUPLICATION_ENABLED=false', async () => {
+    process.env.REPORT_DEDUPLICATION_ENABLED = 'false';
+
+    const duplicateParagraph = 'Your Sun sign represents your core identity.';
+    
+    generateText
+      .mockResolvedValueOnce(`Birth chart. ${duplicateParagraph}`)
+      .mockResolvedValueOnce(`Compatibility. ${duplicateParagraph}`)
+      .mockResolvedValueOnce('Transit forecast...')
+      .mockResolvedValueOnce('Destiny path...')
+      .mockResolvedValueOnce('Karmic reading...')
+      .mockResolvedValueOnce('Closing blessing...');
+
+    const data = {
+      name: 'John',
+      partner_name: 'Jane',
+      natalChart: baseNatalChart,
+      compatibility_data: { partner: basePartnerChart },
+      chartData: { partner: basePartnerChart, matrix_scores: {} },
+      matrix_data: { partner: basePartnerChart },
+      birth_chart_data: baseNatalChart,
+      transit_data: {},
+      destiny_data: {},
+      karmic_data: {},
+    };
+
+    await generatePremiumReport('MASTER', data);
+
+    // No deduplication logs should appear
+    const infoCalls = logger.info.mock.calls;
+    const dedupCall = infoCalls.find(
+      (call) =>
+        typeof call[0] === 'string' &&
+        call[0].includes('duplicate/near-duplicate paragraphs')
+    );
+    expect(dedupCall).toBeFalsy();
+  });
+
+  test('does not deduplicate for ESSENTIAL reports by default', async () => {
+    delete process.env.REPORT_DEDUPLICATION_ENABLED;
+
+    generateText
+      .mockResolvedValueOnce('Tarot reading content...')
+      .mockResolvedValueOnce('Moon phase reading...')
+      .mockResolvedValueOnce('Short forecast...');
+
+    const data = {
+      name: 'John',
+      tarot_data: {},
+      moon_data: {},
+      transit_data: {},
+    };
+
+    await generatePremiumReport('ESSENTIAL', data);
+
+    // Deduplication should not run for ESSENTIAL by default
+    const infoCalls = logger.info.mock.calls;
+    const dedupCall = infoCalls.find(
+      (call) =>
+        typeof call[0] === 'string' &&
+        call[0].includes('duplicate/near-duplicate paragraphs')
+    );
+    expect(dedupCall).toBeFalsy();
+  });
+
+  test('can be enabled for ESSENTIAL reports via env var', async () => {
+    process.env.REPORT_DEDUPLICATION_ENABLED = 'true';
+
+    // Use longer duplicate paragraphs (must exceed minLength: 60)
+    const duplicateParagraph = 'The stars align in your favor today, bringing opportunities for growth and transformation that will guide your path forward.';
+    
+    generateText
+      .mockResolvedValueOnce(`Tarot reading. ${duplicateParagraph}`)
+      .mockResolvedValueOnce(`Moon phase. ${duplicateParagraph}`)
+      .mockResolvedValueOnce('Short forecast with unique content...');
+
+    const data = {
+      name: 'John',
+      tarot_data: {},
+      moon_data: {},
+      transit_data: {},
+    };
+
+    await generatePremiumReport('ESSENTIAL', data);
+
+    // Deduplication should run when explicitly enabled
+    const infoCalls = logger.info.mock.calls;
+    const dedupCall = infoCalls.find(
+      (call) =>
+        typeof call[0] === 'string' &&
+        call[0].includes('duplicate/near-duplicate paragraphs')
+    );
+    expect(dedupCall).toBeTruthy();
+  });
+});

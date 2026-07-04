@@ -14,6 +14,8 @@ import {
   Calendar
 } from 'lucide-react';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 const signEmojis = {
   Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
@@ -45,9 +47,6 @@ function HoroscopePageInner() {
   const urlSign = searchParams.get('sign');
 
   const [selectedSign, setSelectedSign] = useState(urlSign?.toLowerCase() || 'aries');
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   // Keep URL in sync with selected sign
   useEffect(() => {
@@ -60,27 +59,12 @@ function HoroscopePageInner() {
     }
   }, [selectedSign]);
 
-  useEffect(() => {
-    loadHoroscope(selectedSign);
-  }, [selectedSign]);
-
-  const loadHoroscope = async (sign) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`/api/horoscope?sign=${sign}`);
-      const result = await response.json();
-      if (result.success) {
-        setData(result);
-      } else {
-        setError(result.error || 'Failed to load horoscope');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, loading, error, refetch } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get(`/api/horoscope?sign=${selectedSign}`),
+    [selectedSign],
+    { toastMessages: { error: 'Could not load your horoscope. Check your connection.' } }
+  );
 
   const signInfo = zodiacSigns.find(s => s.name.toLowerCase() === selectedSign);
 
@@ -153,9 +137,9 @@ function HoroscopePageInner() {
 
         {error && !loading && (
           <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center">
-            <p className="text-red-300 mb-4">{error}</p>
+            <p className="text-red-300 mb-4">{error.message}</p>
             <button
-              onClick={() => loadHoroscope(selectedSign)}
+              onClick={refetch}
               className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl transition-colors"
             >
               Try Again
@@ -163,7 +147,7 @@ function HoroscopePageInner() {
           </div>
         )}
 
-        {data && !loading && (
+        {data?.success && !loading && (
           <div className="space-y-6">
             {/* Main Horoscope Card */}
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 sm:p-10">

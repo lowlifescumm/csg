@@ -4,7 +4,7 @@
 
 /* ─── Cosmic Dark Base ─── */
 html {
-  background-color: #050214;
+  background-color: #03000a;
   color: #e2ddf4;
 }
 
@@ -48,7 +48,26 @@ body {
 }
 
 @layer components {
-  /* Glassmorphic — dark cosmic variant */
+  /* ─── Glass Panels (Gold-trimmed cosmic) ─── */
+  .glass-panel {
+    background: rgba(8, 2, 20, 0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(223, 183, 108, 0.15);
+  }
+
+  .glass-panel-light {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-nav {
+    background: rgba(5, 2, 20, 0.8);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(223, 183, 108, 0.1);
+  }
+
+  /* Legacy glassmorphic aliases */
   .glassmorphic {
     @apply bg-white/5 backdrop-blur-md;
     border: 1px solid rgba(124, 58, 237, 0.15);
@@ -64,7 +83,7 @@ body {
     border: 1px solid rgba(124, 58, 237, 0.08);
   }
 
-  /* Shadows tuned for dark backgrounds */
+  /* ─── Shadows / Glows ─── */
   .cosmic-shadow {
     box-shadow: 0 4px 20px rgba(124, 58, 237, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
   }
@@ -73,15 +92,26 @@ body {
     box-shadow: 0 10px 40px rgba(124, 58, 237, 0.2), 0 4px 6px rgba(0, 0, 0, 0.4);
   }
 
-  /* Gold gradient text */
+  .glow-gold-text {
+    text-shadow: 0 0 15px rgba(223, 183, 108, 0.6);
+  }
+
+  .glow-gold-border {
+    box-shadow: 0 0 15px rgba(223, 183, 108, 0.15);
+  }
+
+  .glow-gold-lg {
+    box-shadow: 0 0 30px rgba(223, 183, 108, 0.25), 0 0 60px rgba(223, 183, 108, 0.1);
+  }
+
+  /* ─── Gradient Text ─── */
   .gradient-gold-text {
-    background: linear-gradient(to right, #d4af37, #f4d03f, #d4af37);
+    background: linear-gradient(to right, #DFB76C, #F0D78C, #DFB76C);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
-  /* Violet gradient text */
   .gradient-violet-text {
     background: linear-gradient(to right, #7c3aed, #c4b5fd, #c45b7a);
     -webkit-background-clip: text;
@@ -89,7 +119,7 @@ body {
     color: transparent;
   }
 
-  /* Smooth Transitions */
+  /* ─── Transitions ─── */
   .smooth-transition {
     @apply transition-all duration-300 ease-in-out;
   }
@@ -102,11 +132,11 @@ body {
     @apply transition-all duration-500 ease-in-out;
   }
 
-  /* Buttons */
+  /* ─── Buttons ─── */
   .btn-gold {
-    @apply px-6 py-3 font-semibold rounded-xl smooth-transition hover:shadow-lg hover:scale-105 active:scale-95;
-    background: linear-gradient(to right, #d4af37, #b8960c);
-    color: #050214;
+    @apply px-6 py-3 font-semibold rounded-xl smooth-transition hover:shadow-lg hover:shadow-cosmic-gold/20 hover:scale-105 active:scale-95;
+    background: linear-gradient(to right, #DFB76C, #C9A03C);
+    color: #03000a;
   }
 
   .btn-violet {
@@ -121,7 +151,7 @@ body {
     border: 1px solid rgba(124, 58, 237, 0.3);
   }
 
-  /* Cards */
+  /* ─── Cards ─── */
   .card-cosmic {
     @apply rounded-2xl p-6;
     background: rgba(26, 15, 60, 0.4);
@@ -133,7 +163,17 @@ body {
     @apply card-cosmic smooth-transition hover:border-cosmic-violet/40 hover:-translate-y-1;
   }
 
-  /* Celestial card (legacy compat) */
+  .card-gold {
+    @apply rounded-2xl p-6;
+    background: rgba(18, 7, 43, 0.6);
+    border: 1px solid rgba(223, 183, 108, 0.2);
+    backdrop-filter: blur(12px);
+  }
+
+  .card-gold-hover {
+    @apply card-gold smooth-transition hover:border-cosmic-gold/40 hover:shadow-gold-glow hover:-translate-y-1;
+  }
+
   .celestial-card {
     @apply rounded-2xl p-6 border border-cosmic-violet/20 bg-cosmic-void/60 backdrop-blur-sm;
   }
@@ -145,26 +185,34 @@ body {
 
   .gold-card {
     @apply rounded-2xl p-8;
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(196, 91, 122, 0.1));
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    background: linear-gradient(135deg, rgba(223, 183, 108, 0.15), rgba(196, 91, 122, 0.1));
+    border: 1px solid rgba(223, 183, 108, 0.25);
   }
 
-  /* Backgrounds */
+  /* ─── Backgrounds ─── */
   .bg-celestial {
     background: radial-gradient(ellipse at top, rgba(177, 156, 217, 0.08), transparent 70%);
   }
 
-  /* Typography */
+  .bg-cosmic-glow {
+    background: radial-gradient(ellipse at 50% 0%, rgba(223, 183, 108, 0.06), transparent 60%);
+  }
+
+  /* ─── Typography ─── */
   .heading-1 {
-    @apply text-4xl font-bold text-white;
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold text-white;
   }
 
   .heading-2 {
-    @apply text-3xl font-semibold text-white;
+    @apply text-3xl md:text-4xl font-semibold text-white;
   }
 
   .heading-3 {
     @apply text-2xl font-semibold text-white;
+  }
+
+  .heading-gold {
+    @apply font-display tracking-wide text-cosmic-gold;
   }
 
   .body-large {
@@ -179,13 +227,13 @@ body {
     @apply text-sm text-cosmic-lavender/50;
   }
 
-  /* Utility */
+  /* ─── Utilities ─── */
   .text-balance {
     text-wrap: balance;
   }
 
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-cosmic-violet focus:ring-offset-2 focus:ring-offset-cosmic-void;
+    @apply focus:outline-none focus:ring-2 focus:ring-cosmic-gold/50 focus:ring-offset-2 focus:ring-offset-cosmic-950;
   }
 
   .touch-target {
@@ -195,11 +243,11 @@ body {
   /* Loading */
   .loading-skeleton {
     @apply animate-pulse rounded;
-    background: rgba(124, 58, 237, 0.15);
+    background: rgba(223, 183, 108, 0.1);
   }
 
   .loading-spinner {
-    @apply animate-spin rounded-full border-2 border-cosmic-violet/30 border-t-cosmic-gold;
+    @apply animate-spin rounded-full border-2 border-cosmic-gold/20 border-t-cosmic-gold;
   }
 
   /* Mobile */
@@ -211,7 +259,7 @@ body {
     @apply w-full max-w-full overflow-x-hidden;
   }
 
-  /* Z-index helpers for cosmic layers */
+  /* Z-index helpers */
   .z-cosmic-bg { z-index: -10; }
   .z-cosmic-content { z-index: 10; }
   .z-cosmic-overlay { z-index: 50; }
@@ -254,6 +302,10 @@ body {
   .animate-glow-pulse {
     animation: glowPulse 3s ease-in-out infinite;
   }
+
+  .animate-glow-gold {
+    animation: glowGold 2s ease-in-out infinite alternate;
+  }
 }
 
 /* Animations */
@@ -277,12 +329,17 @@ body {
   50% { opacity: 1; }
 }
 
+@keyframes glowGold {
+  0% { box-shadow: 0 0 10px rgba(223, 183, 108, 0.15); }
+  100% { box-shadow: 0 0 25px rgba(223, 183, 108, 0.35), 0 0 50px rgba(223, 183, 108, 0.1); }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .smooth-transition, .smooth-transition-fast, .smooth-transition-slow {
     transition: none;
   }
-  .animate-fade-in, .animate-slide-up, .animate-float, .animate-glow-pulse {
+  .animate-fade-in, .animate-slide-up, .animate-float, .animate-glow-pulse, .animate-glow-gold {
     animation: none;
   }
 }

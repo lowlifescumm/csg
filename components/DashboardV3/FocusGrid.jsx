@@ -1,9 +1,10 @@
 "use client";
-const logger = require('../../lib/logger');
 import { useState, useEffect } from "react";
 import { Heart, Briefcase, Sparkles, Brain, Star, Users, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 // Default tile configuration
 const defaultTiles = [
@@ -87,30 +88,25 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
   const [readingResult, setReadingResult] = useState(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Fetch tiles config from API if available, otherwise use defaults
-    const fetchTilesConfig = async () => {
-      try {
-        const res = await fetch("/api/dashboard/tiles");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.tiles && Array.isArray(data.tiles)) {
-            setTiles(data.tiles);
-          }
-        }
-      } catch (err) {
-        // Use default tiles if API fails
-        console.info("Using default tiles configuration");
-      }
-    };
+  // Fetch tiles using useApiClientWithToast hook
+  const { data: tilesData, error: tilesError } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/dashboard/tiles', { timeout: 15000 }),
+    [],
+    { toastMessages: { error: 'Could not load dashboard tiles. Check your connection.' } }
+  );
 
-    // Use provided config or fetch from API
+  // Update tiles when data loads or tilesConfig changes
+  useEffect(() => {
     if (tilesConfig && Array.isArray(tilesConfig)) {
       setTiles(tilesConfig);
-    } else {
-      fetchTilesConfig();
+      return;
     }
-  }, [tilesConfig]);
+
+    if (tilesData?.tiles && Array.isArray(tilesData.tiles)) {
+      setTiles(tilesData.tiles);
+    }
+  }, [tilesConfig, tilesData]);
 
   const handleTileClick = async (tile) => {
     // If tile requires a form (birth chart, compatibility), redirect to that page
@@ -124,59 +120,36 @@ export default function FocusGrid({ tilesConfig, userId, onReadingComplete }) {
     setReadingResult(null);
 
     try {
-      // Call the generate endpoint
-      const response = await fetch("/api/readings/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: tile.type,
-          focusOptional: tile.focusOptional,
-          spreadType: tile.spreadType,
-          readingType: tile.readingType,
-        }),
-      });
+      const data = await apiClient.post('/api/readings/generate', {
+        type: tile.type,
+        focusOptional: tile.focusOptional,
+        spreadType: tile.spreadType,
+        readingType: tile.readingType,
+      }, { timeout: 30000 });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 402) {
-          // Insufficient credits
-          setError({
-            type: "insufficient_credits",
-            message: data.error || "Insufficient credits",
-            details: data.details,
-            cost: data.cost,
-          });
-        } else {
-          setError({
-            type: "error",
-            message: data.error || "Failed to generate reading",
-            details: data.details,
-          });
-        }
-        setLoadingTile(null);
-        return;
-      }
-
-      // Success - show result
       setReadingResult({
         tile,
         reading: data.reading || data,
       });
       setLoadingTile(null);
 
-      // Call completion callback if provided
       if (onReadingComplete) {
         onReadingComplete(data.reading || data);
       }
     } catch (err) {
-      console.error("Error generating reading:", err);
-      setError({
-        type: "error",
-        message: "Failed to connect to server. Please try again.",
-      });
+      if (err.status === 402) {
+        setError({
+          type: "insufficient_credits",
+          message: err.error || "Insufficient credits",
+          details: err.details,
+          cost: err.cost,
+        });
+      } else {
+        setError({
+          type: "error",
+          message: err.message || "Failed to connect to server. Please try again.",
+        });
+      }
       setLoadingTile(null);
     }
   };

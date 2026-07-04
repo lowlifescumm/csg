@@ -1,6 +1,6 @@
 "use client";
-const logger = require('../lib/logger');
 
+import { apiClient } from '@/lib/api-client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Download, FileText, Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp, BookOpen, Star, Moon, Zap, Eye, Layers } from 'lucide-react';
 
@@ -257,13 +257,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
 
   const fetchJobStatus = async () => {
     try {
-      const res = await fetch(`/api/jobs/${jobId}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch job status');
-      }
-
+      const data = await apiClient.get(`/api/jobs/${jobId}`, { timeout: 10000, retry: false });
       setJob(data.job);
       setResult(data.result);
     } catch (err) {
@@ -275,13 +269,7 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
 
   const fetchResult = async () => {
     try {
-      const res = await fetch(`/api/reports/${resultId}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch result');
-      }
-
+      const data = await apiClient.get(`/api/reports/${resultId}`, { timeout: 30000 });
       setResult(data.result);
     } catch (err) {
       setError(err.message);
@@ -398,12 +386,19 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
 
     // Special: Render chart sections visually
     if (isChartSection && section.chartImage) {
+      const isPartner = sectionType === 'partner_birth_chart';
+      const dataSource = section.chartDataSource;
       return (
         <div key={idx} id={`section-${idx}`}
           className={`section-block rounded-xl overflow-hidden mb-6 border ${tierColors.border} bg-white`}>
           <div className={`px-4 py-3 flex items-center gap-2 border-b ${tierColors.border} ${tierColors.sectionHeader}`}>
             <Icon className="w-5 h-5" />
             <h3 className="text-lg font-semibold">{label}</h3>
+            {isPartner && (
+              <span className="ml-auto text-xs font-normal px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                Unverified
+              </span>
+            )}
           </div>
           <div className="p-4 flex justify-center">
             <div
@@ -411,6 +406,20 @@ export default function ReportViewer({ jobId, resultId, reportType, autoDownload
               dangerouslySetInnerHTML={{ __html: section.chartImage }}
             />
           </div>
+          {isPartner && (
+            <div className="px-4 pb-2">
+              <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+                <span>
+                  <strong>Data source:</strong>{' '}
+                  {dataSource?.label || 'Based on birth data you entered for your partner'}
+                  . This chart was calculated from birth data you provided for your partner. The placements shown are astrological calculations based on that data and have not been independently verified by your partner.
+                </span>
+              </div>
+            </div>
+          )}
           {section.content && (
             <div className="px-4 pb-4 prose max-w-none">
               <div className="text-gray-700 whitespace-pre-wrap"

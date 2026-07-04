@@ -1,14 +1,18 @@
 'use client';
-const logger = require('../../lib/logger');
 
 export const dynamic = 'force-static';
 
 import { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
+import { useToast } from '@/components/ui';
 import { 
   Calendar, Star, Sparkles, TrendingUp, AlertTriangle, 
   Clock, Target, ArrowLeft, Loader2, Plus, Settings
 } from 'lucide-react';
 import Link from 'next/link';
+import LowCreditsUpsellBanner from '@/components/LowCreditsUpsellBanner';
+import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
 
 function parseLocalDate(dateStr) {
   if (!dateStr || typeof dateStr !== 'string') return null;
@@ -31,61 +35,100 @@ function formatForecastDateRange(forecast, opts = { month: 'short', day: 'numeri
 }
 
 export default function ForecastsPage() {
+  const toast = useToast();
   const [forecasts, setForecasts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState(null);
   const [selectedForecast, setSelectedForecast] = useState(null);
   const [range, setRange] = useState('7d');
+  const [creditsRemaining, setCreditsRemaining] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [showFloatingPrompt, setShowFloatingPrompt] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [user, setUser] = useState(null);
 
+  const { loading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get(`/api/forecasts?range=${range}`),
+    [range],
+    {
+      onSuccess: (data) => {
+        setForecasts(data.forecasts);
+      },
+      toastMessages: { error: "Failed to load forecasts." },
+    },
+  );
+
+  // Check credits and user data for gating
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/credits'),
+    [],
+    {
+      onSuccess: (creditData) => {
+        if (creditData.isPremium) {
+          setIsPremium(true);
+          setCreditsRemaining(creditData.credits?.forecast?.remaining || 0);
+        } else {
+          setIsPremium(false);
+          setCreditsRemaining(0);
+        }
+      },
+      onErrorWithToast: () => {
+        setIsPremium(false);
+        setCreditsRemaining(0);
+        return false;
+      },
+    },
+  );
+
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/auth/user'),
+    [],
+    {
+      onSuccess: (data) => {
+        if (data.user) setUser(data.user);
+      },
+      onErrorWithToast: () => false,
+    },
+  );
+
+  // Show floating prompt 30 seconds after banner is dismissed
   useEffect(() => {
-    fetchForecasts();
-  }, [range]);
-
-  const fetchForecasts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/forecasts?range=${range}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch forecasts');
-      }
-
-      const data = await response.json();
-      setForecasts(data.forecasts);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
+    if (bannerDismissed) {
+      const timer = setTimeout(() => {
+        setShowFloatingPrompt(true);
+      }, 30000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [bannerDismissed]);
 
   const generateTodaysForecast = async () => {
+    // Credit gate: Check credits BEFORE generating forecast
+    // Requires 8 credits for forecasts
+    const isAdmin = user?.role === 'admin';
+    if (!isAdmin && isPremium && creditsRemaining !== null && creditsRemaining < 8) {
+      toast.error(`Insufficient credits. Forecasts require 8 credits. You have ${creditsRemaining} remaining.`);
+      setShowFloatingPrompt(true);
+      return;
+    }
+
     try {
       setGenerating(true);
-      const response = await fetch('/api/forecasts/generate', {
-        method: 'POST',
-      });
+      const data = await apiClient.post('/api/forecasts/generate');
 
-      if (!response.ok) {
-        const data = await response.json();
-        if (data.needsBirthChart) {
-          alert('Please create your birth chart first to generate forecasts.');
-          return;
-        }
-        throw new Error(data.error || 'Failed to generate forecast');
-      }
-
-      const data = await response.json();
-      
-      // Remove existing forecast with same ID to prevent duplicates
       const updatedForecasts = forecasts.filter(f => f.id !== data.forecast.id);
       setForecasts([data.forecast, ...updatedForecasts]);
       setSelectedForecast(data.forecast);
       setGenerating(false);
     } catch (err) {
+      if (err.status === 400 && err.message?.includes('natal chart')) {
+        toast.error('Please create your birth chart first to generate forecasts.');
+        setGenerating(false);
+        return;
+      }
       console.error('Error generating forecast:', err);
-      alert(err.message);
+      toast.error(err.message || 'Failed to generate forecast.');
       setGenerating(false);
     }
   };
@@ -109,12 +152,34 @@ export default function ForecastsPage() {
   const today = new Date().toISOString().split('T')[0];
   const todaysForecast = forecasts.find(f => f.forecast_date === today && f.forecast_type === 'daily');
 
+  // Admin bypass - no gates shown
+  const isAdmin = user?.role === 'admin';
+  const showCreditGate = isPremium && !isAdmin && creditsRemaining !== null && creditsRemaining < 8;
+
   return (
     <div className="min-h-screen bg-black">
       <div className="fixed inset-0 bg-gradient-to-br from-violet-950 via-black to-fuchsia-950 opacity-90" />
-      
+
+      {/* Show upsell banner when credits are insufficient (requires 8 credits) */}
+      {showCreditGate && !bannerDismissed && (
+        <LowCreditsUpsellBanner
+          currentCredits={creditsRemaining}
+          creditsNeeded={8}
+          creditType="forecast"
+          onDismiss={() => setBannerDismissed(true)}
+        />
+      )}
+
+      {/* Show floating prompt when credits insufficient */}
+      {showFloatingPrompt && (
+        <FloatingUpgradePrompt
+          message={`Forecasts require 8 credits. You have ${creditsRemaining} remaining.`}
+          duration={7000}
+        />
+      )}
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* Header */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-8">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Activity, ArrowLeft, Zap } from "lucide-react";
 import Link from "next/link";
+import { apiClient } from "@/lib/api-client";
 
 export default function EnergyLogPage() {
   const router = useRouter();
@@ -24,20 +25,14 @@ export default function EnergyLogPage() {
     setSuccess(false);
 
     try {
-      const res = await fetch("/api/energy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          physical: parseInt(formData.physical),
-          emotional: parseInt(formData.emotional),
-          spiritual: parseInt(formData.spiritual),
-          date: formData.date,
-        }),
+      const data = await apiClient.post("/api/energy", {
+        physical: parseInt(formData.physical),
+        emotional: parseInt(formData.emotional),
+        spiritual: parseInt(formData.spiritual),
+        date: formData.date,
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         setSuccess(true);
         setTimeout(() => {
           router.push("/dashboard");

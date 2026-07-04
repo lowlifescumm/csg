@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { X, Sparkles, ArrowRight, Lock, Mail, Check } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 export default function FreeSampleModal({ isOpen, onClose }) {
   const [step, setStep] = useState("intention"); // intention | loading | result | capture
@@ -13,6 +15,42 @@ export default function FreeSampleModal({ isOpen, onClose }) {
   const [captureError, setCaptureError] = useState("");
   const [captureLoading, setCaptureLoading] = useState(false);
   const [captured, setCaptured] = useState(false);
+  const [sampleReq, setSampleReq] = useState({ count: 0, question: null });
+
+  const fireAnalytics = (eventName, extra = {}) => {
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      window.gtag("event", eventName, { event_category: "free_sample", ...extra });
+    }
+  };
+
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.post("/api/tarot/sample", { question: sampleReq.question }, { timeout: 90_000 }),
+    [sampleReq.count, sampleReq.question],
+    {
+      enabled: sampleReq.count > 0,
+      onSuccess: (data) => {
+        setSampleReq({ count: 0, question: null });
+        if (data.success) {
+          fireAnalytics("free_reading_completed");
+          setTimeout(() => {
+            setReading(data.reading);
+            setStep("result");
+            setIsAnimating(false);
+          }, 500);
+        } else {
+          setError(data.error || "Something went wrong");
+          setStep("intention");
+          setIsAnimating(false);
+        }
+      },
+      onError: () => {
+        setStep("intention");
+        setIsAnimating(false);
+      },
+      toastMessages: { error: "Failed to connect. Please try again." },
+    },
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -37,7 +75,7 @@ export default function FreeSampleModal({ isOpen, onClose }) {
     return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
 
-  const handleStartReading = async () => {
+  const handleStartReading = () => {
     if (!question.trim()) {
       setError("Please share your intention or question");
       return;
@@ -46,32 +84,7 @@ export default function FreeSampleModal({ isOpen, onClose }) {
     setStep("loading");
     setIsAnimating(true);
     
-    try {
-      const res = await fetch("/api/tarot/sample", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: question.trim() }),
-      });
-
-      const data = await res.json();
-      
-      if (data.success) {
-        // Reduced from 1500ms to 500ms — still feels dramatic but not wasteful
-        setTimeout(() => {
-          setReading(data.reading);
-          setStep("result");
-          setIsAnimating(false);
-        }, 500);
-      } else {
-        setError(data.error || "Something went wrong");
-        setStep("intention");
-        setIsAnimating(false);
-      }
-    } catch (err) {
-      setError("Failed to connect. Please try again.");
-      setStep("intention");
-      setIsAnimating(false);
-    }
+    setSampleReq({ count: 1, question: question.trim() });
   };
 
   const handleCaptureEmail = async () => {
@@ -89,11 +102,7 @@ export default function FreeSampleModal({ isOpen, onClose }) {
       localStorage.setItem('csg_leads', JSON.stringify(leads));
       
       // Also try to submit to a simple API if one exists
-      await fetch('/api/leads/capture', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), source: 'free_sample_modal', question: question.trim() })
-      }).catch(() => {}); // Silently fail if API doesn't exist yet
+      await apiClient.post('/api/leads/capture', { email: email.trim(), source: 'free_sample_modal', question: question.trim() }).catch(() => {});
       
       setCaptured(true);
       setCaptureLoading(false);

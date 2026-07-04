@@ -1,90 +1,72 @@
 "use client";
-import { Suspense } from "react";
-import nextDynamic from "next/dynamic";
-import DashboardShell from "@/components/DashboardShell";
+
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { apiClient } from "@/lib/api-client";
 import DashboardLayoutShell from "@/components/DashboardLayoutShell";
-
-// Force client-side rendering to avoid hydration mismatches
-export const dynamic = "force-dynamic";
-
-// Disable SSR completely for dashboard to avoid hydration mismatches
-const DashboardV3Client = nextDynamic(
-  () => import("@/components/DashboardV3/index"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="min-h-screen bg-cosmic-void flex items-center justify-center">
-        <div className="text-center animate-fade-in">
-          <div className="relative mb-6">
-            <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    ),
-  }
-);
-
-/**
- * DashboardPage - Main dashboard route
- *
- * Uses DashboardShell to fetch real data and DashboardV3Client for rendering.
- * Dashboard V3 is now the default and only dashboard version.
- */
-function DashboardPageInner() {
-
-  return (
-    <DashboardShell>
-      {({ user, credits, readings, streak, moonPhase, refetch }) => {
-        // Calculate energy and level data for header
-        const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
-        const energy = 75; // Default, can be calculated from user activity
-        const energyChange = 12; // Default
-        const level = 5; // Default, can be calculated from XP
-        const xpCurrent = 2450; // Default, should come from user stats
-        const xpTarget = 3000; // Default
-
-        return (
-          <DashboardLayoutShell
-            user={user}
-            credits={credits}
-            streak={streak}
-            moonPhase={moonPhase}
-            energy={energy}
-            energyChange={energyChange}
-            level={level}
-            xpCurrent={xpCurrent}
-            xpTarget={xpTarget}
-            mainContent={
-              <DashboardV3Client
-                user={user}
-                credits={credits}
-                readings={readings}
-                streak={streak}
-                moonPhase={moonPhase}
-                refetch={refetch}
-              />
-            }
-          />
-        );
-      }}
-    </DashboardShell>
-  );
-}
+import DashboardV3 from "@/components/DashboardV3";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 export default function DashboardPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-cosmic-void flex items-center justify-center">
-          <div className="text-center animate-fade-in">
-            <div className="relative mb-6">
-              <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto"></div>
-            </div>
-          </div>
-        </div>
+  const { data: session, status: sessionStatus } = useSession();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (sessionStatus === "loading") return;
+    
+    if (!session) {
+      window.location.href = "/login?redirect=dashboard";
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const data = await apiClient.get("/api/auth/user");
+        if (data.user) {
+          setUser(data.user);
+        } else {
+          setError("Failed to load user data");
+        }
+      } catch (err) {
+        console.error("Error fetching user:", err);
+        setError(err.message || "Failed to load user data");
+      } finally {
+        setLoading(false);
       }
-    >
-      <DashboardPageInner />
-    </Suspense>
+    };
+
+    fetchUser();
+  }, [session, sessionStatus]);
+
+  if (sessionStatus === "loading" || loading) {
+    return <LoadingSkeleton />;
+  }
+
+  if (error || !user) {
+    return (
+      <div className="min-h-screen bg-cosmic-void flex items-center justify-center">
+        <div className="text-white text-center">
+          <p className="mb-4">{error || "Please log in to view your dashboard"}</p>
+          <button 
+            onClick={() => window.location.href = "/login?redirect=dashboard"}
+            className="px-4 py-2 bg-cosmic-gold text-cosmic-void rounded-lg font-medium"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <DashboardLayoutShell>
+      <div className="text-white p-8">
+        <h1>DASHBOARD V3 LOADED</h1>
+        <p>User: {user?.email || 'No user'}</p>
+      </div>
+      <DashboardV3 user={user} />
+    </DashboardLayoutShell>
   );
 }

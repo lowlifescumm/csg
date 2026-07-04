@@ -1,31 +1,23 @@
 "use client";
-const logger = require('../lib/logger');
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { zodiacSigns } from '@/lib/zodiac-data';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
 
 export default function DailyHoroscope({ userSign = null }) {
   const [selectedSign, setSelectedSign] = useState(userSign || 'aries');
-  const [horoscope, setHoroscope] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadHoroscope(selectedSign);
-  }, [selectedSign]);
+  const { data, loading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get(`/api/horoscope?sign=${selectedSign}`),
+    [selectedSign],
+    {
+      onErrorWithToast: () => false,
+      toastMessages: { error: 'Failed to load horoscope.' },
+    },
+  );
 
-  const loadHoroscope = async (sign) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/horoscope?sign=${sign}`);
-      const data = await response.json();
-      if (data.success) {
-        setHoroscope(data.horoscope);
-      }
-    } catch (error) {
-      console.error('Failed to load horoscope:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const horoscope = data?.horoscope;
 
   const getSignEmoji = (sign) => {
     const emojis = {
@@ -35,13 +27,6 @@ export default function DailyHoroscope({ userSign = null }) {
     };
     return emojis[sign] || '⭐';
   };
-
-  // Ensure userSign is set on mount if provided
-  useEffect(() => {
-    if (userSign && !selectedSign) {
-      setSelectedSign(userSign.toLowerCase());
-    }
-  }, [userSign]);
 
   const isUserSign = (signName) => {
     return userSign && signName.toLowerCase() === userSign.toLowerCase();

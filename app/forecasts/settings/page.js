@@ -1,52 +1,40 @@
 'use client';
-const logger = require('../../../lib/logger');
 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Loader2, Check } from 'lucide-react';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api-client';
+import { useApiClientWithToast, DEFAULT_TOAST_MESSAGE } from '@/src/hooks/useApiClientWithToast';
+import { useToast } from '@/components/ui';
 
 export default function ForecastSettingsPage() {
+  const toast = useToast();
   const [preferences, setPreferences] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    fetchPreferences();
-  }, []);
-
-  const fetchPreferences = async () => {
-    try {
-      const response = await fetch('/api/forecasts/preferences');
-      if (response.ok) {
-        const data = await response.json();
+  const { loading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/forecasts/preferences'),
+    [],
+    {
+      onSuccess: (data) => {
         setPreferences(data.preferences);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching preferences:', error);
-      setLoading(false);
-    }
-  };
+      },
+      toastMessages: { error: "Failed to load forecast settings." },
+    },
+  );
 
   const savePreferences = async () => {
     try {
       setSaving(true);
-      const response = await fetch('/api/forecasts/preferences', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(preferences),
-      });
-
-      if (response.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-      }
+      await apiClient.put('/api/forecasts/preferences', preferences);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
       setSaving(false);
     } catch (error) {
       console.error('Error saving preferences:', error);
+      toast.error(DEFAULT_TOAST_MESSAGE);
       setSaving(false);
     }
   };

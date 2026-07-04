@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiClient } from "@/lib/api-client";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -18,8 +19,7 @@ export default function ProfilePage() {
 
   const checkAuth = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/user");
-      const data = await res.json();
+      const data = await apiClient.get("/api/auth/user");
       
       if (!data.user) {
         router.push("/login");
@@ -45,9 +45,8 @@ export default function ProfilePage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/user/ai-preferences');
-        const data = await res.json();
-        if (res.ok && data.success) setOptIn(!!data.ai_personalization_opt_in);
+        const data = await apiClient.get('/api/user/ai-preferences');
+        if (data.success) setOptIn(!!data.ai_personalization_opt_in);
       } catch (err) {
         console.error("[profile] Failed to fetch AI preferences:", err);
       }
@@ -60,23 +59,12 @@ export default function ProfilePage() {
     setMessage("");
 
     try {
-      const res = await fetch("/api/auth/user", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setMessage("Profile updated successfully!");
-        setUser(data.user);
-        setTimeout(() => setMessage(""), 3000);
-      } else {
-        setMessage(data.error || "Failed to update profile");
-      }
+      const data = await apiClient.put("/api/auth/user", formData);
+      setMessage("Profile updated successfully!");
+      setUser(data.user);
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      setMessage("Failed to connect to server");
+      setMessage(err.message || "Failed to connect to server");
     } finally {
       setSaving(false);
     }
@@ -125,7 +113,7 @@ export default function ProfilePage() {
                   const val = e.target.checked;
                   setOptIn(val);
                   try {
-                    await fetch('/api/user/ai-preferences', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ai_personalization_opt_in: val }) });
+                    await apiClient.post('/api/user/ai-preferences', { ai_personalization_opt_in: val });
                   } catch (err) {
                       console.error('[profile] Failed to save AI preference:', err);
                     }

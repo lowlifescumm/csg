@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Crown, X } from 'lucide-react';
 import Link from 'next/link';
 
-const FloatingUpgradePrompt = ({ message = "Out of credits! Upgrade for unlimited access", autoHide = true, duration = 5000 }) => {
+const FloatingUpgradePrompt = ({ message = "Out of credits! Upgrade for 60 monthly credits", autoHide = true, duration = 5000 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 

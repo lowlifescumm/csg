@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { X, Sparkles, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
-const LowCreditsUpsellBanner = ({ creditType = 'all', creditsNeeded = 1, currentCredits = 0, forceShow = false }) => {
+const LowCreditsUpsellBanner = ({ creditType = 'all', creditsNeeded = 1, currentCredits = 0, forceShow = false, onDismiss = null }) => {
   const [isDismissed, setIsDismissed] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
@@ -24,6 +24,10 @@ const LowCreditsUpsellBanner = ({ creditType = 'all', creditsNeeded = 1, current
       setIsDismissed(true);
       setIsVisible(false);
       sessionStorage.setItem('upsell-banner-dismissed', 'true');
+      // Call the onDismiss callback if provided
+      if (onDismiss && typeof onDismiss === 'function') {
+        onDismiss();
+      }
     }, 300);
   };
 

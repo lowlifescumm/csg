@@ -1,8 +1,9 @@
 "use client";
-const logger = require('../../lib/logger');
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Sparkles, BookOpen, Loader2, Flame, Droplets, Wind, Mountain } from "lucide-react";
 import { zodiacSigns } from "@/lib/zodiac-data";
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 // Element icons mapping
 const elementIcons = {
@@ -42,60 +43,68 @@ function generateEnergyRhythm() {
 export default function CosmicBriefing({ userId, onReadingComplete }) {
   const [selectedSign, setSelectedSign] = useState(null);
   const [userSign, setUserSign] = useState(null);
-  const [briefing, setBriefing] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingReading, setLoadingReading] = useState(false);
-  const [savingJournal, setSavingJournal] = useState(false);
   const [error, setError] = useState(null);
   const [energyRhythm] = useState(generateEnergyRhythm());
+  const [loadingReading, setLoadingReading] = useState(false);
+  const [savingJournal, setSavingJournal] = useState(false);
 
   // Fetch user's birth chart to get their sun sign
-  useEffect(() => {
-    const fetchUserSign = async () => {
-      try {
-        const res = await fetch("/api/birth-chart");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.chart?.planets?.sun?.sign) {
-            const sunSign = data.chart.planets.sun.sign;
-            setUserSign(sunSign);
-            setSelectedSign(sunSign);
-          }
-        }
-      } catch (err) {
-        console.info("Could not fetch user sign, defaulting to Aries");
-        setSelectedSign("Aries");
-      }
-    };
+  const {
+    data: birthChartData,
+    loading: loadingUserSign,
+    error: userSignError,
+    refetch: refetchUserSign,
+  } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get("/api/birth-chart", { timeout: 15000 }),
+    [],
+    {
+      toastMessages: { error: "Could not load your birth chart." },
+    }
+  );
 
-    fetchUserSign();
-  }, []);
+  // Set user sign from birth chart
+  useEffect(() => {
+    if (birthChartData?.chart?.planets?.sun?.sign) {
+      const sunSign = birthChartData.chart.planets.sun.sign;
+      setUserSign(sunSign);
+      setSelectedSign(sunSign);
+    } else if (userSignError) {
+      // Default to Aries if we couldn't fetch
+      setSelectedSign("Aries");
+    }
+  }, [birthChartData, userSignError]);
 
   // Fetch briefing when sign changes
-  useEffect(() => {
-    if (selectedSign) {
-      fetchBriefing(selectedSign);
+  const {
+    data: briefingData,
+    loading: loadingBriefing,
+    error: briefingError,
+    refetch: refetchBriefing,
+  } = useApiClientWithToast(
+    apiClient,
+    (c) =>
+      selectedSign
+        ? c.get(`/api/briefing?sign=${selectedSign.toLowerCase()}`, { timeout: 15000 })
+        : Promise.resolve(null),
+    [selectedSign],
+    {
+      enabled: !!selectedSign,
+      toastMessages: { error: "Failed to load briefing. Please try again." },
     }
-  }, [selectedSign]);
+  );
 
-  const fetchBriefing = async (sign) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/briefing?sign=${sign.toLowerCase()}`);
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setBriefing(data.briefing);
-      } else {
-        setError(data.error || "Failed to load briefing");
-      }
-    } catch (err) {
-      console.error("Failed to fetch briefing:", err);
-      setError("Failed to load briefing. Please try again.");
-    } finally {
-      setLoading(false);
+  // Sync local error state with API errors (for 402 credit handling)
+  useEffect(() => {
+    if (briefingError && briefingError.status === 402) {
+      setError({
+        type: "insufficient_credits",
+        message: briefingError.message || "Insufficient credits",
+      });
+    } else {
+      setError(null);
     }
-  };
+  }, [briefingError]);
 
   const handleGenerateReading = async () => {
     if (!selectedSign) return;
@@ -104,21 +113,13 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
     setError(null);
 
     try {
-      const res = await fetch("/api/readings/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: "guided",
-          sign: selectedSign,
-        }),
-      });
+      const data = await apiClient.post("/api/readings/generate", {
+        type: "guided",
+        sign: selectedSign,
+      }, { timeout: 30000 }); // AI generation needs longer timeout
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 402) {
+      if (data.error) {
+        if (data.status === 402 || data.errorType === "insufficient_credits") {
           setError({
             type: "insufficient_credits",
             message: data.error || "Insufficient credits",
@@ -153,26 +154,18 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
   };
 
   const handleSaveToJournal = async () => {
-    if (!briefing) return;
+    if (!briefingData?.briefing) return;
 
     setSavingJournal(true);
     try {
-      const res = await fetch("/api/journal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sign: selectedSign,
-          content: briefing.message || briefing.content,
-          type: "briefing",
-          date: new Date().toISOString().split("T")[0],
-        }),
-      });
+      const data = await apiClient.post("/api/journal", {
+        sign: selectedSign,
+        content: briefingData.briefing.message || briefingData.briefing.content,
+        type: "briefing",
+        date: new Date().toISOString().split("T")[0],
+      }, { timeout: 15000 });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         // Show success feedback
         setError(null);
         // Could use a toast notification library here
@@ -215,6 +208,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
   const currentSign = zodiacSigns.find((s) => s.name === selectedSign);
   const ElementIcon = currentSign ? elementIcons[currentSign.element] : Flame;
   const elementTip = currentSign ? elementTips[currentSign.element] : "";
+  const loading = loadingUserSign || loadingBriefing;
 
   return (
     <div className="glassmorphic rounded-3xl p-6 sm:p-8 apple-shadow-lg border border-white border-opacity-40 mb-8">
@@ -264,19 +258,19 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
             <div className="bg-red-500/20 border border-red-400/50 rounded-xl p-4 mb-6">
               <p className="text-red-200 text-sm">{error}</p>
             </div>
-          ) : briefing ? (
+          ) : briefingData?.briefing ? (
             <div className="bg-white bg-opacity-10 rounded-xl p-6 mb-6 border border-white border-opacity-20">
               <div className="flex items-center gap-3 mb-4">
                 <div className="text-4xl">{getSignEmoji(selectedSign)}</div>
                 <div>
                   <h3 className="text-xl font-semibold text-white">
-                    {selectedSign} - {briefing.title || "Today's Message"}
+                    {selectedSign} - {briefingData.briefing.title || "Today's Message"}
                   </h3>
                   <p className="text-purple-200 text-sm">{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
                 </div>
               </div>
               <div className="text-white text-opacity-90 leading-relaxed whitespace-pre-line">
-                {briefing.message || briefing.content || briefing.text}
+                {briefingData.briefing.message || briefingData.briefing.content || briefingData.briefing.text}
               </div>
             </div>
           ) : null}
@@ -301,7 +295,7 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
               )}
             </button>
 
-            {briefing && (
+            {briefingData?.briefing && (
               <button
                 onClick={handleSaveToJournal}
                 disabled={savingJournal}
@@ -383,4 +377,3 @@ export default function CosmicBriefing({ userId, onReadingComplete }) {
     </div>
   );
 }
-

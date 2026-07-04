@@ -1,7 +1,7 @@
 "use client";
-const logger = require('../lib/logger');
 import { useState, useEffect } from "react";
 import { Brain, Clock, Trophy, Calendar, Loader2 } from "lucide-react";
+import { apiClient } from '@/lib/api-client';
 
 /**
  * MeditationHistory - Displays user's meditation session history
@@ -23,13 +23,10 @@ export default function MeditationHistory({ userId }) {
   const fetchSessions = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/user/meditations?limit=20");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setSessions(data.sessions || []);
-          setTotal(data.total || 0);
-        }
+      const data = await apiClient.get("/api/user/meditations?limit=20");
+      if (data.success) {
+        setSessions(data.sessions || []);
+        setTotal(data.total || 0);
       }
     } catch (err) {
       console.error("Failed to fetch meditation sessions:", err);

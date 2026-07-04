@@ -2,10 +2,14 @@
 const logger = require('../../lib/logger');
 import { useState, useEffect } from 'react';
 import { Heart, Loader2, Sparkles, ChevronRight, ChevronLeft, Crown, Calendar } from 'lucide-react';
+import CompositeChart from '@/components/CompositeChart';
+import { useToast } from "@/components/ui";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LowCreditsUpsellBanner from '@/components/LowCreditsUpsellBanner';
 import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
+import { apiClient } from "@/lib/api-client";
+import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
 export default function CompatibilityCalculator() {
   const [step, setStep] = useState(1);
@@ -14,39 +18,35 @@ export default function CompatibilityCalculator() {
   const [relationshipType, setRelationshipType] = useState('romantic');
   const [coords1, setCoords1] = useState(null);
   const [coords2, setCoords2] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [isPremium, setIsPremium] = useState(null);
   const [creditsRemaining, setCreditsRemaining] = useState(null);
-  const [loadingCredits, setLoadingCredits] = useState(true);
+  const [compatVersion, setCompatVersion] = useState(0);
   const router = useRouter();
+  const toast = useToast();
 
-  useEffect(() => {
-    checkCreditsStatus();
-  }, []);
-
-  const checkCreditsStatus = async () => {
-    setLoadingCredits(true);
-    try {
-      const response = await fetch('/api/credits');
-      const data = await response.json();
-      
-      if (data.isPremium) {
-        setIsPremium(true);
-        setCreditsRemaining(data.credits.compatibility?.remaining || 0);
-      } else {
+  const { loading: loadingCredits, refetch: refetchCredits } = useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/credits'),
+    [],
+    {
+      onSuccess: (data) => {
+        if (data.isPremium) {
+          setIsPremium(true);
+          setCreditsRemaining(data.credits.compatibility?.remaining || 0);
+        } else {
+          setIsPremium(false);
+          setCreditsRemaining(0);
+        }
+      },
+      onError: () => {
         setIsPremium(false);
         setCreditsRemaining(0);
-      }
-    } catch (error) {
-      console.error('Error checking credits:', error);
-      setIsPremium(false);
-      setCreditsRemaining(0);
-    } finally {
-      setLoadingCredits(false);
-    }
-  };
+      },
+      toastMessages: { error: 'Could not check credit status.' },
+    },
+  );
 
   const getSunSign = (dateStr) => {
     const date = new Date(dateStr);
@@ -150,6 +150,73 @@ export default function CompatibilityCalculator() {
     }
   };
 
+  const { loading: compatLoading } = useApiClientWithToast(
+    apiClient,
+    (c) => c.post('/api/compatibility', {
+      person1Name: person1.name,
+      person1BirthDate: person1.birthDate,
+      person1BirthTime: person1.birthTime,
+      person1Latitude: coords1.latitude,
+      person1Longitude: coords1.longitude,
+      person2Name: person2.name,
+      person2BirthDate: person2.birthDate,
+      person2BirthTime: person2.birthTime,
+      person2Latitude: coords2.latitude,
+      person2Longitude: coords2.longitude,
+    }, { timeout: 90_000 }),
+    [compatVersion, person1, person2, coords1, coords2],
+    {
+      enabled: compatVersion > 0,
+      onSuccess: (compatData) => {
+        setCompatVersion(0);
+        if (compatData.success) {
+          setResult(compatData);
+          if (compatData.creditsRemaining !== null && compatData.creditsRemaining !== undefined) {
+            setCreditsRemaining(compatData.creditsRemaining);
+          }
+          setStep(3);
+        } else if (compatData.requiresPayment) {
+          if (compatData.isPremium === false) {
+            setError('Premium subscription required to generate compatibility reports');
+            setTimeout(() => router.push('/subscription'), 2000);
+          } else if (compatData.isPremium === true && compatData.creditsRemaining === 0) {
+            setError(`You've used all your compatibility credits this month. Credits reset on ${new Date(compatData.resetDate).toLocaleDateString()}`);
+          }
+        } else {
+          setError(compatData.error || 'Failed to generate compatibility report');
+        }
+      },
+      onErrorWithToast: () => 'Failed to generate compatibility report. Check your connection.',
+    },
+  );
+
+  const [showFloatingPrompt, setShowFloatingPrompt] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Check user data for admin bypass
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/auth/user'),
+    [],
+    {
+      onSuccess: (data) => {
+        if (data.user) setUser(data.user);
+      },
+      onErrorWithToast: () => false,
+    },
+  );
+
+  // Show floating prompt 30 seconds after banner is dismissed
+  useEffect(() => {
+    if (bannerDismissed) {
+      const timer = setTimeout(() => {
+        setShowFloatingPrompt(true);
+      }, 30000);
+      return () => clearTimeout(timer);
+    }
+  }, [bannerDismissed]);
+
   const handleSubmit = async () => {
     if (!coords1 || !coords2) {
       setError('Please search for both birth locations');
@@ -157,19 +224,24 @@ export default function CompatibilityCalculator() {
     }
 
     if (isPremium === false) {
-      // Show auth gate for full report
       setError('Create a free account to unlock the full synastry report with Moon, Venus, Mars, and house overlays.');
       return;
     }
 
-    // Check if user has a birth chart first (required dependency)
+    // Credit gate: Check credits BEFORE generating report
+    // Requires 20 credits for compatibility
+    const isAdmin = user?.role === 'admin';
+    if (!isAdmin && isPremium && creditsRemaining !== null && creditsRemaining < 20) {
+      setError(`Insufficient credits. Compatibility reports require 20 credits. You have ${creditsRemaining} remaining.`);
+      setShowFloatingPrompt(true);
+      return;
+    }
+
     try {
-      const chartResponse = await fetch('/api/birth-chart');
-      const chartData = await chartResponse.json();
+      const chartData = await apiClient.get('/api/birth-chart');
       
       if (!chartData.hasChart) {
         setError('Please create your free birth chart first. Compatibility reports require your birth chart data.');
-        // Optionally redirect to birth chart creation
         setTimeout(() => {
           if (confirm('You need to create your birth chart first. Would you like to create it now? (It\'s free!)')) {
             window.location.href = '/birth-chart';
@@ -179,59 +251,10 @@ export default function CompatibilityCalculator() {
       }
     } catch (err) {
       console.error('Error checking birth chart:', err);
-      // Continue anyway, but log the error
     }
 
-    setLoading(true);
     setError('');
-
-    try {
-      const compatResponse = await fetch('/api/compatibility', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          person1Name: person1.name,
-          person1BirthDate: person1.birthDate,
-          person1BirthTime: person1.birthTime,
-          person1Latitude: coords1.latitude,
-          person1Longitude: coords1.longitude,
-          person2Name: person2.name,
-          person2BirthDate: person2.birthDate,
-          person2BirthTime: person2.birthTime,
-          person2Latitude: coords2.latitude,
-          person2Longitude: coords2.longitude
-        })
-      });
-
-      const compatData = await compatResponse.json();
-
-      if (compatData.success) {
-        setResult(compatData);
-        if (compatData.creditsRemaining !== null && compatData.creditsRemaining !== undefined) {
-          setCreditsRemaining(compatData.creditsRemaining);
-        }
-        setStep(3);
-      } else if (compatData.requiresPayment) {
-        if (compatData.isPremium === false) {
-          // User is not premium - show upgrade screen
-          setError('Premium subscription required to generate compatibility reports');
-          setTimeout(() => {
-            router.push('/subscription');
-          }, 2000);
-        } else if (compatData.isPremium === true && compatData.creditsRemaining === 0) {
-          // Premium user but no credits
-          setError(`You've used all your compatibility credits this month. Credits reset on ${new Date(compatData.resetDate).toLocaleDateString()}`);
-        }
-      } else {
-        throw new Error(compatData.error || 'Failed to generate compatibility report');
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
+    setCompatVersion(v => v + 1);
   };
 
   // Show loading state while checking credits
@@ -257,19 +280,28 @@ export default function CompatibilityCalculator() {
         setPerson2({ name: '', birthDate: '', birthTime: '', location: '' });
         setCoords1(null);
         setCoords2(null);
-        checkCreditsStatus(); // Refresh credits
+        refetchCredits(); // Refresh credits
       }} 
     />;
   }
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-4 sm:px-6">
-      {/* Show upsell banner when credits are low */}
-      {isPremium && creditsRemaining !== null && creditsRemaining < 1 && (
-        <LowCreditsUpsellBanner 
-          currentCredits={creditsRemaining} 
-          creditsNeeded={1}
+      {/* Show upsell banner when credits are insufficient (requires 20 credits) */}
+      {isPremium && creditsRemaining !== null && creditsRemaining < 20 && !bannerDismissed && (
+        <LowCreditsUpsellBanner
+          currentCredits={creditsRemaining}
+          creditsNeeded={20}
           creditType="compatibility"
+          onDismiss={() => setBannerDismissed(true)}
+        />
+      )}
+
+      {/* Show floating prompt when credits insufficient */}
+      {showFloatingPrompt && (
+        <FloatingUpgradePrompt
+          message={`Compatibility reports require 20 credits. You have ${creditsRemaining} remaining.`}
+          duration={7000}
         />
       )}
       
@@ -507,10 +539,10 @@ export default function CompatibilityCalculator() {
               
               <button
                 onClick={handleSubmit}
-                disabled={!person2.name || !person2.birthDate || !coords2 || loading}
+                disabled={!person2.name || !person2.birthDate || !coords2 || compatLoading}
                 className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {loading ? (
+                {compatLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     Generating Full Report...
@@ -598,6 +630,14 @@ function CompatibilityReport({ result, person1, person2, creditsRemaining, onBac
             </div>
           </div>
         </div>
+
+        {result.compositeChart && (
+          <CompositeChart
+            compositeChart={result.compositeChart}
+            person1Name={person1}
+            person2Name={person2}
+          />
+        )}
 
         <button
           onClick={onBack}

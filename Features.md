@@ -299,6 +299,15 @@ The Master Report is the premium tier — a comprehensive, year-ahead life guide
 - [ ] Emotional Patterns to Break subsection:
   - Specific patterns tied to the Nodal Axis placement
   - Practical advice for breaking each pattern
+- [ ] **Hard Aspect Shadow Patterns** subsection (NEW):
+  - [ ] Present only when the chart has hard aspects (Squares, Oppositions, tight Conjunctions)
+  - [ ] Omits Trines, Sextiles, and wide Conjunctions (orb ≥ 3°)
+  - [ ] Each hard aspect analyzed for: unconscious dynamic, shadow manifestation, specific behaviors/coping mechanisms, integration path
+  - [ ] Hard aspect patterns connected to the user's Nodal Axis journey
+  - [ ] Squares grouped under "Internal Tension & Growth Edges"
+  - [ ] Oppositions grouped under "Polarity & Relationship Dynamics"
+  - [ ] Tight Conjunctions (orb < 3°) grouped under "Intensified Archetypal Fusion"
+  - [ ] Each hard aspect includes orb precision and house context
 - [ ] Hidden Strengths subsection:
   - Gifts from the South Node that can be integrated
 - [ ] Old Cycles to Release subsection:
@@ -306,6 +315,7 @@ The Master Report is the premium tier — a comprehensive, year-ahead life guide
 - [ ] 3-5 Practical Shadow Work Exercises:
   - Each exercise has a title and 3-5 actionable steps
   - Exercises are specific to the Nodal Axis placement (not generic journaling prompts)
+  - Exercises address the chart-wide hard aspects and their shadow patterns (when present)
 - [ ] Integration and Growth subsection with closing guidance
 - [ ] All content references the user's actual North/South Node signs and houses
 

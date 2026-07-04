@@ -9,7 +9,7 @@ import { saveReading } from "@/lib/db";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { canAccessReading, consumeCreditsForReading } from '@/lib/access-control.js';
 import { formatCreditError } from '@/lib/credit-error-handler.js';
-
+import logger from '@/lib/logger';
 import { checkRateLimit, getClientIdentifier } from "@/lib/rate-limiter";
 export const runtime = "nodejs"; // ensure Node runtime on Vercel/Replit Edge-like envs
 

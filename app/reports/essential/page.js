@@ -14,6 +14,8 @@ import {
   Printer,
 } from "lucide-react";
 import BirthChartWheel from "@/components/BirthChartWheel";
+import { apiClient } from "@/lib/api-client";
+import { useToast } from "@/components/ui";
 
 function getPlanetEmoji(planet) {
   const emojis = {
@@ -91,6 +93,7 @@ function NoChartState({ error }) {
 }
 
 function EssentialReportInner() {
+  const toast = useToast();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState(null);
@@ -107,20 +110,24 @@ function EssentialReportInner() {
         setLoading(true);
 
         // 1. Try authenticated saved chart first (source of truth)
-        const res = await fetch("/api/birth-chart", { credentials: "include" });
+        let data;
+        try {
+          data = await apiClient.get("/api/birth-chart");
+        } catch (err) {
+          if (err.status === 401) {
+            data = null; // Not authenticated — fall through to anonymous path
+          } else {
+            throw err;
+          }
+        }
         if (cancelled) return;
 
-        if (res.status === 401) {
-          // Not authenticated — fall through to anonymous path
-        } else {
-          const data = await res.json();
-          if (res.ok && data.hasChart) {
-            setChartData(data.chart);
-            setBirthInfo(data.birthInfo);
-            setInterpretation(data.interpretation || null);
-            setLoading(false);
-            return;
-          }
+        if (data && data.hasChart) {
+          setChartData(data.chart);
+          setBirthInfo(data.birthInfo);
+          setInterpretation(data.interpretation || null);
+          setLoading(false);
+          return;
         }
 
         // 2. Fallback: anonymous chart from sessionStorage (set by BirthChartForm)
@@ -146,13 +153,16 @@ function EssentialReportInner() {
         }
 
         // 3. No chart data available
-        if (res.status === 401) {
+        if (data === null) {
           setUnauthenticated(true);
         } else {
           setError("No birth chart found.");
         }
       } catch (err) {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) {
+          setError(err.message);
+          toast.error("Failed to load your chart. Please try again.");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -166,24 +176,21 @@ function EssentialReportInner() {
   const handleGenerateInterpretation = async () => {
     try {
       setGenerating(true);
-      const res = await fetch("/api/birth-chart/interpretation", {
-        method: "POST",
-      });
-      const data = await res.json();
+      const data = await apiClient.post("/api/birth-chart/interpretation");
       if (data.success) {
         setInterpretation(data.interpretation);
-      } else if (res.status === 402) {
-        alert(
-          `Insufficient credits. Interpretation requires ${data.cost || 3} credits.`,
-        );
-        window.location.href = "/pricing";
-      } else if (res.status === 401) {
-        window.location.href = "/login?next=/reports/essential";
       } else {
-        alert(data.error || "Failed to generate interpretation");
+        toast.error(data.error || "Failed to generate interpretation");
       }
     } catch (err) {
-      alert("Failed to generate interpretation");
+      if (err.status === 402) {
+        toast.error("Insufficient credits. Please purchase more credits.");
+        window.location.href = "/pricing";
+      } else if (err.status === 401) {
+        window.location.href = "/login?next=/reports/essential";
+      } else {
+        toast.error("Failed to generate interpretation");
+      }
     } finally {
       setGenerating(false);
     }
