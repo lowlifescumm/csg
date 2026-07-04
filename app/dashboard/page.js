@@ -62,6 +62,10 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayoutShell>
+      <div className="text-white p-8">
+        <h1>DASHBOARD V3 LOADED</h1>
+        <p>User: {user?.email || 'No user'}</p>
+      </div>
       <DashboardV3 user={user} />
     </DashboardLayoutShell>
   );
