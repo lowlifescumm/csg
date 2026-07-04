@@ -61,9 +61,7 @@ export async function GET() {
     });
   } catch (error) {
     logger.error('Get user error:', error);
-    const response = NextResponse.json({ user: null }, { status: 200 });
-    response.cookies.delete('auth_token');
-    return response;
+    return NextResponse.json({ error: 'Failed to get user' }, { status: 500 });
   }
 }
 
