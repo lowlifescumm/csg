@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
 import DashboardLayoutShell from "@/components/DashboardLayoutShell";
 import DashboardV3 from "@/components/DashboardV3";
@@ -50,48 +49,53 @@ function clearRedirectGuard() {
 }
 
 export default function DashboardPage() {
-  const { data: session, status: sessionStatus } = useSession();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loopError, setLoopError] = useState(false);
 
   useEffect(() => {
-    if (sessionStatus === "loading") return;
-    
-    if (!session) {
-      const guard = incrementRedirectGuard();
-      if (guard && guard.count >= REDIRECT_THRESHOLD) {
-        console.error("[Dashboard] Redirect loop detected");
-        setLoopError(true);
-        setLoading(false);
-        return;
-      }
-      window.location.href = "/login?redirect=dashboard";
-      return;
-    }
-
-    const fetchUser = async () => {
+    const checkAuth = async () => {
       try {
+        // Try to fetch user - this works for both NextAuth and JWT auth
         const data = await apiClient.get("/api/auth/user");
+        
         if (data.user) {
           setUser(data.user);
           clearRedirectGuard();
+          setLoading(false);
+        } else if (data.error) {
+          // API returned error (e.g., 500)
+          setError(data.error);
+          setLoading(false);
         } else {
-          setError("Failed to load user data");
+          // No user - not authenticated
+          const guard = incrementRedirectGuard();
+          if (guard && guard.count >= REDIRECT_THRESHOLD) {
+            console.error("[Dashboard] Redirect loop detected");
+            setLoopError(true);
+            setLoading(false);
+            return;
+          }
+          window.location.href = "/login?redirect=dashboard";
         }
       } catch (err) {
-        console.error("Error fetching user:", err);
-        setError(err.message || "Failed to load user data");
-      } finally {
-        setLoading(false);
+        console.error("[Dashboard] Auth check failed:", err);
+        const guard = incrementRedirectGuard();
+        if (guard && guard.count >= REDIRECT_THRESHOLD) {
+          console.error("[Dashboard] Redirect loop detected after error");
+          setLoopError(true);
+          setLoading(false);
+          return;
+        }
+        window.location.href = "/login?redirect=dashboard";
       }
     };
 
-    fetchUser();
-  }, [session, sessionStatus]);
+    checkAuth();
+  }, []);
 
-  if (sessionStatus === "loading" || loading) {
+  if (loading) {
     return <LoadingSkeleton />;
   }
 
@@ -109,6 +113,10 @@ export default function DashboardPage() {
           <button 
             onClick={() => {
               clearRedirectGuard();
+              // Clear both auth cookies
+              document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+              document.cookie = "next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+              document.cookie = "__Secure-next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
               window.location.href = "/login?redirect=dashboard";
             }}
             className="px-6 py-3 bg-cosmic-gold text-cosmic-void rounded-lg font-medium hover:bg-cosmic-gold/90"
