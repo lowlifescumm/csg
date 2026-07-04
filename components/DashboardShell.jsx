@@ -3,9 +3,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
+import { useSession } from "next-auth/react";
 
 export default function DashboardShell({ children }) {
   const router = useRouter();
+  const { status: sessionStatus } = useSession();
   const [user, setUser] = useState(null);
   const [credits, setCredits] = useState(null);
   const [readings, setReadings] = useState(null);
@@ -13,25 +15,12 @@ export default function DashboardShell({ children }) {
   const [moonPhase, setMoonPhase] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Wait for NextAuth session to be ready before fetching user data
+    if (sessionStatus === 'loading') return;
     fetchDashboardData();
-  }, []);
-
-  // Show loading during SSR and initial client render to prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center" suppressHydrationWarning>
-        <div className="text-center" suppressHydrationWarning>
-          <div className="relative mb-6" suppressHydrationWarning>
-            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto" suppressHydrationWarning></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  }, [sessionStatus]);
 
   const cleanEmptyObjects = (obj) => {
     if (obj === null || obj === undefined) return null;
@@ -126,18 +115,13 @@ export default function DashboardShell({ children }) {
     }
   };
 
-  if (loading) {
+  // Show loading during SSR and initial auth check
+  if (loading || sessionStatus === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center animate-fade-in">
+        <div className="text-center">
           <div className="relative mb-6">
             <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-400 rounded-full animate-spin mx-auto" style={{ animationDelay: '0.5s', animationDuration: '1.5s' }}></div>
-          </div>
-          <div className="flex justify-center space-x-1">
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
           </div>
         </div>
       </div>
@@ -184,4 +168,3 @@ export default function DashboardShell({ children }) {
     refetch: fetchDashboardData,
   });
 }
-
