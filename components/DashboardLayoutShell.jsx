@@ -36,28 +36,30 @@ export default function DashboardLayoutShell({
 
   return (
     // Light theme - matching landing page style
-    <div className="relative min-h-screen bg-cosmic-void text-cosmic-lavender">
+    <div className="relative min-h-screen bg-cosmic-void text-cosmic-lavender" suppressHydrationWarning>
         {/* Subtle starfield canvas or keep as solid dark - using cosmic-void bg */}
         
         {/* Aria live region for dynamic content updates */}
-        <div aria-live="polite" aria-atomic="true" className="sr-only">
+        <div aria-live="polite" aria-atomic="true" className="sr-only" suppressHydrationWarning>
           {/* Screen reader only announcements */}
         </div>
 
-        {/* Mobile Sidebar Toggle Button */}
+        {/* Mobile Sidebar Toggle Button - client only to avoid hydration mismatch */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="md:hidden fixed top-4 left-4 z-50 p-2 bg-cosmic-gold/20 text-cosmic-gold rounded-lg shadow-lg hover:bg-cosmic-gold/30 transition-colors border border-cosmic-gold/30"
           aria-label="Toggle sidebar"
+          suppressHydrationWarning
         >
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
 
-        {/* Mobile Sidebar Overlay */}
+        {/* Mobile Sidebar Overlay - client only */}
         {sidebarOpen && (
           <div
             className="md:hidden fixed inset-0 bg-black/70 z-40"
             onClick={() => setSidebarOpen(false)}
+            suppressHydrationWarning
           />
         )}
         
