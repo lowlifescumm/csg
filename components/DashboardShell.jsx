@@ -13,31 +13,10 @@ export default function DashboardShell({ children }) {
   const [moonPhase, setMoonPhase] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     fetchDashboardData();
   }, []);
-
-  // Don't render anything during SSR to avoid hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center" suppressHydrationWarning>
-        <div className="text-center animate-fade-in" suppressHydrationWarning>
-          <div className="relative mb-6" suppressHydrationWarning>
-            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto" suppressHydrationWarning></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-400 rounded-full animate-spin mx-auto" style={{ animationDelay: '0.5s', animationDuration: '1.5s' }} suppressHydrationWarning></div>
-          </div>
-          <div className="flex justify-center space-x-1" suppressHydrationWarning>
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} suppressHydrationWarning></div>
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} suppressHydrationWarning></div>
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} suppressHydrationWarning></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const cleanEmptyObjects = (obj) => {
     if (obj === null || obj === undefined) return null;
