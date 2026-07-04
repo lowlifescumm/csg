@@ -11,6 +11,8 @@ import {
   Clock, Target, ArrowLeft, Loader2, Plus, Settings
 } from 'lucide-react';
 import Link from 'next/link';
+import LowCreditsUpsellBanner from '@/components/LowCreditsUpsellBanner';
+import FloatingUpgradePrompt from '@/components/FloatingUpgradePrompt';
 
 function parseLocalDate(dateStr) {
   if (!dateStr || typeof dateStr !== 'string') return null;
@@ -38,6 +40,11 @@ export default function ForecastsPage() {
   const [generating, setGenerating] = useState(false);
   const [selectedForecast, setSelectedForecast] = useState(null);
   const [range, setRange] = useState('7d');
+  const [creditsRemaining, setCreditsRemaining] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [showFloatingPrompt, setShowFloatingPrompt] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [user, setUser] = useState(null);
 
   const { loading } = useApiClientWithToast(
     apiClient,
@@ -51,7 +58,61 @@ export default function ForecastsPage() {
     },
   );
 
+  // Check credits and user data for gating
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/credits'),
+    [],
+    {
+      onSuccess: (creditData) => {
+        if (creditData.isPremium) {
+          setIsPremium(true);
+          setCreditsRemaining(creditData.credits?.forecast?.remaining || 0);
+        } else {
+          setIsPremium(false);
+          setCreditsRemaining(0);
+        }
+      },
+      onErrorWithToast: () => {
+        setIsPremium(false);
+        setCreditsRemaining(0);
+        return false;
+      },
+    },
+  );
+
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/auth/user'),
+    [],
+    {
+      onSuccess: (data) => {
+        if (data.user) setUser(data.user);
+      },
+      onErrorWithToast: () => false,
+    },
+  );
+
+  // Show floating prompt 30 seconds after banner is dismissed
+  useEffect(() => {
+    if (bannerDismissed) {
+      const timer = setTimeout(() => {
+        setShowFloatingPrompt(true);
+      }, 30000);
+      return () => clearTimeout(timer);
+    }
+  }, [bannerDismissed]);
+
   const generateTodaysForecast = async () => {
+    // Credit gate: Check credits BEFORE generating forecast
+    // Requires 8 credits for forecasts
+    const isAdmin = user?.role === 'admin';
+    if (!isAdmin && isPremium && creditsRemaining !== null && creditsRemaining < 8) {
+      toast.error(`Insufficient credits. Forecasts require 8 credits. You have ${creditsRemaining} remaining.`);
+      setShowFloatingPrompt(true);
+      return;
+    }
+
     try {
       setGenerating(true);
       const data = await apiClient.post('/api/forecasts/generate');
@@ -91,12 +152,34 @@ export default function ForecastsPage() {
   const today = new Date().toISOString().split('T')[0];
   const todaysForecast = forecasts.find(f => f.forecast_date === today && f.forecast_type === 'daily');
 
+  // Admin bypass - no gates shown
+  const isAdmin = user?.role === 'admin';
+  const showCreditGate = isPremium && !isAdmin && creditsRemaining !== null && creditsRemaining < 8;
+
   return (
     <div className="min-h-screen bg-black">
       <div className="fixed inset-0 bg-gradient-to-br from-violet-950 via-black to-fuchsia-950 opacity-90" />
-      
+
+      {/* Show upsell banner when credits are insufficient (requires 8 credits) */}
+      {showCreditGate && !bannerDismissed && (
+        <LowCreditsUpsellBanner
+          currentCredits={creditsRemaining}
+          creditsNeeded={8}
+          creditType="forecast"
+          onDismiss={() => setBannerDismissed(true)}
+        />
+      )}
+
+      {/* Show floating prompt when credits insufficient */}
+      {showFloatingPrompt && (
+        <FloatingUpgradePrompt
+          message={`Forecasts require 8 credits. You have ${creditsRemaining} remaining.`}
+          duration={7000}
+        />
+      )}
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* Header */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-8">

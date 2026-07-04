@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, Mail } from "lucide-react";
 import { ALL_CARDS } from "@/lib/tarot-data";
 import spreads from "@/lib/tarot-spreads.json";
 import FocusModal from "@/components/FocusModal";
@@ -9,7 +9,7 @@ import ShareCard from "@/components/ShareCard";
 import { apiClient } from "@/lib/api-client";
 import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
 
-export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general", cardCount = null, question: initialQuestion = "", spreadId = null }) {
+export default function InteractiveTarotSelector({ onClose, onComplete, spreadType = "three-card", readingType = "general", cardCount = null, question: initialQuestion = "", spreadId = null, user = null }) {
   const [selectedCards, setSelectedCards] = useState([]);
   const [availableCards, setAvailableCards] = useState([]);
   const [showReading, setShowReading] = useState(false);
@@ -21,6 +21,11 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
   const [submitVersion, setSubmitVersion] = useState(0);
   const [submitIntent, setSubmitIntent] = useState("");
   const [submitCardData, setSubmitCardData] = useState(null);
+  // Email capture gate state
+  const [showEmailGate, setShowEmailGate] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailGatePending, setEmailGatePending] = useState(false);
+  const [emailGateError, setEmailGateError] = useState("");
 
   const { loading } = useApiClientWithToast(
     apiClient,
@@ -101,6 +106,8 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     // Question input is now handled by Focus Modal - no need to show legacy input
   };
 
+  const isAnonymous = !user || !user.id;
+
   const handleGetReading = () => {
     const required = spread.ui?.required_selection_count ?? spread.card_count;
     const selected = selectedCards.length;
@@ -114,6 +121,12 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
       return;
     }
 
+    // For anonymous users, show email gate before proceeding
+    if (isAnonymous) {
+      setShowEmailGate(true);
+      return;
+    }
+
     // For custom spreads, if question is already provided, skip Focus Modal and go directly to API
     const isCustomSpread = spreadType === "custom_spread";
     if (isCustomSpread && question && question.trim()) {
@@ -123,6 +136,56 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
     }
 
     // For other spreads or if no question provided, open Focus Modal
+    setShowFocusModal(true);
+  };
+
+  const handleEmailGateSubmit = async (skip = false) => {
+    setEmailGateError("");
+    
+    if (!skip) {
+      // Validate email
+      const trimmedEmail = emailInput.trim();
+      if (!trimmedEmail || !trimmedEmail.includes('@')) {
+        setEmailGateError("Please enter a valid email address");
+        return;
+      }
+      
+      setEmailGatePending(true);
+      
+      try {
+        // Capture the lead
+        await apiClient.post("/api/leads/capture", {
+          email: trimmedEmail,
+          source: "tarot_reading_gate",
+          question: question || null,
+        });
+        
+        // Track email capture event
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'email_captured', {
+            event_category: 'engagement',
+            event_label: 'tarot_reading_gate',
+          });
+        }
+      } catch (err) {
+        console.error("Failed to capture email:", err);
+        // Continue anyway - don't block the user from seeing their reading
+      } finally {
+        setEmailGatePending(false);
+      }
+    }
+    
+    // Close email gate and proceed to focus modal or directly to reading
+    setShowEmailGate(false);
+    
+    // For custom spreads with question, go directly to reading
+    const isCustomSpread = spreadType === "custom_spread";
+    if (isCustomSpread && question && question.trim()) {
+      handleFocusSubmit(question);
+      return;
+    }
+    
+    // Otherwise show focus modal
     setShowFocusModal(true);
   };
 
@@ -361,6 +424,99 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
               "Start Reading"
             )}
           </button>
+        )}
+
+        {/* Email Gate Modal */}
+        {showEmailGate && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm">
+            <div className="glassmorphic rounded-3xl p-6 sm:p-8 max-w-md w-full apple-shadow-xl border border-white border-opacity-40 bg-gradient-to-br from-violet-900/90 via-purple-900/90 to-indigo-900/90">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white">Your Reading Awaits</h2>
+                    <p className="text-purple-200 text-sm mt-1">Enter your email to see your full reading</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowEmailGate(false);
+                    setEmailInput("");
+                    setEmailGateError("");
+                  }}
+                  className="p-2 rounded-xl hover:bg-white hover:bg-opacity-20 smooth-transition text-white"
+                  aria-label="Close modal"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="email-input" className="block text-sm font-medium text-purple-200 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    id="email-input"
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleEmailGateSubmit(false);
+                      }
+                    }}
+                    placeholder="you@example.com"
+                    className="w-full p-4 rounded-xl border border-white border-opacity-30 bg-white bg-opacity-10 text-white placeholder-purple-300 focus:border-purple-400 focus:ring-4 focus:ring-purple-500/30 outline-none smooth-transition"
+                    autoFocus
+                    disabled={emailGatePending}
+                  />
+                  {emailGateError && (
+                    <p className="text-red-300 text-sm mt-2">{emailGateError}</p>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col gap-3 pt-2">
+                  <button
+                    onClick={() => handleEmailGateSubmit(false)}
+                    disabled={emailGatePending}
+                    className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-4 px-6 rounded-xl font-semibold smooth-transition hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {emailGatePending ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5" />
+                        Show My Reading
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleEmailGateSubmit(true)}
+                    disabled={emailGatePending}
+                    className="w-full px-6 py-3 bg-transparent hover:bg-white/10 text-purple-200 hover:text-white rounded-xl font-medium smooth-transition border border-white/20 transition-all"
+                  >
+                    No thanks, just show my reading
+                  </button>
+                </div>
+
+                <p className="text-xs text-center text-purple-300 mt-4">
+                  We&apos;ll send you occasional cosmic insights. Unsubscribe anytime.
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Focus Modal */}

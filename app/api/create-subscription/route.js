@@ -127,8 +127,8 @@ export async function POST(request) {
           report_discount_percent: tier.reportDiscountPercent.toString(),
         },
       },
-      success_url: `${baseUrl}/subscription?success=true&tier=${tierId}`,
-      cancel_url: `${baseUrl}/subscription?canceled=true`,
+      success_url: `${baseUrl}/pricing?success=true&tier=${tierId}`,
+      cancel_url: `${baseUrl}/pricing?canceled=true`,
       metadata: {
         userId: user.id.toString(),
         tier_id: tierId,

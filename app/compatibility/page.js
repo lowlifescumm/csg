@@ -190,6 +190,33 @@ export default function CompatibilityCalculator() {
     },
   );
 
+  const [showFloatingPrompt, setShowFloatingPrompt] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Check user data for admin bypass
+  useApiClientWithToast(
+    apiClient,
+    (c) => c.get('/api/auth/user'),
+    [],
+    {
+      onSuccess: (data) => {
+        if (data.user) setUser(data.user);
+      },
+      onErrorWithToast: () => false,
+    },
+  );
+
+  // Show floating prompt 30 seconds after banner is dismissed
+  useEffect(() => {
+    if (bannerDismissed) {
+      const timer = setTimeout(() => {
+        setShowFloatingPrompt(true);
+      }, 30000);
+      return () => clearTimeout(timer);
+    }
+  }, [bannerDismissed]);
+
   const handleSubmit = async () => {
     if (!coords1 || !coords2) {
       setError('Please search for both birth locations');
@@ -198,6 +225,15 @@ export default function CompatibilityCalculator() {
 
     if (isPremium === false) {
       setError('Create a free account to unlock the full synastry report with Moon, Venus, Mars, and house overlays.');
+      return;
+    }
+
+    // Credit gate: Check credits BEFORE generating report
+    // Requires 20 credits for compatibility
+    const isAdmin = user?.role === 'admin';
+    if (!isAdmin && isPremium && creditsRemaining !== null && creditsRemaining < 20) {
+      setError(`Insufficient credits. Compatibility reports require 20 credits. You have ${creditsRemaining} remaining.`);
+      setShowFloatingPrompt(true);
       return;
     }
 
@@ -251,12 +287,21 @@ export default function CompatibilityCalculator() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900 py-12 px-4 sm:px-6">
-      {/* Show upsell banner when credits are low */}
-      {isPremium && creditsRemaining !== null && creditsRemaining < 1 && (
-        <LowCreditsUpsellBanner 
-          currentCredits={creditsRemaining} 
-          creditsNeeded={1}
+      {/* Show upsell banner when credits are insufficient (requires 20 credits) */}
+      {isPremium && creditsRemaining !== null && creditsRemaining < 20 && !bannerDismissed && (
+        <LowCreditsUpsellBanner
+          currentCredits={creditsRemaining}
+          creditsNeeded={20}
           creditType="compatibility"
+          onDismiss={() => setBannerDismissed(true)}
+        />
+      )}
+
+      {/* Show floating prompt when credits insufficient */}
+      {showFloatingPrompt && (
+        <FloatingUpgradePrompt
+          message={`Compatibility reports require 20 credits. You have ${creditsRemaining} remaining.`}
+          duration={7000}
         />
       )}
       

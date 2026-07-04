@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { Sparkles, ArrowLeft, Coins, Crown, FileText } from "lucide-react";
 import Link from "next/link";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import spreads from "@/lib/tarot-spreads.json";
@@ -83,6 +83,66 @@ export default function ReadingView({ reading }) {
           readingId={reading.id}
           cards={cards}
         />
+
+        {/* Post-Reading Upsell Section */}
+        <div className="bg-gradient-to-br from-indigo-800/50 to-purple-800/50 backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20 mb-8">
+          <h2 className="text-2xl font-bold text-white text-center mb-6">
+            Continue Your Spiritual Journey
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Upsell 1: Purchase Credits */}
+            <Link
+              href="/credits"
+              className="bg-white bg-opacity-10 hover:bg-opacity-15 rounded-xl p-6 border border-white border-opacity-20 transition-all text-center group"
+            >
+              <Coins className="w-8 h-8 text-yellow-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Get More Credits
+              </h3>
+              <p className="text-purple-300 text-sm mb-3">
+                5 credits for $4.99
+              </p>
+              <span className="inline-flex items-center gap-1 text-yellow-400 text-sm font-medium">
+                Purchase →
+              </span>
+            </Link>
+
+            {/* Upsell 2: Subscribe */}
+            <Link
+              href="/subscription"
+              className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 rounded-xl p-6 border border-yellow-400/50 transition-all text-center group"
+            >
+              <Crown className="w-8 h-8 text-yellow-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Go Unlimited
+              </h3>
+              <p className="text-purple-300 text-sm mb-3">
+                $19.99/month
+              </p>
+              <span className="inline-flex items-center gap-1 text-yellow-400 text-sm font-medium">
+                Subscribe →
+              </span>
+            </Link>
+
+            {/* Upsell 3: Birth Chart Report */}
+            <Link
+              href="/reports/essential"
+              className="bg-white bg-opacity-10 hover:bg-opacity-15 rounded-xl p-6 border border-white border-opacity-20 transition-all text-center group"
+            >
+              <FileText className="w-8 h-8 text-purple-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Birth Chart Report
+              </h3>
+              <p className="text-purple-300 text-sm mb-3">
+                Starting at $19
+              </p>
+              <span className="inline-flex items-center gap-1 text-purple-400 text-sm font-medium">
+                Get Report →
+              </span>
+            </Link>
+          </div>
+        </div>
 
         <div className="text-center mt-6">
           <Link

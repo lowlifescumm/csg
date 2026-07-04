@@ -18,6 +18,7 @@ export default function TarotPage() {
   const [savedReadingId, setSavedReadingId] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [saveVersion, setSaveVersion] = useState(0);
+  const [user, setUser] = useState(null);
 
   const { loading: isSaving } = useApiClientWithToast(
     apiClient,
@@ -58,6 +59,12 @@ export default function TarotPage() {
 
   useEffect(() => {
     setTeaserABVariant(getTeaserABVariant());
+    // Check auth status for email gate
+    apiClient.get("/api/auth/user").then(data => {
+      if (data.user) setUser(data.user);
+    }).catch(() => {
+      // Anonymous user - no action needed
+    });
   }, []);
 
   const { loading: loadingCredits, refetch: refetchCredits } = useApiClientWithToast(
@@ -421,6 +428,7 @@ export default function TarotPage() {
           onComplete={handleReadingComplete}
           spreadType={selectedType.spreadType}
           readingType="general"
+          user={user}
         />
       )}
     </div>

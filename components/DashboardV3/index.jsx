@@ -692,6 +692,7 @@ export default function DashboardV3({ user, credits, readings, streak, moonPhase
             cardCount={tarotSelectorConfig.cardCount}
             question={tarotSelectorConfig.question}
             spreadId={tarotSelectorConfig.spreadId}
+            user={user}
             onClose={() => {
               setShowTarotSelector(false);
               if (refetch) refetch();

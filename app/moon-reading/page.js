@@ -196,6 +196,11 @@ export default function PersonalizedMoonReading() {
   const [isPremium, setIsPremium] = useState(false);
   const [showFloatingPrompt, setShowFloatingPrompt] = useState(false);
 
+  // Track if user has dismissed the paywall
+  const [paywallDismissed, setPaywallDismissed] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [user, setUser] = useState(null);
+
   const { loading: checkingAccess } = useApiClientWithToast(
     apiClient,
     (c) => c.get('/api/auth/user'),
@@ -203,6 +208,7 @@ export default function PersonalizedMoonReading() {
     {
       onSuccess: (data) => {
         if (data.user) {
+          setUser(data.user);
           const isAdmin = data.user.role === 'admin';
           const hasSubscription = data.user.stripe_subscription_id && data.user.stripe_subscription_id.length > 0;
           const access = isAdmin || hasSubscription;
@@ -235,6 +241,15 @@ export default function PersonalizedMoonReading() {
 
   const handleDirectGenerate = async () => {
     if (!formData.name || !formData.birthDate || !formData.currentFocus) {
+      return;
+    }
+
+    // Credit gate: Check credits BEFORE generating reading
+    // Requires 5 credits for moon reading
+    const isAdmin = user?.role === 'admin';
+    if (!isAdmin && isPremium && creditsRemaining !== null && creditsRemaining < 5) {
+      setShowPaywall(true);
+      setShowFloatingPrompt(true);
       return;
     }
 
@@ -360,12 +375,13 @@ export default function PersonalizedMoonReading() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-pink-900">
-      {/* Show upsell banner when credits are low */}
-      {isPremium && creditsRemaining !== null && creditsRemaining < 2 && (
-        <LowCreditsUpsellBanner 
-          currentCredits={creditsRemaining} 
-          creditsNeeded={2}
+      {/* Show upsell banner when credits are insufficient (requires 5 credits) */}
+      {isPremium && creditsRemaining !== null && creditsRemaining < 5 && !paywallDismissed && (
+        <LowCreditsUpsellBanner
+          currentCredits={creditsRemaining}
+          creditsNeeded={5}
           creditType="moon_reading"
+          onDismiss={() => setPaywallDismissed(true)}
         />
       )}
       

@@ -158,8 +158,8 @@ export async function POST(request) {
             quantity: 1,
           },
         ],
-        success_url: `${baseUrl}/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/subscription?canceled=true`,
+        success_url: `${baseUrl}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/pricing?canceled=true`,
         metadata: {
           userId: numericTargetUserId.toString(),
           tier: tierConfig.id,

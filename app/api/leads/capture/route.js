@@ -9,12 +9,18 @@ export async function POST(request) {
       return Response.json({ success: false, error: 'Valid email required' }, { status: 400 });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     await prisma.newsletter_signups.upsert({
-      where: { email },
-      update: {},
+      where: { email: normalizedEmail },
+      update: {
+        // Update source if provided, keep existing metadata
+        ...(source !== 'unknown' && { metadata: { source, question, updatedAt: new Date().toISOString() } }),
+      },
       create: {
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         first_name: null,
+        metadata: { source, question, createdAt: new Date().toISOString() },
       }
     });
 
