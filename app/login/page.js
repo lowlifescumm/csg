@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -12,10 +10,6 @@ export const dynamic = 'force-dynamic';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  return <LoginPageContent router={router} searchParams={searchParams} />;
-}
-
-function LoginPageContent({ router, searchParams }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: "",
@@ -90,11 +84,11 @@ function LoginPageContent({ router, searchParams }) {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cosmic-midnight via-cosmic-indigo to-cosmic-indigo flex items-center justify-center p-6">
-        <div className="glassmorphic rounded-3xl p-10 border border-white/10 w-full max-w-md">
-          <div className="text-center">
-            <div className="inline-block float-animation">
-              <div className="flex flex-col items-center mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-cosmic-midnight via-cosmic-indigo to-cosmic-indigo flex items-center justify-center p-6" suppressHydrationWarning>
+        <div className="glassmorphic rounded-3xl p-10 border border-white/10 w-full max-w-md" suppressHydrationWarning>
+          <div className="text-center" suppressHydrationWarning>
+            <div className="inline-block float-animation" suppressHydrationWarning>
+              <div className="flex flex-col items-center mb-4" suppressHydrationWarning>
                 <img src="/logos/csg-logo-primary.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
               </div>
             </div>
@@ -296,11 +290,11 @@ function LoginPageContent({ router, searchParams }) {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-cosmic-midnight via-cosmic-indigo to-cosmic-indigo flex items-center justify-center p-6">
-        <div className="glassmorphic rounded-3xl p-10 border border-white/10 w-full max-w-md">
-          <div className="text-center">
-            <div className="inline-block float-animation">
-              <div className="flex flex-col items-center mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-cosmic-midnight via-cosmic-indigo to-cosmic-indigo flex items-center justify-center p-6" suppressHydrationWarning>
+        <div className="glassmorphic rounded-3xl p-10 border border-white/10 w-full max-w-md" suppressHydrationWarning>
+          <div className="text-center" suppressHydrationWarning>
+            <div className="inline-block float-animation" suppressHydrationWarning>
+              <div className="flex flex-col items-center mb-4" suppressHydrationWarning>
                 <img src="/logos/csg-logo-primary.svg" alt="Cosmic Spirit Guide" className="w-20 h-20 mx-auto mb-2 object-contain" />
               </div>
             </div>
