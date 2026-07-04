@@ -2,12 +2,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
-import { useApiClientWithToast } from "@/src/hooks/useApiClientWithToast";
-import { useSession } from "next-auth/react";
 
 export default function DashboardShell({ children }) {
   const router = useRouter();
-  const { status: sessionStatus } = useSession();
   const [user, setUser] = useState(null);
   const [credits, setCredits] = useState(null);
   const [readings, setReadings] = useState(null);
@@ -17,10 +14,8 @@ export default function DashboardShell({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Wait for NextAuth session to be ready before fetching user data
-    if (sessionStatus === 'loading') return;
     fetchDashboardData();
-  }, [sessionStatus]);
+  }, []);
 
   const cleanEmptyObjects = (obj) => {
     if (obj === null || obj === undefined) return null;
@@ -58,7 +53,6 @@ export default function DashboardShell({ children }) {
       const userData = await apiClient.get("/api/auth/user");
       if (!userData || !userData.user) {
         console.warn("[DashboardShell] No authenticated user returned");
-        // Don't redirect - show login prompt instead
         setUser(null);
         setLoading(false);
         return;
@@ -69,8 +63,7 @@ export default function DashboardShell({ children }) {
       // Fetch credits
       try {
         const creditsData = await apiClient.get("/api/credits");
-        const cleanedCredits = cleanEmptyObjects(creditsData);
-        setCredits(cleanedCredits);
+        setCredits(cleanEmptyObjects(creditsData));
       } catch (credErr) {
         console.log("Credits endpoint not available:", credErr);
       }
@@ -78,32 +71,27 @@ export default function DashboardShell({ children }) {
       // Fetch readings
       try {
         const readingsData = await apiClient.get("/api/readings");
-        const cleanedReadings = cleanEmptyObjects(readingsData);
-        setReadings(cleanedReadings);
+        setReadings(cleanEmptyObjects(readingsData));
       } catch (readErr) {
         console.log("Readings endpoint not available:", readErr);
       }
 
-      // Fetch streak (optional - gracefully handles if endpoint doesn't exist)
+      // Fetch streak
       try {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const streakData = await apiClient.get(`/api/streak?timezone=${encodeURIComponent(timezone)}`);
-        const cleanedStreak = cleanEmptyObjects(streakData);
-        setStreak(cleanedStreak);
+        setStreak(cleanEmptyObjects(streakData));
       } catch (streakError) {
-        // Streak endpoint is optional, continue if it fails
         console.log("Streak endpoint not available:", streakError);
       }
 
-      // Fetch moon phase (optional - gracefully handles if endpoint doesn't exist)
+      // Fetch moon phase
       try {
         const moonData = await apiClient.get("/api/moon-phase");
         if (moonData.success && moonData.data) {
-          const cleanedMoonPhase = cleanEmptyObjects(moonData.data);
-          setMoonPhase(cleanedMoonPhase);
+          setMoonPhase(cleanEmptyObjects(moonData.data));
         }
       } catch (moonError) {
-        // Moon phase endpoint is optional, continue if it fails
         console.log("Moon phase endpoint not available:", moonError);
       }
 
@@ -115,14 +103,11 @@ export default function DashboardShell({ children }) {
     }
   };
 
-  // Show loading during SSR and initial auth check
-  if (loading || sessionStatus === 'loading') {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative mb-6">
-            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
-          </div>
+          <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
         </div>
       </div>
     );
@@ -131,7 +116,7 @@ export default function DashboardShell({ children }) {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center p-6">
-        <div className="glassmorphic rounded-3xl p-8 apple-shadow-lg border border-white border-opacity-40 max-w-md w-full">
+        <div className="glassmorphic rounded-3xl p-8 border border-white/40 max-w-md w-full">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 text-red-400">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,10 +125,7 @@ export default function DashboardShell({ children }) {
             </div>
             <h2 className="text-2xl font-semibold text-white mb-2">Error Loading Dashboard</h2>
             <p className="text-gray-300 mb-6">{error}</p>
-            <button
-              onClick={fetchDashboardData}
-              className="btn-primary"
-            >
+            <button onClick={fetchDashboardData} className="btn-primary">
               Try Again
             </button>
           </div>
@@ -152,19 +134,12 @@ export default function DashboardShell({ children }) {
     );
   }
 
-  // Pass all data to children via render prop pattern
-  // Ensure we never pass empty objects - convert to null if needed
-  const safeCredits = credits && typeof credits === 'object' && Object.keys(credits).length > 0 ? credits : null;
-  const safeReadings = readings && typeof readings === 'object' && Object.keys(readings).length > 0 ? readings : null;
-  const safeStreak = streak && typeof streak === 'object' && Object.keys(streak).length > 0 ? streak : null;
-  const safeMoonPhase = moonPhase && typeof moonPhase === 'object' && Object.keys(moonPhase).length > 0 ? moonPhase : null;
-  
   return children({
     user: user || null,
-    credits: safeCredits,
-    readings: safeReadings,
-    streak: safeStreak,
-    moonPhase: safeMoonPhase,
+    credits: credits || null,
+    readings: readings || null,
+    streak: streak || null,
+    moonPhase: moonPhase || null,
     refetch: fetchDashboardData,
   });
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { Suspense } from "react";
 import nextDynamic from "next/dynamic";
 import DashboardShell from "@/components/DashboardShell";
 import DashboardLayoutShell from "@/components/DashboardLayoutShell";
@@ -14,10 +14,8 @@ const DashboardV3Client = nextDynamic(
     ssr: false,
     loading: () => (
       <div className="min-h-screen bg-cosmic-void flex items-center justify-center">
-        <div className="text-center animate-fade-in">
-          <div className="relative mb-6">
-            <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto"></div>
-          </div>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto"></div>
         </div>
       </div>
     ),
@@ -26,28 +24,8 @@ const DashboardV3Client = nextDynamic(
 
 /**
  * DashboardPage - Main dashboard route
- *
- * Uses DashboardShell to fetch real data and DashboardV3Client for rendering.
- * Dashboard V3 is now the default and only dashboard version.
  */
 function DashboardPageInner() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Show loading during SSR to prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-cosmic-void flex items-center justify-center" suppressHydrationWarning>
-        <div className="text-center" suppressHydrationWarning>
-          <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto" suppressHydrationWarning></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <DashboardShell>
       {({ user, credits, readings, streak, moonPhase, refetch }) => {
@@ -76,11 +54,11 @@ function DashboardPageInner() {
 
         // Calculate energy and level data for header
         const totalCredits = credits?.stats?.totalAvailable || credits?.credits || 0;
-        const energy = 75; // Default, can be calculated from user activity
-        const energyChange = 12; // Default
-        const level = 5; // Default, can be calculated from XP
-        const xpCurrent = 2450; // Default, should come from user stats
-        const xpTarget = 3000; // Default
+        const energy = 75;
+        const energyChange = 12;
+        const level = 5;
+        const xpCurrent = 2450;
+        const xpTarget = 3000;
 
         return (
           <DashboardLayoutShell
@@ -115,10 +93,8 @@ export default function DashboardPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-cosmic-void flex items-center justify-center">
-          <div className="text-center animate-fade-in">
-            <div className="relative mb-6">
-              <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto"></div>
-            </div>
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto"></div>
           </div>
         </div>
       }
