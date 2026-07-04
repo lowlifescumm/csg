@@ -1,5 +1,5 @@
 "use client";
-import { Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import nextDynamic from "next/dynamic";
 import DashboardShell from "@/components/DashboardShell";
 import DashboardLayoutShell from "@/components/DashboardLayoutShell";
@@ -31,6 +31,22 @@ const DashboardV3Client = nextDynamic(
  * Dashboard V3 is now the default and only dashboard version.
  */
 function DashboardPageInner() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show loading during SSR to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-cosmic-void flex items-center justify-center" suppressHydrationWarning>
+        <div className="text-center" suppressHydrationWarning>
+          <div className="w-16 h-16 border-4 border-cosmic-gold/30 border-t-cosmic-gold rounded-full animate-spin mx-auto" suppressHydrationWarning></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DashboardShell>

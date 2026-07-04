@@ -13,10 +13,25 @@ export default function DashboardShell({ children }) {
   const [moonPhase, setMoonPhase] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchDashboardData();
   }, []);
+
+  // Show loading during SSR and initial client render to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center" suppressHydrationWarning>
+        <div className="text-center" suppressHydrationWarning>
+          <div className="relative mb-6" suppressHydrationWarning>
+            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto" suppressHydrationWarning></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const cleanEmptyObjects = (obj) => {
     if (obj === null || obj === undefined) return null;
