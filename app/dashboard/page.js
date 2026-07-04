@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
 import DashboardLayoutShell from "@/components/DashboardLayoutShell";
 import DashboardV3 from "@/components/DashboardV3";
-import LoadingScreen from "@/components/LoadingScreen";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 export default function DashboardPage() {
   const { data: session, status: sessionStatus } = useSession();
@@ -41,7 +41,7 @@ export default function DashboardPage() {
   }, [session, sessionStatus]);
 
   if (sessionStatus === "loading" || loading) {
-    return <LoadingScreen />;
+    return <LoadingSkeleton />;
   }
 
   if (error || !user) {
