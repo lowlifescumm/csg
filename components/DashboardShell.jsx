@@ -53,8 +53,10 @@ export default function DashboardShell({ children }) {
       // Fetch user profile
       const userData = await apiClient.get("/api/auth/user");
       if (!userData || !userData.user) {
-        console.warn("[DashboardShell] No authenticated user returned, redirecting to login");
-        router.replace("/login?redirect=dashboard&message=save-readings");
+        console.warn("[DashboardShell] No authenticated user returned");
+        // Don't redirect - show login prompt instead
+        setUser(null);
+        setLoading(false);
         return;
       }
       
