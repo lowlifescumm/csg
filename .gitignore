@@ -89,6 +89,7 @@ fix_static_assets.patch
 # Documentation (optional - remove these lines if you want docs tracked)
 *.md
 !README.md
+!CLAUDE.md
 docs/
 meditations/
 artifacts/
