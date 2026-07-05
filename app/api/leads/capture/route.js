@@ -26,7 +26,7 @@ export async function POST(request) {
 
     return Response.json({ success: true, message: 'Lead captured' });
   } catch (error) {
-    console.error('Lead capture error:', error);
+    // Log to monitoring service in production
     return Response.json({ success: false, error: 'Failed to save' }, { status: 500 });
   }
 }
