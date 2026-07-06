@@ -7,8 +7,23 @@ import logger from '@/lib/logger';
 
 export async function GET() {
   try {
+    const cookieStore = await cookies();
+    const hasNextAuthCookie = cookieStore.has('next-auth.session-token') || cookieStore.has('__Secure-next-auth.session-token');
+    const hasAuthTokenCookie = cookieStore.has('auth_token');
+    
+    logger.info('[Auth API] GET /api/auth/user - Cookies present:', {
+      hasNextAuthCookie,
+      hasAuthTokenCookie,
+      cookieNames: Array.from(cookieStore.getAll()).map(c => c.name)
+    });
+
     // First, check for NextAuth session (for Google OAuth users)
     const session = await getServerSession(authOptions);
+    logger.info('[Auth API] getServerSession result:', { 
+      hasSession: Boolean(session), 
+      hasUser: Boolean(session?.user),
+      userId: session?.user?.id 
+    });
     
     if (session?.user) {
       const dbUser = session.user.id ? await getUserById(session.user.id) : null;
@@ -27,22 +42,27 @@ export async function GET() {
     }
 
     // Fall back to JWT cookie authentication (for email/password users)
-    const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
+    logger.info('[Auth API] auth_token cookie value present:', Boolean(token));
 
     if (!token) {
+      logger.info('[Auth API] No token, returning null user');
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
     const decoded = verifyToken(token);
+    logger.info('[Auth API] verifyToken result:', { hasDecoded: Boolean(decoded), userId: decoded?.userId });
     if (!decoded) {
+      logger.warn('[Auth API] Token verification failed, deleting cookie');
       const response = NextResponse.json({ user: null }, { status: 200 });
       response.cookies.delete('auth_token');
       return response;
     }
 
     const user = await getUserById(decoded.userId);
+    logger.info('[Auth API] getUserById result:', { found: Boolean(user) });
     if (!user) {
+      logger.warn('[Auth API] User not found in database, deleting cookie');
       const response = NextResponse.json({ user: null }, { status: 200 });
       response.cookies.delete('auth_token');
       return response;
