@@ -5,6 +5,13 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import logger from '@/lib/logger';
 
+const noCacheHeaders = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+  'Surrogate-Control': 'no-store'
+};
+
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -38,7 +45,7 @@ export async function GET() {
           stripe_subscription_id: session.user.subscriptionStatus === 'active' ? 'active' : null,
           createdAt: dbUser?.created_at || null,
         },
-      });
+      }, { headers: noCacheHeaders });
     }
 
     // Fall back to JWT cookie authentication (for email/password users)
@@ -47,14 +54,14 @@ export async function GET() {
 
     if (!token) {
       logger.info('[Auth API] No token, returning null user');
-      return NextResponse.json({ user: null }, { status: 200 });
+      return NextResponse.json({ user: null }, { status: 200, headers: noCacheHeaders });
     }
 
     const decoded = verifyToken(token);
     logger.info('[Auth API] verifyToken result:', { hasDecoded: Boolean(decoded), userId: decoded?.userId });
     if (!decoded) {
       logger.warn('[Auth API] Token verification failed, deleting cookie');
-      const response = NextResponse.json({ user: null }, { status: 200 });
+      const response = NextResponse.json({ user: null }, { status: 200, headers: noCacheHeaders });
       response.cookies.delete('auth_token');
       return response;
     }
@@ -63,7 +70,7 @@ export async function GET() {
     logger.info('[Auth API] getUserById result:', { found: Boolean(user) });
     if (!user) {
       logger.warn('[Auth API] User not found in database, deleting cookie');
-      const response = NextResponse.json({ user: null }, { status: 200 });
+      const response = NextResponse.json({ user: null }, { status: 200, headers: noCacheHeaders });
       response.cookies.delete('auth_token');
       return response;
     }
@@ -78,10 +85,10 @@ export async function GET() {
         stripe_subscription_id: user.stripe_subscription_id,
         createdAt: user.created_at,
       },
-    });
+    }, { headers: noCacheHeaders });
   } catch (error) {
     logger.error('Get user error:', error);
-    return NextResponse.json({ error: 'Failed to get user' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to get user' }, { status: 500, headers: noCacheHeaders });
   }
 }
 
@@ -91,18 +98,18 @@ export async function PUT(request) {
     const token = cookieStore.get('auth_token')?.value;
 
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: noCacheHeaders });
     }
 
     const decoded = verifyToken(token);
     if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: noCacheHeaders });
     }
 
     const { firstName, lastName, email } = await request.json();
     
     if (!email || !email.trim()) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Email is required' }, { status: 400, headers: noCacheHeaders });
     }
 
     // Normalize email to lowercase to prevent case-sensitivity issues
@@ -114,7 +121,7 @@ export async function PUT(request) {
     if (existingUser && existingUser.id !== decoded.userId) {
       return NextResponse.json(
         { error: 'Email already in use' },
-        { status: 400 }
+        { status: 400, headers: noCacheHeaders }
       );
     }
     
@@ -132,18 +139,18 @@ export async function PUT(request) {
         firstName: updatedUser.first_name,
         lastName: updatedUser.last_name,
       },
-    });
+    }, { headers: noCacheHeaders });
   } catch (error) {
     logger.error('Update user error:', error);
     if (error.message?.includes('unique')) {
       return NextResponse.json(
         { error: 'Email already in use' },
-        { status: 400 }
+        { status: 400, headers: noCacheHeaders }
       );
     }
     return NextResponse.json(
       { error: 'Failed to update profile' },
-      { status: 500 }
+      { status: 500, headers: noCacheHeaders }
     );
   }
 }

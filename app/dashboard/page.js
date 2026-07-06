@@ -58,7 +58,7 @@ export default function DashboardPage() {
     const checkAuth = async () => {
       try {
         // Try to fetch user - this works for both NextAuth and JWT auth
-        const data = await apiClient.get("/api/auth/user");
+        const data = await apiClient.get("/api/auth/user", { cache: 'no-store' });
         
         if (data.user) {
           setUser(data.user);

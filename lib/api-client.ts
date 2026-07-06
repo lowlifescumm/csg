@@ -19,6 +19,7 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   signal?: AbortSignal;
   retry?: boolean;
+  cache?: RequestCache;
 }
 
 export type ApiErrorCode =
@@ -125,6 +126,7 @@ export class ApiClient {
           body: bodyInit,
           credentials: this.config.credentials,
           signal: mergedSignal,
+          cache: options?.cache ?? 'no-store',
         });
 
         clearTimeout(timeoutId);
