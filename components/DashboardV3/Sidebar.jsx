@@ -37,20 +37,12 @@ export default function Sidebar({ user, onLinkClick }) {
     [],
     { 
       enabled: false,
-      toastMessages: { error: "Could not log out. Please try again." }
+      toastMessages: { error: "Could not log out. Please try again." },
+      onSuccess: () => {
+        window.location.href = "/login";
+      }
     }
   );
-
-  // Handle successful logout
-  useEffect(() => {
-    if (isLoggingOut) return; // Still loading
-    // Navigate to login page after logout completes
-    // We use a small timeout to allow the hook state to settle
-    const timer = setTimeout(() => {
-      window.location.href = "/login";
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [isLoggingOut]);
 
   const handleLogout = useCallback(() => {
     logout();
