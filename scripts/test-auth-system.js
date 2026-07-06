@@ -1,5 +1,5 @@
-const logger = require('./lib/logger');
 #!/usr/bin/env node
+import logger from './lib/logger.js';
 
 /**
  * Comprehensive Authentication System Test

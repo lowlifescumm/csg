@@ -333,11 +333,19 @@ export async function POST(req) {
     // Advance the calendar + produce content based on step before marking the
     // workflow step complete. This prevents false-success states where the API
     // reports completion even though no linked blog_post was actually updated.
-    await advanceWorkflow(pool, calendar, step, {
-      content, excerpt, metaTitle, metaDescription, tags, featuredImage,
-      scheduledAt, socialCopy, targetKeyword, secondaryKeywords, searchIntent,
-      targetWordCount, outline, keyPoints, ctaStrategy,
-    });
+    try {
+      await advanceWorkflow(pool, calendar, step, {
+        content, excerpt, metaTitle, metaDescription, tags, featuredImage,
+        scheduledAt, socialCopy, targetKeyword, secondaryKeywords, searchIntent,
+        targetWordCount, outline, keyPoints, ctaStrategy,
+      });
+    } catch (err) {
+      logger.error('advanceWorkflow failed', { error: err.message, calendarId, step });
+      return NextResponse.json(
+        { error: `Failed to advance workflow: ${err.message}` },
+        { status: 500 }
+      );
+    }
 
     // Complete the workflow step only after the step output has persisted.
     await pool.query(`

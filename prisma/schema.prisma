@@ -400,6 +400,37 @@ model newsletter_signups {
   created_at DateTime? @default(now()) @db.Timestamp(6)
 }
 
+model newsletter_subscribers {
+  id              Int       @id @default(autoincrement())
+  email           String    @unique @db.VarChar(255)
+  source          String?   @default("website") @db.VarChar(100)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  confirmed       Boolean?  @default(false)
+  unsubscribed_at DateTime? @db.Timestamptz(6)
+
+  @@index([email], map: "idx_newsletter_subscribers_email")
+  @@map("newsletter_subscribers")
+}
+
+model pending_reading_emails {
+  id                Int       @id @default(autoincrement())
+  email             String    @db.VarChar(255)
+  name              String?   @db.VarChar(255)
+  reading_id        String?   @db.VarChar(255)
+  reading_type      String?   @default("tarot") @db.VarChar(50)
+  captured_at       DateTime? @db.Timestamptz(6)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @updatedAt @db.Timestamptz(6)
+  converted_to_user Boolean?  @default(false)
+  converted_at      DateTime? @db.Timestamptz(6)
+
+  @@unique([email, reading_id])
+  @@index([email], map: "idx_pending_reading_emails_email")
+  @@index([reading_id], map: "idx_pending_reading_emails_reading_id")
+  @@index([created_at], map: "idx_pending_reading_emails_created_at")
+  @@map("pending_reading_emails")
+}
+
 model password_reset_tokens {
   id         Int       @id @default(autoincrement())
   user_id    Int?
