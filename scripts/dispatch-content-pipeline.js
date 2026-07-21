@@ -19,8 +19,16 @@ const COMPANY_ID    = '84898c57-acb2-43a9-a0e7-b22d600d3434';
 const CSG_API_BASE  = 'https://cosmicspiritguide.com';
 
 // Paperclip FRO key (from Render dashboard env: FRO_API_KEY)
-const PAPERCLIP_KEY = process.env.FRO_API_KEY ||
-  (() => { try { return require('/home/ethan/.openclaw/workspace/paperclip-claimed-api-key.json').token; } catch { return ''; } })();
+// Use board operator token for cross-company access
+const PAPERCLIP_KEY = (() => {
+  try {
+    const auth = require('/home/ethan/.paperclip/auth.json');
+    return auth.credentials['http://127.0.0.1:3100']?.token || '';
+  } catch {
+    return process.env.FRO_API_KEY ||
+      (() => { try { return require('/home/ethan/.openclaw/workspace/paperclip-claimed-api-key.json').token; } catch { return ''; } })();
+  }
+})();
 
 // Same key authenticates calls to the CSG content-workflow API
 const CSG_API_KEY = process.env.FRO_API_KEY || PAPERCLIP_KEY;
