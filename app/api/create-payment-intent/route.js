@@ -1,27 +1,21 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import logger from "@/lib/logger";
+import { parsePaymentAmount } from "@/lib/payment-amount.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16",
 });
 
-const DEFAULT_ONE_TIME_READING_PRICE = 999;
-
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
 
-let amount;
-if (body.amount === undefined || body.amount === null) {
-  amount = DEFAULT_ONE_TIME_READING_PRICE;
-} else {
-  const parsed = Number(body.amount);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
-  }
-  amount = parsed;
-}
+    const parsed = parsePaymentAmount(body.amount);
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const amount = parsed.amount;
 
     const metadata = body.metadata && typeof body.metadata === "object"
       ? body.metadata

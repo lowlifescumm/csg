@@ -41,6 +41,7 @@ const {
   issueFreeDailyCredits,
   issueSubscriptionCredits,
   addCreditsDirectly,
+  refundCredits,
 } = require('../../lib/credit-engine');
 
 describe('Credit Engine - Logic Verification (Scope Reduced)', () => {
@@ -358,6 +359,48 @@ describe('Credit Engine - Logic Verification (Scope Reduced)', () => {
 
       const result = await purchaseCredits(1, 15, {});
 
+      expect(result.success).toBe(false);
+      expect(mockClient.query).toHaveBeenCalledWith('ROLLBACK');
+    });
+  });
+
+  // Regression for GSTA-627 / B9: refundCredits was inserting +amount, granting
+  // credits on refund instead of reversing them. The ledger INSERT must use
+  // -amount so the user's balance actually decreases.
+  describe('9. Refund Regression (B9 / GSTA-627)', () => {
+    test('refundCredits inserts a NEGATIVE delta to reverse credits', async () => {
+      mockClient.query.mockImplementation((sql) => {
+        if (sql.startsWith('BEGIN') || sql.startsWith('COMMIT')) {
+          return Promise.resolve({ rows: [] });
+        }
+        if (sql.startsWith('INSERT INTO credit_ledger')) {
+          return Promise.resolve({ rows: [{ id: 999, delta: -50, created_at: new Date() }] });
+        }
+        return Promise.resolve({ rows: [] });
+      });
+
+      const result = await refundCredits(42, 50, 'charge.refunded', {
+        original_ledger_id: 123,
+      });
+
+      expect(result.success).toBe(true);
+      // The critical B9 assertion: the INSERT must be called with -50, not +50.
+      const insertCall = mockClient.query.mock.calls.find(
+        (c) => typeof c[0] === 'string' && c[0].startsWith('INSERT INTO credit_ledger')
+      );
+      expect(insertCall).toBeDefined();
+      expect(insertCall[1][1]).toBe(-50);
+      expect(mockClient.query).toHaveBeenCalledWith('COMMIT');
+    });
+
+    test('refundCredits rolls back on DB error', async () => {
+      mockClient.query.mockImplementation((sql) => {
+        if (sql.startsWith('BEGIN')) return Promise.resolve({ rows: [] });
+        if (sql.startsWith('INSERT')) return Promise.reject(new Error('db down'));
+        return Promise.resolve({ rows: [] });
+      });
+
+      const result = await refundCredits(42, 50, 'charge.refunded');
       expect(result.success).toBe(false);
       expect(mockClient.query).toHaveBeenCalledWith('ROLLBACK');
     });
