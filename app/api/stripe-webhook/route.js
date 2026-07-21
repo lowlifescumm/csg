@@ -315,7 +315,7 @@ export async function POST(request) {
             await pool.query(
               `INSERT INTO report_purchases (user_id, report_type, stripe_payment_intent_id, amount, status, created_at)
                VALUES ($1, $2, $3, $4, $5, NOW())
-               ON CONFLICT (user_id, stripe_payment_intent_id) DO NOTHING`,
+               ON CONFLICT (user_id, stripe_payment_intent_id) WHERE stripe_payment_intent_id IS NOT NULL DO NOTHING`,
               [parseInt(userId), reportId, paymentIntent.id, paymentIntent.amount, 'paid']
             );
             logger.info(`[Report Purchase] Recorded purchase for user ${userId}, report ${reportId}`);

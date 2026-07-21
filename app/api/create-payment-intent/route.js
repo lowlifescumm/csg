@@ -12,16 +12,16 @@ export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
 
-    const amount =
-      typeof body.amount === "number" && body.amount > 0
-        ? body.amount
-        : typeof body.amount === "string" && !isNaN(Number(body.amount)) && Number(body.amount) > 0
-        ? Number(body.amount)
-        : DEFAULT_ONE_TIME_READING_PRICE;
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
-    }
+let amount;
+if (body.amount === undefined || body.amount === null) {
+  amount = DEFAULT_ONE_TIME_READING_PRICE;
+} else {
+  const parsed = Number(body.amount);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+  }
+  amount = parsed;
+}
 
     const metadata = body.metadata && typeof body.metadata === "object"
       ? body.metadata
