@@ -1,0 +1,7 @@
+**GSTA-646** – *Close productivity review for GSTA‑627* 
+
+**Owner:** Content Strategist 
+
+**Brief (2‑sentence):** Generate a concise productivity report for GSTA‑627 that lists key metrics, identifies blockers (adapter timeout, environment insert failure), and recommends actions to unblock the Stripe P0 fixes pipeline. 
+
+**Success Metric:** Report attached and verified within 24 hours, enabling the P0 fixes pipeline to resume.
