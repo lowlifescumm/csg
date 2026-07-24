@@ -201,6 +201,16 @@ export default function PersonalizedMoonReading() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [user, setUser] = useState(null);
 
+  // Show floating prompt 30 seconds after paywall is dismissed
+  useEffect(() => {
+    if (paywallDismissed) {
+      const timer = setTimeout(() => {
+        setShowFloatingPrompt(true);
+      }, 30000);
+      return () => clearTimeout(timer);
+    }
+  }, [paywallDismissed]);
+
   const { loading: checkingAccess } = useApiClientWithToast(
     apiClient,
     (c) => c.get('/api/auth/user'),
