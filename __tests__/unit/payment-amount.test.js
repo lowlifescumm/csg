@@ -11,9 +11,13 @@ const {
 } = require('../../lib/payment-amount.js');
 
 describe('parsePaymentAmount (B11 / GSTA-629)', () => {
-  test('missing amount falls back to default', () => {
-    expect(parsePaymentAmount(undefined)).toEqual({ ok: true, amount: DEFAULT_ONE_TIME_READING_PRICE });
-    expect(parsePaymentAmount(null)).toEqual({ ok: true, amount: DEFAULT_ONE_TIME_READING_PRICE });
+  test('missing amount is rejected (not silently defaulted)', () => {
+    const r1 = parsePaymentAmount(undefined);
+    expect(r1.ok).toBe(false);
+    expect(r1.error).toBe('Invalid amount');
+    const r2 = parsePaymentAmount(null);
+    expect(r2.ok).toBe(false);
+    expect(r2.error).toBe('Invalid amount');
   });
 
   test('valid numeric amount is accepted', () => {

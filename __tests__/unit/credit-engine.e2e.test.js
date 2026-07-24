@@ -437,27 +437,27 @@ describe('Credit Engine - End-to-End Verification', () => {
 
   describe('11. Refund Credits', () => {
     test('should refund credits correctly', async () => {
-      // Add and consume credits
+      // Add credits (balance = 10)
       await addCreditsDirectly(testUserId, 10, 'admin_adjustment');
+      
+      // Consume credits (balance = 5)
       const consumptionResult = await consumeCredits(testUserId, 5, 'reading_to_refund');
-
       expect(consumptionResult.success).toBe(true);
       expect(consumptionResult.new_balance).toBe(5);
 
-      // Refund the credits
+      // Refund deducts credits (balance = 0, like a monetary refund)
       const refundResult = await refundCredits(
         testUserId,
         5,
         'User requested refund',
         { original_ledger_id: consumptionResult.ledger_id }
       );
-
       expect(refundResult.success).toBe(true);
       expect(refundResult.refunded_credits).toBe(5);
 
-      // Verify balance restored
+      // Verify balance is now 0 (credits deducted for refund)
       const finalBalance = await getCreditBalance(testUserId);
-      expect(finalBalance.balance).toBe(10);
+      expect(finalBalance.balance).toBe(0);
     });
   });
 
