@@ -58,21 +58,8 @@ export async function POST(req) {
     // Get authenticated user (optional - anonymous users allowed for preview)
     const authResult = await getAuthenticatedUser(req.cookies, authOptions);
     
-    // If no auth, return chart preview for anonymous user
     if (!authResult) {
-      return NextResponse.json({
-        success: true,
-        chart: chartData,
-        isPreview: true,
-        message: 'Chart generated. Sign in free to save your chart and unlock full features.',
-        birthInfo: {
-          date,
-          time,
-          location,
-          latitude: latNumber,
-          longitude: lonNumber
-        }
-      });
+      return NextResponse.json({ error: 'Authentication required', details: 'Create an account or sign in to generate and save your birth chart.' }, { status: 401 });
     }
 
     // User is authenticated - save the chart
