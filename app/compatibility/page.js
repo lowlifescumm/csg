@@ -23,6 +23,7 @@ export default function CompatibilityCalculator() {
   const [isPremium, setIsPremium] = useState(null);
   const [creditsRemaining, setCreditsRemaining] = useState(null);
   const [compatVersion, setCompatVersion] = useState(0);
+  const [authError, setAuthError] = useState(false);
   const router = useRouter();
   const toast = useToast();
 
@@ -40,9 +41,12 @@ export default function CompatibilityCalculator() {
           setCreditsRemaining(0);
         }
       },
-      onError: () => {
+      onError: (err) => {
         setIsPremium(false);
         setCreditsRemaining(0);
+        if (err?.status === 401) {
+          setAuthError(true);
+        }
       },
       toastMessages: { error: 'Could not check credit status.' },
     },
@@ -203,7 +207,13 @@ export default function CompatibilityCalculator() {
       onSuccess: (data) => {
         if (data.user) setUser(data.user);
       },
-      onErrorWithToast: () => false,
+      onErrorWithToast: (err) => {
+        if (err?.status === 401) {
+          setAuthError(true);
+          return false;
+        }
+        return false;
+      },
     },
   );
 
@@ -305,8 +315,7 @@ export default function CompatibilityCalculator() {
         />
       )}
       
-      {/* Show floating prompt for errors */}
-      {error && error.includes('subscription required') && (
+      {!authError && error && error.includes('subscription required') && (
         <FloatingUpgradePrompt 
           message={error}
           duration={7000}
@@ -486,7 +495,7 @@ export default function CompatibilityCalculator() {
               </div>
             </div>
 
-            {error && (
+            {!authError && error && (
               <div className="mt-6 bg-red-500 bg-opacity-20 border border-red-500 text-red-100 px-4 py-3 rounded-lg">
                 {error}
               </div>
