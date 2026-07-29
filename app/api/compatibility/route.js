@@ -76,9 +76,19 @@ export async function POST(request) {
     const authResult = await getAuthenticatedUser(cookieStore, authOptions);
     
     if (!authResult) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      try {
+        const chart1Hydrated = await hydrateReportData({ name: person1Name || 'Person 1', birthDate: person1BirthDate, birthTime: person1BirthTime, birthLatitude: typeof person1Latitude === 'number' ? person1Latitude : parseFloat(person1Latitude), birthLongitude: typeof person1Longitude === 'number' ? person1Longitude : parseFloat(person1Longitude) });
+        const chart2Hydrated = await hydrateReportData({ name: person2Name || 'Person 2', birthDate: person2BirthDate, birthTime: person2BirthTime, birthLatitude: typeof person2Latitude === 'number' ? person2Latitude : parseFloat(person2Latitude), birthLongitude: typeof person2Longitude === 'number' ? person2Longitude : parseFloat(person2Longitude) });
+        const chart1 = chart1Hydrated.rawChart;
+        const chart2 = chart2Hydrated.rawChart;
+        const result = await generateCompatibilityReport(chart1, chart2, person1Name || 'Person 1', person2Name || 'Person 2');
+        return NextResponse.json({ success: true, preview: true, report: result.report, scores: result.scores, sign1: result.sign1, sign2: result.sign2, message: 'Sign in to save reports and unlock full synastry details.' });
+      } catch (previewError) {
+        logger.error('Error generating anonymous compatibility preview:', previewError);
+        return NextResponse.json({ error: 'Preview unavailable', details: previewError.message }, { status: 400 });
+      }
     }
-    
+
     const { userId } = authResult;
 
     // Apply rate limiting: 5 req/min for free users, 20 req/min for premium
