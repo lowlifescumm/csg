@@ -126,12 +126,13 @@ export async function GET(request) {
     const mood = extractMood(horoscopeData.content) || 'Optimistic';
     const luckyNumbers = generateLuckyNumbers(sign);
     const luckyColor = getLuckyColor(sign);
+    const content = (horoscopeData.content || '').trim() || todayFallback(sign);
 
     return NextResponse.json({
       success: true,
       sign: horoscopeData.sign,
       date: new Date().toISOString().split('T')[0],
-      horoscope: horoscopeData.content,
+      horoscope: content,
       mood,
       luckyNumbers,
       luckyColor
@@ -151,6 +152,18 @@ export async function GET(request) {
 /**
  * Generate lucky numbers based on sign
  */
+function todayFallback(sign) {
+  const seed = Math.floor(Date.now() / 86400000);
+  const signHash = (sign || 'aries').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const i = (seed * 31 + signHash) % 4;
+  return [
+    `Today brings new opportunities for ${sign}. Trust your instincts and follow your heart.`,
+    `Cosmic energy surrounds ${sign} today. Stay open to unexpected messages and synchronicities.`,
+    `A moment of clarity awaits ${sign}. Pay attention to insights that surface during your morning routine.`,
+    `${sign}, today supports reflection before action. Pause, breathe, and let intuition lead.`
+  ][i];
+}
+
 function generateLuckyNumbers(sign) {
   const signSeeds = {
     aries: [7, 14, 21, 28],
