@@ -111,9 +111,8 @@ export default function DashboardHeader({
             </div>
           )}
         </div>
-
-              {/* Right block removed: obsolete legacy energy/love/growth/bonus boxes */}
-      <div className="hidden" aria-hidden="true" />
+      </div>
+    </>
   );
 }
 
