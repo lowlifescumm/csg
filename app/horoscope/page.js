@@ -47,22 +47,19 @@ function HoroscopePageInner() {
   const urlSign = searchParams.get('sign');
 
   const [selectedSign, setSelectedSign] = useState(urlSign?.toLowerCase() || 'aries');
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Keep URL in sync with selected sign
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get('sign') !== selectedSign) {
-        url.searchParams.set('sign', selectedSign);
-        window.history.replaceState({}, '', url.toString());
-      }
-    }
-  }, [selectedSign]);
+  // Force refetch when picking a different sign so we don't keep serving stale cache.
+  const pickSign = useCallback((sign) => {
+    const next = (sign || '').toString().toLowerCase();
+    setSelectedSign(next);
+    setRefreshKey((k) => k + 1);
+  }, []);
 
   const { data, loading, error, refetch } = useApiClientWithToast(
     apiClient,
     (c) => c.get(`/api/horoscope?sign=${selectedSign}`),
-    [selectedSign],
+    [selectedSign, refreshKey],
     { toastMessages: { error: 'Could not load your horoscope. Check your connection.' } }
   );
 
@@ -86,7 +83,7 @@ function HoroscopePageInner() {
                   Daily Horoscope
                 </h1>
                 <p className="text-purple-300 mt-1">
-                  {data?.date || new Date().toISOString().split('T')[0]}
+                  {data?.date ? new Date(data.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>
             </div>
@@ -109,7 +106,7 @@ function HoroscopePageInner() {
               return (
                 <button
                   key={sign.name}
-                  onClick={() => setSelectedSign(signKey)}
+                  onClick={() => pickSign(signKey)}
                   className={`relative p-4 rounded-2xl transition-all duration-200 border ${
                     isSelected
                       ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white border-purple-400 shadow-lg shadow-purple-500/30 scale-105'

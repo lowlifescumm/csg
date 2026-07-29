@@ -332,18 +332,7 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
           )}
         </div>
 
-        <div className="mb-4 sm:mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Your Question <span className="text-gray-400">(optional)</span>
-          </label>
-          <textarea
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            className="w-full p-4 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none resize-none text-gray-900 placeholder-gray-400 bg-white bg-opacity-70"
-            rows={2}
-            placeholder="What guidance do you seek today?"
-          />
-        </div>
+
 
         <div className={`grid gap-3 sm:gap-4 md:gap-8 mb-4 sm:mb-6 md:mb-8 ${
             positions.length === 1 ? 'grid-cols-1' : 
