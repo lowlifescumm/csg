@@ -70,23 +70,26 @@ export async function GET(request) {
       sign = 'aries';
     }
 
-    // Normalize sign name
-    sign = sign.toLowerCase();
+    // Normalize and strengthen cache key for each sign
+    const normalizedSign = String(sign || '').trim().toLowerCase();
+    const signHash = normalizedSign.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
 
     // Check cache first. A cached row with empty/whitespace content is NOT a
     // valid hit (it would render an empty reading). Treat it as a miss so we
     // regenerate instead of serving a blank horoscope.
-    const cached = await getCachedHoroscope(sign);
+    const cached = await getCachedHoroscope(normalizedSign);
     const cachedContent = (cached?.content || '').trim();
-    const looksGeneric = cachedContent.startsWith((sign?.charAt(0)?.toUpperCase() || '') + (sign?.slice(1) || '')) || cachedContent.toLowerCase().startsWith(sign?.toLowerCase() + ',') || cachedContent.length < 180;
-    if (cached && cachedContent && !looksGeneric) {
+    const startsWithFallbackPhrase = cachedContent.startsWith(normalizedSign?.charAt(0)?.toUpperCase() + normalizedSign?.slice(1)) || cachedContent.toLowerCase().startsWith(normalizedSign + ',');
+    const tooShortOrEmpty = cachedContent.length < 180;
+    const looksLikeOldLuckyData = cachedContent.includes('Lucky Numbers') || cachedContent.includes('**Lucky Numbers**');
+    if (cached && cachedContent && !startsWithFallbackPhrase && !tooShortOrEmpty && !looksLikeOldLuckyData) {
       return NextResponse.json({
         success: true,
-        sign: sign.charAt(0).toUpperCase() + sign.slice(1),
+        sign: normalizedSign.charAt(0).toUpperCase() + normalizedSign.slice(1),
         date: cached.date,
         horoscope: cached.content,
         mood: 'Optimistic',
-        luckyStone: getLuckyStone(sign)
+        luckyStone: getLuckyStone(normalizedSign)
       });
     }
 
@@ -101,7 +104,6 @@ export async function GET(request) {
       console.error('Error generating horoscope:', error);
       
       const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-      const signHash = sign.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
       const fallbackSeed = dayOfYear * 997 + signHash;
       const fallbacks = [
         `Today brings new opportunities for ${sign}. Trust your instincts and follow your heart. The stars align in your favor, encouraging you to take that step you have been considering.`,
@@ -117,23 +119,19 @@ export async function GET(request) {
         date: new Date().toISOString().split('T')[0],
         horoscope: fallbackText,
         mood: 'Optimistic',
-        luckyStone: getLuckyStone(sign)
+        luckyStone: getLuckyStone(normalizedSign)
       });
     }
 
-    // Extract mood and lucky numbers from content if possible
-    const mood = extractMood(horoscopeData.content) || 'Optimistic';
-    const luckyStone = getLuckyStone(sign);
-    const content = (horoscopeData.content || '').trim() || todayFallback(sign);
+    const content = (horoscopeData?.content || '').trim();
+    if (!content) {
+      const today = new Date().toISOString().split('T')[0];
+      return NextResponse.json({ success: true, sign: signInfo?.name || normalizedSign, date: today, horoscope: todayFallback(normalizedSign || 'aries'), mood: 'Optimistic', luckyStone: getLuckyStone(normalizedSign || 'aries') });
+    }
 
-    return NextResponse.json({
-      success: true,
-      sign: horoscopeData.sign,
-      date: new Date().toISOString().split('T')[0],
-      horoscope: content,
-      mood,
-      luckyStone
-    });
+    await saveHoroscope(normalizedSign, content);
+    const mood = extractMood(content) || 'Optimistic';
+    return NextResponse.json({ success: true, sign: signInfo?.name || normalizedSign, date: new Date().toISOString().split('T')[0], horoscope: content, mood, luckyStone: getLuckyStone(normalizedSign || 'aries') });
   } catch (error) {
     console.error('Horoscope API error:', error);
     return NextResponse.json(
@@ -179,45 +177,4 @@ function getLuckyStone(sign) {
   return stoneMap[sign] || 'Clear Quartz';
 }
 
-function getLuckyColor(sign) {
-  const colorMap = {
-    aries: 'Red',
-    taurus: 'Green',
-    gemini: 'Yellow',
-    cancer: 'Silver',
-    leo: 'Gold',
-    virgo: 'Brown',
-    libra: 'Pink',
-    scorpio: 'Black',
-    sagittarius: 'Purple',
-    capricorn: 'Dark Green',
-    aquarius: 'Blue',
-    pisces: 'Sea Green'
-  };
-  return colorMap[sign] || 'Purple';
-}
 
-/**
- * Extract mood from horoscope content (simple keyword matching)
- */
-function extractMood(content) {
-  const lowerContent = content.toLowerCase();
-  
-  if (lowerContent.includes('excited') || lowerContent.includes('energetic') || lowerContent.includes('passionate')) {
-    return 'Energetic';
-  }
-  if (lowerContent.includes('calm') || lowerContent.includes('peaceful') || lowerContent.includes('serene')) {
-    return 'Calm';
-  }
-  if (lowerContent.includes('optimistic') || lowerContent.includes('positive') || lowerContent.includes('hopeful')) {
-    return 'Optimistic';
-  }
-  if (lowerContent.includes('romantic') || lowerContent.includes('loving') || lowerContent.includes('affectionate')) {
-    return 'Romantic';
-  }
-  if (lowerContent.includes('focused') || lowerContent.includes('determined') || lowerContent.includes('ambitious')) {
-    return 'Focused';
-  }
-  
-  return 'Optimistic'; // Default
-}
