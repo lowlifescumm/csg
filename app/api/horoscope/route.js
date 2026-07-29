@@ -73,9 +73,12 @@ export async function GET(request) {
     // Normalize sign name
     sign = sign.toLowerCase();
 
-    // Check cache first
+    // Check cache first. A cached row with empty/whitespace content is NOT a
+    // valid hit (it would render an empty reading). Treat it as a miss so we
+    // regenerate instead of serving a blank horoscope.
     const cached = await getCachedHoroscope(sign);
-    if (cached) {
+    const cachedContent = cached?.content?.trim();
+    if (cached && cachedContent) {
       return NextResponse.json({
         success: true,
         sign: sign.charAt(0).toUpperCase() + sign.slice(1),

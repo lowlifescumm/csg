@@ -2,6 +2,7 @@ const logger = require('../../../../lib/logger');
 import { NextResponse } from 'next/server';
 import { createUser, getUserByEmail, generateToken } from '@/lib/auth';
 import { initializeUserCreditsOnSignup } from '@/lib/credits';
+import { seedSignupCredits } from '@/lib/credit-engine.js';
 import { initializeEmailSequence, markEmailSent, logEmailEvent } from '@/lib/email-sequence-db';
 import { sendWelcomeEmail } from '@/lib/nurture-emails';
 
@@ -46,13 +47,29 @@ export async function POST(request) {
 
     const user = await createUser({ email: normalizedEmail, password, firstName, lastName });
     
-    // Initialize signup credits (3 free credits)
+    // Initialize signup credits (legacy `credits` table)
     try {
       await initializeUserCreditsOnSignup(user.id);
-      logger.info(`[Signup] Initialized 3 signup credits for user ${user.id}`);
+      logger.info(`[Signup] Initialized legacy signup credits for user ${user.id}`);
     } catch (creditsError) {
-      logger.error('[Signup] Failed to initialize credits:', creditsError);
+      logger.error('[Signup] Failed to initialize legacy credits:', creditsError);
       // Don't fail signup if credits initialization fails
+    }
+
+    // Seed the authoritative credit_ledger with the signup bonus so the
+    // dashboard/balance endpoints (which read credit_ledger) reflect it.
+    try {
+      const seed = await seedSignupCredits(user.id);
+      if (seed.success) {
+        logger.info(`[Signup] Seeded ${seed.added_credits} ledger credits for user ${user.id}`);
+      } else if (seed.already_seeded) {
+        logger.info(`[Signup] Ledger signup credits already seeded for user ${user.id}`);
+      } else {
+        logger.error('[Signup] Ledger signup seed failed:', seed.error);
+      }
+    } catch (ledgerErr) {
+      logger.error('[Signup] Ledger seed threw:', ledgerErr);
+      // Don't fail signup; balance will correct on next daily-issue path
     }
     
     // Initialize email nurture sequence and send welcome email

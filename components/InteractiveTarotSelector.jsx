@@ -44,6 +44,17 @@ export default function InteractiveTarotSelector({ onClose, onComplete, spreadTy
         }
       },
       toastMessages: { error: "Failed to generate reading. Check your connection." },
+      onError: (err) => {
+        // Surface API/business errors to the user instead of leaving the modal
+        // stuck on "Select Your Cards" with no feedback.
+        const msg =
+          err?.code === 'CLIENT_ERROR' && err?.message
+            ? err.message
+            : (err?.message || "We couldn't generate your reading. Please try again.");
+        setError(msg);
+        setShowReading(false);
+        setReading(null);
+      },
     },
   );
   

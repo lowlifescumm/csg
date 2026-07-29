@@ -31,6 +31,7 @@ export async function POST(req) {
 
     // Calculate birth chart (this is free)
     let chartData;
+    const HYDRATION_TIMEOUT_MS = 25000;
     try {
       const hydrationInput = {
         name: body.name || 'Primary Chart',
@@ -41,7 +42,12 @@ export async function POST(req) {
         birthLongitude: lonNumber,
       };
 
-      const hydrated = await hydrateReportData(hydrationInput);
+      const hydrated = await Promise.race([
+        hydrateReportData(hydrationInput),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Birth chart generation timed out. Please try again.')), HYDRATION_TIMEOUT_MS)
+        ),
+      ]);
       chartData = hydrated.rawChart;
     } catch (error) {
       logger.error('Error calculating chart:', error);

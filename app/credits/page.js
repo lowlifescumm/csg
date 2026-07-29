@@ -137,10 +137,11 @@ export default function CreditsPage() {
   const [userCredits, setUserCredits] = useState(0);
 
   useEffect(() => {
-    // Fetch user credits
-    apiClient.get("/api/auth/user")
+    // Fetch the authoritative credit balance (credit_ledger)
+    apiClient.get("/api/credits")
       .then(data => {
-        if (data.user?.credits) setUserCredits(data.user.credits);
+        const bal = data?.balance ?? data?.credits ?? data?.stats?.totalAvailable ?? 0;
+        setUserCredits(bal);
       })
       .catch(() => {});
   }, []);
@@ -148,10 +149,11 @@ export default function CreditsPage() {
   const handleSuccess = () => {
     setMessage("Credits added successfully!");
     setSelectedPack(null);
-    // Refresh credits
-    apiClient.get("/api/auth/user")
+    // Refresh credits from the authoritative source
+    apiClient.get("/api/credits")
       .then(data => {
-        if (data.user?.credits) setUserCredits(data.user.credits);
+        const bal = data?.balance ?? data?.credits ?? data?.stats?.totalAvailable ?? 0;
+        setUserCredits(bal);
       })
       .catch(() => {});
   };

@@ -92,14 +92,8 @@ export async function POST(request) {
 
     const interpretation = await generateTarotReading(cards, question, resolvedId, readingType);
 
-    // Consume credits for the reading
-    const creditResult = await consumeCreditsForReading(userId, readingTypeKey);
-    
-    if (!creditResult.success) {
-      const errorResponse = formatCreditError(creditResult);
-      return NextResponse.json(errorResponse, { status: errorResponse.status });
-    }
-
+    // Persist the reading BEFORE charging, so a credit failure can't leave the
+    // user without their generated reading.
     const reading = await saveReading({
       userId: userId,
       type: "tarot",
@@ -109,6 +103,17 @@ export async function POST(request) {
       spreadType,
       meta: { readingType },
     });
+
+    // Consume credits for the reading only after successful generation + save.
+    const creditResult = await consumeCreditsForReading(userId, readingTypeKey, reading.id);
+    
+    if (!creditResult.success) {
+      // Nothing was deducted (consumption failed), but the reading is saved.
+      // Surface the error rather than silently delivering a free reading.
+      logger.error('[Tarot] Credit deduction failed after generation:', creditResult);
+      const errorResponse = formatCreditError(creditResult);
+      return NextResponse.json(errorResponse, { status: errorResponse.status });
+    }
 
     return NextResponse.json({
       success: true,

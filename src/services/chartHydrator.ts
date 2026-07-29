@@ -5,6 +5,21 @@ import { calculateBodyGraph } from "@/src/utils/humanDesign/hdCalculator";
 import * as Astronomy from 'astronomy-engine';
 import { Body } from 'astronomy-engine';
 
+// Bounded fetch: never let an outbound call hang the request forever.
+// External geocoding services (Google, OSM) can stall from the server's network;
+// without a timeout the whole HTTP request hangs (observed: /api/birth-chart never
+// returns). Default 8s is plenty for a geocode lookup.
+async function fetchWithTimeout(url: string, init: RequestInit = {}, ms = 8000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+
 // ---------------------------------------------------------------------------
 // Aspect calculation helper (adds explicit planetary relationships)
 // ---------------------------------------------------------------------------
@@ -990,7 +1005,7 @@ async function geocodeWithGoogle(city: string): Promise<Omit<Coordinates, "sourc
   if (!apiKey) return null;
 
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=${apiKey}`
     );
 
@@ -1011,7 +1026,7 @@ async function geocodeWithGoogle(city: string): Promise<Omit<Coordinates, "sourc
 
 async function geocodeWithOpenStreetMap(city: string): Promise<Omit<Coordinates, "source"> | null> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
       {
         headers: {

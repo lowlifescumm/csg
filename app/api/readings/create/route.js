@@ -77,14 +77,6 @@ export async function POST(request) {
       }, { status: 403 });
     }
 
-    // Consume credits for the reading (pass cardCount for custom spreads)
-    const creditResult = await consumeCreditsForReading(userId, readingTypeKey, null, isCustomSpread ? actualCardCount : null);
-    
-    if (!creditResult.success) {
-      const errorResponse = formatCreditError(creditResult);
-      return NextResponse.json(errorResponse, { status: errorResponse.status });
-    }
-
     // Validate question requirement
     if (spread.ui?.require_question && !question.trim()) {
       return NextResponse.json({ error: "Please enter your question before submitting." }, { status: 400 });
@@ -110,7 +102,9 @@ export async function POST(request) {
       cards = drawCards(requiredCount);
     }
 
-    // Generate full reading text
+    // Generate full reading text FIRST. If generation fails we must NOT charge
+    // the user (previously credits were consumed before generation, leaking
+    // credits on any AI/timeout error with no reading delivered).
     const fullText = await generateTarotReading(cards, question, resolvedId, "general", tone);
 
     // Create summary (1-2 sentences)
@@ -128,6 +122,19 @@ export async function POST(request) {
       rawText: fullText,
       meta: { tone }
     });
+
+    // Only now consume credits, after the reading has been successfully
+    // generated and persisted.
+    const creditResult = await consumeCreditsForReading(userId, readingTypeKey, saved.id, isCustomSpread ? actualCardCount : null);
+    
+    if (!creditResult.success) {
+      // Reading was generated but credit deduction failed. Refund is not needed
+      // (nothing was deducted); surface the error so the user isn't charged and
+      // can retry. The saved reading remains available in history.
+      logger.error('[Readings/Create] Credit deduction failed after generation:', creditResult);
+      const errorResponse = formatCreditError(creditResult);
+      return NextResponse.json(errorResponse, { status: errorResponse.status });
+    }
 
     // Respect user opt-in for personalization
     const { rows: userRows } = await pool.query("SELECT ai_personalization_opt_in FROM users WHERE id=$1", [userId]);
