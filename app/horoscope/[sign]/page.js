@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 import { useApiClientWithToast } from '@/src/hooks/useApiClientWithToast';
-import { ArrowLeft, Sparkles, Star, Heart, TrendingUp, Activity, Loader2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, Gem, Heart, Activity, Loader2 } from 'lucide-react';
 
 const zodiacSigns = [
   { name: 'Aries', symbol: '♈', dates: 'Mar 21 - Apr 19', element: 'Fire', icon: '🔥' },
@@ -131,40 +131,15 @@ export default function SignHoroscopePage() {
               </div>
             </div>
 
-            {/* Lucky Numbers & Color */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-2xl rounded-2xl border border-purple-500/30 p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Star className="w-5 h-5 text-purple-400" />
-                  <h3 className="text-lg font-bold text-white">Lucky Numbers</h3>
-                </div>
-                <div className="flex gap-3">
-                  {horoscope.luckyNumbers?.map((num, idx) => (
-                    <div key={idx} className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">{num}</span>
-                    </div>
-                  )) || [7, 14, 21, 28].map((num, idx) => (
-                    <div key={idx} className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">{num}</span>
-                    </div>
-                  ))}
-                </div>
+            <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-2xl rounded-2xl border border-purple-500/30 p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <Gem className="w-5 h-5 text-purple-400" />
+                <h3 className="text-lg font-bold text-white">Lucky Stone</h3>
               </div>
-
-              <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-2xl rounded-2xl border border-purple-500/30 p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Sparkles className="w-5 h-5 text-purple-400" />
-                  <h3 className="text-lg font-bold text-white">Lucky Color</h3>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-12 h-12 rounded-xl shadow-lg"
-                    style={{ backgroundColor: horoscope.luckyColor?.toLowerCase() || '#9333ea' }}
-                  />
-                  <span className="text-white font-semibold text-lg">
-                    {horoscope.luckyColor || 'Purple'}
-                  </span>
-                </div>
+              <div className="flex items-center gap-3">
+                <span className="text-white font-semibold text-lg">
+                  {horoscope.luckyStone || 'Clear Quartz'}
+                </span>
               </div>
             </div>
 

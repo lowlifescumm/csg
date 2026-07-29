@@ -77,16 +77,16 @@ export async function GET(request) {
     // valid hit (it would render an empty reading). Treat it as a miss so we
     // regenerate instead of serving a blank horoscope.
     const cached = await getCachedHoroscope(sign);
-    const cachedContent = cached?.content?.trim();
-    if (cached && cachedContent) {
+    const cachedContent = (cached?.content || '').trim();
+    const looksGeneric = cachedContent.startsWith((sign?.charAt(0)?.toUpperCase() || '') + (sign?.slice(1) || '')) || cachedContent.toLowerCase().startsWith(sign?.toLowerCase() + ',') || cachedContent.length < 180;
+    if (cached && cachedContent && !looksGeneric) {
       return NextResponse.json({
         success: true,
         sign: sign.charAt(0).toUpperCase() + sign.slice(1),
         date: cached.date,
         horoscope: cached.content,
-        mood: 'Optimistic', // Default mood
-        luckyNumbers: generateLuckyNumbers(sign),
-        luckyColor: getLuckyColor(sign)
+        mood: 'Optimistic',
+        luckyStone: getLuckyStone(sign)
       });
     }
 
@@ -117,15 +117,13 @@ export async function GET(request) {
         date: new Date().toISOString().split('T')[0],
         horoscope: fallbackText,
         mood: 'Optimistic',
-        luckyNumbers: generateLuckyNumbers(sign),
-        luckyColor: getLuckyColor(sign)
+        luckyStone: getLuckyStone(sign)
       });
     }
 
     // Extract mood and lucky numbers from content if possible
     const mood = extractMood(horoscopeData.content) || 'Optimistic';
-    const luckyNumbers = generateLuckyNumbers(sign);
-    const luckyColor = getLuckyColor(sign);
+    const luckyStone = getLuckyStone(sign);
     const content = (horoscopeData.content || '').trim() || todayFallback(sign);
 
     return NextResponse.json({
@@ -134,8 +132,7 @@ export async function GET(request) {
       date: new Date().toISOString().split('T')[0],
       horoscope: content,
       mood,
-      luckyNumbers,
-      luckyColor
+      luckyStone
     });
   } catch (error) {
     console.error('Horoscope API error:', error);
@@ -164,28 +161,24 @@ function todayFallback(sign) {
   ][i];
 }
 
-function generateLuckyNumbers(sign) {
-  const signSeeds = {
-    aries: [7, 14, 21, 28],
-    taurus: [4, 12, 24, 40],
-    gemini: [5, 13, 22, 35],
-    cancer: [6, 15, 23, 42],
-    leo: [8, 16, 25, 33],
-    virgo: [3, 11, 19, 31],
-    libra: [9, 18, 27, 36],
-    scorpio: [2, 10, 20, 38],
-    sagittarius: [12, 21, 30, 45],
-    capricorn: [1, 11, 22, 44],
-    aquarius: [4, 13, 26, 39],
-    pisces: [7, 16, 25, 43]
+function getLuckyStone(sign) {
+  const stoneMap = {
+    aries: 'Diamond',
+    taurus: 'Emerald',
+    gemini: 'Agate',
+    cancer: 'Pearl',
+    leo: 'Ruby',
+    virgo: 'Sapphire',
+    libra: 'Opal',
+    scorpio: 'Topaz',
+    sagittarius: 'Turquoise',
+    capricorn: 'Garnet',
+    aquarius: 'Amethyst',
+    pisces: 'Aquamarine'
   };
-  
-  return signSeeds[sign] || [7, 14, 21, 28];
+  return stoneMap[sign] || 'Clear Quartz';
 }
 
-/**
- * Get lucky color based on sign
- */
 function getLuckyColor(sign) {
   const colorMap = {
     aries: 'Red',
@@ -201,7 +194,6 @@ function getLuckyColor(sign) {
     aquarius: 'Blue',
     pisces: 'Sea Green'
   };
-  
   return colorMap[sign] || 'Purple';
 }
 

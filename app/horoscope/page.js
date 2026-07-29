@@ -8,8 +8,7 @@ import {
   Star,
   Loader2,
   ArrowLeft,
-  Palette,
-  Hash,
+  Gem,
   Smile,
   Calendar
 } from 'lucide-react';
@@ -182,35 +181,15 @@ function HoroscopePageInner() {
                 <p className="text-2xl font-bold text-yellow-300">{data.mood || 'Optimistic'}</p>
               </div>
 
-              {/* Lucky Numbers */}
+              {/* Lucky Stone */}
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
-                    <Hash className="w-5 h-5 text-white" />
+                    <Gem className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white">Lucky Numbers</h3>
+                  <h3 className="text-lg font-semibold text-white">Lucky Stone</h3>
                 </div>
-                <div className="flex gap-2 flex-wrap">
-                  {(data.luckyNumbers || [7, 14, 21, 28]).map((num, i) => (
-                    <span
-                      key={i}
-                      className="w-10 h-10 rounded-xl bg-green-500/20 border border-green-500/30 flex items-center justify-center text-green-300 font-bold"
-                    >
-                      {num}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Lucky Color */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center">
-                    <Palette className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white">Lucky Color</h3>
-                </div>
-                <p className="text-2xl font-bold text-pink-300">{data.luckyColor || 'Purple'}</p>
+                <p className="text-2xl font-bold text-teal-300">{data.luckyStone || 'Clear Quartz'}</p>
               </div>
             </div>
           </div>
