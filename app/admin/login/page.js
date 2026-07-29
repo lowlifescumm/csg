@@ -96,14 +96,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => router.push("/login")}
-            className="text-sm text-gray-400 hover:text-gray-200 smooth-transition"
-          >
-            ← Back to regular login
-          </button>
-        </div>
+
       </div>
     </div>
   );
