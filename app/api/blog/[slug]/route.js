@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
     }
 
     const related = await sanityClient.fetch(
-      `*[_type == "blogPost" && status == "published" && slug.current != $slug][0...3]{ title, slug: slug.current, excerpt, featured_image, published_at }`,
+      `*[_type == "blogPost" && status == "published" && slug.current != $slug][0..3]{ title, "slug": slug.current, excerpt, featured_image, published_at }`,
       { slug }
     );
 
