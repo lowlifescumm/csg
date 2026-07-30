@@ -1,4 +1,3 @@
-
 'use client';
 const logger = require('../../../lib/logger');
 
@@ -72,7 +71,7 @@ export default function BlogAdminPage() {
 
     try {
       setDeletingPost(postId);
-      const data = await apiClient.delete(`/api/blog/${postId}`);
+      await apiClient.delete(`/api/blog/${encodeURIComponent(postId)}`);
       alert('Post deleted successfully!');
       fetchPosts();
     } catch (error) {
@@ -86,8 +85,7 @@ export default function BlogAdminPage() {
   const handleStatusChange = async (postId, newStatus) => {
     try {
       setChangingStatus(postId);
-      
-      // Get the current post to update
+
       const post = posts.find(p => p.id === postId);
       if (!post) {
         alert('Post not found');
@@ -95,7 +93,7 @@ export default function BlogAdminPage() {
       }
 
       await apiClient.put('/api/blog', {
-        id: post.id,
+        id: postId,
         title: post.title,
         slug: post.slug,
         excerpt: post.excerpt,
@@ -143,7 +141,7 @@ export default function BlogAdminPage() {
                 <p className="text-gray-600">Create and manage blog posts for SEO</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <button
                 onClick={fetchPosts}
@@ -154,7 +152,7 @@ export default function BlogAdminPage() {
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
               </button>
-              
+
               <Link
                 href="/admin/blog/new"
                 className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 smooth-transition apple-shadow"
@@ -326,14 +324,14 @@ export default function BlogAdminPage() {
                             <Eye className="w-4 h-4" />
                           </Link>
                           <Link
-                            href={`/admin/blog/${post.id}/edit`}
+                            href={`/admin/blog/${encodeURIComponent(post.id)}/edit`}
                             className="text-purple-600 hover:text-purple-700 smooth-transition"
                             title="Edit Post"
                           >
                             <Edit className="w-4 h-4" />
                           </Link>
                           <button
-                            onClick={() => handleDelete(post.id, post.title)}
+                            onClick={() => handleDelete(encodeURIComponent(post.id), post.title)}
                             disabled={deletingPost === post.id}
                             className="text-red-600 hover:text-red-700 smooth-transition disabled:opacity-50"
                             title="Delete Post"
