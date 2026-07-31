@@ -1,56 +1,43 @@
 import React, { useState } from 'react';
+import { useUser } from '@clerk/clerk-react';
 
-/**
- * InteractiveTarotSelector component.
- *
- * When the user is anonymous, present an email capture gate before
- * allowing interaction with the tarot selector.
- */
-interface InteractiveTarotSelectorProps {
-  /** Whether the current user session is anonymous. */
-  isAnonymous: boolean;
-  /** Callback invoked with the email once the user submits. */
-  onEmailSubmit: (email: string) => void;
-}
-
-export const InteractiveTarotSelector: React.FC<InteractiveTarotSelectorProps> = ({
-  isAnonymous,
-  onEmailSubmit,
-}) => {
+// Minimal interactive Tarot selector with email capture gate for anonymous users
+export const InteractiveTarotSelector: React.FC = () => {
+  const { user } = useUser();
   const [email, setEmail] = useState('');
-  const [gated, setGated] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // If user is anonymous, we require an email before letting them interact
+  const isAnonymous = !user;
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    onEmailSubmit(email);
-    setGated(true);
+    if (email.trim()) {
+      setSubmitted(true);
+    }
   };
 
-  if (isAnonymous && !gated) {
+  if (isAnonymous && !submitted) {
     return (
-      <form onSubmit={handleSubmit} className="email-gate-form">
-        <label htmlFor="anon-email" className="sr-only">
-          Email address
-        </label>
+      <form onSubmit={handleEmailSubmit} aria-label="email capture form">
+        <label htmlFor="newsletterEmail">Enter your email to view the Tarot deck</label>
         <input
-          id="anon-email"
           type="email"
-          required
-          placeholder="Enter your email"
+          id="newsletterEmail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="email-input"
+          required
         />
-        <button type="submit" className="email-submit-btn">
-          Continue
-        </button>
+        <button type="submit">Submit</button>
       </form>
     );
   }
 
-  // Render the actual tarot selector UI (placeholder)
-  return <div className="tarot-selector">[Tarot selector UI goes here]</div>;
+  // Simplified tarot deck placeholder
+  return (
+    <div>
+      <h2>Interactive Tarot Selector</h2>
+      <p>Here you would find the interactive Tarot card selection UI.</p>
+    </div>
+  );
 };
-
-export default InteractiveTarotSelector;
