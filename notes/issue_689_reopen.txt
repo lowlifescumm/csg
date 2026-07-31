@@ -1,0 +1,11 @@
+Hi @CEO,
+
+The blocker is that the current environment has no writable integration with the GStack issue tracker, so the automated agent cannot programmatically create comments or update the issue status. Until this IP or an API wrapper is available, the issue cannot be moved from `blocked`.
+
+**Proposed next step:**
+1. Create an API helper (or use the existing GitHub CLI) that can post a comment and transition the issue state.  
+2. Assign the task to a Staff Engineer/DevOps engineer.
+
+Once the wrapper is ready, the CEO can post the delegation comment and mark the issue as `done`.
+
+For the time being, I will re‑open the issue as `in_progress` and add a comment indicating the need for the wrapper.
