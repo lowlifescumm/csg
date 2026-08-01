@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 const zodiacSymbols = {
   'Aries': '♈',
@@ -33,8 +33,12 @@ const planetSymbols = {
   'partoffortune': '⊕'
 };
 
-export default function BirthChartWheel({ chartData, birthInfo }) {
+export default function BirthChartWheel({ chartData, birthInfo, interactive = false }) {
   const svgRef = useRef(null);
+  const [activeSegment, setActiveSegment] = useState(null);
+  const [activeHouse, setActiveHouse] = useState(null);
+  const [activePlanet, setActivePlanet] = useState(null);
+  const [viewMode, setViewMode] = useState('wheel');
   const centerX = 500;
   const centerY = 400;
   const outerRadius = 350;
@@ -77,6 +81,24 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     return `${displayHour}:${minutes} ${period}`;
   };
 
+  const toggleSegment = useCallback((sign) => {
+    setActiveSegment(prev => prev === sign ? null : sign);
+    setActiveHouse(null);
+    setActivePlanet(null);
+  }, []);
+
+  const toggleHouse = useCallback((house) => {
+    setActiveHouse(prev => prev === house ? null : house);
+    setActiveSegment(null);
+    setActivePlanet(null);
+  }, []);
+
+  const togglePlanet = useCallback((planet) => {
+    setActivePlanet(prev => prev === planet ? null : planet);
+    setActiveSegment(null);
+    setActiveHouse(null);
+  }, []);
+
   const downloadChart = () => {
     if (!svgRef.current) return;
     
@@ -98,7 +120,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
       
       canvas.toBlob((blob) => {
         const link = document.createElement('a');
-        link.download = `birth-chart-${birthInfo.date}.png`;
+        link.download = `birth-chart-${birthInfo?.date || 'chart'}.png`;
         link.href = URL.createObjectURL(blob);
         link.click();
       });
@@ -113,7 +135,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(svgBlob);
     const link = document.createElement('a');
-    link.download = `birth-chart-${birthInfo.date}.svg`;
+    link.download = `birth-chart-${birthInfo?.date || 'chart'}.svg`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
@@ -147,7 +169,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             y1={startPoint.y}
             x2={endPoint.x}
             y2={endPoint.y}
-            stroke="#9333ea"
+            stroke="rgba(196,91,122,0.85)"
             strokeWidth="1"
             opacity="0.3"
           />
@@ -157,7 +179,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize="24"
-            fill="#9333ea"
+            fill="rgba(196,91,122,0.9)"
             fontWeight="bold"
           >
             {zodiacSymbols[sign]}
@@ -210,7 +232,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             cx={point.x}
             cy={point.y}
             r="20"
-            fill="white"
+            fill="rgba(255,255,255,0.04)"
             stroke={dignity ? dignityColor : (isSpecialPoint ? "#ec4899" : "#6366f1")}
             strokeWidth="2"
           />
@@ -254,7 +276,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             y={point.y + 35}
             textAnchor="middle"
             fontSize="10"
-            fill="#6b7280"
+            fill="rgba(169,162,189,0.85)"
           >
             {Math.floor(data.degree)}°
           </text>
@@ -278,7 +300,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           cx={point.x}
           cy={point.y}
           r="16"
-          fill="white"
+          fill="rgba(255,255,255,0.04)"
           stroke="#f59e0b"
           strokeWidth="2"
           strokeDasharray="3,2"
@@ -324,9 +346,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             y1={startPoint.y}
             x2={endPoint.x}
             y2={endPoint.y}
-            stroke="#ec4899"
-            strokeWidth="2"
-            opacity="0.6"
+            stroke="rgba(242,200,93,0.85)"
+            strokeWidth={activeHouse === houseNum ? "2.6" : "1.8"}
+            opacity={activeHouse && activeHouse !== houseNum ? "0.25" : "0.75"}
+            className={interactive ? "cursor-pointer" : ""}
+            onClick={() => interactive && toggleHouse(houseNum)}
           />
           <text
             x={labelPoint.x}
@@ -334,8 +358,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize="14"
-            fill="#ec4899"
-            fontWeight="600"
+            fill={activeHouse === houseNum ? "rgba(255,248,235,1)" : "rgba(242,200,93,0.95)"}
+            fontWeight={activeHouse === houseNum ? "800" : "600"}
+            className={interactive ? "cursor-pointer" : ""}
+            onClick={() => interactive && toggleHouse(houseNum)}
           >
             {houseNum}
           </text>
@@ -394,6 +420,46 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
     });
   };
 
+  const selectedPlanetData = useCallback((name) => {
+    const key = name.toLowerCase();
+    const data = chartData?.planets?.[key];
+    if (!data) return null;
+    return {
+      name: key,
+      sign: data.sign,
+      degree: typeof data.degree === 'number' ? Math.floor(data.degree) : null,
+      longitude: typeof data.longitude === 'number' ? data.longitude : null,
+      retrograde: !!data.retrograde,
+    };
+  }, [chartData]);
+
+  const tableView = () => {
+    if (!chartData) return null;
+    const rows = [
+      { label: 'Ascendant', value: chartData.ascendant },
+      { label: 'Midheaven', value: chartData.midheaven },
+      { label: 'Chart Ruler', value: chartData.chartRuler },
+    ];
+    const planetEntries = Object.entries(chartData.planets || {})
+      .filter(([, data]) => data && typeof data.longitude === 'number' && !isNaN(data.longitude))
+      .sort((a, b) => (a[1].longitude || 0) - (b[1].longitude || 0));
+    planetEntries.forEach(([name, data]) => {
+      rows.push({ label: name, value: `${data.sign} ${Math.floor(data.degree || 0)}°` });
+    });
+    return (
+      <div className="w-full max-w-3xl mx-auto overflow-x-auto">
+        <div className="min-w-[320px] rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm divide-y divide-white/10">
+          {rows.map((row) => (
+            <div key={row.label} className="flex items-center justify-between px-5 py-3">
+              <span className="capitalize text-white/80">{row.label}</span>
+              <span className="text-cosmic-gold font-semibold">{row.value || '—'}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col items-center gap-4">
       {/* Wrapper div for print-safe containment */}
@@ -402,7 +468,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           ref={svgRef}
           viewBox="0 0 1400 1000"
           preserveAspectRatio="xMidYMid meet"
-          className="w-full h-auto max-w-full border-2 border-purple-200 rounded-2xl bg-white"
+          className="w-full h-auto max-w-full border border-white/10 rounded-2xl bg-cosmic-950/80"
           style={{ 
             printColorAdjust: 'exact', 
             WebkitPrintColorAdjust: 'exact' 
@@ -414,9 +480,9 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           y="35"
           textAnchor="middle"
           fontSize="16"
-          fill="#8b5cf6"
+          fill="var(--cosmic-gold, #DFB76C)"
           fontWeight="600"
-          fontFamily="system-ui, -apple-system, sans-serif"
+          fontFamily="var(--font-cinzel), Georgia, serif"
         >
           www.cosmicspiritguide.com
         </text>
@@ -426,7 +492,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           cy={centerY}
           r={outerRadius}
           fill="none"
-          stroke="#e5e7eb"
+          stroke="rgba(255,255,255,0.12)"
           strokeWidth="2"
         />
         
@@ -435,7 +501,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           cy={centerY}
           r={zodiacRadius}
           fill="none"
-          stroke="#d1d5db"
+          stroke="rgba(255,255,255,0.12)"
           strokeWidth="1"
         />
         
@@ -444,7 +510,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           cy={centerY}
           r={planetRadius}
           fill="none"
-          stroke="#d1d5db"
+          stroke="rgba(255,255,255,0.12)"
           strokeWidth="1"
         />
         
@@ -452,16 +518,16 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           cx={centerX}
           cy={centerY}
           r={innerRadius}
-          fill="#faf5ff"
-          stroke="#9333ea"
+          fill="rgba(124,58,237,0.18)"
+          stroke="rgba(196,91,122,0.85)"
           strokeWidth="2"
         />
         
-        {renderAspectLines()}
-        {renderZodiacWheel()}
-        {renderHouses()}
-        {renderPlanets()}
-        {renderPartOfFortune()}
+        {viewMode !== 'table' && renderAspectLines()}
+        {viewMode !== 'table' && renderZodiacWheel()}
+        {viewMode !== 'table' && renderHouses()}
+        {viewMode !== 'table' && renderPlanets()}
+        {viewMode !== 'table' && renderPartOfFortune()}
         
         {/* Center Info */}
         <text
@@ -469,7 +535,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           y={centerY - 60}
           textAnchor="middle"
           fontSize="22"
-          fill="#6366f1"
+          fill="rgba(223,183,108,0.95)"
           fontWeight="bold"
           style={{ textTransform: 'capitalize' }}
         >
@@ -480,7 +546,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           y={centerY - 35}
           textAnchor="middle"
           fontSize="14"
-          fill="#6b7280"
+          fill="rgba(169,162,189,0.85)"
         >
           {formatDate(birthInfo?.date)} at {formatTime(birthInfo?.time)}
         </text>
@@ -489,7 +555,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           y={centerY - 10}
           textAnchor="middle"
           fontSize="12"
-          fill="#9ca3af"
+          fill="rgba(169,162,189,0.7)"
         >
           ASC: {chartData?.ascendant || 'N/A'} • MC: {chartData?.midheaven || 'N/A'}
         </text>
@@ -498,7 +564,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           y={centerY + 10}
           textAnchor="middle"
           fontSize="12"
-          fill="#9333ea"
+          fill="rgba(196,91,122,0.9)"
           fontWeight="600"
         >
           👑 Chart Ruler: {chartData?.chartRuler || 'Unknown'}
@@ -507,8 +573,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {/* Element Distribution (Right side, below Chart Patterns) */}
         {chartData?.distribution && (
           <g>
-            <rect x="920" y="230" width="260" height="140" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="1050" y="250" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            <rect x="920" y="230" width="260" height="140" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" rx="8" />
+            <text x="1050" y="250" textAnchor="middle" fontSize="12" fill="rgba(223,183,108,0.95)" fontWeight="600">
               Elements
             </text>
             {['fire', 'earth', 'air', 'water'].map((elem, idx) => {
@@ -517,11 +583,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               const symbols = { fire: '🔥', earth: '🌍', air: '💨', water: '💧' };
               return (
                 <g key={elem}>
-                  <text x="935" y={270 + idx * 20} fontSize="10" fill="#6b7280">
+                  <text x="935" y={270 + idx * 20} fontSize="10" fill="rgba(169,162,189,0.85)">
                     {symbols[elem]} {elem.charAt(0).toUpperCase() + elem.slice(1)}
                   </text>
                   <rect x="1020" y={260 + idx * 20} width={count * 12} height="10" fill={colors[elem]} rx="2" />
-                  <text x="1150" y={269 + idx * 20} fontSize="10" fill="#6b7280" fontWeight="600">
+                  <text x="1150" y={269 + idx * 20} fontSize="10" fill="rgba(169,162,189,0.85)" fontWeight="600">
                     {count}
                   </text>
                 </g>
@@ -533,8 +599,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {/* Modality Distribution (Right side, below Elements) */}
         {chartData?.distribution && (
           <g>
-            <rect x="920" y="380" width="260" height="110" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="1050" y="400" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            <rect x="920" y="380" width="260" height="110" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" rx="8" />
+            <text x="1050" y="400" textAnchor="middle" fontSize="12" fill="rgba(223,183,108,0.95)" fontWeight="600">
               Modalities
             </text>
             {['cardinal', 'fixed', 'mutable'].map((mod, idx) => {
@@ -542,11 +608,11 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               const colors = { cardinal: '#ec4899', fixed: '#8b5cf6', mutable: '#06b6d4' };
               return (
                 <g key={mod}>
-                  <text x="935" y={420 + idx * 22} fontSize="10" fill="#6b7280">
+                  <text x="935" y={420 + idx * 22} fontSize="10" fill="rgba(169,162,189,0.85)">
                     {mod.charAt(0).toUpperCase() + mod.slice(1)}
                   </text>
                   <rect x="1020" y={410 + idx * 22} width={count * 12} height="10" fill={colors[mod]} rx="2" />
-                  <text x="1150" y={419 + idx * 22} fontSize="10" fill="#6b7280" fontWeight="600">
+                  <text x="1150" y={419 + idx * 22} fontSize="10" fill="rgba(169,162,189,0.85)" fontWeight="600">
                     {count}
                   </text>
                 </g>
@@ -557,8 +623,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         
         {/* Aspect Legend (Bottom Left) */}
         <g>
-          <rect x="20" y="640" width="160" height="150" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-          <text x="100" y="660" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+          <rect x="20" y="640" width="160" height="150" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" rx="8" />
+          <text x="100" y="660" textAnchor="middle" fontSize="12" fill="rgba(223,183,108,0.95)" fontWeight="600">
             Aspects
           </text>
           {[
@@ -570,7 +636,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
           ].map((aspect, idx) => (
             <g key={aspect.type}>
               <line x1="35" y1={678 + idx * 24} x2="60" y2={678 + idx * 24} stroke={aspect.color} strokeWidth="2.5" />
-              <text x="70" y={683 + idx * 24} fontSize="10" fill="#6b7280">
+              <text x="70" y={683 + idx * 24} fontSize="10" fill="rgba(169,162,189,0.85)">
                 {aspect.symbol} {aspect.type}
               </text>
             </g>
@@ -579,8 +645,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         
         {/* Special Points Legend (Top Left) */}
         <g>
-          <rect x="20" y="20" width="160" height="100" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-          <text x="100" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+          <rect x="20" y="20" width="160" height="100" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" rx="8" />
+          <text x="100" y="40" textAnchor="middle" fontSize="12" fill="rgba(223,183,108,0.95)" fontWeight="600">
             Special Points
           </text>
           <text x="30" y="60" fontSize="10" fill="#ec4899">☊ North Node</text>
@@ -597,14 +663,14 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {/* Moon Phase (Right side, below Modalities) */}
         {chartData?.moonPhase && (
           <g>
-            <rect x="920" y="500" width="260" height="80" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="1050" y="520" textAnchor="middle" fontSize="11" fill="#6366f1" fontWeight="600">
+            <rect x="920" y="500" width="260" height="80" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" rx="8" />
+            <text x="1050" y="520" textAnchor="middle" fontSize="11" fill="rgba(223,183,108,0.95)" fontWeight="600">
               Moon Phase
             </text>
             <text x="1050" y="550" textAnchor="middle" fontSize="28">
               {chartData.moonPhase.emoji}
             </text>
-            <text x="1050" y="572" textAnchor="middle" fontSize="9" fill="#6b7280">
+            <text x="1050" y="572" textAnchor="middle" fontSize="9" fill="rgba(169,162,189,0.85)">
               {chartData.moonPhase.name}
             </text>
           </g>
@@ -613,8 +679,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {/* Chart Patterns (Right side) */}
         {chartData?.chartPatterns && chartData.chartPatterns.length > 0 && (
           <g>
-            <rect x="920" y="20" width="260" height="200" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="1050" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            <rect x="920" y="20" width="260" height="200" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" rx="8" />
+            <text x="1050" y="40" textAnchor="middle" fontSize="12" fill="rgba(223,183,108,0.95)" fontWeight="600">
               Chart Patterns
             </text>
             {chartData.chartPatterns.slice(0, 5).map((pattern, idx) => {
@@ -628,7 +694,7 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
                   <text x="950" y={62 + idx * 32} fontSize="10" fill="#374151" fontWeight="600">
                     {pattern.type}
                   </text>
-                  <text x="950" y={76 + idx * 32} fontSize="8" fill="#6b7280">
+                  <text x="950" y={76 + idx * 32} fontSize="8" fill="rgba(169,162,189,0.85)">
                     {pattern.planets.slice(0, 3).join(', ')}
                     {pattern.planets.length > 3 && ` +${pattern.planets.length - 3}`}
                   </text>
@@ -641,8 +707,8 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {/* Planet-in-House List (Far right, next to Chart Patterns) */}
         {chartData?.planetHouses && (
           <g>
-            <rect x="1190" y="20" width="190" height="300" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="1285" y="40" textAnchor="middle" fontSize="12" fill="#6366f1" fontWeight="600">
+            <rect x="1190" y="20" width="190" height="300" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" rx="8" />
+            <text x="1285" y="40" textAnchor="middle" fontSize="12" fill="rgba(223,183,108,0.95)" fontWeight="600">
               Planets in Houses
             </text>
             {Object.entries(chartData.planetHouses)
@@ -650,10 +716,10 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               .slice(0, 10)
               .map(([planet, house], idx) => (
                 <g key={planet}>
-                  <text x="1200" y={60 + idx * 24} fontSize="9" fill="#6b7280">
+                  <text x="1200" y={60 + idx * 24} fontSize="9" fill="rgba(169,162,189,0.85)">
                     {planetSymbols[planet.toLowerCase()] || planet[0].toUpperCase()} {planet}
                   </text>
-                  <text x="1360" y={60 + idx * 24} fontSize="9" fill="#9333ea" fontWeight="600" textAnchor="end">
+                  <text x="1360" y={60 + idx * 24} fontSize="9" fill="rgba(196,91,122,0.9)" fontWeight="600" textAnchor="end">
                     House {house}
                   </text>
                 </g>
@@ -664,20 +730,20 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
         {/* Aspect Grid (Bottom) - Larger and easier to read */}
         {chartData?.aspects && (
           <g>
-            <rect x="200" y="820" width="1000" height="160" fill="white" stroke="#e5e7eb" strokeWidth="1" rx="8" />
-            <text x="700" y="840" textAnchor="middle" fontSize="13" fill="#6366f1" fontWeight="600">
+            <rect x="200" y="820" width="1000" height="160" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" rx="8" />
+            <text x="700" y="840" textAnchor="middle" fontSize="13" fill="rgba(223,183,108,0.95)" fontWeight="600">
               Aspect Grid
             </text>
             {/* Column headers */}
             {['☉', '☽', '☿', '♀', '♂', '♃', '♄', '♅', '♆', '♇'].map((symbol, idx) => (
-              <text key={idx} x={270 + idx * 90} y="862" fontSize="12" fill="#6b7280" fontWeight="600" textAnchor="middle">
+              <text key={idx} x={270 + idx * 90} y="862" fontSize="12" fill="rgba(169,162,189,0.85)" fontWeight="600" textAnchor="middle">
                 {symbol}
               </text>
             ))}
             {/* Row headers and grid */}
             {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet1, row) => (
               <g key={planet1}>
-                <text x="240" y={886 + row * 10} fontSize="11" fill="#6b7280" fontWeight="600">
+                <text x="240" y={886 + row * 10} fontSize="11" fill="rgba(169,162,189,0.85)" fontWeight="600">
                   {planetSymbols[planet1]}
                 </text>
                 {['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((planet2, col) => {
@@ -713,31 +779,84 @@ export default function BirthChartWheel({ chartData, birthInfo }) {
               </g>
             ))}
             {/* Legend for minor aspects (Below Aspect Grid) */}
-            <text x="210" y="995" fontSize="9" fill="#6b7280">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
+            <text x="210" y="995" fontSize="9" fill="rgba(169,162,189,0.85)">Minor: ⚻Quincunx ⚺Semi-sextile ∠Semi-square ⚼Sesqui-square</text>
           </g>
         )}
         
         {/* Dignities Legend (Below Retrograde Indicator) */}
-        <text x="40" y="820" fontSize="10" fill="#6b7280">
+        <text x="40" y="820" fontSize="10" fill="rgba(169,162,189,0.85)">
           👑=Domicile ↑=Exalted ↓=Detriment ×=Fall
         </text>
       </svg>
       </div>
       
-      <div className="flex gap-3">
-        <button
-          onClick={downloadChart}
-          className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-        >
-          Download PNG
-        </button>
-        <button
-          onClick={downloadSVG}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-        >
-          Download SVG
-        </button>
-      </div>
+      {interactive && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 justify-between">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setViewMode('wheel')}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold smooth-transition border ${
+                viewMode === 'wheel'
+                  ? 'bg-cosmic-gold/20 border-cosmic-gold text-cosmic-gold'
+                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+              }`}
+            >
+              Wheel
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold smooth-transition border ${
+                viewMode === 'table'
+                  ? 'bg-cosmic-gold/20 border-cosmic-gold text-cosmic-gold'
+                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+              }`}
+            >
+              Table
+            </button>
+            <button
+              type="button"
+              onClick={downloadChart}
+              className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-sm font-medium smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Download PNG
+            </button>
+            <button
+              type="button"
+              onClick={downloadSVG}
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl text-sm font-medium smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Download SVG
+            </button>
+          </div>
+          <p className="text-white/60 text-xs">
+            {activeSegment
+              ? `Sign: ${activeSegment}`
+              : activeHouse !== null
+                ? `House ${activeHouse}`
+                : activePlanet
+                  ? `Planet: ${activePlanet}`
+                  : 'Select a sign, house, or planet'}
+          </p>
+        </div>
+      )}
+      {!interactive && (
+        <div className="flex gap-3">
+          <button
+            onClick={downloadChart}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Download PNG
+          </button>
+          <button
+            onClick={downloadSVG}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium smooth-transition hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Download SVG
+          </button>
+        </div>
+      )}
     </div>
   );
 }

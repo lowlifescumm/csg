@@ -380,7 +380,7 @@ export default function BirthChartForm({ updateMode = false, user = null, redire
             date: formData.birthDate,
             time: formData.birthTime,
             location: formData.location
-          }} />
+          }} interactive />
         </div>
 
         <div className="grid md:grid-cols-3 gap-4">

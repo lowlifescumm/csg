@@ -81,7 +81,7 @@ export default function MyChartPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="fixed inset-0 bg-gradient-to-br from-violet-950 via-black to-fuchsia-950 opacity-90" />
+      <div className="fixed inset-0 bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 opacity-90" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
@@ -148,7 +148,7 @@ export default function MyChartPage() {
         {/* Chart Wheel */}
         <div className="mb-8 flex justify-center">
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-            <BirthChartWheel chartData={chartData} birthInfo={birthInfo} />
+            <BirthChartWheel chartData={chartData} birthInfo={birthInfo} interactive />
           </div>
         </div>
 
