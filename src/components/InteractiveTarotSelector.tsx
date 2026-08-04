@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useSession } from 'next-auth/react';
 
-// Minimal interactive Tarot selector with email capture gate for anonymous users
+// Minimal interactive Tarot selector with email capture gate for anonymous users.
+// Auth now uses the project's existing NextAuth session (see components/AuthProviderWrapper),
+// replacing the previously imported @clerk/clerk-react which is not a dependency here.
 export const InteractiveTarotSelector: React.FC = () => {
-  const { user } = useUser();
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  // If user is anonymous, we require an email before letting them interact
-  const isAnonymous = !user;
+  // While the session is resolving, show nothing to avoid a flash of the gate.
+  if (status === 'loading') return null;
+
+  // If the user is not authenticated, we require an email before letting them interact.
+  const isAnonymous = status !== 'authenticated';
+  const user = session?.user;
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
