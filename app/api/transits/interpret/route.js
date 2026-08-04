@@ -7,7 +7,16 @@ import { authOptions } from '@/lib/auth-config';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limiter';
 
-const openai = new Groq({ apiKey: process.env.GROQ_API_KEY });
+let _groqClient;
+function getGroq() {
+  if (!_groqClient) {
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY environment variable is not set');
+    }
+    _groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  }
+  return _groqClient;
+}
 
 const parseJsonSafely = (payload, label) => {
   if (!payload) return null;
@@ -103,7 +112,7 @@ Provide a comprehensive interpretation in the following JSON format:
 
 Make the interpretation personalized, insightful, and actionable. Consider the intensity (${transit.intensity}/10) and aspect nature (${transit.aspectNature}).`;
 
-  const completion = await openai.chat.completions.create({
+  const completion = await getGroq().chat.completions.create({
     model: 'openai/gpt-oss-120b',
     messages: [
       {
